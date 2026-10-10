@@ -30,6 +30,7 @@
 			<a href="/notes">Notes</a>
 			<a href="/goals">Goals</a>
 			<a href="/calendar">Calendar</a>
+			<a href="/agents">Agents</a>
 			<a href="/account">Account</a>
 			<button class="theme" onclick={cycleTheme} aria-label="Theme: {theme}. Change theme">
 				{theme === 'dark' ? '☾' : theme === 'light' ? '☀' : '◐'}

@@ -21,6 +21,11 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Notes (Markdown exactly as written, path, derived title/type/PARA folder) | `notes` | Personal | Knowledge capture and vault sync | Until deleted or erasure |
 | Goals (title, outcome, status, target date, measure) and milestones | `goals`, `milestones` | Personal | Planning towards outcomes | Until deleted or erasure |
 | Calendar feeds (name, chosen types, SHA-256 of the URL token, last use) | `calendar_feeds` | Security | Let a calendar app read dated items | Until revoked or erasure |
+| Agent budget | `agent_settings` | Personal | Cap AI spending | Until changed or erasure |
+| Agent run records (agent, skill version, model, tool names, tokens, cost, outcome; no content) | `agent_runs` | Personal, operational | Audit and budget | Until erasure |
+| Agent proposals (proposed change and its summary) | `agent_proposals` | Personal | Let the user approve or reject | Until erasure |
+| Agent memories (facts the user approved) | `agent_memories` | Personal | Context for later runs | Until deleted or erasure |
+| Agent replies | API process memory only | Personal | Show the run's answer | 1 hour; never stored or logged |
 | Paths of deleted notes | `note_tombstones` | Personal | Let a sync client delete the file too | 30 days, or erasure |
 | Sync state (path → content hash; no content) | `.axon-sync-<vault>.json` next to the vault, on the vault host | Personal | Detect changes on both sides | Until the file is deleted |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |
@@ -49,7 +54,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |
-| Anthropic | Data the user selects for an agent task | Only with `ai_agents` consent | Planned (EP-19) |
+| Anthropic | The instruction, and the tasks, goals, and notes an agent reads through its tools during a run | Only with `ai_agents` consent and a server key | Available (EP-19) |
 | TMDB, Open Library | Search terms for media | Only with `external_metadata` consent | Planned (EP-17) |
 | Open Food Facts, USDA FoodData Central | Food search terms | Only with `health_data` consent | Planned (EP-18) |
 

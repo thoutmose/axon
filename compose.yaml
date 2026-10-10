@@ -25,6 +25,7 @@ services:
       WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:?set WEBAUTHN_RP_ID in .env}
       AXON_ENCRYPTION_KEY: ${AXON_ENCRYPTION_KEY:-}
       AXON_REGISTRATION: ${AXON_REGISTRATION:-first-user}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-} # optional: without it agents are unavailable
     depends_on:
       db:
         condition: service_healthy

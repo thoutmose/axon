@@ -68,7 +68,7 @@ func newEnv(t *testing.T, openRegistration bool) *env {
 	h, err := Handler("test", auth.Config{
 		BaseURL: origin, RPID: "localhost", OpenRegistration: openRegistration,
 		EncryptionKey: strings.Repeat("ab", 32),
-	}, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), server.NewMetrics(prometheus.NewRegistry(), "test", pool))
+	}, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), server.NewMetrics(prometheus.NewRegistry(), "test", pool), fake)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +323,7 @@ func TestExportIsCompleteAndErasureLeavesNothing(t *testing.T) {
 			_ = json.NewDecoder(r).Decode(&data)
 		}
 	}
-	for _, section := range []string{"account", "passkeys", "sessions", "consents", "audit_events"} {
+	for _, section := range []string{"account", "passkeys", "sessions", "consents", "audit_events", "agents"} {
 		if len(data[section]) == 0 {
 			t.Fatalf("export lacks %q", section)
 		}

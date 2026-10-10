@@ -90,7 +90,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, reviewed cards, and Anki sync. | SHOULD | 89 pts | EP-11, EP-14, EP-19 | Planned |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
 | EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
-| EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Planned |
+| EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
 
@@ -523,7 +523,30 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 - Content from notes, web pages, or imports is treated as data: injection fixtures in the eval suite cannot trigger unapproved tools or send data out.
 - Each run records agent, skill version, tools called, cost, and outcome, without raw sensitive content.
 
-**Candidate issues.** Provider adapter and budgets (8) · Tool registry and permissions (8) · Proposals and approval queue (13) · Consent and redaction (5) · Run audit and cost view (5) · Memory (8) · Skills format and loader (5) · Eval harness with injection fixtures (13) · Task Manager agent (13) · Goals agent (8). Split into two Epics at refinement if it exceeds one release slot.
+**Issues** (design in [ADR 0008](adr/0008-agents-propose-people-approve.md))
+
+- [x] **EP-19/IS-19.01 — Provider adapter and budgets** · 8 pts · MUST
+  - [x] Anthropic Go SDK behind a one-method provider interface; no key means agents report “not set up” and nothing else changes (e2e runs without a key).
+  - [x] Monthly budget per user (default $2); a run stops before any call whose worst case could cross it, and the person sees why (`budget_exhausted`).
+- [x] **EP-19/IS-19.02 — Tool registry and permissions** · 8 pts · MUST
+  - [x] Tools are read or write; each skill lists the only tools it may call; anything else is denied and recorded.
+- [x] **EP-19/IS-19.03 — Proposals and approval queue** · 13 pts · MUST
+  - [x] Every write tool only creates a proposal, validated by a rolled-back dry run; approval (browser sessions only) applies it as `agent:<name>`; stale proposals fail instead of overwriting (tested for every write tool).
+- [x] **EP-19/IS-19.04 — Consent and redaction** · 5 pts · MUST
+  - [x] Off by default behind the `ai_agents` consent; withdrawing it stops runs at once. Logs and run records never contain prompts, replies, or tool inputs.
+- [x] **EP-19/IS-19.05 — Run audit and cost view** · 5 pts · MUST
+  - [x] Each run records agent, skill version, model, tools called with outcomes, tokens, cost, and outcome; shown in run history with this month's spend.
+- [x] **EP-19/IS-19.06 — Memory** · 8 pts · SHOULD
+  - [x] Agents remember only approved facts; the person can list and delete them; memories reach later runs framed as data.
+- [x] **EP-19/IS-19.07 — Skills format and loader** · 5 pts · MUST
+  - [x] Versioned, embedded `SKILL.md` files (name, version, model, effort, tools, instructions); an invalid skill stops startup (unit tests).
+- [x] **EP-19/IS-19.08 — Eval harness with injection fixtures** · 13 pts · MUST
+  - [x] CI evals replay scripted model turns against real data, including injected instructions in tasks and notes: denied tools, exfiltration attempts, out-of-allowlist writes, and malformed calls change nothing and create no proposals; no server-side (network) tool is ever offered.
+  - [ ] Live-model quality evals (real model against fixtures) are not in CI: they cost money and need a key. Planned for when a provider key is configured.
+- [x] **EP-19/IS-19.09 — Task Manager agent** · 13 pts · MUST
+  - [x] Clarifies the inbox into proposed statuses, contexts, and new tasks; never invents dates.
+- [x] **EP-19/IS-19.10 — Goals agent** · 8 pts · SHOULD
+  - [x] Proposes observable milestones and task links; no dates unless the person gave one.
 
 ### EP-12 — Habits & Habits agent
 

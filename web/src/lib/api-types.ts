@@ -989,6 +989,184 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/agents': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Available agents, their skill versions and tools, and whether you can run them now */
+		get: operations['listAgents'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agents/{name}/runs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Start a run; poll GET /v1/agent-runs/{id} until its status is not running */
+		post: operations['startAgentRun'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-runs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your 50 most recent run records (no prompt or reply text) */
+		get: operations['listAgentRuns'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-runs/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A run record, its proposals, and its reply (kept in memory for an hour, never stored) */
+		get: operations['getAgentRun'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Changes agents proposed, newest first */
+		get: operations['listProposals'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals/{id}/approve': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Apply a pending proposal (browser sessions only) */
+		post: operations['approveProposal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals/{id}/reject': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Reject a pending proposal (browser sessions only) */
+		post: operations['rejectProposal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-settings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Set the monthly agent budget (browser sessions only) */
+		put: operations['setAgentSettings'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-memories': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** What agents remember about you (only what you approved) */
+		get: operations['listAgentMemories'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-memories/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Make agents forget something (browser sessions only) */
+		delete: operations['deleteAgentMemory'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1278,6 +1456,61 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			last_used_at: string | null;
+		};
+		AgentStatus: {
+			available: boolean;
+			/** @enum {string|null} */
+			reason: 'not_configured' | 'no_consent' | 'budget_exhausted' | null;
+			monthly_budget_cents: number;
+			/** @description US dollars × 1,000,000 spent this calendar month (UTC). */
+			spent_micros: number;
+		};
+		/** @description The audit record of a run. It never contains prompt, reply, or tool input text. */
+		AgentRun: {
+			/** Format: uuid */
+			id: string;
+			agent: string;
+			skill_version: string;
+			model: string;
+			/** @enum {unknown} */
+			status: 'running' | 'completed' | 'budget_exhausted' | 'step_limit' | 'refused' | 'failed';
+			/**
+			 * @example [
+			 *       "list_tasks",
+			 *       "update_task:proposed",
+			 *       "denied:web_fetch"
+			 *     ]
+			 */
+			tools_called: string[];
+			proposals: number;
+			input_tokens: number;
+			output_tokens: number;
+			cost_micros: number;
+			/** @enum {string|null} */
+			error: 'provider_error' | 'timeout' | 'interrupted' | 'internal' | null;
+			/** Format: date-time */
+			started_at: string;
+			/** Format: date-time */
+			finished_at: string | null;
+		};
+		Proposal: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			run_id: string;
+			agent: string;
+			tool: string;
+			/** @description The validated change, applied as-is on approval. */
+			input: Record<string, never>;
+			/** @example Change task “Call the plumber”: status → next, context → @phone */
+			summary: string;
+			reason: string;
+			/** @enum {unknown} */
+			status: 'pending' | 'approved' | 'rejected' | 'failed';
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			decided_at: string | null;
 		};
 	};
 	responses: {
@@ -3342,6 +3575,292 @@ export interface operations {
 					'text/calendar': string;
 				};
 			};
+			404: components['responses']['Problem'];
+		};
+	};
+	listAgents: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Agents and your agent status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						status: components['schemas']['AgentStatus'];
+						agents: {
+							/** @example task-manager */
+							name: string;
+							title: string;
+							/** @description Version of the SKILL.md the agent runs. */
+							version: string;
+							description: string;
+							tools: {
+								name: string;
+								description: string;
+								/** @description true: calls become proposals you approve. */
+								write: boolean;
+							}[];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	startAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				name: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					instruction: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Started. */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentRun'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			402: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	listAgentRuns: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Run records, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['AgentRun'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The run. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						run: components['schemas']['AgentRun'];
+						reply: string | null;
+						proposals: components['schemas']['Proposal'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listProposals: {
+		parameters: {
+			query?: {
+				status?: 'pending' | 'approved' | 'rejected' | 'failed';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 proposals. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Proposal'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	approveProposal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Applied. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Proposal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	rejectProposal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Rejected. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Proposal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	setAgentSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					monthly_budget_cents: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Your agent status with the new budget. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentStatus'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listAgentMemories: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Memories. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							agent: string;
+							content: string;
+							/** Format: date-time */
+							created_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	deleteAgentMemory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Forgotten. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 		};
 	};

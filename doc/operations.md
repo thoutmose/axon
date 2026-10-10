@@ -100,6 +100,12 @@ To rehearse without touching a server, restore into a throwaway `pgvector/pgvect
 
 Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
 
+## AI agents
+
+Agents are off on a server until it has a provider key. To turn them on, add `ANTHROPIC_API_KEY=…` to the environment's encrypted env file (see [Secrets](#secrets)) and deploy. Each person must still grant the `ai_agents` consent, and their monthly budget (default $2) caps spending. To turn agents off for everyone, remove the key and deploy; every other feature keeps working.
+
+Run outcomes are logged as `agent run finished` with status, tool count, tokens, and cost; prompts and replies are never logged. A run stuck as `running` after a restart is marked `failed` (`interrupted`) when the same person next starts one.
+
 ## Service level objectives
 
 Measured only while the host is powered on (`srv-staging` and `srv-prod` are on-demand VMs in the fleet).

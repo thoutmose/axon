@@ -10,6 +10,7 @@ import (
 
 	"github.com/thoutmose/axon/api/openapi"
 
+	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/goals"
@@ -23,7 +24,8 @@ import (
 )
 
 // Handler builds the complete API handler.
-func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger, m *server.Metrics) (http.Handler, error) {
+// provider is the AI model provider for agents, or nil to run without them.
+func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger, m *server.Metrics, provider agents.Provider) (http.Handler, error) {
 	authn, err := auth.New(cfg, pool, log)
 	if err != nil {
 		return nil, err
@@ -35,7 +37,12 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	notesAPI := notes.NewHandlers(pool, log)
 	goalsAPI := goals.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
+	agentsAPI, err := agents.NewRunner(pool, log, provider)
+	if err != nil {
+		return nil, err
+	}
 	priv.RegisterFiles("notes", notes.Files)
+	priv.Register("agents", agents.Export)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -53,6 +60,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				r.Use(authn.RequireSession)
 				priv.Routes(r)
 				dashboardAPI.FeedRoutes(r)
+				agentsAPI.SessionRoutes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
@@ -60,6 +68,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				tasksAPI.Routes(r)
 				goalsAPI.Routes(r)
 				dashboardAPI.Routes(r)
+				agentsAPI.Routes(r)
 			})
 		})
 	}), nil

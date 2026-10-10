@@ -22,6 +22,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/app"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
@@ -95,7 +96,7 @@ func serve() error {
 		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
 		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
 		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
-	}, pool, log, metrics)
+	}, pool, log, metrics, provider(log))
 	if err != nil {
 		return err
 	}
@@ -158,6 +159,17 @@ func migrate(direction string) error {
 		return err
 	}
 	return db.Migrate(context.Background(), dsn, direction, os.Stdout)
+}
+
+// provider returns the agent model provider, or nil when no key is set:
+// Axon then runs with agents unavailable and everything else unchanged.
+func provider(log *slog.Logger) agents.Provider {
+	key := os.Getenv("ANTHROPIC_API_KEY")
+	if key == "" {
+		log.Info("ANTHROPIC_API_KEY not set; agents are unavailable")
+		return nil
+	}
+	return agents.NewAnthropic(key)
 }
 
 // notesSync keeps a Markdown vault and Axon's notes in step (see internal/notesync).

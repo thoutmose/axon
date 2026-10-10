@@ -91,7 +91,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/notes',
 		'/goals',
 		'/today',
-		'/calendar'
+		'/calendar',
+		'/agents'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -244,6 +245,15 @@ test('subscribe to a calendar feed, read it, and revoke it', async () => {
 	await page.getByRole('button', { name: 'Revoke Phone' }).click();
 	await expect(page.getByText('Its URL no longer works.')).toBeVisible();
 	expect((await page.request.get(url)).status()).toBe(404);
+});
+
+test('without an AI provider, agents say so and nothing else depends on them', async () => {
+	await page.goto('/agents');
+	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();
+	await expect(page.getByText('Agents are not set up on this server')).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Ask Task Manager' })).toBeDisabled();
+	await expect(page.getByText('Nothing. Agents can only remember what you approve.')).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('sign out, then sign back in with the passkey', async () => {
