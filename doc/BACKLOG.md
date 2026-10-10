@@ -72,7 +72,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | ID | Epic | Goal | Priority | Estimate | Dependencies | Status |
 |---|---|---|---|---:|---|---|
 | EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | In progress |
-| EP-01 | Infrastructure & IaC | Hardened `srv-prod` and `srv-staging` serving Axon on the tailnet, with tested off-site backups. | MUST | 34 pts | EP-00 | In progress |
+| EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | In progress |
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Planned |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | Planned |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
@@ -186,38 +186,34 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 ### EP-01 — Infrastructure & IaC
 
-**Goal.** Hardened Ubuntu 24.04 hosts `srv-prod` (production) and `srv-staging` run Axon with Docker Compose, reachable only over the tailnet, reach `srv-services` and `srv-secondbrain` privately, and are backed up off-host with a rehearsed restore.
+**Goal.** Axon runs on `srv-prod` (production) and `srv-staging` (staging), reachable only over the tailnet, deployed and rolled back with one command, with tested off-host backups.
 
-**Why.** Self-hosting is the product’s promise; it must be reproducible and recoverable before any user data exists. [ADR 0003](adr/0003-single-host-first.md) keeps the database on the application host; [ADR 0004](adr/0004-hosts-and-tailnet-only-access.md) assigns hosts and keeps Axon off the public internet.
+**Why.** Self-hosting is the product’s promise; it must be reproducible and recoverable before any user data exists. Hosts are already provisioned and configured by the fleet repository [`terraform-proxmox`](https://github.com/thoutmose/terraform-proxmox); [ADR 0004](adr/0004-hosts-and-tailnet-only-access.md) keeps host configuration there and puts only application deployment here.
 
-**Out of scope.** A separate database host (until measured need), public ingress, Kubernetes, changes to the existing services beyond network access.
+**Out of scope.** Host provisioning and hardening (fleet repository), a separate database host, public ingress, Kubernetes.
 
 **Issues**
 
-- [ ] **EP-01/IS-01.01 — Provisioning as code** · 8 pts · MUST
-  - [ ] An Ansible playbook provisions a fresh host; a second run reports zero changes.
-  - [ ] SSH is key-only, root login is disabled, unattended security upgrades are on.
-  - [ ] The firewall denies inbound traffic except from the tailnet and the home LAN.
-  - [ ] Docker Engine and Compose v2 come from Docker's apt repository and receive security updates.
-- [ ] **EP-01/IS-01.02 — Private network** · 5 pts · MUST
-  - [ ] Tailscale connects `srv-prod`, `srv-staging`, `srv-services`, and `srv-secondbrain`.
-  - [ ] Anki sync and the SecondBrain Git remote are reachable from `srv-prod` and refused from the public internet (evidence: both checks).
-- [ ] **EP-01/IS-01.03 — Edge and TLS** · 3 pts · MUST
-  - [ ] Tailscale Serve provides HTTPS on each host's `*.ts.net` name; nothing listens publicly.
+- [ ] **EP-01/IS-01.01 — Server Compose overlay** · 3 pts · MUST
+  - [ ] Servers run prebuilt images with `restart: unless-stopped`; no source tree is needed on the host.
+- [ ] **EP-01/IS-01.02 — Encrypted environment files** · 3 pts · MUST
+  - [ ] `deploy/env/{staging,prod}.env.age` are encrypted to the keys in `deploy/env/recipients.txt` and decrypted only during deployment.
+  - [ ] A secret scan of the full history finds nothing.
+  - [ ] Key holders and the recovery procedure for a lost key are documented.
+- [ ] **EP-01/IS-01.03 — Deploy and roll back** · 8 pts · MUST
+  - [ ] One command builds, copies, migrates, starts, and smoke-tests a version on staging or production.
+  - [ ] One command switches back to the previous version; the limits (migrations are not reverted) are documented.
+- [ ] **EP-01/IS-01.04 — Tailnet HTTPS** · 3 pts · MUST
+  - [ ] Each host serves Axon on its `*.ts.net` name through Tailscale Serve; nothing listens publicly.
   - [ ] HSTS, a baseline Content-Security-Policy, and `X-Content-Type-Options` are set.
-- [ ] **EP-01/IS-01.04 — Secrets** · 5 pts · MUST
-  - [ ] Environment files are encrypted with age in the repository (`deploy/env/*.env.age`) and decrypted only during deployment.
-  - [ ] A secret scan (e.g. gitleaks) of the full history finds nothing.
-  - [ ] Key holders and the recovery procedure for a lost age key are documented.
 - [ ] **EP-01/IS-01.05 — Backups and restore** · 8 pts · MUST
-  - [ ] Nightly encrypted database and volume backups go off-host (e.g. restic to `S3_BACKUP_BUCKET`).
+  - [ ] Nightly encrypted database dumps are kept on the host and copied off-host.
   - [ ] Retention is documented, including how long erased data can survive in backups.
-  - [ ] A restore to a fresh host is rehearsed and timed; initial targets RPO ≤ 24 h, RTO ≤ 4 h.
-- [ ] **EP-01/IS-01.06 — Staging environment** · 3 pts · MUST
-  - [ ] `srv-staging` runs the same stack with its own database and hostname.
-  - [ ] Staging holds synthetic data only.
+  - [ ] A restore to a fresh database is rehearsed and timed; initial targets RPO ≤ 24 h, RTO ≤ 4 h.
+- [ ] **EP-01/IS-01.06 — Operator runbook** · 2 pts · MUST
+  - [ ] Deploy, rollback, backup, and restore steps are documented in `doc/operations.md`.
 
-**Exit evidence.** Playbook run logs, external port scan, restore drill timings, operator runbook.
+**Exit evidence.** Staging and production deploy logs, rollback log, restore drill timings, runbook.
 
 ### EP-02 — CI/CD & promotion
 
@@ -255,7 +251,7 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Why.** Defects in a personal system are found by the user at the worst time unless they are measured first.
 
-**Out of scope.** Product analytics (EP-20). No telemetry leaves the deployment.
+**Out of scope.** Product analytics (EP-20). No telemetry leaves the deployment. Host metrics, log shipping, Prometheus, Grafana, Loki, and ntfy already run fleet-wide from `terraform-proxmox`; this Epic adds Axon’s own signals to them and should be re-estimated at start.
 
 **Issues**
 
@@ -266,8 +262,8 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 - [ ] **EP-03/IS-03.03 — Traces** · 5 pts · SHOULD
   - [ ] OpenTelemetry traces cover web → API → database with configured sampling.
 - [ ] **EP-03/IS-03.04 — Observability stack** · 8 pts · MUST
-  - [ ] Prometheus, Grafana, and Loki run on `srv-prod`, reachable only over the private network.
-  - [ ] Retention and memory limits are set so the stack cannot starve Axon.
+  - [ ] The fleet Prometheus on `srv-monitoring` scrapes Axon’s metrics (change proposed in `terraform-proxmox`).
+  - [ ] Axon dashboards are provisioned in the fleet Grafana.
 - [ ] **EP-03/IS-03.05 — SLOs and alerts** · 5 pts · MUST
   - [ ] API availability and latency SLOs are written down.
   - [ ] Alerts fire for service down, error-rate burn, disk above 80 %, and failed or stale backups.
