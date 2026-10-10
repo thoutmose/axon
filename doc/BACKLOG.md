@@ -172,15 +172,15 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
   - [x] Every dependency points to an Epic earlier in the delivery order.
   - [x] README links, paths, and roadmap match this backlog.
   - [x] The maintainer delegated approval (2026-10-10).
-- [ ] **EP-00/IS-00.06 — Walking skeleton** · 13 pts · MUST · depends on IS-00.02
-  - [ ] Layout: `api/` (Go module), `web/` (SvelteKit + TypeScript), `deploy/compose.yaml`.
-  - [ ] `GET /healthz` returns `200` with the build version; `GET /readyz` fails when PostgreSQL is unreachable.
-  - [ ] The web home page calls the API and shows its status, including an error state when the API is down.
-  - [ ] `docker compose up` starts API, web, PostgreSQL 16 + pgvector, Valkey, and Caddy locally.
-  - [ ] One migration runs up and down cleanly.
-  - [ ] `make check` runs formatting, linting, and unit tests for Go and TypeScript.
-  - [ ] `.env.example` lists every variable in the README configuration table, with no real secrets.
-  - [ ] README quick start works on a clean machine (evidence: terminal log).
+- [x] **EP-00/IS-00.06 — Walking skeleton** · 13 pts · MUST · depends on IS-00.02
+  - [x] Layout: `api/` (Go module), `web/` (SvelteKit + TypeScript), `compose.yaml`, `deploy/Caddyfile`.
+  - [x] `GET /healthz` returns `200` with the build version; `GET /readyz` fails when PostgreSQL is unreachable.
+  - [x] The web home page calls the API and shows its status, including an error state when the API is down.
+  - [x] `docker compose up` starts API, web, PostgreSQL 16 + pgvector, Valkey, and Caddy locally.
+  - [x] One migration (enable pgvector) runs up and down cleanly (`make test-integration`).
+  - [x] `make check` runs formatting, linting, and unit tests for Go and TypeScript.
+  - [x] `.env.example` lists every variable in the README configuration table, with no real secrets.
+  - [x] README quick start works on a clean checkout (evidence in the PR).
 
 **Exit evidence.** Skeleton demo log, accepted ADRs, approved backlog, approved PR.
 

@@ -39,6 +39,8 @@ Decided for the walking skeleton (IS-00.06):
 | Query layer | Hand-written SQL through `pgx` until EP-05; revisit `sqlc` then | No queries exist yet to justify a code generator. |
 | Go checks | `gofmt`, `go vet`, `go test`; `golangci-lint` added in EP-02 | Built-in tools first. |
 | Web checks | `svelte-check`, Prettier | The SvelteKit defaults. |
+| Web runtime | SvelteKit 2 on Node 24 LTS, `adapter-node`; Vite 7, Vitest 4 | SvelteKit 3.0 was nine days old at decision time; upgrade once its ecosystem settles. npm 10 (Node 22) fails to resolve this dependency tree, npm 11 (Node 24) does. |
+| Styling | Plain scoped CSS in the skeleton; Tailwind arrives with the design system (EP-07) | Nothing to style yet beyond one page. |
 
 ## Alternatives
 

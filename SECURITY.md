@@ -2,7 +2,9 @@
 
 ## Reporting a vulnerability
 
-Report vulnerabilities privately through this repository’s **Security → Report a vulnerability** form. Do not open a public issue, and do not include real personal or health data in the report.
+Report vulnerabilities privately to the maintainer, [@thoutmose](https://github.com/thoutmose), using the contact address on that GitHub profile. Do not open an issue, and do not include real personal or health data in the report.
+
+When the repository becomes public, GitHub’s private vulnerability reporting (**Security → Report a vulnerability**) will be enabled and become the preferred channel.
 
 You should get an acknowledgement within 7 days. Please allow up to 90 days for a fix before public disclosure; we will agree a date with you.
 

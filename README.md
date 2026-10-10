@@ -322,26 +322,31 @@ This table is the target layout. Until measurements justify splitting, Axon runs
 ## Quick start
 
 > [!IMPORTANT]
-> There is no application code yet. These steps describe the target and will work once the walking skeleton (EP-00/IS-00.06) lands.
+> Only the walking skeleton exists so far: an API with health checks, a web page showing the API status, and the local stack. Features arrive Epic by Epic.
 
 ### Prerequisites
 
-- Docker Engine and Compose v2; Git; a DNS name or localhost for development.
-- An Anthropic API credential only if enabling agents.
+- Docker Engine and Compose v2; Git; GNU Make for the checks.
+- An Anthropic API credential only if enabling agents (later releases).
 - Optional: TMDB, Open Library, USDA, and Open Food Facts credentials or public endpoints according to their terms.
 
 ```bash
-git clone https://example.invalid/axon.git
+git clone git@github.com:thoutmose/axon.git   # private repository
 cd axon
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build --wait
 docker compose exec api axon migrate up
 ```
 
-Then open <http://localhost:3000>.
+Then open <http://localhost:3000>. The API is served under `/api` (for example `/api/healthz` and `/api/readyz`). The stack listens on `127.0.0.1` only.
 
-> [!WARNING]
-> The clone URL above is intentionally a placeholder, not a download link. Replace it with the project’s real repository URL when published.
+### Checks
+
+| Command | What it runs |
+|---|---|
+| `make check` | `gofmt`, `go vet`, Go unit tests; `svelte-check`, Prettier, Vitest (Node 24 in a container) |
+| `make test-integration` | Migrations up/down/up against PostgreSQL 16 + pgvector |
+| `make up` / `make down` | Build and start, or stop, the local stack |
 
 ## Configuration
 
