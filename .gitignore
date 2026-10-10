@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 *.age
+!deploy/env/*.env.age
 *.pem
 *.key
 
