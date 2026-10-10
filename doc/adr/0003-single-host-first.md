@@ -1,6 +1,6 @@
 # 0003 — Single host first
 
-- **Status:** Accepted (2026-10-10, maintainer delegated the decision)
+- **Status:** Accepted (2026-10-10, maintainer delegated the decision); staging placement superseded by [0004](0004-hosts-and-tailnet-only-access.md)
 - **Date:** 2026-10-10
 - **Epic:** EP-01
 

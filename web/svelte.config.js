@@ -5,7 +5,21 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const config = {
 	preprocess: vitePreprocess(),
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		// SvelteKit adds hashes for its own inline scripts and styles.
+		csp: {
+			mode: 'auto',
+			directives: {
+				'default-src': ['self'],
+				'script-src': ['self'],
+				'style-src': ['self'],
+				'img-src': ['self', 'data:'],
+				'object-src': ['none'],
+				'base-uri': ['self'],
+				'form-action': ['self'],
+				'frame-ancestors': ['none']
+			}
+		}
 	}
 };
 
