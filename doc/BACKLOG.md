@@ -71,8 +71,8 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 
 | ID | Epic | Goal | Priority | Estimate | Dependencies | Status |
 |---|---|---|---|---:|---|---|
-| EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | In progress |
-| EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | In progress |
+| EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | Done |
+| EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | Done |
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Planned |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | Planned |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
@@ -194,24 +194,24 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-01/IS-01.01 — Server Compose overlay** · 3 pts · MUST
-  - [ ] Servers run prebuilt images with `restart: unless-stopped`; no source tree is needed on the host.
-- [ ] **EP-01/IS-01.02 — Encrypted environment files** · 3 pts · MUST
-  - [ ] `deploy/env/{staging,prod}.env.age` are encrypted to the keys in `deploy/env/recipients.txt` and decrypted only during deployment.
-  - [ ] A secret scan of the full history finds nothing.
-  - [ ] Key holders and the recovery procedure for a lost key are documented.
-- [ ] **EP-01/IS-01.03 — Deploy and roll back** · 8 pts · MUST
-  - [ ] One command builds, copies, migrates, starts, and smoke-tests a version on staging or production.
-  - [ ] One command switches back to the previous version; the limits (migrations are not reverted) are documented.
-- [ ] **EP-01/IS-01.04 — Tailnet HTTPS** · 3 pts · MUST
-  - [ ] Each host serves Axon on its `*.ts.net` name through Tailscale Serve; nothing listens publicly.
-  - [ ] HSTS, a baseline Content-Security-Policy, and `X-Content-Type-Options` are set.
-- [ ] **EP-01/IS-01.05 — Backups and restore** · 8 pts · MUST
-  - [ ] Nightly encrypted database dumps are kept on the host and copied off-host.
-  - [ ] Retention is documented, including how long erased data can survive in backups.
-  - [ ] A restore to a fresh database is rehearsed and timed; initial targets RPO ≤ 24 h, RTO ≤ 4 h.
-- [ ] **EP-01/IS-01.06 — Operator runbook** · 2 pts · MUST
-  - [ ] Deploy, rollback, backup, and restore steps are documented in `doc/operations.md`.
+- [x] **EP-01/IS-01.01 — Server Compose overlay** · 3 pts · MUST
+  - [x] Servers run prebuilt images with `restart: unless-stopped`; no source tree is needed on the host.
+- [x] **EP-01/IS-01.02 — Encrypted environment files** · 3 pts · MUST
+  - [x] `deploy/env/{staging,prod}.env.age` are encrypted to the keys in `deploy/env/recipients.txt` and decrypted only during deployment.
+  - [x] A secret scan (gitleaks) of the full history finds nothing.
+  - [x] Key holders and the recovery procedure for a lost key are documented ([operations](operations.md#secrets)).
+- [x] **EP-01/IS-01.03 — Deploy and roll back** · 8 pts · MUST
+  - [x] One command builds, copies, migrates, starts, and smoke-tests a version on staging or production.
+  - [x] One command switches back to the previous version; the limits (migrations are not reverted) are documented.
+- [x] **EP-01/IS-01.04 — Tailnet HTTPS** · 3 pts · MUST
+  - [x] Each host serves Axon on its `*.ts.net` name through Tailscale Serve; nothing listens publicly (port 3000 refused from the LAN).
+  - [x] HSTS, a baseline Content-Security-Policy, and `X-Content-Type-Options` are set.
+- [x] **EP-01/IS-01.05 — Backups and restore** · 8 pts · MUST
+  - [x] Nightly encrypted database dumps are kept on the host and copied off-host.
+  - [x] Retention is documented, including how long erased data can survive in backups.
+  - [x] A restore to a fresh database is rehearsed and timed; initial targets RPO ≤ 24 h, RTO ≤ 4 h (drill: 4 s on staging).
+- [x] **EP-01/IS-01.06 — Operator runbook** · 2 pts · MUST
+  - [x] Deploy, rollback, backup, and restore steps are documented in `doc/operations.md`.
 
 **Exit evidence.** Staging and production deploy logs, rollback log, restore drill timings, runbook.
 
