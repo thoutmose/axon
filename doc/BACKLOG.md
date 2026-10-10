@@ -75,7 +75,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | Done |
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Done |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | In progress (fleet apply pending) |
-| EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
+| EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Done (independent review owed) |
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Planned |
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Planned |
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Planned |
@@ -283,35 +283,35 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-04/IS-04.01 — Accounts and passkeys** · 8 pts · MUST
-  - [ ] Register and sign in with WebAuthn; an account can hold several passkeys.
-  - [ ] One-time recovery codes are issued at registration and stored hashed.
-- [ ] **EP-04/IS-04.02 — TOTP second factor** · 3 pts · SHOULD
-  - [ ] TOTP enrolment and verification, with secrets encrypted at rest.
-- [ ] **EP-04/IS-04.03 — Sessions** · 5 pts · MUST
-  - [ ] Server-side sessions in `Secure`, `HttpOnly`, `SameSite` cookies, rotated at sign-in.
-  - [ ] Idle and absolute timeouts; “sign out everywhere” revokes all sessions.
-  - [ ] CSRF protection on every state-changing request.
-- [ ] **EP-04/IS-04.04 — Ownership checks** · 5 pts · MUST
-  - [ ] Every user-owned row has an owner; queries filter by it.
-  - [ ] A shared test harness proves, for every endpoint, that user A cannot read or change user B’s data.
-- [ ] **EP-04/IS-04.05 — Abuse protection** · 3 pts · MUST
-  - [ ] Authentication endpoints are rate-limited with backoff.
-- [ ] **EP-04/IS-04.06 — Audit log** · 5 pts · MUST
-  - [ ] Sign-ins, factor changes, exports, erasures, and consent changes are recorded append-only and visible to the user.
-- [ ] **EP-04/IS-04.07 — Data classification and privacy register** · 5 pts · MUST
-  - [ ] Each data category has a classification; health data is marked special-category (GDPR Art. 9).
-  - [ ] A processor inventory lists every external service and what it receives.
-  - [ ] A retention table states how long each category is kept.
-- [ ] **EP-04/IS-04.08 — Export and erasure framework** · 8 pts · MUST
-  - [ ] The user can download all their data as JSON plus Markdown.
-  - [ ] Erasure removes the user’s rows; a test verifies nothing remains outside documented backup windows.
-- [ ] **EP-04/IS-04.09 — Consent records** · 3 pts · MUST
-  - [ ] Consent is recorded per purpose (AI agents, each external API), off by default, revocable, and timestamped.
+- [x] **EP-04/IS-04.01 — Accounts and passkeys** · 8 pts · MUST
+  - [x] Register and sign in with WebAuthn; an account can hold several passkeys.
+  - [x] One-time recovery codes are issued at registration and stored hashed.
+- [x] **EP-04/IS-04.02 — TOTP second factor** · 3 pts · SHOULD
+  - [x] TOTP enrolment and verification, with secrets encrypted at rest.
+- [x] **EP-04/IS-04.03 — Sessions** · 5 pts · MUST
+  - [x] Server-side sessions in `Secure`, `HttpOnly`, `SameSite` cookies, rotated at sign-in.
+  - [x] Idle and absolute timeouts; “sign out everywhere” revokes all sessions.
+  - [x] CSRF protection on every state-changing request.
+- [x] **EP-04/IS-04.04 — Ownership checks** · 5 pts · MUST
+  - [x] Every user-owned row has an owner; queries filter by it ([ADR 0005](adr/0005-entity-conventions.md)).
+  - [x] A shared test harness proves, for every endpoint, that user A cannot read or change user B’s data (`TestUsersCannotSeeOrChangeEachOthersData`).
+- [x] **EP-04/IS-04.05 — Abuse protection** · 3 pts · MUST
+  - [x] Authentication endpoints are rate-limited with backoff.
+- [x] **EP-04/IS-04.06 — Audit log** · 5 pts · MUST
+  - [x] Sign-ins, factor changes, exports, erasures, and consent changes are recorded append-only and visible to the user.
+- [x] **EP-04/IS-04.07 — Data classification and privacy register** · 5 pts · MUST
+  - [x] Each data category has a classification; health data is marked special-category (GDPR Art. 9) ([privacy register](privacy.md)).
+  - [x] A processor inventory lists every external service and what it receives.
+  - [x] A retention table states how long each category is kept.
+- [x] **EP-04/IS-04.08 — Export and erasure framework** · 8 pts · MUST
+  - [x] The user can download all their data as JSON plus Markdown.
+  - [x] Erasure removes the user’s rows; a test verifies nothing remains outside documented backup windows.
+- [x] **EP-04/IS-04.09 — Consent records** · 3 pts · MUST
+  - [x] Consent is recorded per purpose (AI agents, each external API), off by default, revocable, and timestamped.
 - [ ] **EP-04/IS-04.10 — Threat model and review** · 5 pts · MUST
-  - [ ] A threat model covers auth, sessions, and data access.
-  - [ ] OWASP ASVS Level 2 checks for authentication and sessions are recorded.
-  - [ ] Someone other than the author reviews the authentication code.
+  - [x] A threat model covers auth, sessions, and data access ([threat model](security/threat-model.md)).
+  - [x] OWASP ASVS Level 2 checks for authentication and sessions are recorded ([checklist](security/asvs-checklist.md)).
+  - [ ] Someone other than the author reviews the authentication code. An automated security review ran on the PR; a human or external review is still owed before 1.0 (EP-21).
 
 **Exit evidence.** ASVS checklist, cross-user access test report, export and erasure demo, threat model.
 
@@ -326,7 +326,7 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 **Issues**
 
 - [ ] **EP-05/IS-05.01 — Entity conventions** · 3 pts · MUST
-  - [ ] An ADR fixes ID format, timestamps, owner column, and soft-delete rules.
+  - [x] An ADR fixes ID format, timestamps, owner column, and soft-delete rules ([ADR 0005](adr/0005-entity-conventions.md), written in EP-04).
   - [ ] Migrations run up and down in CI.
 - [ ] **EP-05/IS-05.02 — Universal links** · 8 pts · MUST
   - [ ] A link stores owner, source type/ID, target type/ID, and relation.

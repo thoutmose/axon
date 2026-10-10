@@ -15,13 +15,13 @@ check-api:
 check-web:
 	cd web && $(WEB_RUN) sh -c 'npm ci --no-fund --no-audit && npm run check && npm run lint && npm test'
 
-## test-integration: migration up/down against a real PostgreSQL + pgvector
+## test-integration: API and migration tests against a real PostgreSQL + pgvector
 test-integration:
 	docker compose up -d --wait db
 	docker compose exec db sh -c 'createdb -U "$$POSTGRES_USER" axon_test 2>/dev/null || true'
 	docker run --rm --network axon_default -e AXON_TEST_DATABASE_URL="$(TEST_DB_URL)" \
 		-v $(CURDIR)/api:/src -v axon-gomod:/go/pkg/mod -w /src golang:1.26-alpine \
-		go test -count=1 -run TestMigrateUpDown -v ./internal/db/
+		go test -count=1 -p 1 ./...
 
 up:
 	docker compose up -d --build --wait
