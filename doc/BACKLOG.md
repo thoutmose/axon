@@ -72,7 +72,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | ID | Epic | Goal | Priority | Estimate | Dependencies | Status |
 |---|---|---|---|---:|---|---|
 | EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | In progress |
-| EP-01 | Infrastructure & IaC | One hardened host running Axon with private links to existing services and tested backups. | MUST | 34 pts | EP-00 | Planned |
+| EP-01 | Infrastructure & IaC | Hardened `srv-prod` and `srv-staging` serving Axon on the tailnet, with tested off-site backups. | MUST | 34 pts | EP-00 | In progress |
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Planned |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | Planned |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
@@ -186,27 +186,27 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 ### EP-01 — Infrastructure & IaC
 
-**Goal.** One hardened Ubuntu 24.04 host (`srv-prod`) runs Axon with Docker Compose, reaches `srv-services` and `srv-second-brain` over a private network, and is backed up off-host with a rehearsed restore.
+**Goal.** Hardened Ubuntu 24.04 hosts `srv-prod` (production) and `srv-staging` run Axon with Docker Compose, reachable only over the tailnet, reach `srv-services` and `srv-secondbrain` privately, and are backed up off-host with a rehearsed restore.
 
-**Why.** Self-hosting is the product’s promise; it must be reproducible and recoverable before any user data exists. [ADR 0003](adr/0003-single-host-first.md) explains why one host comes first.
+**Why.** Self-hosting is the product’s promise; it must be reproducible and recoverable before any user data exists. [ADR 0003](adr/0003-single-host-first.md) keeps the database on the application host; [ADR 0004](adr/0004-hosts-and-tailnet-only-access.md) assigns hosts and keeps Axon off the public internet.
 
-**Out of scope.** Separate `srv-dev`, `srv-staging`, `srv-db` hosts (until measured need), Kubernetes, changes to the existing services beyond network access.
+**Out of scope.** A separate database host (until measured need), public ingress, Kubernetes, changes to the existing services beyond network access.
 
 **Issues**
 
 - [ ] **EP-01/IS-01.01 — Provisioning as code** · 8 pts · MUST
   - [ ] An Ansible playbook provisions a fresh host; a second run reports zero changes.
   - [ ] SSH is key-only, root login is disabled, unattended security upgrades are on.
-  - [ ] The firewall allows only 80/443 publicly and SSH over the private network.
-  - [ ] Docker Engine and Compose v2 are installed at pinned versions.
+  - [ ] The firewall denies inbound traffic except from the tailnet and the home LAN.
+  - [ ] Docker Engine and Compose v2 come from Docker's apt repository and receive security updates.
 - [ ] **EP-01/IS-01.02 — Private network** · 5 pts · MUST
-  - [ ] WireGuard or Tailscale connects `srv-prod`, `srv-services`, and `srv-second-brain`.
+  - [ ] Tailscale connects `srv-prod`, `srv-staging`, `srv-services`, and `srv-secondbrain`.
   - [ ] Anki sync and the SecondBrain Git remote are reachable from `srv-prod` and refused from the public internet (evidence: both checks).
 - [ ] **EP-01/IS-01.03 — Edge and TLS** · 3 pts · MUST
-  - [ ] Caddy serves production and staging hostnames with automatic TLS; HTTP redirects to HTTPS.
+  - [ ] Tailscale Serve provides HTTPS on each host's `*.ts.net` name; nothing listens publicly.
   - [ ] HSTS, a baseline Content-Security-Policy, and `X-Content-Type-Options` are set.
 - [ ] **EP-01/IS-01.04 — Secrets** · 5 pts · MUST
-  - [ ] Environment files are encrypted with SOPS + age in the repository and decrypted only on the host.
+  - [ ] Environment files are encrypted with age in the repository (`deploy/env/*.env.age`) and decrypted only during deployment.
   - [ ] A secret scan (e.g. gitleaks) of the full history finds nothing.
   - [ ] Key holders and the recovery procedure for a lost age key are documented.
 - [ ] **EP-01/IS-01.05 — Backups and restore** · 8 pts · MUST
@@ -214,7 +214,7 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
   - [ ] Retention is documented, including how long erased data can survive in backups.
   - [ ] A restore to a fresh host is rehearsed and timed; initial targets RPO ≤ 24 h, RTO ≤ 4 h.
 - [ ] **EP-01/IS-01.06 — Staging environment** · 3 pts · MUST
-  - [ ] A second Compose project runs staging with its own database and hostname, marked `noindex`.
+  - [ ] `srv-staging` runs the same stack with its own database and hostname.
   - [ ] Staging holds synthetic data only.
 
 **Exit evidence.** Playbook run logs, external port scan, restore drill timings, operator runbook.

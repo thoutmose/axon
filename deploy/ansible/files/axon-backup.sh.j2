@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Managed by Ansible (deploy/ansible/site.yml). Nightly encrypted dump of the Axon database.
+set -euo pipefail
+
+backup_dir={{ backup_dir }}
+keep_days=14
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+out="$backup_dir/axon-$stamp.dump.age"
+
+cd {{ axon_dir }}
+docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' \
+  | age --encrypt -R /etc/axon/backup-recipients.txt > "$out.partial"
+mv "$out.partial" "$out"
+
+find "$backup_dir" -name 'axon-*.dump.age' -mtime +"$keep_days" -delete
+
+rsync -e "ssh -i /etc/axon/backup_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes -o UserKnownHostsFile=/etc/axon/known_hosts -o StrictHostKeyChecking=accept-new" \
+  "$out" "thoutmose@{{ offsite_host }}:"
+
+date -u +%FT%TZ > "$backup_dir/last-success"
+echo "backup ok: $out"

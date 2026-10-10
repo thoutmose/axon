@@ -1,0 +1,208 @@
+# Baseline for hosts that run Axon. Safe to re-run: a second run reports no changes.
+# Usage: cd deploy/ansible && ansible-playbook site.yml --limit prod --check --diff
+- name: Axon host baseline
+  hosts: axon
+  become: true
+  vars:
+    axon_dir: /opt/axon
+    backup_dir: /var/backups/axon
+    lan_cidr: 192.168.1.0/24
+    offsite_host: srv-services
+
+  handlers:
+    - name: Reload ssh
+      ansible.builtin.shell: /usr/sbin/sshd -t && systemctl reload ssh
+      changed_when: true
+
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+  tasks:
+    - name: Install base packages
+      ansible.builtin.apt:
+        name: [age, ca-certificates, curl, rsync, ufw, unattended-upgrades]
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Enable automatic security updates
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: "0644"
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+
+    # Sorted before cloud-init's 50-/60- drop-ins, so these values win.
+    - name: Allow key-only SSH login
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/10-axon-hardening.conf
+        mode: "0644"
+        content: |
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          PermitRootLogin prohibit-password
+      notify: Reload ssh
+
+    - name: Add Docker apt key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+
+    - name: Add Docker apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        filename: docker
+
+    - name: Install Docker Engine and Compose
+      ansible.builtin.apt:
+        name: [docker-ce, docker-ce-cli, containerd.io, docker-compose-plugin]
+        state: present
+
+    - name: Let the owner run Docker
+      ansible.builtin.user:
+        name: "{{ axon_owner }}"
+        groups: docker
+        append: true
+
+    - name: Create Axon directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ axon_owner }}"
+        group: "{{ axon_owner }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ axon_dir }}", mode: "0750" }
+        - { path: "{{ backup_dir }}", mode: "0700" }
+        - { path: /etc/axon, mode: "0750" }
+
+    # Docker-published ports bypass ufw; Axon publishes only on 127.0.0.1.
+    - name: Allow inbound traffic from the tailnet
+      community.general.ufw:
+        rule: allow
+        interface: tailscale0
+        direction: in
+
+    - name: Allow inbound traffic from the home LAN
+      community.general.ufw:
+        rule: allow
+        from_ip: "{{ lan_cidr }}"
+
+    - name: Deny other inbound traffic and enable the firewall
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+    - name: Read Tailscale Serve configuration
+      ansible.builtin.command: tailscale serve status --json
+      register: serve_status
+      changed_when: false
+      check_mode: false
+
+    - name: Serve Axon over HTTPS on the tailnet
+      ansible.builtin.command: tailscale serve --bg --https=443 http://127.0.0.1:3000
+      when: "'127.0.0.1:3000' not in serve_status.stdout"
+
+    - name: Install backup recipients (public keys only)
+      ansible.builtin.copy:
+        src: ../env/recipients.txt
+        dest: /etc/axon/backup-recipients.txt
+        mode: "0644"
+
+    - name: Create the off-site backup key
+      community.crypto.openssh_keypair:
+        path: /etc/axon/backup_ed25519
+        type: ed25519
+        owner: "{{ axon_owner }}"
+        mode: "0600"
+        comment: "axon-backup@{{ inventory_hostname }}"
+      register: backup_key
+
+    - name: Install the backup script
+      ansible.builtin.template:
+        src: files/axon-backup.sh.j2
+        dest: /usr/local/bin/axon-backup
+        mode: "0755"
+
+    - name: Install the backup service and timer
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ item.name }}"
+        mode: "0644"
+        content: "{{ item.content }}"
+      loop:
+        - name: axon-backup.service
+          content: |
+            [Unit]
+            Description=Axon database backup
+            After=docker.service
+
+            [Service]
+            Type=oneshot
+            User={{ axon_owner }}
+            ExecStart=/usr/local/bin/axon-backup
+        - name: axon-backup.timer
+          content: |
+            [Unit]
+            Description=Nightly Axon database backup
+
+            [Timer]
+            OnCalendar=*-*-* 03:15:00
+            RandomizedDelaySec=15m
+            Persistent=true
+
+            [Install]
+            WantedBy=timers.target
+      notify: Reload systemd
+
+    - name: Enable the backup timer
+      ansible.builtin.systemd_service:
+        name: axon-backup.timer
+        enabled: true
+        state: started
+        daemon_reload: true
+
+# The off-site host accepts the backup key only for write-only rsync into one directory.
+- name: Off-site backup target
+  hosts: axon
+  become: true
+  gather_facts: false
+  vars:
+    offsite_dir: "/srv/backups/axon-{{ axon_env }}"
+  tasks:
+    - name: Create the off-site backup directory
+      ansible.builtin.file:
+        path: "{{ offsite_dir }}"
+        state: directory
+        owner: thoutmose
+        group: thoutmose
+        mode: "0700"
+      delegate_to: srv-services
+
+    # The prod/staging key only exists after the first play has run for real.
+    - name: Read the backup public key
+      ansible.builtin.slurp:
+        src: /etc/axon/backup_ed25519.pub
+      register: backup_pub
+      when: not ansible_check_mode
+
+    - name: Authorize the backup key for write-only rsync
+      ansible.posix.authorized_key:
+        user: thoutmose
+        key: "{{ backup_pub.content | b64decode | trim }}"
+        key_options: 'restrict,command="/usr/bin/rrsync -wo {{ offsite_dir }}"'
+      delegate_to: srv-services
+      when: not ansible_check_mode
+
+    # Hosts can only write, never delete, so retention runs on the off-site host.
+    - name: Expire old off-site backups
+      ansible.builtin.cron:
+        name: "expire axon-{{ axon_env }} backups"
+        user: thoutmose
+        hour: "5"
+        minute: "0"
+        job: "find {{ offsite_dir }} -name 'axon-*.dump.age' -mtime +30 -delete"
+      delegate_to: srv-services
