@@ -2,8 +2,15 @@
 	admin off
 }
 
-# Local development: plain HTTP on port 3000. TLS is configured in EP-01.
+# Plain HTTP on 127.0.0.1:3000. On servers, Tailscale Serve terminates HTTPS in front of it (ADR 0004).
 :3000 {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
 	handle_path /api/* {
 		reverse_proxy api:8080
 	}
