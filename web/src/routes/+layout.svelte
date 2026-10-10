@@ -26,6 +26,7 @@
 		<a href="/" class="brand">Axon</a>
 		<nav aria-label="Main">
 			<a href="/">Home</a>
+			<a href="/tasks">Tasks</a>
 			<a href="/account">Account</a>
 			<button class="theme" onclick={cycleTheme} aria-label="Theme: {theme}. Change theme">
 				{theme === 'dark' ? '☾' : theme === 'light' ? '☀' : '◐'}

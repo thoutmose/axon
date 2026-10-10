@@ -11,6 +11,10 @@
 	let me = $state<Schemas['Me'] | null>(null);
 	let etag = '';
 	let name = $state('');
+	let timezone = $state('UTC');
+	const zones =
+		typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : ['UTC'];
+	const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	let error = $state('');
 	let busy = $state(false);
 
@@ -21,21 +25,17 @@
 			me = res.data;
 			etag = res.etag;
 			name = me.display_name;
+			timezone = me.timezone;
 		} catch (err) {
 			error = message(err);
 		}
 	}
 
-	async function rename(e: SubmitEvent) {
-		e.preventDefault();
+	async function save(body: Record<string, string>, done: string) {
 		busy = true;
 		try {
-			await api('/v1/me', {
-				method: 'PATCH',
-				body: { display_name: name },
-				headers: { 'If-Match': etag }
-			});
-			toast('Name updated.');
+			await api('/v1/me', { method: 'PATCH', body, headers: { 'If-Match': etag } });
+			toast(done);
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -43,6 +43,12 @@
 			busy = false;
 		}
 	}
+
+	const rename = (e: SubmitEvent) => {
+		e.preventDefault();
+		return save({ display_name: name }, 'Name updated.');
+	};
+	const setZone = (zone: string) => save({ timezone: zone }, `Time zone set to ${zone}.`);
 
 	async function signOut() {
 		busy = true;
@@ -76,6 +82,28 @@
 			>
 		</form>
 	</Section>
+	<Section
+		id="zone"
+		title="Time zone"
+		description="Decides what “today” means for your tasks and check-ins."
+	>
+		<div class="zone">
+			<label for="timezone" class="visually-hidden">Time zone</label>
+			<select
+				id="timezone"
+				bind:value={timezone}
+				onchange={() => setZone(timezone)}
+				disabled={busy}
+			>
+				{#each zones as z (z)}<option value={z}>{z}</option>{/each}
+			</select>
+			{#if deviceZone && deviceZone !== me.timezone}
+				<Button variant="ghost" onclick={() => setZone(deviceZone)} {busy}
+					>Use this device's zone ({deviceZone})</Button
+				>
+			{/if}
+		</div>
+	</Section>
 	<Section id="summary" title="At a glance">
 		<ul class="facts">
 			<li><strong>{me.passkeys}</strong> passkey{me.passkeys === 1 ? '' : 's'}</li>
@@ -92,6 +120,22 @@
 {/if}
 
 <style>
+	.zone {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		align-items: center;
+	}
+	.zone select {
+		font: inherit;
+		min-height: 2.75rem;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		max-width: 100%;
+	}
 	.facts {
 		list-style: none;
 		padding: 0;

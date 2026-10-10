@@ -32,6 +32,8 @@ tags:
     description: Consent, export, and erasure. Browser sessions only.
   - name: graph
     description: Entities shared by every domain type, the links between them, their timelines, and search.
+  - name: tasks
+    description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
 
 paths:
   /healthz:
@@ -212,7 +214,7 @@ paths:
     patch:
       tags: [account]
       operationId: updateMe
-      summary: Rename the account
+      summary: Change the account's name and/or time zone
       security: [{ session: [] }]
       parameters:
         - $ref: "#/components/parameters/IfMatch"
@@ -222,10 +224,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [display_name]
+              minProperties: 1
               additionalProperties: false
               properties:
                 display_name: { $ref: "#/components/schemas/Name" }
+                timezone: { type: string, description: "IANA time zone, e.g. Europe/Paris; decides what “today” is." }
       responses:
         "204":
           description: Renamed.
@@ -616,7 +619,7 @@ paths:
       parameters:
         - name: direction
           in: query
-          schema: { enum: [outgoing, incoming], default: outgoing }
+          schema: { type: string, enum: [outgoing, incoming], default: outgoing }
         - $ref: "#/components/parameters/After"
         - $ref: "#/components/parameters/Limit"
       responses:
@@ -738,6 +741,190 @@ paths:
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /v1/tasks:
+    get:
+      tags: [tasks]
+      operationId: listTasks
+      summary: A view of the task list
+      parameters:
+        - name: view
+          in: query
+          description: today and week/month include overdue and upcoming dated work in the user's time zone; done is newest first.
+          schema: { type: string, enum: [all, inbox, next, waiting, someday, today, week, month, done], default: all }
+        - name: context
+          in: query
+          schema: { type: string, example: "@home" }
+        - name: after
+          in: query
+          description: next_cursor from the previous page.
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: A page of tasks.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Task" } }
+                  today: { type: string, format: date }
+                  next_cursor: { type: [string, "null"] }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [tasks]
+      operationId: createTask
+      summary: Capture or create a task (status inbox unless given)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/TaskFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/tasks/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [tasks]
+      operationId: getTask
+      summary: One task
+      responses:
+        "200":
+          description: The task.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [tasks]
+      operationId: updateTask
+      summary: Change a task; completing a recurring task creates its next occurrence once
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskFields" }
+      responses:
+        "200":
+          description: The updated task.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [tasks]
+      operationId: deleteTask
+      summary: Delete a task and its links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/contexts:
+    get:
+      tags: [tasks]
+      operationId: listContexts
+      summary: GTD contexts in use, with open task counts
+      responses:
+        "200":
+          description: Contexts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [context, open]
+                      properties:
+                        context: { type: string }
+                        open: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/checkins:
+    get:
+      tags: [tasks]
+      operationId: listCheckins
+      summary: Check-ins in a date range (default the last 30 days)
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Check-ins, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Checkin" } }
+                  today: { type: string, format: date }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/checkins/{kind}/{day}:
+    put:
+      tags: [tasks]
+      operationId: checkIn
+      summary: Record (or update) a daily, weekly, or monthly check-in
+      description: Weekly check-ins are stored on the Monday of the week, monthly ones on the first of the month.
+      parameters:
+        - { name: kind, in: path, required: true, schema: { type: string, enum: [daily, weekly, monthly] } }
+        - { name: day, in: path, required: true, schema: { type: string, format: date } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                note: { type: string, maxLength: 2000 }
+      responses:
+        "200":
+          description: The check-in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Checkin" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -853,10 +1040,11 @@ components:
       items: { type: string, pattern: "^[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}$" }
     Me:
       type: object
-      required: [id, display_name, created_at, totp_enabled, passkeys, recovery_codes_remaining]
+      required: [id, display_name, timezone, created_at, totp_enabled, passkeys, recovery_codes_remaining]
       properties:
         id: { type: string, format: uuid }
         display_name: { type: string }
+        timezone: { type: string }
         created_at: { type: string, format: date-time }
         totp_enabled: { type: boolean }
         passkeys: { type: integer }
@@ -940,6 +1128,44 @@ components:
         entity_id: { type: string, format: uuid }
         kind: { enum: [created, updated, deleted, linked, unlinked] }
         fields: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+    Task:
+      type: object
+      required: [id, title, notes, status, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        notes: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        context: { type: [string, "null"] }
+        scheduled_on: { type: [string, "null"], format: date }
+        due_on: { type: [string, "null"], format: date }
+        recurrence: { type: [string, "null"], description: "RFC 5545 RRULE, e.g. FREQ=WEEKLY;BYDAY=MO" }
+        series_id: { type: [string, "null"], format: uuid }
+        occurrence_on: { type: [string, "null"], format: date }
+        completed_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    TaskStatus:
+      enum: [inbox, next, waiting, someday, done, cancelled]
+    TaskFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        notes: { type: string, maxLength: 20000 }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        context: { type: [string, "null"], example: "@home" }
+        scheduled_on: { type: [string, "null"], format: date }
+        due_on: { type: [string, "null"], format: date }
+        recurrence: { type: [string, "null"], example: "FREQ=WEEKLY;BYDAY=MO,TH" }
+    Checkin:
+      type: object
+      required: [kind, day, note, created_at]
+      properties:
+        kind: { enum: [daily, weekly, monthly] }
+        day: { type: string, format: date }
+        note: { type: string }
         created_at: { type: string, format: date-time }
     SearchHit:
       allOf:

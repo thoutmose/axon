@@ -80,7 +80,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Done |
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Done |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
-| EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Planned |
+| EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Planned |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Planned |
@@ -411,15 +411,23 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Out of scope.** Task Manager agent (EP-19), Kanban and projects (EP-10), calendar (EP-08).
 
-**Acceptance criteria**
+**Issues**
 
-- A task can be captured from anywhere in the app with one keyboard shortcut and one submit.
-- Recurrence is correct across time zones and daylight-saving changes (property tests).
-- Completing a recurring task creates the next occurrence exactly once, even on retry.
-- Views stay fast and paginated with 10,000 tasks.
-- Tasks appear in export and are removed by erasure.
-
-**Candidate issues.** Task model and API (8) · Capture and inbox (5) · Today/week/month views (8) · Contexts and next actions (3) · Recurrence engine (8) · Check-ins (2).
+- [x] **EP-09/IS-09.01 — Task model and API** · 8 pts · MUST
+  - [x] Tasks are graph entities with GTD status, notes, context, scheduled and due dates; create, read, update (If-Match), delete.
+  - [x] Tasks appear in export and are removed by erasure.
+- [x] **EP-09/IS-09.02 — Capture and inbox** · 5 pts · MUST
+  - [x] Press `n` on any signed-in page, type, Enter: the task lands in the inbox (e2e test).
+- [x] **EP-09/IS-09.03 — Today, week, and month views** · 8 pts · MUST
+  - [x] “Today” follows the account's time zone; views include overdue and upcoming dated work.
+  - [x] Views stay under 300 ms and paginated (keyset cursors) with 10,000 tasks.
+- [x] **EP-09/IS-09.04 — Contexts and next actions** · 3 pts · MUST
+  - [x] `@contexts` with open counts and a filter; next/waiting/someday lists.
+- [x] **EP-09/IS-09.05 — Recurrence engine** · 8 pts · MUST
+  - [x] Date-based RFC 5545 RRULEs (daily, weekdays, weekly on days, monthly incl. last day, yearly); DST cannot shift dates (property tests over 15 years).
+  - [x] Completing a recurring task creates the next occurrence exactly once, even with retries, double clicks, or reopen-and-complete.
+- [x] **EP-09/IS-09.06 — Check-ins** · 2 pts · MUST
+  - [x] Daily, weekly, and monthly check-ins with an optional note.
 
 ### EP-11 — Notes, Zettelkasten, PARA & Markdown sync
 

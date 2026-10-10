@@ -113,6 +113,29 @@ test('offline state is announced', async () => {
 	await expect(page.getByRole('alert').filter({ hasText: 'You are offline' })).toHaveCount(0);
 });
 
+test('capture with the n shortcut, plan, and complete tasks', async () => {
+	await page.goto('/account');
+	await page.keyboard.press('n');
+	await page.getByLabel("What's on your mind?").fill('Buy stamps');
+	await page.keyboard.press('Enter');
+	await expect(page.getByText('Captured to your inbox.')).toBeVisible();
+
+	await page.goto('/tasks?view=inbox');
+	await expect(page.getByRole('button', { name: 'Buy stamps' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/tasks?view=today');
+	await page.getByLabel('Add a task').fill('Stretch for ten minutes');
+	await page.keyboard.press('Enter');
+	const row = page.getByRole('listitem').filter({ hasText: 'Stretch for ten minutes' });
+	await expect(row).toContainText('Today');
+	await row.getByRole('checkbox').check();
+	await expect(page.getByText('Done.')).toBeVisible();
+	await page.goto('/tasks?view=done');
+	await expect(page.getByRole('button', { name: 'Stretch for ten minutes' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
