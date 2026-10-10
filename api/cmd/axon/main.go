@@ -13,6 +13,9 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -67,24 +70,23 @@ func serve() error {
 	}
 	defer pool.Close()
 
-	addr := os.Getenv("AXON_ADDR")
-	if addr == "" {
-		addr = ":8080"
-	}
-	srv := &http.Server{
-		Addr:              addr,
-		Handler:           server.New(version, pool, log),
-		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
-		IdleTimeout:       60 * time.Second,
-	}
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	registerPoolStats(reg, pool)
+	metrics := server.NewMetrics(reg, version, pool)
 
-	errc := make(chan error, 1)
-	go func() {
-		log.Info("listening", "addr", addr, "version", version)
-		errc <- srv.ListenAndServe()
-	}()
+	// The API and the metrics endpoint listen separately, so /metrics is never
+	// reachable through Caddy and the public routes.
+	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), server.New(version, pool, log, metrics))
+	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+
+	errc := make(chan error, 2)
+	for _, srv := range []*http.Server{api, metricsSrv} {
+		go func() {
+			log.Info("listening", "addr", srv.Addr, "version", version)
+			errc <- srv.ListenAndServe()
+		}()
+	}
 
 	select {
 	case err := <-errc:
@@ -94,7 +96,38 @@ func serve() error {
 	log.Info("shutting down")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	return srv.Shutdown(shutdownCtx)
+	_ = metricsSrv.Shutdown(shutdownCtx)
+	return api.Shutdown(shutdownCtx)
+}
+
+func newHTTPServer(addr string, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+}
+
+func registerPoolStats(reg prometheus.Registerer, pool *pgxpool.Pool) {
+	gauge := func(name, help string, value func(*pgxpool.Stat) int32) prometheus.Collector {
+		return prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: name, Help: help},
+			func() float64 { return float64(value(pool.Stat())) })
+	}
+	reg.MustRegister(
+		gauge("axon_db_pool_connections", "Open connections in the pool.", (*pgxpool.Stat).TotalConns),
+		gauge("axon_db_pool_connections_in_use", "Connections currently acquired.", (*pgxpool.Stat).AcquiredConns),
+		gauge("axon_db_pool_connections_max", "Maximum pool size.", (*pgxpool.Stat).MaxConns),
+	)
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 func migrate(direction string) error {

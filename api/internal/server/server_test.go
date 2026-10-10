@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type fakeDB struct{ err error }
@@ -28,9 +30,13 @@ func get(t *testing.T, h http.Handler, path string) (int, map[string]string) {
 
 var quiet = slog.New(slog.NewTextHandler(io.Discard, nil))
 
+func newTestServer(version string, db Pinger) http.Handler {
+	return New(version, db, quiet, NewMetrics(prometheus.NewRegistry(), version, db))
+}
+
 func TestHealthzReportsVersion(t *testing.T) {
 	// Liveness must not depend on the database.
-	h := New("1.2.3", fakeDB{err: errors.New("down")}, quiet)
+	h := newTestServer("1.2.3", fakeDB{err: errors.New("down")})
 	code, body := get(t, h, "/healthz")
 	if code != http.StatusOK || body["status"] != "ok" || body["version"] != "1.2.3" {
 		t.Fatalf("got %d %v", code, body)
@@ -49,7 +55,7 @@ func TestReadyz(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			code, body := get(t, New("dev", fakeDB{err: tt.dbErr}, quiet), "/readyz")
+			code, body := get(t, newTestServer("dev", fakeDB{err: tt.dbErr}), "/readyz")
 			if code != tt.code || body["status"] != tt.status {
 				t.Fatalf("got %d %v, want %d %s", code, body, tt.code, tt.status)
 			}
@@ -62,7 +68,7 @@ func TestReadyz(t *testing.T) {
 
 func TestUnknownRouteIs404(t *testing.T) {
 	rec := httptest.NewRecorder()
-	New("dev", fakeDB{}, quiet).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/nope", nil))
+	newTestServer("dev", fakeDB{}).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/nope", nil))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("got %d", rec.Code)
 	}

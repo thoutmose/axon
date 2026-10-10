@@ -85,3 +85,24 @@ rm latest.dump latest.dump.age
 ```
 
 To rehearse without touching a server, restore into a throwaway `pgvector/pgvector:pg16` container and check `goose_db_version` and the `vector` extension.
+
+## Service level objectives
+
+Measured only while the host is powered on (`srv-staging` and `srv-prod` are on-demand VMs in the fleet).
+
+| Objective | Target | Measured by |
+|---|---|---|
+| Availability | 99% of minutes per 30 days with the API up and its database reachable | `up{job="axon"}`, `axon_db_up` |
+| Errors | Fewer than 1% of requests return 5xx per 30 days | `axon_http_requests_total` |
+| Latency | 95% of requests (excluding health checks) under 500 ms | `axon_http_request_duration_seconds` |
+| Backups | A successful backup at least every 26 hours | `axon_backup_last_success_timestamp_seconds` |
+
+Alerts and what to do about them: [runbooks.md](runbooks.md).
+
+## Monitoring
+
+Monitoring is the fleet stack on `srv-monitoring` (Prometheus, Grafana, Loki, Alertmanager → ntfy), configured in [`terraform-proxmox`](https://github.com/thoutmose/terraform-proxmox). Axon contributes:
+
+- API metrics on port 9464 of each host (`/metrics`, separate from the public routes).
+- Backup freshness through the host's node_exporter textfile collector (`axon_backup.prom`).
+- JSON request logs (method, route pattern, status, duration, request ID; never paths, queries, headers, or bodies), shipped to Loki by the fleet's Promtail.

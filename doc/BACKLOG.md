@@ -74,7 +74,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | Done |
 | EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | Done |
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Done |
-| EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | Planned |
+| EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | In progress (fleet apply pending) |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Planned |
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Planned |
@@ -255,21 +255,21 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-03/IS-03.01 — Structured logs** · 3 pts · MUST
-  - [ ] API and worker log JSON with a request ID; no request bodies, tokens, or personal data (redaction test).
-- [ ] **EP-03/IS-03.02 — Metrics** · 5 pts · MUST
-  - [ ] Request rate, errors, and duration per route; database pool; job queue depth; host metrics.
-- [ ] **EP-03/IS-03.03 — Traces** · 5 pts · SHOULD
+- [x] **EP-03/IS-03.01 — Structured logs** · 3 pts · MUST
+  - [x] API and worker log JSON with a request ID; no request bodies, tokens, or personal data (redaction test).
+- [x] **EP-03/IS-03.02 — Metrics** · 5 pts · MUST
+  - [x] Request rate, errors, and duration per route; database pool; host metrics (fleet node_exporter/cAdvisor). Job queue depth arrives with the first queue.
+- [ ] **EP-03/IS-03.03 — Traces** · 5 pts · WON’T this release — the fleet has no trace backend; revisit with EP-19 (agent runs)
   - [ ] OpenTelemetry traces cover web → API → database with configured sampling.
 - [ ] **EP-03/IS-03.04 — Observability stack** · 8 pts · MUST
-  - [ ] The fleet Prometheus on `srv-monitoring` scrapes Axon’s metrics (change proposed in `terraform-proxmox`).
-  - [ ] Axon dashboards are provisioned in the fleet Grafana.
+  - [ ] The fleet Prometheus on `srv-monitoring` scrapes Axon’s metrics ([terraform-proxmox#1](https://github.com/thoutmose/terraform-proxmox/pull/1), awaiting apply).
+  - [ ] Axon dashboards are provisioned in the fleet Grafana (same PR).
 - [ ] **EP-03/IS-03.05 — SLOs and alerts** · 5 pts · MUST
-  - [ ] API availability and latency SLOs are written down.
-  - [ ] Alerts fire for service down, error-rate burn, disk above 80 %, and failed or stale backups.
+  - [x] API availability and latency SLOs are written down ([operations](operations.md#service-level-objectives)).
+  - [x] Alerts are defined for service down, database unreachable, error rate, latency, and stale backups; disk is covered by the fleet’s HostOutOfDiskSpace (same PR).
   - [ ] Alerts reach a channel the operator actually reads (e.g. ntfy or email); a test alert is delivered.
-- [ ] **EP-03/IS-03.06 — Runbooks** · 3 pts · MUST
-  - [ ] Every alert links to a runbook with diagnosis and recovery steps.
+- [x] **EP-03/IS-03.06 — Runbooks** · 3 pts · MUST
+  - [x] Every alert links to a runbook with diagnosis and recovery steps ([runbooks](runbooks.md)).
 
 **Exit evidence.** Dashboard screenshots, test-alert delivery, runbook index.
 
