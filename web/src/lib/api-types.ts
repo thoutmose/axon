@@ -709,6 +709,100 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Notes ordered by path (without content) */
+		get: operations['listNotes'];
+		put?: never;
+		/** Create a note (in 0-Inbox, named after its title, unless a path is given) */
+		post: operations['createNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One note with its Markdown */
+		get: operations['getNote'];
+		/** Replace a note's Markdown or move it; a rename rewrites [[wikilinks]] to it in other notes */
+		put: operations['updateNote'];
+		post?: never;
+		/** Delete a note and its links (a sync client then deletes the file) */
+		delete: operations['deleteNote'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Import a ZIP of Markdown files (up to 50 MB); existing notes are never overwritten
+		 * @description A leading notes/ folder is stripped, so an export archive imports as is. A file whose path holds different content is reported as a conflict and left untouched.
+		 */
+		post: operations['importNotes'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/sync': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Notes changed and deleted since a cursor, oldest first (for sync clients) */
+		get: operations['noteChanges'];
+		put?: never;
+		/** Write a file from the vault, only if Axon still holds the version the client last synced */
+		post: operations['pushNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/sync/delete': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Delete a note removed from the vault, only if Axon still holds the version the client last synced */
+		post: operations['pushNoteDeletion'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -873,6 +967,36 @@ export interface components {
 		SearchHit: components['schemas']['Entity'] & {
 			rank: number;
 		};
+		Note: {
+			/** Format: uuid */
+			id: string;
+			/** @example Zettel/permanent/proofs.md */
+			path: string;
+			/** @description Front-matter title, else the first heading, else the file name. */
+			title: string;
+			/** @description Front-matter type (fleeting, literature, permanent…), or "note". */
+			kind: string;
+			para: components['schemas']['NotePara'];
+			/** @description SHA-256 of the content, hex. */
+			hash: string;
+			/** @description The Markdown exactly as written; omitted from lists. */
+			content?: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		/**
+		 * @description PARA category, from the top folder (0-Inbox, 1-Projects…); notes at the root are inbox.
+		 * @enum {string}
+		 */
+		NotePara: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+		/**
+		 * @description Relative, ending in .md, with no ".." or hidden folders.
+		 * @example Zettel/idea.md
+		 */
+		NotePath: string;
+		NoteContent: string;
 	};
 	responses: {
 		/** @description RFC 9457 problem document. */
@@ -892,6 +1016,18 @@ export interface components {
 			content: {
 				'application/json': {
 					publicKey: Record<string, never>;
+				};
+			};
+		};
+		/** @description The note changed in Axon since the client last synced; keep both versions. */
+		SyncConflict: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/problem+json': components['schemas']['Problem'] & {
+					/** @description Axon's version, or null when the note was deleted in Axon. */
+					current: components['schemas']['Note'] | null;
 				};
 			};
 		};
@@ -2118,6 +2254,301 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listNotes: {
+		parameters: {
+			query?: {
+				para?: components['schemas']['NotePara'];
+				/** @description next_cursor from the previous page (the last path). */
+				after?: string;
+				limit?: components['parameters']['Limit'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A page of notes. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Note'][];
+						next_cursor: string | null;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path?: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The note. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateNote: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+				};
+			};
+		};
+		responses: {
+			/** @description The updated note. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	deleteNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	importNotes: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/zip': string;
+			};
+		};
+		responses: {
+			/** @description What happened to each file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: string[];
+						unchanged: string[];
+						conflicts: string[];
+						skipped: string[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+		};
+	};
+	noteChanges: {
+		parameters: {
+			query?: {
+				/** @description cursor from the previous response; omit for everything. */
+				cursor?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 changed notes with content, and deletions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						notes: components['schemas']['Note'][];
+						tombstones: {
+							path: string;
+							/** Format: date-time */
+							deleted_at: string;
+						}[];
+						cursor: string;
+						/** @description True when another page is waiting. */
+						more: boolean;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	pushNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+					/** @description Hash both sides last agreed on; empty for a file Axon has never had. */
+					base_hash: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Stored (or already identical); content omitted. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['SyncConflict'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	pushNoteDeletion: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: string;
+					base_hash: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Deleted, or already gone. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['SyncConflict'];
 		};
 	};
 }

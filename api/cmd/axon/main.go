@@ -187,7 +187,7 @@ func notesSync(args []string) error {
 		*statePath = filepath.Join(filepath.Dir(abs), ".axon-sync-"+filepath.Base(abs)+".json")
 	}
 	git := func(args ...string) error {
-		cmd := exec.Command("git", append([]string{"-C", *dir}, args...)...)
+		cmd := exec.Command("git", append([]string{"-C", *dir}, args...)...) //nolint:gosec // fixed git subcommands; dir is the operator's flag
 		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr
 		return cmd.Run()
 	}

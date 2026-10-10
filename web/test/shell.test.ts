@@ -83,7 +83,9 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/account',
 		'/account/security',
 		'/account/tokens',
-		'/account/privacy'
+		'/account/privacy',
+		'/tasks',
+		'/notes'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -115,6 +117,7 @@ test('offline state is announced', async () => {
 
 test('capture with the n shortcut, plan, and complete tasks', async () => {
 	await page.goto('/account');
+	await expect(page.getByRole('heading', { level: 1 })).toBeVisible(); // shortcut is live
 	await page.keyboard.press('n');
 	await page.getByLabel("What's on your mind?").fill('Buy stamps');
 	await page.keyboard.press('Enter');
@@ -133,6 +136,33 @@ test('capture with the n shortcut, plan, and complete tasks', async () => {
 	await expect(page.getByText('Done.')).toBeVisible();
 	await page.goto('/tasks?view=done');
 	await expect(page.getByRole('button', { name: 'Stretch for ten minutes' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('write notes, link them with wikilinks, and follow backlinks', async () => {
+	await page.goto('/notes');
+	await expect(page.getByText('No notes yet.')).toBeVisible();
+	await page.getByLabel('New note title').fill('Spaced repetition');
+	await page.keyboard.press('Enter');
+	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
+	await page
+		.getByLabel('Markdown')
+		.fill('# Spaced repetition\n\nReview just before forgetting. See [[Forgetting curve]].');
+	await page.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Saved.')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('button', { name: 'Create note' }).click();
+	await expect(page.getByRole('link', { name: 'Forgetting curve' }).first()).toBeVisible();
+	await page.getByRole('article').getByRole('link', { name: 'Forgetting curve' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Forgetting curve' })).toBeVisible();
+	const backlinks = page.getByRole('region', { name: 'Backlinks' });
+	await expect(backlinks.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/notes?para=inbox');
+	await expect(page.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Forgetting curve' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 )
 
@@ -32,22 +33,26 @@ func writeVault(t *testing.T, files map[string]string) string {
 	dir := t.TempDir()
 	for p, c := range files {
 		full := filepath.Join(dir, filepath.FromSlash(p))
-		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(full), 0o750); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(full, []byte(c), 0o644); err != nil {
+		if err := os.WriteFile(full, []byte(c), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
 	// Ignored by sync: hidden folders and Obsidian state.
-	_ = os.MkdirAll(filepath.Join(dir, ".obsidian"), 0o755)
-	_ = os.WriteFile(filepath.Join(dir, ".obsidian", "workspace.md"), []byte("ignored"), 0o644)
+	_ = os.MkdirAll(filepath.Join(dir, ".obsidian"), 0o750)
+	_ = os.WriteFile(filepath.Join(dir, ".obsidian", "workspace.md"), []byte("ignored"), 0o600)
+	// A symlink out of the vault is never followed.
+	secret := filepath.Join(t.TempDir(), "secret.md")
+	_ = os.WriteFile(secret, []byte("outside"), 0o600)
+	_ = os.Symlink(secret, filepath.Join(dir, "0-Inbox", "link.md"))
 	return dir
 }
 
 func readFile(t *testing.T, dir, p string) (string, bool) {
 	t.Helper()
-	b, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p)))
+	b, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(p))) //nolint:gosec // test temp dir
 	return string(b), err == nil
 }
 
@@ -187,8 +192,9 @@ func TestExportThenImportIsByteIdentical(t *testing.T) {
 		Created   []string `json:"created"`
 		Conflicts []string `json:"conflicts"`
 	}
-	_ = json.Unmarshal(bob.mustDo(200, "POST", "/v1/notes/import", buf.Bytes()), &res)
-	if len(res.Created) != len(vault) {
+	code, out := bob.do("POST", "/v1/notes/import", buf.Bytes(), "Content-Type", "application/zip")
+	_ = json.Unmarshal(out, &res)
+	if code != 200 || len(res.Created) != len(vault) {
 		t.Fatalf("import = %+v", res)
 	}
 	for p, n := range bob.notes() {
@@ -197,7 +203,9 @@ func TestExportThenImportIsByteIdentical(t *testing.T) {
 		}
 	}
 	// Importing again changes nothing and overwrites nothing.
-	_ = json.Unmarshal(bob.mustDo(200, "POST", "/v1/notes/import", buf.Bytes()), &res)
+	res.Created = nil
+	_, out = bob.do("POST", "/v1/notes/import", buf.Bytes(), "Content-Type", "application/zip")
+	_ = json.Unmarshal(out, &res)
 	if len(res.Created) != 0 || len(res.Conflicts) != 0 {
 		t.Fatalf("second import = %+v", res)
 	}
@@ -249,7 +257,7 @@ func TestTwoWaySyncNeverLosesAnEdit(t *testing.T) {
 	}
 	write := func(p, content string) {
 		t.Helper()
-		if err := os.WriteFile(filepath.Join(dir, filepath.FromSlash(p)), []byte(content), 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, filepath.FromSlash(p)), []byte(content), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -333,4 +341,10 @@ func TestNoteEndpoints(t *testing.T) {
 	alice.mustDo(204, "DELETE", "/v1/notes/"+n.ID, nil)
 	alice.mustDo(404, "GET", "/v1/notes/"+n.ID, nil)
 	alice.mustDo(204, "POST", "/v1/notes/sync/delete", []byte(`{"path":"0-Inbox/gone.md","base_hash":"x"}`))
+
+	// Sync writes only land on the version the client last saw.
+	alice.mustDo(200, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"one","base_hash":""}`))
+	alice.mustDo(409, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"two","base_hash":"not-the-current-hash"}`))
+	alice.mustDo(200, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"two","base_hash":"`+notes.Hash("one")+`"}`))
+	alice.mustDo(409, "POST", "/v1/notes/sync/delete", []byte(`{"path":"Zettel/a.md","base_hash":"`+notes.Hash("one")+`"}`))
 }

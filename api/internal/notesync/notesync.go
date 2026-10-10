@@ -69,7 +69,14 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 	if err != nil {
 		return rep, err
 	}
-	local, err := scan(cfg.Dir)
+	// Every file operation goes through the root, so no path (or symlink)
+	// from Axon can reach outside the vault.
+	vault, err := os.OpenRoot(cfg.Dir)
+	if err != nil {
+		return rep, err
+	}
+	defer func() { _ = vault.Close() }()
+	local, err := scan(vault)
 	if err != nil {
 		return rep, err
 	}
@@ -86,21 +93,21 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 		case !cfg.TwoWay:
 			// Import mode never writes files; the push below reports a conflict if needed.
 		case !onDisk && agreed == "" || onDisk && l.hash == agreed:
-			if err := writeFile(cfg.Dir, p, *n.Content); err != nil {
+			if err := writeFile(vault, p, *n.Content); err != nil {
 				return rep, err
 			}
 			local[p] = file{hash: n.Hash, content: *n.Content}
 			st.Hashes[p] = n.Hash
 			rep.Pulled++
 		case !onDisk: // deleted here, edited in Axon: keep Axon's edit
-			if err := writeFile(cfg.Dir, p, *n.Content); err != nil {
+			if err := writeFile(vault, p, *n.Content); err != nil {
 				return rep, err
 			}
 			local[p] = file{hash: n.Hash, content: *n.Content}
 			st.Hashes[p] = n.Hash
 			rep.Pulled++
 		default:
-			if err := keepBoth(cfg.Dir, p, *n.Content, &rep); err != nil {
+			if err := keepBoth(vault, p, *n.Content, &rep); err != nil {
 				return rep, err
 			}
 			st.Hashes[p] = n.Hash
@@ -116,7 +123,7 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 			switch {
 			case !known:
 			case onDisk && l.hash == agreed:
-				if err := os.Remove(filepath.Join(cfg.Dir, filepath.FromSlash(p))); err != nil && !errors.Is(err, fs.ErrNotExist) {
+				if err := vault.Remove(filepath.FromSlash(p)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 					return rep, err
 				}
 				delete(local, p)
@@ -136,14 +143,14 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 	slices.Sort(paths)
 	for _, p := range paths {
 		l := local[p]
-		if l.hash == st.Hashes[p] || conflictPending(cfg.Dir, p) {
+		if l.hash == st.Hashes[p] || conflictPending(vault, p) {
 			continue
 		}
 		current, err := c.push(ctx, p, l.content, st.Hashes[p])
 		switch {
 		case errors.Is(err, errConflict):
 			if cfg.TwoWay && current != nil {
-				if err := keepBoth(cfg.Dir, p, *current.Content, &rep); err != nil {
+				if err := keepBoth(vault, p, *current.Content, &rep); err != nil {
 					return rep, err
 				}
 				st.Hashes[p] = current.Hash
@@ -167,7 +174,7 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 			current, err := c.delete(ctx, p, agreed)
 			switch {
 			case errors.Is(err, errConflict) && current != nil: // edited in Axon: restore it here
-				if err := writeFile(cfg.Dir, p, *current.Content); err != nil {
+				if err := writeFile(vault, p, *current.Content); err != nil {
 					return rep, err
 				}
 				st.Hashes[p] = current.Hash
@@ -184,13 +191,13 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 }
 
 // keepBoth writes Axon's version beside the local file.
-func keepBoth(dir, p, content string, rep *Report) error {
+func keepBoth(vault *os.Root, p, content string, rep *Report) error {
 	rep.Conflicts = append(rep.Conflicts, p)
-	return writeFile(dir, strings.TrimSuffix(p, ".md")+ConflictSuffix, content)
+	return writeFile(vault, strings.TrimSuffix(p, ".md")+ConflictSuffix, content)
 }
 
-func conflictPending(dir, p string) bool {
-	_, err := os.Stat(filepath.Join(dir, filepath.FromSlash(strings.TrimSuffix(p, ".md")+ConflictSuffix)))
+func conflictPending(vault *os.Root, p string) bool {
+	_, err := vault.Stat(filepath.FromSlash(strings.TrimSuffix(p, ".md") + ConflictSuffix))
 	return err == nil
 }
 
@@ -198,33 +205,29 @@ type file struct {
 	hash, content string
 }
 
-// scan reads every Markdown file, skipping hidden folders (.git, .obsidian)
-// and conflict copies.
-func scan(dir string) (map[string]file, error) {
+// scan reads every Markdown file, skipping hidden folders (.git, .obsidian),
+// symlinks, and conflict copies.
+func scan(vault *os.Root) (map[string]file, error) {
 	out := map[string]file{}
-	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(vault.FS(), ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		name := d.Name()
 		if d.IsDir() {
-			if p != dir && strings.HasPrefix(name, ".") {
+			if p != "." && strings.HasPrefix(name, ".") {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		if !strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ConflictSuffix) || strings.HasPrefix(name, ".") {
+		if !d.Type().IsRegular() || !strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ConflictSuffix) || strings.HasPrefix(name, ".") {
 			return nil
 		}
-		rel, err := filepath.Rel(dir, p)
+		b, err := vault.ReadFile(filepath.FromSlash(p))
 		if err != nil {
 			return err
 		}
-		b, err := os.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		out[filepath.ToSlash(rel)] = file{hash: hash(b), content: string(b)}
+		out[p] = file{hash: hash(b), content: string(b)}
 		return nil
 	})
 	return out, err
@@ -235,25 +238,27 @@ func hash(b []byte) string {
 	return hex.EncodeToString(h[:])
 }
 
-func writeFile(dir, p, content string) error {
+// writeFile replaces a vault file atomically. Notes are private: files are
+// readable by their owner only.
+func writeFile(vault *os.Root, p, content string) error {
 	clean := path.Clean(p)
 	if strings.HasPrefix(clean, "../") || strings.HasPrefix(clean, "/") || clean == ".." {
 		return fmt.Errorf("refusing to write outside the vault: %q", p)
 	}
-	full := filepath.Join(dir, filepath.FromSlash(clean))
-	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+	full := filepath.FromSlash(clean)
+	if err := vault.MkdirAll(filepath.Dir(full), 0o700); err != nil {
 		return err
 	}
 	tmp := full + ".axon-tmp"
-	if err := os.WriteFile(tmp, []byte(content), 0o644); err != nil {
+	if err := vault.WriteFile(tmp, []byte(content), 0o600); err != nil {
 		return err
 	}
-	return os.Rename(tmp, full)
+	return vault.Rename(tmp, full)
 }
 
 func loadState(p string) (*state, error) {
 	st := &state{Hashes: map[string]string{}}
-	b, err := os.ReadFile(p)
+	b, err := os.ReadFile(p) //nolint:gosec // the state path is the operator's own -state flag
 	if errors.Is(err, fs.ErrNotExist) {
 		return st, nil
 	}

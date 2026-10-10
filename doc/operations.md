@@ -86,6 +86,20 @@ rm latest.dump latest.dump.age
 
 To rehearse without touching a server, restore into a throwaway `pgvector/pgvector:pg16` container and check `goose_db_version` and the `vector` extension.
 
+## Notes sync with SecondBrain
+
+`axon notes-sync` runs on the host that holds the vault (`srv-secondbrain`, `~/SecondBrain`) and talks to Axon over the tailnet with a personal access token. It only ever reads and writes inside the vault folder.
+
+1. In Axon, under Account → Access tokens, create a **write** token named after the host. Save it on the vault host as `~/.axon-token` with mode `600`.
+2. Copy the binary out of the release image (`docker create` the `axon-api` image, `docker cp <id>:/usr/local/bin/axon ./axon`) or build it with `go build ./cmd/axon`.
+3. Start with one-way import and check the report:
+   ```sh
+   axon notes-sync -dir ~/SecondBrain -url https://srv-prod.tail781d53.ts.net -token-file ~/.axon-token
+   ```
+4. Once the import looks right, schedule it (systemd timer or cron, every 15 minutes). Add `-two-way -git` to write Axon's edits back and commit/push the repository.
+
+Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
+
 ## Service level objectives
 
 Measured only while the host is powered on (`srv-staging` and `srv-prod` are on-demand VMs in the fleet).

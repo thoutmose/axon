@@ -34,6 +34,8 @@ tags:
     description: Entities shared by every domain type, the links between them, their timelines, and search.
   - name: tasks
     description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
+  - name: notes
+    description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
 paths:
   /healthz:
@@ -925,6 +927,238 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
 
+  /v1/notes:
+    get:
+      tags: [notes]
+      operationId: listNotes
+      summary: Notes ordered by path (without content)
+      parameters:
+        - name: para
+          in: query
+          schema: { $ref: "#/components/schemas/NotePara" }
+        - name: after
+          in: query
+          description: next_cursor from the previous page (the last path).
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: A page of notes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Note" } }
+                  next_cursor: { type: [string, "null"] }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [notes]
+      operationId: createNote
+      summary: Create a note (in 0-Inbox, named after its title, unless a path is given)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              additionalProperties: false
+              properties:
+                path: { $ref: "#/components/schemas/NotePath" }
+                content: { $ref: "#/components/schemas/NoteContent" }
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Note" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [notes]
+      operationId: getNote
+      summary: One note with its Markdown
+      responses:
+        "200":
+          description: The note.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Note" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [notes]
+      operationId: updateNote
+      summary: Replace a note's Markdown or move it; a rename rewrites [[wikilinks]] to it in other notes
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path, content]
+              additionalProperties: false
+              properties:
+                path: { $ref: "#/components/schemas/NotePath" }
+                content: { $ref: "#/components/schemas/NoteContent" }
+      responses:
+        "200":
+          description: The updated note.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Note" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [notes]
+      operationId: deleteNote
+      summary: Delete a note and its links (a sync client then deletes the file)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/notes/import:
+    post:
+      tags: [notes]
+      operationId: importNotes
+      summary: Import a ZIP of Markdown files (up to 50 MB); existing notes are never overwritten
+      description: A leading notes/ folder is stripped, so an export archive imports as is. A file whose path holds different content is reported as a conflict and left untouched.
+      requestBody:
+        required: true
+        content:
+          application/zip:
+            schema: { type: string, contentMediaType: application/zip }
+      responses:
+        "200":
+          description: What happened to each file.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [created, unchanged, conflicts, skipped]
+                properties:
+                  created: { type: array, items: { type: string } }
+                  unchanged: { type: array, items: { type: string } }
+                  conflicts: { type: array, items: { type: string } }
+                  skipped: { type: array, items: { type: string } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+  /v1/notes/sync:
+    get:
+      tags: [notes]
+      operationId: noteChanges
+      summary: Notes changed and deleted since a cursor, oldest first (for sync clients)
+      parameters:
+        - name: cursor
+          in: query
+          description: cursor from the previous response; omit for everything.
+          schema: { type: string }
+      responses:
+        "200":
+          description: Up to 100 changed notes with content, and deletions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [notes, tombstones, cursor, more]
+                properties:
+                  notes: { type: array, items: { $ref: "#/components/schemas/Note" } }
+                  tombstones:
+                    type: array
+                    items:
+                      type: object
+                      required: [path, deleted_at]
+                      properties:
+                        path: { type: string }
+                        deleted_at: { type: string, format: date-time }
+                  cursor: { type: string }
+                  more: { type: boolean, description: "True when another page is waiting." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [notes]
+      operationId: pushNote
+      summary: Write a file from the vault, only if Axon still holds the version the client last synced
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path, content, base_hash]
+              additionalProperties: false
+              properties:
+                path: { $ref: "#/components/schemas/NotePath" }
+                content: { $ref: "#/components/schemas/NoteContent" }
+                base_hash: { type: string, description: "Hash both sides last agreed on; empty for a file Axon has never had." }
+      responses:
+        "200":
+          description: Stored (or already identical); content omitted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Note" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/SyncConflict" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/notes/sync/delete:
+    post:
+      tags: [notes]
+      operationId: pushNoteDeletion
+      summary: Delete a note removed from the vault, only if Axon still holds the version the client last synced
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path, base_hash]
+              additionalProperties: false
+              properties:
+                path: { type: string }
+                base_hash: { type: string }
+      responses:
+        "204": { description: "Deleted, or already gone." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/SyncConflict" }
+
 components:
   securitySchemes:
     session:
@@ -1002,6 +1236,21 @@ components:
             required: [publicKey]
             properties:
               publicKey: { type: object }
+    SyncConflict:
+      description: The note changed in Axon since the client last synced; keep both versions.
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Problem"
+              - type: object
+                required: [current]
+                properties:
+                  current:
+                    oneOf:
+                      - $ref: "#/components/schemas/Note"
+                      - type: "null"
+                    description: Axon's version, or null when the note was deleted in Axon.
     SignedIn:
       description: Signed in; the session cookie is set.
       content:
@@ -1174,3 +1423,28 @@ components:
           required: [rank]
           properties:
             rank: { type: number }
+    Note:
+      type: object
+      required: [id, path, title, kind, para, hash, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        path: { type: string, example: "Zettel/permanent/proofs.md" }
+        title: { type: string, description: "Front-matter title, else the first heading, else the file name." }
+        kind: { type: string, description: 'Front-matter type (fleeting, literature, permanent…), or "note".' }
+        para: { $ref: "#/components/schemas/NotePara" }
+        hash: { type: string, description: "SHA-256 of the content, hex." }
+        content: { type: string, description: "The Markdown exactly as written; omitted from lists." }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    NotePara:
+      type: string
+      enum: [inbox, projects, areas, resources, archive, other]
+      description: PARA category, from the top folder (0-Inbox, 1-Projects…); notes at the root are inbox.
+    NotePath:
+      type: string
+      maxLength: 500
+      example: "Zettel/idea.md"
+      description: Relative, ending in .md, with no ".." or hidden folders.
+    NoteContent:
+      type: string
+      maxLength: 1000000

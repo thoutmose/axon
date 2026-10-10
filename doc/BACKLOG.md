@@ -82,7 +82,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
-| EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Planned |
+| EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Planned |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Planned |
 | EP-14 | Roadmaps, Tutor agent & skill graph | Import or generate learning roadmaps and visualize progress. | SHOULD | 89 pts | EP-11, EP-13, EP-19 | Planned |
@@ -437,15 +437,30 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Out of scope.** Teacher agent and flashcards (EP-16). A note graph view is COULD here; if it is built, record the graph-library choice in a new ADR ([ADR 0002](adr/0002-initial-technology-stack.md) currently defers it to EP-14).
 
-**Acceptance criteria**
+**Issues**
 
-- Export then import reproduces identical Markdown (golden tests).
-- Renaming a note updates or preserves its links; no link is broken silently.
-- When the same note changes on both sides, sync keeps both versions and shows the conflict; nothing is overwritten.
-- Sync runs over the private network only.
-- Ship one-way import first, then two-way sync behind a setting.
-
-**Candidate issues.** Note model and API (5) · Editor (8) · Wikilinks and backlinks (8) · PARA organization (3) · Markdown export/import (5) · One-way import from SecondBrain (8) · Two-way Git sync with conflicts (13) · Note graph view (5, COULD).
+- [x] **EP-11/IS-11.01 — Note model and API** · 5 pts · MUST
+  - [x] Notes are graph entities holding the whole Markdown file, front matter included; create, read, replace (If-Match), delete; documented in OpenAPI and contract-tested.
+  - [x] Notes appear in the export as Markdown files under `notes/` and are removed by erasure.
+- [x] **EP-11/IS-11.02 — Editor** · 8 pts · MUST
+  - [x] Notes pages: list by folder, create, read with a rendered preview, edit Markdown and file path, Ctrl+S, unsaved-change guard, delete with confirmation (e2e and axe covered).
+  - [x] The preview escapes everything it does not render, so a note cannot inject markup (unit tests).
+- [x] **EP-11/IS-11.03 — Wikilinks and backlinks** · 8 pts · MUST
+  - [x] `[[name]]`, `[[name#heading]]`, and `[[name|alias]]` become `references` links, resolved by file name then title; links to notes written later resolve when they appear.
+  - [x] Renaming or moving a note rewrites links to it in other notes; no link breaks silently.
+  - [x] Backlinks and outgoing links on every note; unresolved links offer “Create note”.
+- [x] **EP-11/IS-11.04 — PARA organization** · 3 pts · MUST
+  - [x] The top folder (`0-Inbox`, `1-Projects`, `2-Areas`, `3-Resources`, `4-Archive`) sets the PARA category; new notes land in the inbox.
+- [x] **EP-11/IS-11.05 — Markdown export and import** · 5 pts · MUST
+  - [x] Export then import reproduces identical Markdown (golden test with front matter, tables, CRLF, Unicode).
+  - [x] ZIP import never overwrites: differing files are reported as conflicts.
+- [x] **EP-11/IS-11.06 — One-way import from SecondBrain** · 8 pts · MUST
+  - [x] `axon notes-sync` (default mode) imports a vault folder over HTTPS with a write token; reruns are no-ops; hidden folders and symlinks are skipped.
+- [x] **EP-11/IS-11.07 — Two-way Git sync with conflicts** · 13 pts · MUST
+  - [x] `-two-way` also writes Axon's changes and deletions to the files; `-git` pulls before and commits + pushes after.
+  - [x] A note changed on both sides keeps both versions (`<name>.axon-conflict.md`); nothing is overwritten (tested for edits and deletions on either side).
+  - [x] Sync runs over the private network only: Axon is served on the tailnet.
+- [ ] **EP-11/IS-11.08 — Note graph view** · 5 pts · COULD — not built; deferred to EP-14 with the graph-library ADR.
 
 ### EP-13 — Goals & milestones
 
