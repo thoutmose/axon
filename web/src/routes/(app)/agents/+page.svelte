@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
+	import ProviderSettings from '$lib/ProviderSettings.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -24,7 +25,7 @@
 
 	const reasons: Record<string, string> = {
 		not_configured:
-			'Agents are not set up on this server (no AI provider key). Everything else in Axon works without them.',
+			'No AI provider is set up yet. Choose one under “AI provider” below; everything else in Axon works without agents.',
 		no_consent:
 			'Agents are off. When on, an agent sends the tasks, goals, and notes it reads to Anthropic to draft suggestions. Nothing changes without your approval.',
 		budget_exhausted:
@@ -220,6 +221,8 @@
 			</form>
 		</section>
 	{/each}
+
+	<ProviderSettings onchange={load} />
 
 	<section class="card" aria-labelledby="budget-title">
 		<h2 id="budget-title">Budget</h2>

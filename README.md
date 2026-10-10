@@ -322,7 +322,7 @@ This table is the target layout. Until measurements justify splitting, Axon runs
 ## Quick start
 
 > [!IMPORTANT]
-> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, Notes with vault sync, Goals, Habits, and approval-gated AI agents work today. Further features arrive Epic by Epic.
+> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, Notes with vault sync, Goals, Habits, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
 
 ### Prerequisites
 
@@ -359,7 +359,8 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
 | `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register; `open` allows anyone who can reach Axon. |
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
-| `ANTHROPIC_API_KEY` | Optional | secret | Agent provider credential. |
+| `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
+| `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
 | `TMDB_API_KEY` | Optional | secret | Media metadata adapter. |
 | `ANKI_SYNC_URL` | Optional | private URL | Host service integration. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Optional | private URL | Trace export. |
@@ -424,7 +425,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-09, EP-11–EP-13, and EP-19 done; EP-10 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, and EP-22 done; EP-23 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

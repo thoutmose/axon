@@ -102,7 +102,14 @@ Conflicts are never resolved automatically: Axon's version is written next to th
 
 ## AI agents
 
-Agents are off on a server until it has a provider key. To turn them on, add `ANTHROPIC_API_KEY=…` to the environment's encrypted env file (see [Secrets](#secrets)) and deploy. Each person must still grant the `ai_agents` consent, and their monthly budget (default $2) caps spending. To turn agents off for everyone, remove the key and deploy; every other feature keeps working.
+Each person can choose their own provider under **Agents → AI provider**: Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local server such as Ollama (`http://<host>:11434/v1`). Keys they enter are sealed with `AXON_ENCRYPTION_KEY`, so that variable must be set to store keys.
+
+The server can also offer a default Anthropic account to everyone:
+
+- **With a key:** add `ANTHROPIC_API_KEY=…` to the encrypted env file (see [Secrets](#secrets)) and deploy.
+- **Without storing a key:** on the host, run `ant auth login --no-browser` as the deploy user with `ANTHROPIC_CONFIG_DIR=/opt/axon/anthropic`, then add `AXON_ANTHROPIC_OAUTH=1` and `ANTHROPIC_CONFIG_DIR=/config/anthropic` to the env file, mount `/opt/axon/anthropic:/config/anthropic` into the `api` service in `deploy/compose.server.yaml`, and deploy. This bills the Anthropic Console organisation you signed in with. A Claude Pro or Max subscription cannot be used.
+
+Each person must still grant the `ai_agents` consent, and their monthly budget (default $2) caps spending. Remove the default and every other feature keeps working.
 
 Run outcomes are logged as `agent run finished` with status, tool count, tokens, and cost; prompts and replies are never logged. A run stuck as `running` after a restart is marked `failed` (`interrupted`) when the same person next starts one.
 

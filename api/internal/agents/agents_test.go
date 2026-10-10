@@ -39,13 +39,13 @@ func TestParseSkillRejectsBadDefinitions(t *testing.T) {
 
 func TestCost(t *testing.T) {
 	u := anthropic.BetaUsage{InputTokens: 1_000_000, OutputTokens: 100_000, CacheReadInputTokens: 1_000_000}
-	if got := costMicros("claude-opus-5-5", u); got != 4_000_000+2_000_000+200_000 {
+	if got := costMicros(priceFor("claude-opus-5-5"), u); got != 4_000_000+2_000_000+200_000 {
 		t.Errorf("cost = %d", got)
 	}
-	if costMicros("some-future-model", u) != costMicros("claude-opus-5-5", u) {
+	if costMicros(priceFor("some-future-model"), u) != costMicros(priceFor("claude-opus-5-5"), u) {
 		t.Error("unknown models must not be cheaper than the dearest known one")
 	}
-	if worstCaseMicros("claude-opus-5-5", 1000, 8000) != 4000+160_000 {
+	if worstCaseMicros(priceFor("claude-opus-5-5"), 1000, 8000) != 4000+160_000 {
 		t.Error("worst case")
 	}
 }

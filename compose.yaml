@@ -25,7 +25,9 @@ services:
       WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:?set WEBAUTHN_RP_ID in .env}
       AXON_ENCRYPTION_KEY: ${AXON_ENCRYPTION_KEY:-}
       AXON_REGISTRATION: ${AXON_REGISTRATION:-first-user}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-} # optional: without it agents are unavailable
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-} # optional server default for agents
+      AXON_ANTHROPIC_OAUTH: ${AXON_ANTHROPIC_OAUTH:-} # "1": use an "ant auth login" profile instead of a key
+      ANTHROPIC_CONFIG_DIR: ${ANTHROPIC_CONFIG_DIR:-}
     depends_on:
       db:
         condition: service_healthy

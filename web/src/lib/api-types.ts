@@ -1247,6 +1247,42 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/agent-provider': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your AI provider for agents (keys are never returned) */
+		get: operations['getAgentProvider'];
+		/** Choose the AI provider, model, key, and prices your agents use */
+		put: operations['setAgentProvider'];
+		post?: never;
+		/** Go back to the server default provider */
+		delete: operations['deleteAgentProvider'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-provider/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send one tiny request (no personal data) to check the connection */
+		post: operations['testAgentProvider'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1539,6 +1575,8 @@ export interface components {
 		};
 		AgentStatus: {
 			available: boolean;
+			/** @description The provider runs would use. */
+			provider: string | null;
 			/** @enum {string|null} */
 			reason: 'not_configured' | 'no_consent' | 'budget_exhausted' | null;
 			monthly_budget_cents: number;
@@ -1646,6 +1684,14 @@ export interface components {
 			note: string;
 			/** Format: date-time */
 			created_at: string;
+		};
+		ProviderSettings: {
+			provider: string;
+			model: string;
+			base_url: string | null;
+			has_key: boolean;
+			input_price: number | null;
+			output_price: number | null;
 		};
 	};
 	responses: {
@@ -4234,6 +4280,121 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Your settings, or null to use the server default. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						settings: null | components['schemas']['ProviderSettings'];
+						/** @description The server has its own Anthropic key or OAuth profile. */
+						server_default: boolean;
+						/** @description false when the server has no AXON_ENCRYPTION_KEY. */
+						can_store_keys: boolean;
+						providers: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	setAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					provider: 'anthropic' | 'deepseek' | 'gemini' | 'local' | 'mistral' | 'openai';
+					/** @example claude-opus-5-5 */
+					model: string;
+					/** @description Local servers only, e.g. http://192.168.1.20:11434/v1. */
+					base_url?: string;
+					/** @description Omit to keep the stored key; empty to remove it. Sealed at rest. */
+					api_key?: string;
+					/** @description US$ per million input tokens. */
+					input_price?: number;
+					/** @description US$ per million output tokens. */
+					output_price?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Saved; the same body as GET. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': Record<string, never>;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Reverted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	testAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The result. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						ok: boolean;
+						detail: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 		};
 	};
 }

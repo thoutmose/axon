@@ -161,15 +161,17 @@ func migrate(direction string) error {
 	return db.Migrate(context.Background(), dsn, direction, os.Stdout)
 }
 
-// provider returns the agent model provider, or nil when no key is set:
-// Axon then runs with agents unavailable and everything else unchanged.
+// provider returns the server's default agent provider, or nil: people can
+// still configure their own, and everything else works without one.
 func provider(log *slog.Logger) agents.Provider {
-	key := os.Getenv("ANTHROPIC_API_KEY")
-	if key == "" {
-		log.Info("ANTHROPIC_API_KEY not set; agents are unavailable")
-		return nil
+	if key := os.Getenv("ANTHROPIC_API_KEY"); key != "" {
+		return agents.NewAnthropic(key)
 	}
-	return agents.NewAnthropic(key)
+	if os.Getenv("AXON_ANTHROPIC_OAUTH") == "1" { // a profile from "ant auth login", no key stored
+		return agents.NewAnthropicFromEnvironment()
+	}
+	log.Info("no server AI provider; people can still set up their own under Agents")
+	return nil
 }
 
 // notesSync keeps a Markdown vault and Axon's notes in step (see internal/notesync).

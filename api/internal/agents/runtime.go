@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
@@ -48,20 +49,26 @@ var (
 type Runner struct {
 	db       *pgxpool.Pool
 	log      *slog.Logger
-	provider Provider // nil: agents unavailable
+	provider Provider     // the server default; nil when the server has none
+	sealer   *auth.Sealer // seals stored provider keys; nil without AXON_ENCRYPTION_KEY
 	Skills   map[string]Skill
-	now      func() time.Time
-	replies  replies
-	wg       sync.WaitGroup
+	// Constructors for a person's own provider.
+	newAnthropic func(key string) Provider
+	newOpenAI    func(baseURL, key, maxTokensField string) Provider
+	now          func() time.Time
+	replies      replies
+	wg           sync.WaitGroup
 }
 
-// NewRunner returns a runner; provider may be nil (agents disabled).
-func NewRunner(pool *pgxpool.Pool, log *slog.Logger, provider Provider) (*Runner, error) {
+// NewRunner returns a runner. provider is the server default and may be nil;
+// sealer may be nil, and then people cannot store provider keys.
+func NewRunner(pool *pgxpool.Pool, log *slog.Logger, provider Provider, sealer *auth.Sealer) (*Runner, error) {
 	skills, err := LoadSkills()
 	if err != nil {
 		return nil, err
 	}
-	return &Runner{db: pool, log: log, provider: provider, Skills: skills, now: time.Now, replies: replies{m: map[uuid.UUID]reply{}}}, nil
+	return &Runner{db: pool, log: log, provider: provider, sealer: sealer, Skills: skills, now: time.Now,
+		replies: replies{m: map[uuid.UUID]reply{}}, newAnthropic: NewAnthropic, newOpenAI: newOpenAICompatible}, nil
 }
 
 // Wait blocks until background runs finish (tests and shutdown).
@@ -70,7 +77,8 @@ func (r *Runner) Wait() { r.wg.Wait() }
 // Status says whether a user can run agents now, and their budget.
 type Status struct {
 	Available   bool    `json:"available"`
-	Reason      *string `json:"reason"` // not_configured, no_consent, budget_exhausted
+	Reason      *string `json:"reason"`   // not_configured, no_consent, budget_exhausted
+	Provider    *string `json:"provider"` // the provider runs would use
 	BudgetCents int     `json:"monthly_budget_cents"`
 	SpentMicros int64   `json:"spent_micros"` // this calendar month (UTC)
 }
@@ -89,8 +97,14 @@ func (r *Runner) status(ctx context.Context, q db.Querier, userID uuid.UUID) (St
 		return s, err
 	}
 	reason := ""
+	res, err := r.resolve(ctx, q, userID, Skill{Model: "claude-opus-5-5"})
+	if err == nil {
+		s.Provider = &res.name
+	} else if !errors.Is(err, ErrUnavailable) && !errors.Is(err, errProviderIncomplete) {
+		return s, err
+	}
 	switch {
-	case r.provider == nil:
+	case err != nil:
 		reason = "not_configured"
 	case !consent:
 		reason = "no_consent"
@@ -124,6 +138,10 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 			return uuid.Nil, ErrNoBudget
 		}
 	}
+	res, err := r.resolve(ctx, r.db, userID, skill)
+	if err != nil {
+		return uuid.Nil, ErrUnavailable
+	}
 	id := uuid.Must(uuid.NewV7())
 	err = pgx.BeginFunc(ctx, r.db, func(tx pgx.Tx) error {
 		// A run left "running" by a restart can never finish.
@@ -142,7 +160,7 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 			return ErrBusy
 		}
 		_, err := tx.Exec(ctx, `INSERT INTO agent_runs (id, user_id, agent, skill_version, model) VALUES ($1, $2, $3, $4, $5)`,
-			id, userID, skill.Name, skill.Version, skill.Model)
+			id, userID, skill.Name, skill.Version, res.name+"/"+res.model)
 		return err
 	})
 	if err != nil {
@@ -156,7 +174,7 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 		defer r.wg.Done()
 		ctx, cancel := context.WithTimeout(bg, runTimeout)
 		defer cancel()
-		r.execute(ctx, id, userID, skill, instruction, budget)
+		r.execute(ctx, id, userID, skill, res, instruction, budget)
 	}()
 	return id, nil
 }
@@ -175,7 +193,7 @@ type run struct {
 	budgetMicros int64
 }
 
-func (r *Runner) execute(ctx context.Context, id, userID uuid.UUID, skill Skill, instruction string, budget int64) {
+func (r *Runner) execute(ctx context.Context, id, userID uuid.UUID, skill Skill, res *resolved, instruction string, budget int64) {
 	rn := &run{id: id, status: "running", budgetMicros: budget}
 	defer func() {
 		if p := recover(); p != nil {
@@ -184,7 +202,7 @@ func (r *Runner) execute(ctx context.Context, id, userID uuid.UUID, skill Skill,
 		}
 		r.finish(userID, rn)
 	}()
-	if err := r.loop(ctx, userID, skill, instruction, rn); err != nil {
+	if err := r.loop(ctx, userID, skill, res, instruction, rn); err != nil {
 		r.log.Error("agent run failed", "run", id, "agent", skill.Name, "err", err)
 		rn.status = "failed"
 		if rn.errCode == "" {
@@ -219,7 +237,7 @@ func (r *Runner) system(ctx context.Context, userID uuid.UUID, skill Skill) (str
 	return b.String(), nil
 }
 
-func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, instruction string, rn *run) error {
+func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *resolved, instruction string, rn *run) error {
 	system, err := r.system(ctx, userID, skill)
 	if err != nil {
 		return err
@@ -235,21 +253,23 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, instru
 		tools = append(tools, anthropic.BetaToolUnionParam{OfTool: &tool})
 	}
 	params := anthropic.BetaMessageNewParams{
-		Model:        anthropic.Model(skill.Model),
-		MaxTokens:    maxTokens,
-		System:       []anthropic.BetaTextBlockParam{{Text: system}},
-		Tools:        tools,
-		OutputConfig: anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffort(skill.Effort)},
-		Messages:     []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(instruction))},
+		Model:     anthropic.Model(res.model),
+		MaxTokens: maxTokens,
+		System:    []anthropic.BetaTextBlockParam{{Text: system}},
+		Tools:     tools,
+		Messages:  []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(instruction))},
+	}
+	if res.effort {
+		params.OutputConfig = anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffort(skill.Effort)}
 	}
 	for range maxSteps {
 		// Stop before a call that could cross the budget, never after.
 		body, _ := json.Marshal(params)
-		if rn.cost+worstCaseMicros(skill.Model, int64(len(body)/3), maxTokens) > rn.budgetMicros {
+		if rn.cost+worstCaseMicros(res.price, int64(len(body)/3), maxTokens) > rn.budgetMicros {
 			rn.status = "budget_exhausted"
 			return nil
 		}
-		resp, err := r.provider.New(ctx, params)
+		resp, err := res.provider.New(ctx, params)
 		if err != nil {
 			rn.errCode = "provider_error"
 			if errors.Is(err, context.DeadlineExceeded) {
@@ -259,7 +279,7 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, instru
 		}
 		rn.input += resp.Usage.InputTokens + resp.Usage.CacheReadInputTokens + resp.Usage.CacheCreationInputTokens
 		rn.output += resp.Usage.OutputTokens
-		rn.cost += costMicros(skill.Model, resp.Usage)
+		rn.cost += costMicros(res.price, resp.Usage)
 		if err := r.progress(ctx, rn); err != nil {
 			return err
 		}

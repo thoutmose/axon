@@ -39,7 +39,13 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	goalsAPI := goals.NewHandlers(pool, log)
 	habitsAPI := habits.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
-	agentsAPI, err := agents.NewRunner(pool, log, provider)
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	agentsAPI, err := agents.NewRunner(pool, log, provider, sealer)
 	if err != nil {
 		return nil, err
 	}

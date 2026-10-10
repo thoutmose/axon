@@ -271,11 +271,19 @@ test('design a habit, check in with the two-minute version, and link it to a goa
 	await expect(page.getByRole('button', { name: 'Done: Swim one length' })).toBeVisible();
 });
 
-test('without an AI provider, agents say so and nothing else depends on them', async () => {
+test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();
-	await expect(page.getByText('Agents are not set up on this server')).toBeVisible();
+	await expect(page.getByText('No AI provider is set up yet.')).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Ask Task Manager' })).toBeDisabled();
+	// Choose a local model; nothing answers at this address, and the test says so.
+	await page.getByLabel('Provider', { exact: true }).selectOption('local');
+	await page.getByLabel('Model', { exact: true }).fill('llama3.1:8b');
+	await page.getByLabel('Server address').fill('http://127.0.0.1:9/v1');
+	await page.getByRole('button', { name: 'Save provider' }).click();
+	await expect(page.getByText('Your agents use Local model')).toBeVisible();
+	await page.getByRole('button', { name: 'Test connection' }).click();
+	await expect(page.getByText('The provider did not answer')).toBeVisible();
 	await expect(page.getByText('Nothing. Agents can only remember what you approve.')).toBeVisible();
 	await noSeriousA11yViolations(page);
 });

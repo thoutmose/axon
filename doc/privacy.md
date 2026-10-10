@@ -21,6 +21,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Notes (Markdown exactly as written, path, derived title/type/PARA folder) | `notes` | Personal | Knowledge capture and vault sync | Until deleted or erasure |
 | Goals (title, outcome, status, target date, measure) and milestones | `goals`, `milestones` | Personal | Planning towards outcomes | Until deleted or erasure |
 | Calendar feeds (name, chosen types, SHA-256 of the URL token, last use) | `calendar_feeds` | Security | Let a calendar app read dated items | Until revoked or erasure |
+| AI provider settings (provider, model, local address, prices; key sealed with `AXON_ENCRYPTION_KEY`) | `agent_providers` | Secret (key), personal | Run agents on the person's chosen provider | Until changed, removed, or erasure; the key is never exported |
 | Agent budget | `agent_settings` | Personal | Cap AI spending | Until changed or erasure |
 | Agent run records (agent, skill version, model, tool names, tokens, cost, outcome; no content) | `agent_runs` | Personal, operational | Audit and budget | Until erasure |
 | Agent proposals (proposed change and its summary) | `agent_proposals` | Personal | Let the user approve or reject | Until erasure |
@@ -55,7 +56,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |
-| Anthropic | The instruction, and the tasks, goals, and notes an agent reads through its tools during a run | Only with `ai_agents` consent and a server key | Available (EP-19) |
+| The AI provider the person chose: Anthropic, OpenAI, Mistral, Google (Gemini), DeepSeek, or their own local server | The instruction, and the tasks, goals, habits, and notes an agent reads through its tools during a run | Only with `ai_agents` consent, during a run they start | Available (EP-19, EP-22) |
 | TMDB, Open Library | Search terms for media | Only with `external_metadata` consent | Planned (EP-17) |
 | Open Food Facts, USDA FoodData Central | Food search terms | Only with `health_data` consent | Planned (EP-18) |
 

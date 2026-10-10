@@ -22,6 +22,13 @@ func NewAnthropic(apiKey string) Provider {
 	return anthropicProvider{client: anthropic.NewClient(option.WithAPIKey(apiKey))}
 }
 
+// NewAnthropicFromEnvironment uses the SDK's own credential resolution,
+// including an OAuth profile made on the server with "ant auth login", so
+// no API key has to be stored anywhere.
+func NewAnthropicFromEnvironment() Provider {
+	return anthropicProvider{client: anthropic.NewClient()}
+}
+
 func (a anthropicProvider) New(ctx context.Context, p anthropic.BetaMessageNewParams) (*anthropic.BetaMessage, error) {
 	// A safety refusal is re-served by a fallback model inside the same call.
 	p.Betas = append(p.Betas, anthropic.AnthropicBetaServerSideFallback2026_07_01)
@@ -38,23 +45,24 @@ var prices = map[string]price{
 	"claude-haiku-5-5":  {input: 0.10, output: 0.50, cacheWrite: 0.125, cacheRead: 0.01},
 }
 
-// costMicros is the cost of one response in millionths of a dollar. Unknown
-// models are priced as the most expensive known one, never as free.
-func costMicros(model string, u anthropic.BetaUsage) int64 {
-	p, ok := prices[model]
-	if !ok {
-		p = prices["claude-opus-5-5"]
+// priceFor returns the list price of a known Anthropic model. Unknown models
+// are priced as the dearest known one, never as free: a person sets their
+// provider's prices (or 0 for a local model) in their settings.
+func priceFor(model string) price {
+	if p, ok := prices[model]; ok {
+		return p
 	}
+	return prices["claude-opus-5-5"]
+}
+
+// costMicros is the cost of one response in millionths of a dollar.
+func costMicros(p price, u anthropic.BetaUsage) int64 {
 	return int64(float64(u.InputTokens)*p.input + float64(u.OutputTokens)*p.output +
 		float64(u.CacheCreationInputTokens)*p.cacheWrite + float64(u.CacheReadInputTokens)*p.cacheRead)
 }
 
 // worstCaseMicros bounds the cost of the next call: its input is at most the
 // history so far, its output at most maxTokens.
-func worstCaseMicros(model string, inputTokens, maxTokens int64) int64 {
-	p, ok := prices[model]
-	if !ok {
-		p = prices["claude-opus-5-5"]
-	}
+func worstCaseMicros(p price, inputTokens, maxTokens int64) int64 {
 	return int64(float64(inputTokens)*p.input + float64(maxTokens)*p.output)
 }

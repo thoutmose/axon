@@ -81,7 +81,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Done |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Done |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
-| EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
+| EP-10 | Projects, Kanban & docs | Projects, epics/issues/sub-tasks, Kanban, and project docs. | MUST | 34 pts | EP-09, EP-11 | Planned |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Done |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
@@ -93,6 +93,11 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
+| EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
+| EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Planned |
+| EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Planned |
+| EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Planned |
+| EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Planned |
 
 ## Delivery order
 
@@ -102,7 +107,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 |---|---|---|
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
-| R2 — Guided growth | EP-19 → EP-12 → EP-10 → EP-14 → EP-16 → EP-15 | Human-approved agents, habits, projects, roadmaps, retrieval, Anki |
+| R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-16 → EP-15 | Human-approved agents, habits, projects, roadmaps, retrieval, Anki |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -573,15 +578,14 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Goal.** Run personal and side projects in Axon: projects, epics, issues, sub-tasks, Kanban, documentation, repository analysis, and code review.
 
-**In scope.** Project hierarchy built on tasks; Kanban with WIP limits; project docs as notes; Side-Projects agent (read-only repository analysis that drafts issues); Code Review agent (comments on diffs).
+**In scope.** Project hierarchy built on tasks; Kanban with WIP limits; project docs as notes. The delivery agents moved to EP-26.
 
 **Acceptance criteria**
 
-- Repository access is read-only by default; drafted issues require approval.
-- The Code Review agent can comment but cannot approve or merge.
 - Kanban moves are keyboard-accessible.
+- A WIP limit is visible and exceeding it asks for confirmation; nothing is blocked silently.
 
-**Candidate issues.** Project and hierarchy model (8) · Kanban (13) · Project docs (8) · Repository connector, read-only (13) · Side-Projects agent (21) · Code Review agent (21). **Split before start** — 89 points is too large for one Epic; separate the agents into their own Epic.
+**Candidate issues.** Project and hierarchy model (8) · Kanban (13) · Project docs (8) · Project screens (5).
 
 ### EP-14 — Roadmaps, Tutor agent & skill graph
 
@@ -670,6 +674,74 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Candidate issues.** Metric definitions and projections (13) · Weekly review (13) · Trend views (13) · CSV export (5) · Performance work (8).
 
+### EP-22 — AI providers
+
+**Goal.** Let each person run agents on the provider they prefer, including a model on their own hardware, without weakening any EP-19 guarantee.
+
+**In scope.** Provider settings per person (provider, model, key or local endpoint, prices for the budget), keys encrypted at rest; Anthropic through the official SDK with an API key or a server-side OAuth profile (`ant auth login`, no key to manage); OpenAI, Mistral, Gemini, DeepSeek, and local servers (Ollama, LM Studio, llama.cpp) through their OpenAI-compatible chat API; a connection test.
+
+**Out of scope.** Signing in with a consumer chat subscription (Claude.ai Pro/Max, ChatGPT Plus): providers do not permit third-party apps to use those plans.
+
+**Issues** (design in [ADR 0009](adr/0009-ai-providers.md))
+
+- [x] **EP-22/IS-22.01 — Provider settings** · 5 pts · MUST
+  - [x] Per-person provider, model, key, local address, and prices; keys sealed with `AXON_ENCRYPTION_KEY`, never returned, logged, or exported; browser sessions only (integration test).
+- [x] **EP-22/IS-22.02 — OpenAI-compatible adapter** · 8 pts · MUST
+  - [x] OpenAI, Mistral, Gemini, DeepSeek, and local servers share one translated wire format; a full agent run against a fake local server proposes and never writes, with no key sent (integration test); translation unit-tested both ways.
+- [x] **EP-22/IS-22.03 — Anthropic without a stored key** · 3 pts · SHOULD
+  - [x] `AXON_ANTHROPIC_OAUTH=1` uses an `ant auth login` profile on the server through the SDK's own credential resolution.
+- [x] **EP-22/IS-22.04 — Settings screen and connection test** · 5 pts · MUST
+  - [x] Agents page: choose provider, model, address, key, prices; test the connection with a request that carries no personal data (e2e).
+
+Consumer chat subscriptions (Claude Pro/Max, ChatGPT Plus) are out of scope: providers do not permit third-party apps to use them.
+
+### EP-23 — Visual design refresh
+
+**Goal.** An interface that feels as considered as a flagship product page: full-bleed imagery, depth, translucent glass, and generous typography, while staying fast, calm, and accessible.
+
+**In scope.** Ambient background artwork bundled with the app (no third-party image hosts), glass surfaces with backdrop blur, a hero on Today and the home page, refined type scale and motion, light and dark themes.
+
+**Acceptance criteria**
+
+- Text contrast stays at WCAG AA over every background (axe in CI).
+- Reduced motion and reduced transparency preferences are honoured.
+- No request leaves the server to load images or fonts.
+- Pages still fit a 360 px screen and stay usable on slow networks.
+
+### EP-24 — Connect everything
+
+**Goal.** Any element can be connected to any other from wherever it appears, and every connection is visible from both sides.
+
+**In scope.** A reusable “Connections” panel on tasks, notes, goals, milestones, and habits: search any entity, choose a relation, see outgoing links and backlinks, remove a link; a task detail page.
+
+**Acceptance criteria**
+
+- From each entity page, a person can link it to any other entity type allowed by the relation rules, by keyboard alone.
+- Every link is visible from both ends.
+
+### EP-25 — Notes workspace & Second Brain
+
+**Goal.** Make Axon the place to think in notes: a workspace on par with dedicated Markdown note apps, built for Zettelkasten, PARA, and a Second Brain.
+
+**In scope.** Sidebar folder tree with PARA groups; split editor with live preview and formatting shortcuts; autosave; quick switcher; full-text search; Zettelkasten IDs and note types (fleeting, literature, permanent); daily notes; templates; tags; unlinked mentions; capture to inbox from anywhere.
+
+**Acceptance criteria**
+
+- Notes stay plain Markdown: export, import, and vault sync still round-trip byte for byte.
+- Every action works by keyboard, and the editor never loses typed text (autosave with conflict detection).
+- Search finds a note by any word in its title or body.
+
+### EP-26 — Delivery agents
+
+**Goal.** Side-Projects agent and Code Review agent, split from EP-10.
+
+**Acceptance criteria**
+
+- Repository access is read-only by default; drafted issues require approval.
+- The Code Review agent can comment but cannot approve or merge.
+
+**Candidate issues.** Repository connector, read-only (13) · Side-Projects agent (21) · Code Review agent (21).
+
 ### EP-21 — Documentation, release 1.0 & hardening
 
 **Goal.** A release someone other than the author can install, operate, upgrade, and recover.
@@ -741,6 +813,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 |---|---|
 | 2026-10-10 | Initial authored backlog for Axon; all Epics are Planned pending human refinement. |
 | 2026-10-10 | Refinement (EP-00/IS-00.05): replaced templated Epic text with specific goals, scope, and acceptance criteria; detailed EP-00–EP-06 into issues. Fixed dependencies so each points to an earlier Epic: EP-08 now follows EP-09/11/13; Task Manager and Goals agents moved into EP-19, so EP-09 and EP-13 no longer depend on it; EP-21 depends on MUST Epics instead of EP-20. EP-01 reduced to one host per ADR 0003 (55 → 34 pts); EP-09 55 → 34 and EP-13 34 → 21 after moving their agents. Added delivery order and a walking skeleton to EP-00. |
+| 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 
 ## Standard issue evidence template
 
