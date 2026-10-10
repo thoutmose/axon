@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -21,6 +22,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 		return nil, err
 	}
 	priv := privacy.New(pool, log, authn.ClearSessionCookie)
+	priv.Register("graph", graph.Export)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody, authn.SameOrigin)

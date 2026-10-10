@@ -20,6 +20,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/app"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/server"
 )
 
@@ -46,11 +47,13 @@ func run(args []string) error {
 			return errors.New("usage: axon migrate up|down|status")
 		}
 		return migrate(args[1])
+	case "integrity":
+		return integrity()
 	case "version":
 		fmt.Println(version)
 		return nil
 	default:
-		return fmt.Errorf("unknown command %q (want serve, migrate, or version)", cmd)
+		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, or version)", cmd)
 	}
 }
 
@@ -147,6 +150,32 @@ func migrate(direction string) error {
 		return err
 	}
 	return db.Migrate(context.Background(), dsn, direction, os.Stdout)
+}
+
+// integrity reports data the schema cannot rule out by itself; exit status 1 if any.
+func integrity() error {
+	dsn, err := databaseURL()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	problems, err := graph.CheckIntegrity(ctx, pool)
+	if err != nil {
+		return err
+	}
+	for _, p := range problems {
+		fmt.Printf("%-40s %d\n", p.Check, p.Count)
+	}
+	if len(problems) > 0 {
+		return fmt.Errorf("%d integrity problem(s)", len(problems))
+	}
+	fmt.Println("integrity ok")
+	return nil
 }
 
 func databaseURL() (string, error) {

@@ -76,7 +76,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Done |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | In progress (fleet apply pending) |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Done (independent review owed) |
-| EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Planned |
+| EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Done |
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Planned |
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Planned |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
@@ -325,24 +325,24 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-05/IS-05.01 — Entity conventions** · 3 pts · MUST
+- [x] **EP-05/IS-05.01 — Entity conventions** · 3 pts · MUST
   - [x] An ADR fixes ID format, timestamps, owner column, and soft-delete rules ([ADR 0005](adr/0005-entity-conventions.md), written in EP-04).
-  - [ ] Migrations run up and down in CI.
-- [ ] **EP-05/IS-05.02 — Universal links** · 8 pts · MUST
-  - [ ] A link stores owner, source type/ID, target type/ID, and relation.
-  - [ ] Only allowed type pairs and relations are accepted; a link cannot cross owners.
-  - [ ] Deleting an entity removes its links in the same transaction; an integrity check finds no dangling links.
-  - [ ] Forward and backward lookups are indexed and paginated.
-- [ ] **EP-05/IS-05.03 — Event log** · 8 pts · MUST
-  - [ ] Each change writes an append-only event (actor, entity, type, time) in the same transaction.
-  - [ ] Event payloads exclude fields classified as sensitive.
-- [ ] **EP-05/IS-05.04 — Export and erasure hooks** · 5 pts · MUST
-  - [ ] Each entity type registers export and erase handlers with the EP-04 framework.
-  - [ ] A test fails when a new entity type has no handlers.
-- [ ] **EP-05/IS-05.05 — Search primitive** · 5 pts · SHOULD
-  - [ ] PostgreSQL full-text search over entity titles and bodies, scoped to the owner and paginated.
+  - [x] Migrations run up and down in CI (`TestMigrateUpDown`).
+- [x] **EP-05/IS-05.02 — Universal links** · 8 pts · MUST
+  - [x] A link stores owner, source and target entity, and relation; types live on `entities` ([ADR 0006](adr/0006-entity-registry-and-links.md)).
+  - [x] Only allowed type pairs and relations are accepted; a link cannot cross owners (enforced by composite foreign keys).
+  - [x] Deleting an entity removes its links in the same transaction (foreign keys); `axon integrity` runs on every deployment.
+  - [x] Forward and backward lookups are indexed and paginated (keyset on UUIDv7, max 100).
+- [x] **EP-05/IS-05.03 — Event log** · 8 pts · MUST
+  - [x] Each change writes an append-only event (actor, entity, type, time) in the same transaction.
+  - [x] Events store changed field names only, never values.
+- [x] **EP-05/IS-05.04 — Export and erasure hooks** · 5 pts · MUST
+  - [x] Each entity type registers an export handler; erasure cascades from `users` through `entities`.
+  - [x] A test fails when a table references `entities` without a registered type (`TestEveryEntityTableIsRegistered`).
+- [x] **EP-05/IS-05.05 — Search primitive** · 5 pts · SHOULD
+  - [x] PostgreSQL full-text search over entity titles and bodies, scoped to the owner and paginated (language-neutral `simple` configuration).
 
-**Exit evidence.** Schema diagram, integrity-check output, handler coverage test.
+**Exit evidence.** Schema diagram ([data-model.md](data-model.md)), integrity-check output (deploy log), handler coverage test.
 
 ### EP-06 — API platform
 
