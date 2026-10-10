@@ -1,22 +1,28 @@
 # Weekly dependency updates, grouped so each ecosystem opens at most one PR.
+# Major versions are upgraded deliberately (ADR 0002), so only minor and patch
+# updates are proposed for application dependencies and images.
 version: 2
 updates:
   - package-ecosystem: gomod
     directory: /api
     schedule: { interval: weekly }
     groups: { go: { patterns: ["*"] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
   - package-ecosystem: npm
     directory: /web
     schedule: { interval: weekly }
     groups: { npm: { patterns: ["*"] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
   - package-ecosystem: docker
     directories: [/api, /web, /deploy/backup]
     schedule: { interval: weekly }
     groups: { docker: { patterns: ["*"] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
     groups: { compose: { patterns: ["*"] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
