@@ -2,19 +2,14 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { startRegistration } from '@simplewebauthn/browser';
-	import { api, ApiError, message, type AuthStatus } from '$lib/api';
+	import { api, apiResponse, ApiError, message, type AuthStatus, type Schemas } from '$lib/api';
 
-	type Me = {
-		display_name: string;
-		totp_enabled: boolean;
-		passkeys: number;
-		recovery_codes_remaining: number;
-	};
-	type Item = { id: string; name?: string; created_at: string };
-	type Session = { id: string; user_agent: string; last_seen_at: string; current: boolean };
-	type Passkey = Item & { last_used_at: string | null };
-	type Consent = { id: string; description: string; granted: boolean };
-	type Event = { id: string; action: string; ip: string; created_at: string };
+	type Me = Schemas['Me'];
+	type Session = Schemas['Session'];
+	type Passkey = Schemas['Passkey'];
+	type Consent = Schemas['Consent'];
+	type Event = Schemas['AuditEvent'];
+	type Token = Schemas['Token'];
 
 	let me = $state<Me | null>(null);
 	let status = $state<AuthStatus | null>(null);
@@ -22,6 +17,13 @@
 	let passkeys = $state<Passkey[]>([]);
 	let consents = $state<Consent[]>([]);
 	let events = $state<Event[]>([]);
+	let tokens = $state<Token[]>([]);
+	let etag = '';
+	let newName = $state('');
+	let tokenName = $state('');
+	let tokenScope = $state<'read' | 'write'>('read');
+	let tokenDays = $state(90);
+	let newToken = $state('');
 	let error = $state('');
 	let notice = $state('');
 	let busy = $state(false);
@@ -36,17 +38,26 @@
 
 	async function load() {
 		try {
-			[me, status] = await Promise.all([api<Me>('/v1/me'), api<AuthStatus>('/v1/auth/status')]);
-			const [s, p, c, a] = await Promise.all([
+			const [current, auth] = await Promise.all([
+				apiResponse<Me>('/v1/me'),
+				api<AuthStatus>('/v1/auth/status')
+			]);
+			me = current.data;
+			etag = current.etag;
+			status = auth;
+			newName ||= me.display_name;
+			const [s, p, c, a, t] = await Promise.all([
 				api<{ items: Session[] }>('/v1/me/sessions'),
 				api<{ items: Passkey[] }>('/v1/me/passkeys'),
 				api<{ items: Consent[] }>('/v1/me/consents'),
-				api<{ items: Event[] }>('/v1/me/audit')
+				api<{ items: Event[] }>('/v1/me/audit'),
+				api<{ items: Token[] }>('/v1/me/tokens')
 			]);
 			sessions = s.items;
 			passkeys = p.items;
 			consents = c.items;
 			events = a.items;
+			tokens = t.items;
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 401) return goto('/signin');
 			error = message(err);
@@ -67,6 +78,34 @@
 			busy = false;
 		}
 	}
+
+	const rename = (e: SubmitEvent) => {
+		e.preventDefault();
+		return run(
+			() =>
+				api('/v1/me', {
+					method: 'PATCH',
+					body: { display_name: newName },
+					headers: { 'If-Match': etag }
+				}),
+			'Name updated.'
+		);
+	};
+
+	const createToken = (e: SubmitEvent) => {
+		e.preventDefault();
+		return run(async () => {
+			const res = await api<{ token: string }>('/v1/me/tokens', {
+				method: 'POST',
+				body: { name: tokenName, scope: tokenScope, expires_in_days: tokenDays }
+			});
+			newToken = res.token;
+			tokenName = '';
+		}, 'Token created. Copy it now; it will not be shown again.');
+	};
+
+	const revokeToken = (t: Token) =>
+		run(() => api(`/v1/me/tokens/${t.id}`, { method: 'DELETE' }), `Revoked “${t.name}”.`);
 
 	const addPasskey = (e: SubmitEvent) => {
 		e.preventDefault();
@@ -155,6 +194,15 @@
 		{#if error}<p class="error" role="alert">{error}</p>{/if}
 	</div>
 
+	<section aria-labelledby="profile">
+		<h2 id="profile">Name</h2>
+		<form onsubmit={rename}>
+			<label for="display-name">Shown in Axon and your authenticator</label>
+			<input id="display-name" bind:value={newName} maxlength="100" required />
+			<p><button class="secondary" disabled={busy || newName === me.display_name}>Save</button></p>
+		</form>
+	</section>
+
 	<section aria-labelledby="passkeys">
 		<h2 id="passkeys">Passkeys</h2>
 		<ul class="list">
@@ -237,6 +285,36 @@
 			{/each}
 		</ul>
 		<button class="danger" onclick={signOutEverywhere} disabled={busy}>Sign out everywhere</button>
+	</section>
+
+	<section aria-labelledby="tokens">
+		<h2 id="tokens">Access tokens</h2>
+		<p class="muted">
+			For scripts and sync tools. Tokens can read (or change) your data but never manage your
+			account.
+		</p>
+		<ul class="list">
+			{#each tokens as t (t.id)}
+				<li>
+					<span>{t.name} <span class="muted">· {t.scope} · expires {when(t.expires_at)}</span></span
+					>
+					<button class="secondary" onclick={() => revokeToken(t)} disabled={busy}>Revoke</button>
+				</li>
+			{/each}
+		</ul>
+		{#if newToken}<p><code>{newToken}</code></p>{/if}
+		<form onsubmit={createToken}>
+			<label for="token-name">Name</label>
+			<input id="token-name" bind:value={tokenName} maxlength="100" required />
+			<label for="token-scope">Access</label>
+			<select id="token-scope" bind:value={tokenScope}>
+				<option value="read">Read only</option>
+				<option value="write">Read and write</option>
+			</select>
+			<label for="token-days">Expires after (days)</label>
+			<input id="token-days" type="number" min="1" max="365" bind:value={tokenDays} required />
+			<p><button disabled={busy}>Create token</button></p>
+		</form>
 	</section>
 
 	<section aria-labelledby="privacy">

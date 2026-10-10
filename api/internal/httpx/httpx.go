@@ -7,6 +7,9 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // MaxBody caps request bodies; no Axon request needs more.
@@ -54,4 +57,42 @@ func ClientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+// ETag renders a row version (its updated_at) as a strong entity tag.
+func ETag(version time.Time) string {
+	return `"` + strconv.FormatInt(version.UnixMicro(), 36) + `"`
+}
+
+// IfMatch parses the If-Match header back into a row version. It answers 428
+// when the header is missing and 412 when it cannot be a current version.
+func IfMatch(w http.ResponseWriter, r *http.Request) (time.Time, bool) {
+	h := r.Header.Get("If-Match")
+	if h == "" {
+		Problem(w, http.StatusPreconditionRequired, "Send If-Match with the ETag you last read, so concurrent edits are not lost.")
+		return time.Time{}, false
+	}
+	n, err := strconv.ParseInt(strings.Trim(h, `"`), 36, 64)
+	if err != nil {
+		Problem(w, http.StatusPreconditionFailed, "The If-Match value does not match the current version. Reload and try again.")
+		return time.Time{}, false
+	}
+	return time.UnixMicro(n).UTC(), true
+}
+
+// List is the response shape of every paginated endpoint. NextCursor is set
+// when another page may exist; pass it back as ?after= (or ?before=).
+type List[T any] struct {
+	Items      []T     `json:"items"`
+	NextCursor *string `json:"next_cursor"`
+}
+
+// Limit reads ?limit= (default and maximum 100).
+func Limit(r *http.Request) (int, bool) {
+	v := r.URL.Query().Get("limit")
+	if v == "" {
+		return 100, true
+	}
+	n, err := strconv.Atoi(v)
+	return n, err == nil && n >= 1 && n <= 100
 }

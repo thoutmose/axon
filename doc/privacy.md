@@ -14,6 +14,9 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Audit events (action, IP, user agent, time) | `audit_events` | Personal, security | Let the owner review account activity | Until erasure |
 | Consent records | `consents` | Personal | Prove and honour the owner's choices | Until erasure |
 | WebAuthn challenges | `webauthn_ceremonies` | Transient | Complete a passkey ceremony | 5 minutes |
+| Personal access tokens (SHA-256 hashes, names, use times) | `api_tokens` | Security | Script and sync access | Until expiry (≤ 365 days) or revocation |
+| Idempotency records (stored responses) | `idempotency_keys` | Personal (copies of responses) | Safe retries | 24 hours |
+| Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |
 | Health, food, training data (EP-18) | — | **Special category (GDPR Art. 9)** | Health tracking | Not stored before explicit `health_data` consent |
 | Request logs (method, route pattern, status, duration, request ID) | Loki on `srv-monitoring` | Operational, no personal data | Operations | Fleet Loki retention |
 | Database backups (encrypted) | `/opt/axon/backups`, `srv-services` | Contains all of the above | Disaster recovery | 14 days on host, 30 days off-host |
@@ -52,4 +55,4 @@ No analytics or telemetry leaves the deployment.
 | Access and portability | **Account → Download everything**: ZIP with `axon-export.json` and a Markdown summary |
 | Erasure | **Account → Delete account**: rows are deleted immediately; a test proves no table keeps them |
 | Objection / withdrawal | **Account → Privacy choices** |
-| Rectification | Edit the data in place (name editing arrives with EP-07) |
+| Rectification | Edit the data in place (Account → Name) |

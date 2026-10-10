@@ -1,5 +1,5 @@
 # Node 24 runs in a container by default; use `make check WEB_RUN=` with a local Node 24.
-WEB_RUN ?= docker run --rm --network host -u $(shell id -u):$(shell id -g) -e HOME=/tmp -v $(CURDIR)/web:/app -w /app node:24-alpine
+WEB_RUN ?= docker run --rm --network host -u $(shell id -u):$(shell id -g) -e HOME=/tmp -v $(CURDIR):/repo -w /repo/web node:24-alpine
 TEST_DB_URL = postgres://axon:local-dev-only@db:5432/axon_test?sslmode=disable
 
 .PHONY: check check-api check-web test-integration up down
@@ -13,7 +13,8 @@ check-api:
 	cd api && golangci-lint run ./... # install v2.13.2, the version CI uses
 
 check-web:
-	cd web && $(WEB_RUN) sh -c 'npm ci --no-fund --no-audit && npm run check && npm run lint && npm test'
+	cd web && $(WEB_RUN) sh -c 'npm ci --no-fund --no-audit && npm run gen:api && npm run check && npm run lint && npm test'
+	@git diff --quiet web/src/lib/api-types.ts || (echo 'web/src/lib/api-types.ts is stale: commit the regenerated file'; exit 1)
 
 ## test-integration: API and migration tests against a real PostgreSQL + pgvector
 test-integration:

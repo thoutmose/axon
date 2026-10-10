@@ -16,9 +16,9 @@ Status of the chapters EP-04 touches. ✅ met · ➖ not applicable · ⏳ later
 | 2.5.6 Recovery uses a secure mechanism | ✅ | Codes + optional TOTP, audited |
 | 2.6 Look-up secrets (recovery codes) | ✅ | Single use, ≥ 80 bits, stored hashed |
 | 2.7 Out-of-band verifiers | ➖ | None |
-| 2.8.1–2.8.4 TOTP | ✅ | RFC 6238 via `pquerna/otp`, secrets encrypted at rest, confirmation before activation |
+| 2.8.1–2.8.4 TOTP | ✅ | RFC 6238 via `pquerna/otp`, secrets encrypted at rest, confirmation before activation, each code accepted once |
 | 2.9 Cryptographic verifiers | ✅ | WebAuthn (`go-webauthn`), sign-count clone detection |
-| 2.10 Service authentication | ➖ | No service accounts yet (API tokens: EP-06) |
+| 2.10 Service authentication | ✅ | Personal access tokens: 256-bit, hashed, scoped read/write, expiring, revocable, never able to manage the account |
 
 ## V3 Session management
 
@@ -33,7 +33,7 @@ Status of the chapters EP-04 touches. ✅ met · ➖ not applicable · ⏳ later
 | 3.3.3 Option to end all sessions after changing authenticators | ✅ | Sign out everywhere |
 | 3.3.4 Users can view and log out active sessions | ✅ | Account → Signed-in devices |
 | 3.4.1–3.4.5 Cookie attributes | ✅ | `Secure`, `HttpOnly`, `SameSite`, host-only, `Path=/` |
-| 3.5 Token-based sessions | ⏳ | Personal access tokens in EP-06 |
+| 3.5 Token-based sessions | ✅ | Bearer tokens checked server-side on every request; revocation is immediate |
 | 3.7.1 Re-authentication for sensitive actions | ⏳ | Account deletion asks for typed confirmation; step-up passkey check planned with EP-07 |
 
 ## V4 Access control (relevant parts)

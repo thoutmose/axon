@@ -31,8 +31,12 @@ func (s *Service) Routes(r chi.Router) {
 		r.Post("/v1/auth/recovery", s.recoveryLogin)
 	})
 	r.Group(func(r chi.Router) {
-		r.Use(s.Require)
+		r.Use(s.RequireSession)
 		r.Get("/v1/me", s.me)
+		r.Patch("/v1/me", s.updateMe)
+		r.Get("/v1/me/tokens", s.listTokens)
+		r.Post("/v1/me/tokens", s.createToken)
+		r.Delete("/v1/me/tokens/{id}", s.revokeToken)
 		r.Post("/v1/me/logout-all", s.logoutAll)
 		r.Get("/v1/me/sessions", s.listSessions)
 		r.Delete("/v1/me/sessions/{id}", s.revokeSession)
@@ -258,7 +262,7 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		err := tx.QueryRow(r.Context(),
 			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at
 			 FROM recovery_codes c JOIN users u ON u.id = c.user_id
-			 WHERE c.code_hash = $1 AND c.used_at IS NULL FOR UPDATE OF c`,
+			 WHERE c.code_hash = $1 AND c.used_at IS NULL FOR UPDATE`,
 			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errInvalid
@@ -266,7 +270,7 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		if totpOn != nil && !s.validTOTP(sealed, body.TOTP) {
+		if totpOn != nil && !s.useTOTP(r.Context(), tx, userID, sealed, body.TOTP) {
 			return errInvalid
 		}
 		if _, err := tx.Exec(r.Context(), `UPDATE recovery_codes SET used_at = now() WHERE id = $1`, codeID); err != nil {

@@ -44,7 +44,13 @@ func TestMain(m *testing.M) {
 	if pool, err = pgxpool.New(ctx, dsn); err != nil {
 		panic(err)
 	}
+	for _, t := range []string{"test_notes", "test_goals"} {
+		if _, err := pool.Exec(ctx, `CREATE TABLE IF NOT EXISTS `+t+` (id uuid PRIMARY KEY REFERENCES entities(id) ON DELETE CASCADE)`); err != nil {
+			panic(err)
+		}
+	}
 	code := m.Run()
+	_, _ = pool.Exec(ctx, `DROP TABLE test_notes, test_goals`)
 	pool.Close()
 	os.Exit(code)
 }
@@ -101,6 +107,7 @@ func (c *client) do(method, path string, body []byte, headers ...string) (int, [
 	}
 	defer func() { _ = res.Body.Close() }()
 	out, _ := io.ReadAll(res.Body)
+	checkContract(c.e.t, req, body, res, out)
 	return res.StatusCode, out
 }
 
@@ -111,6 +118,17 @@ func (c *client) mustDo(want int, method, path string, body []byte) []byte {
 		c.e.t.Fatalf("%s %s = %d, want %d: %s", method, path, code, want, out)
 	}
 	return out
+}
+
+func (c *client) etag(path string) string {
+	c.e.t.Helper()
+	req, _ := http.NewRequest("GET", c.e.srv.URL+path, nil)
+	res, err := c.http.Do(req)
+	if err != nil {
+		c.e.t.Fatal(err)
+	}
+	_ = res.Body.Close()
+	return res.Header.Get("ETag")
 }
 
 func (c *client) register(name string) []string {
@@ -200,7 +218,18 @@ func TestRecoveryCodesWorkOnceAndRequireTOTPWhenEnabled(t *testing.T) {
 	alice.mustDo(204, "POST", "/v1/me/totp/confirm", []byte(`{"code":"`+now+`"}`))
 
 	e.client().mustDo(401, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[1]+`"}`))
-	e.client().mustDo(200, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[1]+`","totp":"`+now+`"}`))
+	// The code used to turn TOTP on cannot be replayed.
+	e.client().mustDo(401, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[1]+`","totp":"`+now+`"}`))
+	next, _ := totp.GenerateCode(setup.Secret, time.Now().Add(30*time.Second))
+	e.client().mustDo(200, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[1]+`","totp":"`+next+`"}`))
+
+	// Turning it off needs an unused code too. Rewind the recorded step
+	// instead of waiting 30 seconds for the next one.
+	alice.mustDo(422, "POST", "/v1/me/totp/disable", []byte(`{"code":"`+next+`"}`))
+	if _, err := pool.Exec(context.Background(), `UPDATE users SET totp_last_step = 0`); err != nil {
+		t.Fatal(err)
+	}
+	alice.mustDo(204, "POST", "/v1/me/totp/disable", []byte(`{"code":"`+next+`"}`))
 }
 
 func TestCrossSiteRequestsAreRejected(t *testing.T) {
