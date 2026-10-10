@@ -1,0 +1,23 @@
+# Weekly dependency updates, grouped so each ecosystem opens at most one PR.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /api
+    schedule: { interval: weekly }
+    groups: { go: { patterns: ["*"] } }
+  - package-ecosystem: npm
+    directory: /web
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ["*"] } }
+  - package-ecosystem: docker
+    directories: [/api, /web, /deploy/backup]
+    schedule: { interval: weekly }
+    groups: { docker: { patterns: ["*"] } }
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly }
+    groups: { compose: { patterns: ["*"] } }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    groups: { actions: { patterns: ["*"] } }

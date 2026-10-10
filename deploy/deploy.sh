@@ -43,6 +43,22 @@ if [[ -n "$(git status --porcelain)" ]]; then
 fi
 version=$(git rev-parse --short HEAD)
 
+# Promotion rules: CI must have passed for this commit, and production only
+# receives a version that staging is already serving.
+ci=$(gh run list --commit "$(git rev-parse HEAD)" --workflow ci --json status,conclusion \
+  --jq '[.[] | select(.status == "completed")][0].conclusion // "missing"')
+if [[ "$ci" != "success" ]]; then
+  echo "CI for $version is '$ci': push the commit and wait for a green CI run" >&2
+  exit 1
+fi
+if [[ "$env" == prod ]]; then
+  staging=$(ssh srv-staging 'curl -fsS http://127.0.0.1:3000/api/healthz' | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')
+  if [[ "$staging" != "$version" ]]; then
+    echo "deploy $version to staging first (staging serves '${staging:-nothing}')" >&2
+    exit 1
+  fi
+fi
+
 echo "building $version"
 AXON_VERSION=$version docker compose build api web
 docker build -q --network host -t "axon-backup:$version" deploy/backup >/dev/null

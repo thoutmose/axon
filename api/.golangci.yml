@@ -1,0 +1,17 @@
+version: "2"
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+  settings:
+    errcheck:
+      # Progress output to the operator's terminal; a failed write is not actionable.
+      exclude-functions:
+        - fmt.Fprintln
+        - fmt.Fprintf
+formatters:
+  enable:
+    - gofmt

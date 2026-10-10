@@ -23,7 +23,7 @@ func Migrate(ctx context.Context, dsn, direction string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	migrations, err := fs.Sub(embedded, "migrations")
 	if err != nil {
