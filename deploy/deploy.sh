@@ -61,7 +61,8 @@ fi
 
 echo "building $version"
 AXON_VERSION=$version docker compose build api web
-docker build -q --network host -t "axon-backup:$version" deploy/backup >/dev/null
+build_net=$(sed -n 's/^AXON_BUILD_NETWORK=//p' .env 2>/dev/null)
+docker build -q --network "${build_net:-default}" -t "axon-backup:$version" deploy/backup >/dev/null
 
 echo "copying images to $host"
 docker save "axon-api:$version" "axon-web:$version" "axon-backup:$version" | ssh "$host" docker load

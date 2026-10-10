@@ -78,7 +78,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Done (independent review owed) |
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Done |
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Done |
-| EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Planned |
+| EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Done |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Planned |
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
@@ -383,16 +383,25 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Out of scope.** Feature screens (owned by each domain Epic).
 
-**Acceptance criteria**
+**Issues**
 
-- Automated accessibility checks (axe) report no serious violations on every shell page.
-- Every flow works by keyboard alone, with visible focus.
-- Layouts work at 360 px width without horizontal scrolling.
-- Animations are disabled when the user prefers reduced motion.
-- Slow-network and API-down states show a clear message, not a blank screen.
-- Playwright smoke tests cover sign-in, navigation, and sign-out.
-
-**Candidate issues.** Tokens and themes (5) · Core components (8) · App shell and navigation (5) · Auth and account screens (8) · Accessibility and Playwright CI (5) · Error and offline states (3).
+- [x] **EP-07/IS-07.01 — Tokens and themes** · 5 pts · MUST
+  - [x] Type, space, radius, colour, shadow, and motion tokens for light and dark ([ADR 0007](adr/0007-styling-without-tailwind.md)).
+  - [x] Theme follows the system, or the user forces light/dark from the header.
+- [x] **EP-07/IS-07.02 — Core components** · 8 pts · MUST
+  - [x] Button, TextField, Section, List, Dialog (native `<dialog>`), Toast, and Status (loading/error/empty) in `web/src/lib/ui/`.
+- [x] **EP-07/IS-07.03 — App shell and navigation** · 5 pts · MUST
+  - [x] Sticky header, skip link, signed-in route group that redirects to sign-in and back (`?next=`, same-site paths only).
+- [x] **EP-07/IS-07.04 — Auth and account screens** · 8 pts · MUST
+  - [x] Sign-in, registration, and account split into overview, sign-in & security, access tokens, privacy & data, and activity.
+- [x] **EP-07/IS-07.05 — Accessibility and Playwright CI** · 5 pts · MUST
+  - [x] axe reports no serious or critical violations on every shell page (CI `e2e` job).
+  - [x] Every account page is reached by keyboard; focus is visible.
+  - [x] Layouts fit 360 px without horizontal scrolling (checked per page).
+  - [x] Motion tokens drop to 0 ms under reduced motion.
+  - [x] Playwright covers registration, navigation, sign-out, and sign-in with a virtual passkey.
+- [x] **EP-07/IS-07.06 — Error and offline states** · 3 pts · MUST
+  - [x] Offline and server-down banners; every data panel has loading and retryable error states.
 
 ### EP-09 — Tasks & recurring work
 

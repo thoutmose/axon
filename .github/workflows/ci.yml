@@ -75,6 +75,25 @@ jobs:
       - name: Lint the OpenAPI document
         run: docker run --rm -v "$PWD/api/openapi:/spec" -w /spec redocly/cli:2.6.0 lint openapi.yaml
 
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Start the stack
+        run: |
+          cp .env.example .env
+          docker compose up -d --build --wait
+          docker compose exec -T api axon migrate up
+      - name: Playwright with axe (Chromium, virtual passkey)
+        run: >-
+          docker run --rm --network host -v "$PWD/web:/work" -w /work
+          mcr.microsoft.com/playwright:v1.63.0-noble
+          sh -c 'npm ci --no-fund --no-audit && npx playwright test'
+      - name: Server logs on failure
+        if: failure()
+        run: docker compose logs --tail 200 api web caddy
+
   secrets:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

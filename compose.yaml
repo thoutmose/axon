@@ -14,7 +14,7 @@ services:
     image: axon-api:${AXON_VERSION:-dev}
     build:
       context: ./api
-      network: host # bridge networks on the dev host have no internet egress
+      network: ${AXON_BUILD_NETWORK:-default} # "host" where bridge networks lack internet (see .env.example)
       args:
         VERSION: ${AXON_VERSION:-dev}
     environment:
@@ -33,7 +33,7 @@ services:
     image: axon-web:${AXON_VERSION:-dev}
     build:
       context: ./web
-      network: host # bridge networks on the dev host have no internet egress
+      network: ${AXON_BUILD_NETWORK:-default} # "host" where bridge networks lack internet (see .env.example)
     environment:
       API_URL: http://api:8080
       ORIGIN: ${AXON_BASE_URL:?set AXON_BASE_URL in .env}

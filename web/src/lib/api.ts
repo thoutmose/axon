@@ -1,4 +1,5 @@
 import type { components, paths } from './api-types';
+import { connection } from './connection.svelte';
 
 /** Error carrying the API's RFC 9457 problem detail, safe to show to the user. */
 export class ApiError extends Error {
@@ -35,8 +36,10 @@ export async function apiResponse<T = unknown>(
 			body: init.body === undefined ? undefined : JSON.stringify(init.body)
 		});
 	} catch {
+		connection.apiDown = true;
 		throw new ApiError(0, 'Axon is unreachable. Check your connection and try again.');
 	}
+	connection.apiDown = res.status === 502 || res.status === 503 || res.status === 504;
 	if (!res.ok) {
 		const problem = await res.json().catch(() => null);
 		throw new ApiError(res.status, problem?.detail ?? `Request failed (HTTP ${res.status}).`);

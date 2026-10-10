@@ -24,3 +24,7 @@ dist/
 .vscode/
 *.swp
 .DS_Store
+
+# Playwright
+web/test-results/
+web/playwright-report/

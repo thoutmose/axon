@@ -291,7 +291,7 @@ erDiagram
 |---|---|---|
 | Backend | Go + chi | Low memory, explicit concurrency, simple deployment, strong tooling. |
 | API | REST + OpenAPI 3.1; optional GraphQL later | Cacheable, observable, generated clients; avoid premature flexibility. |
-| Frontend | SvelteKit + TypeScript + Tailwind | Small, fast UI with accessible progressive enhancement. |
+| Frontend | SvelteKit + TypeScript, design tokens + scoped CSS ([ADR 0007](doc/adr/0007-styling-without-tailwind.md)) | Small, fast UI with accessible progressive enhancement. |
 | Data | PostgreSQL 16 + pgvector | Durable relational core, full text, vectors, constraints, extensions. |
 | Jobs | Redis/Valkey + database-backed idempotency | Practical queues without hiding source of truth. |
 | Graph view | D3 or Sigma.js | Scalable interactive skill and relationship visualization. |
