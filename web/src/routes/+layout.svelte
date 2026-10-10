@@ -25,10 +25,11 @@
 	<div class="bar">
 		<a href="/" class="brand">Axon</a>
 		<nav aria-label="Main">
-			<a href="/">Home</a>
+			<a href="/today">Today</a>
 			<a href="/tasks">Tasks</a>
 			<a href="/notes">Notes</a>
 			<a href="/goals">Goals</a>
+			<a href="/calendar">Calendar</a>
 			<a href="/account">Account</a>
 			<button class="theme" onclick={cycleTheme} aria-label="Theme: {theme}. Change theme">
 				{theme === 'dark' ? '☾' : theme === 'light' ? '☀' : '◐'}
@@ -79,6 +80,11 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-4);
+		min-width: 0;
+		overflow-x: auto; /* narrow screens scroll the menu, never the page */
+	}
+	nav a {
+		white-space: nowrap;
 	}
 	nav a {
 		color: var(--fg);

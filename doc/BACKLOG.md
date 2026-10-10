@@ -79,7 +79,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Done |
 | EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Done |
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Done |
-| EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
+| EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Done |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
@@ -492,14 +492,20 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Out of scope.** Writing to external calendars.
 
-**Acceptance criteria**
+**Issues**
 
-- Every number on the dashboard links to the items behind it.
-- The dashboard responds in under 300 ms at p95 with 10,000 tasks.
-- Empty states guide a new user to their first task, note, and goal.
-- The iCal feed can be revoked and contains only what the user selected.
-
-**Candidate issues.** Today view (8) · Calendar with filters (8) · iCal feed (5) · KPI definitions and explanations (5) · Empty and onboarding states (3).
+- [x] **EP-08/IS-08.01 — Today view** · 8 pts · SHOULD
+  - [x] `/today` (where signed-in people land) shows today's tasks overdue first, upcoming milestones, active goals with progress, recent notes, and the daily check-in.
+  - [x] The dashboard responds in under 300 ms with 10,000 tasks (slowest of 20 loads; integration test).
+- [x] **EP-08/IS-08.02 — Calendar with filters** · 8 pts · SHOULD
+  - [x] Month agenda of dated tasks, goal target dates, and milestones, filtered by type; items link to their goal.
+- [x] **EP-08/IS-08.03 — iCal feed** · 5 pts · SHOULD
+  - [x] Read-only feeds contain only the chosen types, open items only, titles only; each has its own random URL token (stored hashed), can be revoked at once, and creation and revocation are audited.
+  - [x] Feeds are managed from browser sessions only; access tokens cannot list or create them.
+- [x] **EP-08/IS-08.04 — KPI definitions and explanations** · 5 pts · SHOULD
+  - [x] Every number carries its definition and links to exactly the items it counts: Overdue, For today, and Inbox equal the task views of the same name (integration test; new `overdue` view).
+- [x] **EP-08/IS-08.05 — Empty and onboarding states** · 3 pts · SHOULD
+  - [x] A new account sees “Get started” with its first task, note, and goal, ticked off as each appears; every section has an empty state that says what to do next.
 
 ### EP-19 — AI agent platform, skills & safety
 

@@ -11,6 +11,7 @@
 
 	const views = [
 		{ id: 'today', label: 'Today' },
+		{ id: 'overdue', label: 'Overdue' },
 		{ id: 'week', label: 'Week' },
 		{ id: 'month', label: 'Month' },
 		{ id: 'inbox', label: 'Inbox' },
@@ -21,6 +22,7 @@
 	];
 	const empty: Record<string, string> = {
 		today: 'Nothing due or planned for today.',
+		overdue: 'Nothing overdue.',
 		week: 'Nothing planned this week.',
 		month: 'Nothing planned in the next 30 days.',
 		inbox: 'Inbox zero. Press n anywhere to capture something.',
@@ -79,7 +81,7 @@
 			const status =
 				view === 'inbox' || view === 'done'
 					? 'inbox'
-					: view === 'week' || view === 'month' || view === 'today'
+					: ['week', 'month', 'today', 'overdue'].includes(view)
 						? 'next'
 						: view;
 			await capture(quick, {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { api, type AuthStatus } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
 	import type { PageProps } from './$types';
@@ -9,6 +10,7 @@
 
 	onMount(async () => {
 		status = await api<AuthStatus>('/v1/auth/status').catch(() => null);
+		if (status?.signed_in) await goto('/today', { replaceState: true });
 	});
 </script>
 
@@ -20,8 +22,7 @@
 		Notes, action, learning, health, projects, and reflection in one humane graph that you own.
 	</p>
 	{#if status?.signed_in}
-		<p>Welcome back. Your daily view arrives with the dashboard; for now, manage your account.</p>
-		<Button href="/account">Open your account</Button>
+		<Button href="/today">Open today</Button>
 	{:else if status}
 		<div class="actions">
 			<Button href="/signin">Sign in</Button>

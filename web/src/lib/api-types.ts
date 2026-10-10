@@ -901,6 +901,94 @@ export interface paths {
 		patch: operations['updateMilestone'];
 		trace?: never;
 	};
+	'/v1/dashboard': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Today at a glance; every KPI carries the definition of what it counts */
+		get: operations['getDashboard'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Dated tasks, goal target dates, and milestones in a range (at most 92 days) */
+		get: operations['getCalendar'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/calendar-feeds': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** iCal feeds of this account */
+		get: operations['listCalendarFeeds'];
+		put?: never;
+		/** Create a read-only iCal feed of the chosen types */
+		post: operations['createCalendarFeed'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/calendar-feeds/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Revoke a feed; its URL stops working at once */
+		delete: operations['revokeCalendarFeed'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar-feeds/{token}.ics': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The iCal file (all-day events, titles only, open items from 30 days ago to a year ahead) */
+		get: operations['getCalendarFeed'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1163,6 +1251,33 @@ export interface components {
 			/** Format: date */
 			target_date?: string | null;
 			measure?: components['schemas']['Measure'] | null;
+		};
+		CalendarEvent: {
+			/** Format: date */
+			date: string;
+			/** @enum {unknown} */
+			type: 'task' | 'goal' | 'milestone';
+			/** @enum {unknown} */
+			kind: 'scheduled' | 'due' | 'target' | 'milestone';
+			/** Format: uuid */
+			id: string;
+			title: string;
+			done: boolean;
+			/**
+			 * Format: uuid
+			 * @description The milestone's goal.
+			 */
+			goal_id?: string;
+		};
+		CalendarFeed: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			types: ('task' | 'goal' | 'milestone')[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_used_at: string | null;
 		};
 	};
 	responses: {
@@ -2184,9 +2299,18 @@ export interface operations {
 	listTasks: {
 		parameters: {
 			query?: {
-				/** @description today and week/month include overdue and upcoming dated work in the user's time zone; done is newest first. */
+				/** @description today and week/month include overdue and upcoming dated work in the user's time zone; overdue is open work due before today; done is newest first. */
 				view?:
-					'all' | 'inbox' | 'next' | 'waiting' | 'someday' | 'today' | 'week' | 'month' | 'done';
+					| 'all'
+					| 'inbox'
+					| 'next'
+					| 'waiting'
+					| 'someday'
+					| 'today'
+					| 'overdue'
+					| 'week'
+					| 'month'
+					| 'done';
 				context?: string;
 				/** @description next_cursor from the previous page. */
 				after?: string;
@@ -3018,6 +3142,207 @@ export interface operations {
 			412: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			428: components['responses']['Problem'];
+		};
+	};
+	getDashboard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The daily view. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						today: string;
+						kpis: {
+							/**
+							 * @description overdue, today, and inbox equal the size of the task view with that name.
+							 * @enum {unknown}
+							 */
+							id: 'overdue' | 'today' | 'inbox';
+							label: string;
+							value: number;
+							definition: string;
+						}[];
+						/** @description The first of today's tasks, overdue first. */
+						tasks: components['schemas']['Task'][];
+						goals: components['schemas']['Goal'][];
+						/** @description Open milestones of active goals due in the next 14 days. */
+						milestones: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							/** Format: uuid */
+							goal_id: string;
+							goal_title: string;
+							/** Format: date */
+							due_on: string;
+						}[];
+						/** @description Most recently changed notes. */
+						notes: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** Format: date-time */
+							updated_at: string;
+						}[];
+						/** @description Today's daily check-in exists. */
+						checked_in: boolean;
+						/** @description How many tasks, notes, and goals exist, for first-run guidance. */
+						totals: {
+							tasks: number;
+							notes: number;
+							goals: number;
+						};
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getCalendar: {
+		parameters: {
+			query: {
+				from: string;
+				to: string;
+				/** @description Comma-separated subset of task, goal, milestone (default all). */
+				types?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Events, oldest first. Cancelled tasks and archived goals are left out. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarEvent'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	listCalendarFeeds: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Feeds (their URLs are only shown at creation). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarFeed'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Phone */
+					name: string;
+					types: ('task' | 'goal' | 'milestone')[];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. Subscribe to path on this server; it is not shown again. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						feed: components['schemas']['CalendarFeed'];
+						/** @example /api/v1/calendar-feeds/3q2-…ics */
+						path: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	revokeCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Revoked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The secret part of the feed URL. */
+				token: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description An RFC 5545 calendar. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/calendar': string;
+				};
+			};
+			404: components['responses']['Problem'];
 		};
 	};
 }

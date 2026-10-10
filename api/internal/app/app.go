@@ -11,6 +11,7 @@ import (
 	"github.com/thoutmose/axon/api/openapi"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
@@ -33,6 +34,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	tasksAPI := tasks.NewHandlers(pool, log)
 	notesAPI := notes.NewHandlers(pool, log)
 	goalsAPI := goals.NewHandlers(pool, log)
+	dashboardAPI := dashboard.NewHandlers(pool, log)
 	priv.RegisterFiles("notes", notes.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
@@ -46,15 +48,18 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(httpx.MaxBody), authn.SameOrigin)
 			authn.Routes(r)
+			dashboardAPI.PublicRoutes(r) // the feed URL's token is its credential
 			r.Group(func(r chi.Router) {
 				r.Use(authn.RequireSession)
 				priv.Routes(r)
+				dashboardAPI.FeedRoutes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
 				graphAPI.Routes(r)
 				tasksAPI.Routes(r)
 				goalsAPI.Routes(r)
+				dashboardAPI.Routes(r)
 			})
 		})
 	}), nil

@@ -50,7 +50,10 @@ test('register with a passkey and see recovery codes once', async () => {
 		page.getByRole('list', { name: 'Recovery codes' }).getByRole('listitem')
 	).toHaveCount(10);
 	await page.getByRole('link', { name: 'I saved them, continue' }).click();
-	await expect(page.getByText('Welcome back')).toBeVisible();
+	await expect(page).toHaveURL(/\/today$/);
+	// A new account is guided to its first task, note, and goal.
+	await expect(page.getByRole('heading', { name: 'Get started' })).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('every account page is reachable by keyboard and accessible', async () => {
@@ -86,7 +89,9 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/account/privacy',
 		'/tasks',
 		'/notes',
-		'/goals'
+		'/goals',
+		'/today',
+		'/calendar'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -204,6 +209,41 @@ test('set a goal, break it into milestones, link work, and see how progress is w
 	await expect(page.getByRole('heading', { name: 'Weekly goal review' })).toHaveCount(0);
 	await expect(page.getByRole('link', { name: 'Learn to swim 1 km' })).toBeVisible();
 	await noSeriousA11yViolations(page);
+});
+
+test('today shows defined numbers that open the items behind them', async () => {
+	await page.goto('/');
+	await expect(page).toHaveURL(/\/today$/);
+	await expect(page.getByText('Get started')).toHaveCount(0); // a task, note, and goal exist
+	const inbox = page.getByRole('link', { name: /Inbox/ });
+	await expect(inbox).toContainText('1');
+	await expect(page.getByText('Captured tasks you have not clarified yet.')).toBeVisible();
+	await expect(
+		page
+			.getByRole('region', { name: 'Active goals' })
+			.getByRole('link', { name: 'Learn to swim 1 km' })
+	).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await inbox.click();
+	await expect(page).toHaveURL(/view=inbox/);
+	await expect(page.getByRole('button', { name: 'Buy stamps' })).toBeVisible();
+});
+
+test('subscribe to a calendar feed, read it, and revoke it', async () => {
+	await page.goto('/calendar');
+	await expect(page.getByRole('heading', { level: 1, name: 'Calendar' })).toBeVisible();
+	await page.getByLabel('Feed name').fill('Phone');
+	await page.getByRole('button', { name: 'Create feed' }).click();
+	const url = (await page.locator('.new-feed code').textContent()) ?? '';
+	expect(url).toMatch(/\/api\/v1\/calendar-feeds\/.+\.ics$/);
+	const feed = await page.request.get(url, { headers: { cookie: '' } });
+	expect(feed.status()).toBe(200);
+	expect(await feed.text()).toContain('BEGIN:VCALENDAR');
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('button', { name: 'Revoke Phone' }).click();
+	await expect(page.getByText('Its URL no longer works.')).toBeVisible();
+	expect((await page.request.get(url)).status()).toBe(404);
 });
 
 test('sign out, then sign back in with the passkey', async () => {

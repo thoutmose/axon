@@ -36,6 +36,8 @@ tags:
     description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
   - name: goals
     description: Goals with an optional measure, milestones, and progress that explains exactly what it was computed from. Link tasks and notes to a goal or milestone with the supports relation.
+  - name: dashboard
+    description: The daily view with defined KPIs, the calendar, and read-only iCal feeds.
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -753,8 +755,8 @@ paths:
       parameters:
         - name: view
           in: query
-          description: today and week/month include overdue and upcoming dated work in the user's time zone; done is newest first.
-          schema: { type: string, enum: [all, inbox, next, waiting, someday, today, week, month, done], default: all }
+          description: today and week/month include overdue and upcoming dated work in the user's time zone; overdue is open work due before today; done is newest first.
+          schema: { type: string, enum: [all, inbox, next, waiting, someday, today, overdue, week, month, done], default: all }
         - name: context
           in: query
           schema: { type: string, example: "@home" }
@@ -1377,6 +1379,173 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/dashboard:
+    get:
+      tags: [dashboard]
+      operationId: getDashboard
+      summary: Today at a glance; every KPI carries the definition of what it counts
+      responses:
+        "200":
+          description: The daily view.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [today, kpis, tasks, goals, milestones, notes, checked_in, totals]
+                properties:
+                  today: { type: string, format: date }
+                  kpis:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, label, value, definition]
+                      properties:
+                        id: { enum: [overdue, today, inbox], description: "overdue, today, and inbox equal the size of the task view with that name." }
+                        label: { type: string }
+                        value: { type: integer }
+                        definition: { type: string }
+                  tasks: { type: array, maxItems: 10, description: "The first of today's tasks, overdue first.", items: { $ref: "#/components/schemas/Task" } }
+                  goals: { type: array, maxItems: 5, items: { $ref: "#/components/schemas/Goal" } }
+                  milestones:
+                    type: array
+                    maxItems: 10
+                    description: Open milestones of active goals due in the next 14 days.
+                    items:
+                      type: object
+                      required: [id, title, goal_id, goal_title, due_on]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        goal_id: { type: string, format: uuid }
+                        goal_title: { type: string }
+                        due_on: { type: string, format: date }
+                  notes:
+                    type: array
+                    maxItems: 5
+                    description: Most recently changed notes.
+                    items:
+                      type: object
+                      required: [id, title, path, updated_at]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        path: { type: string }
+                        updated_at: { type: string, format: date-time }
+                  checked_in: { type: boolean, description: Today's daily check-in exists. }
+                  totals:
+                    type: object
+                    description: How many tasks, notes, and goals exist, for first-run guidance.
+                    required: [tasks, notes, goals]
+                    properties:
+                      tasks: { type: integer }
+                      notes: { type: integer }
+                      goals: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/calendar:
+    get:
+      tags: [dashboard]
+      operationId: getCalendar
+      summary: Dated tasks, goal target dates, and milestones in a range (at most 92 days)
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - name: types
+          in: query
+          description: Comma-separated subset of task, goal, milestone (default all).
+          schema: { type: string, example: "task,milestone" }
+      responses:
+        "200":
+          description: Events, oldest first. Cancelled tasks and archived goals are left out.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/CalendarEvent" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/me/calendar-feeds:
+    get:
+      tags: [dashboard]
+      operationId: listCalendarFeeds
+      summary: iCal feeds of this account
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Feeds (their URLs are only shown at creation).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/CalendarFeed" } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [dashboard]
+      operationId: createCalendarFeed
+      summary: Create a read-only iCal feed of the chosen types
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, types]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100, example: Phone }
+                types: { type: array, minItems: 1, items: { enum: [task, goal, milestone] } }
+      responses:
+        "201":
+          description: Created. Subscribe to path on this server; it is not shown again.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [feed, path]
+                properties:
+                  feed: { $ref: "#/components/schemas/CalendarFeed" }
+                  path: { type: string, example: "/api/v1/calendar-feeds/3q2-…ics" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/calendar-feeds/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [dashboard]
+      operationId: revokeCalendarFeed
+      summary: Revoke a feed; its URL stops working at once
+      security: [{ session: [] }]
+      responses:
+        "204": { description: Revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/calendar-feeds/{token}.ics:
+    get:
+      tags: [dashboard]
+      operationId: getCalendarFeed
+      summary: The iCal file (all-day events, titles only, open items from 30 days ago to a year ahead)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: The secret part of the feed URL.
+          schema: { type: string }
+      responses:
+        "200":
+          description: An RFC 5545 calendar.
+          content:
+            text/calendar:
+              schema: { type: string }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -1736,3 +1905,23 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Measure"
             - type: "null"
+    CalendarEvent:
+      type: object
+      required: [date, type, kind, id, title, done]
+      properties:
+        date: { type: string, format: date }
+        type: { enum: [task, goal, milestone] }
+        kind: { enum: [scheduled, due, target, milestone] }
+        id: { type: string, format: uuid }
+        title: { type: string }
+        done: { type: boolean }
+        goal_id: { type: string, format: uuid, description: The milestone's goal. }
+    CalendarFeed:
+      type: object
+      required: [id, name, types, created_at, last_used_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        types: { type: array, items: { enum: [task, goal, milestone] } }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: [string, "null"], format: date-time }

@@ -29,6 +29,8 @@ const (
 	AccountUpdated      = "account.updated"
 	TokenCreated        = "token.created"
 	TokenRevoked        = "token.revoked"
+	CalendarFeedCreated = "calendar_feed.created"
+	CalendarFeedRevoked = "calendar_feed.revoked"
 )
 
 // Event is one audit log entry.
