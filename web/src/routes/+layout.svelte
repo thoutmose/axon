@@ -1,11 +1,16 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import Toaster from '$lib/ui/Toaster.svelte';
 	import { connection, watchConnection } from '$lib/connection.svelte';
 	import { applyTheme, storedTheme, type Theme } from '$lib/theme';
 
 	let { children } = $props();
+	// Pages with a full-bleed hero lay themselves out edge to edge.
+	const wide = $derived(page.url.pathname === '/' || page.url.pathname === '/today');
+	const current = (href: string) =>
+		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
 
 	onMount(() => {
@@ -23,18 +28,67 @@
 <a class="skip" href="#main">Skip to content</a>
 <header>
 	<div class="bar">
-		<a href="/" class="brand">Axon</a>
+		<a href="/" class="brand"
+			><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
+				><defs
+					><linearGradient id="axon-mark" x1="0" y1="0" x2="1" y2="1"
+						><stop offset="0" stop-color="#5aa9ff" /><stop
+							offset="1"
+							stop-color="#b16cff"
+						/></linearGradient
+					></defs
+				><circle cx="12" cy="12" r="10" fill="url(#axon-mark)" /><circle
+					cx="8"
+					cy="10"
+					r="2"
+					fill="#fff"
+				/><circle cx="16" cy="9" r="1.6" fill="#fff" /><circle
+					cx="13"
+					cy="16"
+					r="1.8"
+					fill="#fff"
+				/><path
+					d="M8 10 16 9M8 10l5 6M16 9l-3 7"
+					stroke="#fff"
+					stroke-width="1.2"
+					fill="none"
+					opacity=".8"
+				/></svg
+			>Axon</a
+		>
 		<nav aria-label="Main">
-			<a href="/today">Today</a>
-			<a href="/tasks">Tasks</a>
-			<a href="/notes">Notes</a>
-			<a href="/goals">Goals</a>
-			<a href="/habits">Habits</a>
-			<a href="/calendar">Calendar</a>
-			<a href="/agents">Agents</a>
-			<a href="/account">Account</a>
+			<a href="/today" aria-current={current('/today') ? 'page' : undefined}>Today</a>
+			<a href="/tasks" aria-current={current('/tasks') ? 'page' : undefined}>Tasks</a>
+			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>Notes</a>
+			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>Goals</a>
+			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>Habits</a>
+			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}>Calendar</a>
+			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>Agents</a>
+			<a href="/account" aria-current={current('/account') ? 'page' : undefined}>Account</a>
 			<button class="theme" onclick={cycleTheme} aria-label="Theme: {theme}. Change theme">
-				{theme === 'dark' ? '☾' : theme === 'light' ? '☀' : '◐'}
+				<svg
+					viewBox="0 0 24 24"
+					width="18"
+					height="18"
+					aria-hidden="true"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+				>
+					{#if theme === 'dark'}
+						<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+					{:else if theme === 'light'}
+						<circle cx="12" cy="12" r="4" /><path
+							d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+						/>
+					{:else}
+						<circle cx="12" cy="12" r="8.5" /><path
+							d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z"
+							fill="currentColor"
+						/>
+					{/if}
+				</svg>
 			</button>
 		</nav>
 	</div>
@@ -48,7 +102,7 @@
 	</p>
 {/if}
 
-<main id="main">
+<main id="main" class:wide>
 	{@render children()}
 </main>
 <Toaster />
@@ -57,58 +111,85 @@
 	header {
 		position: sticky;
 		top: 0;
-		z-index: 5;
+		z-index: 10;
 		background: var(--surface-glass);
-		backdrop-filter: saturate(1.4) blur(12px);
+		-webkit-backdrop-filter: var(--glass-blur);
+		backdrop-filter: var(--glass-blur);
 		border-bottom: 1px solid var(--border);
 	}
 	.bar {
-		max-width: var(--content-width);
+		max-width: var(--wide-width);
 		margin: 0 auto;
-		padding: var(--space-3) var(--space-4);
+		padding: var(--space-2) var(--space-4);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		gap: var(--space-4);
+		gap: var(--space-6);
+		min-height: 3rem;
 	}
 	.brand {
-		font-weight: 750;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-weight: 650;
 		font-size: var(--text-lg);
 		color: var(--fg);
 		text-decoration: none;
 		letter-spacing: -0.02em;
+		flex-shrink: 0;
 	}
 	nav {
 		display: flex;
 		align-items: center;
-		gap: var(--space-4);
+		gap: var(--space-1);
 		min-width: 0;
 		overflow-x: auto; /* narrow screens scroll the menu, never the page */
+		scrollbar-width: none;
 	}
 	nav a {
 		white-space: nowrap;
-	}
-	nav a {
 		color: var(--fg);
+		opacity: 0.8;
 		text-decoration: none;
+		font-size: var(--text-sm);
+		padding: var(--space-1) var(--space-3);
+		border-radius: 999px;
+		transition:
+			opacity var(--motion-fast) var(--ease),
+			background var(--motion-fast) var(--ease);
 	}
 	nav a:hover {
-		color: var(--accent);
+		opacity: 1;
+	}
+	nav a[aria-current='page'] {
+		opacity: 1;
+		font-weight: 600;
+		background: var(--accent-soft);
 	}
 	.theme {
+		display: inline-grid;
+		place-items: center;
 		background: none;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
+		border: none;
+		border-radius: 999px;
 		color: var(--fg);
-		min-width: 2.5rem;
-		min-height: 2.5rem;
+		min-width: 2.25rem;
+		min-height: 2.25rem;
 		cursor: pointer;
-		font-size: var(--text-lg);
+		font-size: var(--text-base);
+		flex-shrink: 0;
+	}
+	.theme:hover {
+		background: var(--accent-soft);
 	}
 	main {
 		max-width: var(--content-width);
 		margin: 0 auto;
 		padding: var(--space-8) var(--space-4) var(--space-16);
+	}
+	main.wide {
+		max-width: none;
+		padding: 0 0 var(--space-16);
 	}
 	.banner {
 		margin: 0;
@@ -125,7 +206,7 @@
 		left: var(--space-4);
 		top: var(--space-4);
 		z-index: 20;
-		background: var(--surface);
+		background: var(--surface-solid);
 		padding: var(--space-2) var(--space-3);
 	}
 </style>

@@ -34,7 +34,15 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test('home page is accessible and offers registration', async () => {
+	// Artwork and fonts ship with Axon: nothing is fetched from another origin.
+	const foreign: string[] = [];
+	page.on('request', (r) => {
+		if (!r.url().startsWith('http://localhost:3000') && !r.url().startsWith('data:'))
+			foreign.push(r.url());
+	});
 	await page.goto('/');
+	await page.waitForLoadState('networkidle');
+	expect(foreign).toEqual([]);
 	await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 	await expect(page.getByRole('status').filter({ hasText: 'Server running' })).toBeVisible();
 	await noSeriousA11yViolations(page);

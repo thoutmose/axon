@@ -78,18 +78,15 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ## Screenshots
 
-<p align="center"><em>Screenshot placeholders — replace with real, permissioned captures when the UI exists.</em></p>
+| Home | Today (light) | Today (dark, phone) |
+|---|---|---|
+| ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view with a scenic hero, task counts, and cards](doc/screenshots/today.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
 
-| View | Placeholder |
-|---|---|
-| Dashboard | `doc/screenshots/dashboard.png` |
-| Knowledge graph | `doc/screenshots/graph.png` |
-| Roadmap skill graph | `doc/screenshots/roadmap.png` |
-| Agent approval | `doc/screenshots/agent-approval.png` |
+Captured from a test account with sample data.
 
 <details><summary>Design direction</summary>
 
-Large typography, generous whitespace, dark mode, quiet surfaces, and restrained glass effects. Motion should clarify state like a well-made instrument—not compete for attention. Respect reduced-motion preferences and keep every action usable without animation.
+Large typography, generous whitespace, dark mode, translucent glass over bundled scenery (ADR 0010). Motion should clarify state like a well-made instrument—not compete for attention. Respect reduced-motion preferences and keep every action usable without animation.
 
 </details>
 
@@ -425,7 +422,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, and EP-22 done; EP-23 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, EP-22, and EP-23 done; EP-24 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

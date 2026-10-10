@@ -34,8 +34,8 @@
 		justify-content: center;
 		gap: var(--space-2);
 		min-height: 2.75rem;
-		padding: var(--space-2) var(--space-4);
-		border-radius: var(--radius);
+		padding: var(--space-2) var(--space-6);
+		border-radius: 999px;
 		border: 1px solid transparent;
 		font: inherit;
 		font-weight: 600;
@@ -49,10 +49,15 @@
 		background: var(--accent);
 		color: var(--accent-fg);
 	}
+	.primary:hover {
+		filter: brightness(1.08);
+	}
 	.secondary {
 		background: var(--surface);
 		color: var(--fg);
 		border-color: var(--border);
+		-webkit-backdrop-filter: var(--glass-blur);
+		backdrop-filter: var(--glass-blur);
 	}
 	.secondary:hover {
 		border-color: var(--accent);

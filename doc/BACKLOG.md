@@ -94,7 +94,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
 | EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
-| EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Planned |
+| EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Planned |
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Planned |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Planned |
@@ -701,12 +701,15 @@ Consumer chat subscriptions (Claude Pro/Max, ChatGPT Plus) are out of scope: pro
 
 **In scope.** Ambient background artwork bundled with the app (no third-party image hosts), glass surfaces with backdrop blur, a hero on Today and the home page, refined type scale and motion, light and dark themes.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0010](adr/0010-visual-language.md))
 
-- Text contrast stays at WCAG AA over every background (axe in CI).
-- Reduced motion and reduced transparency preferences are honoured.
-- No request leaves the server to load images or fonts.
-- Pages still fit a 360 px screen and stay usable on slow networks.
+- [x] **EP-23/IS-23.01 — Tokens, glass, and colour field** · 8 pts · MUST
+  - [x] Neutral light and dark tokens, translucent surfaces with backdrop blur, pill buttons, display type; reduced transparency gives solid surfaces; reduced motion stops animation (e2e).
+- [x] **EP-23/IS-23.02 — Bundled scenery and heroes** · 8 pts · MUST
+  - [x] SVG landscape in four time-of-day palettes; full-bleed hero on the home page (with feature sections) and Today (with a two-column layout); no cross-origin requests (e2e).
+- [x] **EP-23/IS-23.03 — Navigation polish** · 5 pts · SHOULD
+  - [x] Logo mark, current-page highlight, SVG theme icons; menu scrolls inside itself on 360 px screens (e2e).
+  - [x] Text contrast at AA on every page checked by axe; entrance motion never lowers contrast.
 
 ### EP-24 — Connect everything
 
