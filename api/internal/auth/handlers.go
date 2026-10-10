@@ -1,0 +1,305 @@
+package auth
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+
+	"github.com/thoutmose/axon/api/internal/audit"
+	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/httpx"
+)
+
+// Routes mounts the authentication and account endpoints.
+func (s *Service) Routes(r chi.Router) {
+	r.Get("/v1/auth/status", s.status)
+	r.Post("/v1/auth/logout", s.logout)
+	r.Group(func(r chi.Router) {
+		r.Use(s.signInLimit.middleware)
+		r.Post("/v1/auth/register/begin", s.registerBegin)
+		r.Post("/v1/auth/register/finish", s.registerFinish)
+		r.Post("/v1/auth/login/begin", s.loginBegin)
+		r.Post("/v1/auth/login/finish", s.loginFinish)
+		r.Post("/v1/auth/recovery", s.recoveryLogin)
+	})
+	r.Group(func(r chi.Router) {
+		r.Use(s.Require)
+		r.Get("/v1/me", s.me)
+		r.Post("/v1/me/logout-all", s.logoutAll)
+		r.Get("/v1/me/sessions", s.listSessions)
+		r.Delete("/v1/me/sessions/{id}", s.revokeSession)
+		r.Get("/v1/me/passkeys", s.listPasskeys)
+		r.Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
+		r.Post("/v1/me/passkeys/finish", s.addPasskeyFinish)
+		r.Delete("/v1/me/passkeys/{id}", s.removePasskey)
+		r.Post("/v1/me/recovery-codes", s.regenerateRecoveryCodes)
+		r.Post("/v1/me/totp/begin", s.totpBegin)
+		r.Post("/v1/me/totp/confirm", s.totpConfirm)
+		r.Post("/v1/me/totp/disable", s.totpDisable)
+		r.Get("/v1/me/audit", s.listAudit)
+	})
+}
+
+// fail logs an unexpected error and answers with a generic 500.
+func (s *Service) fail(w http.ResponseWriter, r *http.Request, err error) {
+	s.log.Error("request failed", "route", chi.RouteContext(r.Context()).RoutePattern(), "err", err)
+	httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
+}
+
+func cleanName(name string) (string, bool) {
+	name = strings.TrimSpace(name)
+	return name, name != "" && len([]rune(name)) <= 100
+}
+
+// --- Registration and sign-in ---
+
+func (s *Service) status(w http.ResponseWriter, r *http.Request) {
+	open, err := s.registrationOpen(r.Context(), s.db)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	_, idErr := s.identify(r)
+	httpx.JSON(w, http.StatusOK, map[string]bool{
+		"registration_open": open,
+		"signed_in":         idErr == nil,
+		"totp_available":    s.sealer != nil,
+	})
+}
+
+func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		DisplayName string `json:"display_name"`
+	}
+	if err := httpx.Decode(r, &body); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	name, ok := cleanName(body.DisplayName)
+	if !ok {
+		httpx.Problem(w, http.StatusUnprocessableEntity, "Enter a name between 1 and 100 characters.")
+		return
+	}
+	open, err := s.registrationOpen(r.Context(), s.db)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if !open {
+		httpx.Problem(w, http.StatusForbidden, "Registration is closed on this Axon.")
+		return
+	}
+	u := &user{ID: uuid.Must(uuid.NewV7()), DisplayName: name}
+	options, session, err := s.wa.BeginRegistration(u, creationOptions(nil)...)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if err := s.saveCeremony(r.Context(), w, "register", ceremony{DisplayName: name, Session: *session}); err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, options)
+}
+
+func (s *Service) registerFinish(w http.ResponseWriter, r *http.Request) {
+	var codes []string
+	var displayName string
+	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+		// Serialize registrations so "first account only" cannot race.
+		if _, err := tx.Exec(r.Context(), `SELECT pg_advisory_xact_lock(7364001)`); err != nil {
+			return err
+		}
+		if open, err := s.registrationOpen(r.Context(), tx); err != nil || !open {
+			return errors.Join(err, errRegistrationClosed)
+		}
+		c, err := s.takeCeremony(r.Context(), tx, w, r, "register")
+		if err != nil {
+			return err
+		}
+		userID, err := uuid.FromBytes(c.Session.UserID)
+		if err != nil {
+			return errNotFound
+		}
+		u := &user{ID: userID, DisplayName: c.DisplayName}
+		cred, err := s.wa.FinishRegistration(u, c.Session, r)
+		if err != nil {
+			return errors.Join(errCeremonyFailed, err)
+		}
+		if _, err := tx.Exec(r.Context(), `INSERT INTO users (id, display_name) VALUES ($1, $2)`, u.ID, u.DisplayName); err != nil {
+			return err
+		}
+		if err := insertPasskey(r, tx, u.ID, "First passkey", cred); err != nil {
+			return err
+		}
+		if codes, err = issueRecoveryCodes(r.Context(), tx, u.ID); err != nil {
+			return err
+		}
+		if err := audit.Record(r.Context(), tx, u.ID, audit.AccountCreated, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
+			return err
+		}
+		displayName = u.DisplayName
+		return s.startSession(r.Context(), tx, w, r, u.ID)
+	})
+	switch {
+	case errors.Is(err, errRegistrationClosed):
+		httpx.Problem(w, http.StatusForbidden, "Registration is closed on this Axon.")
+	case errors.Is(err, errNotFound), errors.Is(err, errCeremonyFailed):
+		s.log.Info("registration ceremony rejected", "err", err)
+		httpx.Problem(w, http.StatusBadRequest, "The passkey could not be created. Start again.")
+	case err != nil:
+		s.fail(w, r, err)
+	default:
+		httpx.JSON(w, http.StatusCreated, map[string]any{"display_name": displayName, "recovery_codes": codes})
+	}
+}
+
+var (
+	errRegistrationClosed = errors.New("registration closed")
+	errCeremonyFailed     = errors.New("webauthn ceremony failed")
+)
+
+func insertPasskey(r *http.Request, q db.Querier, userID uuid.UUID, name string, cred *webauthn.Credential) error {
+	raw, err := json.Marshal(cred)
+	if err != nil {
+		return err
+	}
+	_, err = q.Exec(r.Context(),
+		`INSERT INTO passkeys (id, user_id, credential_id, credential, name) VALUES ($1, $2, $3, $4, $5)`,
+		uuid.Must(uuid.NewV7()), userID, cred.ID, raw, name)
+	return err
+}
+
+func (s *Service) loginBegin(w http.ResponseWriter, r *http.Request) {
+	options, session, err := s.wa.BeginDiscoverableLogin(webauthn.WithUserVerification(protocol.VerificationPreferred))
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if err := s.saveCeremony(r.Context(), w, "login", ceremony{Session: *session}); err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, options)
+}
+
+func (s *Service) loginFinish(w http.ResponseWriter, r *http.Request) {
+	var displayName string
+	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+		c, err := s.takeCeremony(r.Context(), tx, w, r, "login")
+		if err != nil {
+			return err
+		}
+		var found *user
+		handler := func(_, userHandle []byte) (webauthn.User, error) {
+			id, err := uuid.FromBytes(userHandle)
+			if err != nil {
+				return nil, errNotFound
+			}
+			found, err = loadUser(r.Context(), tx, id)
+			return found, err
+		}
+		_, cred, err := s.wa.FinishPasskeyLogin(handler, c.Session, r)
+		if err != nil {
+			return errors.Join(errCeremonyFailed, err)
+		}
+		if cred.Authenticator.CloneWarning {
+			return errors.Join(errCeremonyFailed, errors.New("authenticator clone warning"))
+		}
+		raw, err := json.Marshal(cred)
+		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(r.Context(),
+			`UPDATE passkeys SET credential = $1, last_used_at = now() WHERE credential_id = $2 AND user_id = $3`,
+			raw, cred.ID, found.ID); err != nil {
+			return err
+		}
+		if err := audit.Record(r.Context(), tx, found.ID, audit.SignInPasskey, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
+			return err
+		}
+		displayName = found.DisplayName
+		return s.startSession(r.Context(), tx, w, r, found.ID)
+	})
+	switch {
+	case errors.Is(err, errNotFound), errors.Is(err, errCeremonyFailed):
+		s.log.Info("sign-in ceremony rejected", "err", err)
+		httpx.Problem(w, http.StatusUnauthorized, "Sign-in failed. Try again with a passkey for this Axon.")
+	case err != nil:
+		s.fail(w, r, err)
+	default:
+		httpx.JSON(w, http.StatusOK, map[string]string{"display_name": displayName})
+	}
+}
+
+func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Code string `json:"code"`
+		TOTP string `json:"totp"`
+	}
+	if err := httpx.Decode(r, &body); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var displayName string
+	errInvalid := errors.New("invalid recovery attempt")
+	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+		var codeID, userID uuid.UUID
+		var sealed []byte
+		var totpOn *time.Time
+		err := tx.QueryRow(r.Context(),
+			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at
+			 FROM recovery_codes c JOIN users u ON u.id = c.user_id
+			 WHERE c.code_hash = $1 AND c.used_at IS NULL FOR UPDATE OF c`,
+			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errInvalid
+		}
+		if err != nil {
+			return err
+		}
+		if totpOn != nil && !s.validTOTP(sealed, body.TOTP) {
+			return errInvalid
+		}
+		if _, err := tx.Exec(r.Context(), `UPDATE recovery_codes SET used_at = now() WHERE id = $1`, codeID); err != nil {
+			return err
+		}
+		if err := audit.Record(r.Context(), tx, userID, audit.SignInRecoveryCode, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
+			return err
+		}
+		return s.startSession(r.Context(), tx, w, r, userID)
+	})
+	switch {
+	case errors.Is(err, errInvalid):
+		httpx.Problem(w, http.StatusUnauthorized, "That recovery code (or authenticator code) is not valid.")
+	case err != nil:
+		s.fail(w, r, err)
+	default:
+		httpx.JSON(w, http.StatusOK, map[string]string{"display_name": displayName})
+	}
+}
+
+func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
+	if id, err := s.identify(r); err == nil {
+		err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(r.Context(), `DELETE FROM sessions WHERE id = $1`, id.SessionID); err != nil {
+				return err
+			}
+			return audit.Record(r.Context(), tx, id.UserID, audit.SignOut, httpx.ClientIP(r), r.UserAgent(), nil)
+		})
+		if err != nil {
+			s.fail(w, r, err)
+			return
+		}
+	}
+	s.clearCookie(w, sessionCookie)
+	w.WriteHeader(http.StatusNoContent)
+}

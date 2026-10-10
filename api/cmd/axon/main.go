@@ -17,6 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/thoutmose/axon/api/internal/app"
+	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/server"
 )
@@ -77,7 +79,16 @@ func serve() error {
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
-	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), server.New(version, pool, log, metrics))
+	handler, err := app.Handler(version, auth.Config{
+		BaseURL:          os.Getenv("AXON_BASE_URL"),
+		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
+		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
+		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
+	}, pool, log, metrics)
+	if err != nil {
+		return err
+	}
+	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
 	errc := make(chan error, 2)

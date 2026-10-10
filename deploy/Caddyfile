@@ -1,5 +1,11 @@
 {
 	admin off
+	# Tailscale Serve and Docker forward from private addresses; the first
+	# address outside those ranges (right to left) is the real client.
+	servers {
+		trusted_proxies static private_ranges
+		trusted_proxies_strict
+	}
 }
 
 # Plain HTTP on 127.0.0.1:3000. On servers, Tailscale Serve terminates HTTPS in front of it (ADR 0004).
@@ -12,7 +18,9 @@
 	}
 
 	handle_path /api/* {
-		reverse_proxy api:8080
+		reverse_proxy api:8080 {
+			header_up X-Real-IP {client_ip}
+		}
 	}
 	handle {
 		reverse_proxy web:3000

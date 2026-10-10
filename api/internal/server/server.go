@@ -17,8 +17,8 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
-// New returns the API handler.
-func New(version string, db Pinger, log *slog.Logger, m *Metrics) http.Handler {
+// New returns the API handler. mount adds the application routes.
+func New(version string, db Pinger, log *slog.Logger, m *Metrics, mount ...func(chi.Router)) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(observe(m, log)) // outside Recoverer, so panics are recorded as 500s
@@ -41,6 +41,9 @@ func New(version string, db Pinger, log *slog.Logger, m *Metrics) http.Handler {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 
+	for _, f := range mount {
+		f(r)
+	}
 	return r
 }
 

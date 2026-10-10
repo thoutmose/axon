@@ -356,7 +356,8 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_ENV` | Yes | `development` | Environment behavior and safeguards. |
 | `DATABASE_URL` | Yes | `postgres://...` | PostgreSQL connection; store as a secret. |
 | `REDIS_URL` | Yes | `redis://...` | Queue/cache connection. |
-| `SESSION_SECRET` | Yes | generated | Session signing; never commit. |
+| `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
+| `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register; `open` allows anyone who can reach Axon. |
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
 | `ANTHROPIC_API_KEY` | Optional | secret | Agent provider credential. |
 | `TMDB_API_KEY` | Optional | secret | Media metadata adapter. |

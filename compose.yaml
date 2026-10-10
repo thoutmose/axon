@@ -21,6 +21,10 @@ services:
       AXON_ENV: ${AXON_ENV:?set AXON_ENV in .env}
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
       REDIS_URL: ${REDIS_URL:?set REDIS_URL in .env}
+      AXON_BASE_URL: ${AXON_BASE_URL:?set AXON_BASE_URL in .env}
+      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:?set WEBAUTHN_RP_ID in .env}
+      AXON_ENCRYPTION_KEY: ${AXON_ENCRYPTION_KEY:-}
+      AXON_REGISTRATION: ${AXON_REGISTRATION:-first-user}
     depends_on:
       db:
         condition: service_healthy
