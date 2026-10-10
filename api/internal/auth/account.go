@@ -22,17 +22,18 @@ func (s *Service) me(w http.ResponseWriter, r *http.Request) {
 	var out struct {
 		ID                     uuid.UUID `json:"id"`
 		DisplayName            string    `json:"display_name"`
+		Timezone               string    `json:"timezone"`
 		CreatedAt              time.Time `json:"created_at"`
 		TOTPEnabled            bool      `json:"totp_enabled"`
 		Passkeys               int       `json:"passkeys"`
 		RecoveryCodesRemaining int       `json:"recovery_codes_remaining"`
 	}
 	err := s.db.QueryRow(r.Context(),
-		`SELECT u.updated_at, u.id, u.display_name, u.created_at, u.totp_enabled_at IS NOT NULL,
+		`SELECT u.updated_at, u.id, u.display_name, u.timezone, u.created_at, u.totp_enabled_at IS NOT NULL,
 		        (SELECT count(*) FROM passkeys WHERE user_id = u.id),
 		        (SELECT count(*) FROM recovery_codes WHERE user_id = u.id AND used_at IS NULL)
 		 FROM users u WHERE u.id = $1`, id.UserID).
-		Scan(&version, &out.ID, &out.DisplayName, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining)
+		Scan(&version, &out.ID, &out.DisplayName, &out.Timezone, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining)
 	if err != nil {
 		s.fail(w, r, err)
 		return
@@ -41,8 +42,8 @@ func (s *Service) me(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, out)
 }
 
-// updateMe renames the account. It needs If-Match with the ETag from GET
-// /v1/me, so a stale tab cannot silently overwrite a newer change.
+// updateMe changes the account's name and/or time zone. It needs If-Match
+// with the ETag from GET /v1/me, so a stale tab cannot overwrite a newer change.
 func (s *Service) updateMe(w http.ResponseWriter, r *http.Request) {
 	id, _ := FromContext(r.Context())
 	version, ok := httpx.IfMatch(w, r)
@@ -50,23 +51,37 @@ func (s *Service) updateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body struct {
-		DisplayName string `json:"display_name"`
+		DisplayName *string `json:"display_name"`
+		Timezone    *string `json:"timezone"`
 	}
 	if err := httpx.Decode(r, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	name, valid := cleanName(body.DisplayName)
-	if !valid {
-		httpx.Problem(w, http.StatusUnprocessableEntity, "Enter a name between 1 and 100 characters.")
-		return
+	var fields []string
+	if body.DisplayName != nil {
+		name, valid := cleanName(*body.DisplayName)
+		if !valid {
+			httpx.Problem(w, http.StatusUnprocessableEntity, "Enter a name between 1 and 100 characters.")
+			return
+		}
+		body.DisplayName = &name
+		fields = append(fields, "display_name")
+	}
+	if body.Timezone != nil {
+		if _, err := time.LoadLocation(*body.Timezone); err != nil || *body.Timezone == "" || *body.Timezone == "Local" {
+			httpx.Problem(w, http.StatusUnprocessableEntity, "Use an IANA time zone such as Europe/Paris.")
+			return
+		}
+		fields = append(fields, "timezone")
 	}
 	errStale := errors.New("stale")
 	var updated time.Time
 	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
 		err := tx.QueryRow(r.Context(),
-			`UPDATE users SET display_name = $3, updated_at = clock_timestamp()
-			 WHERE id = $1 AND updated_at = $2 RETURNING updated_at`, id.UserID, version, name).Scan(&updated)
+			`UPDATE users SET display_name = coalesce($3, display_name), timezone = coalesce($4, timezone),
+			 updated_at = clock_timestamp() WHERE id = $1 AND updated_at = $2 RETURNING updated_at`,
+			id.UserID, version, body.DisplayName, body.Timezone).Scan(&updated)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errStale
 		}
@@ -74,7 +89,7 @@ func (s *Service) updateMe(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		return audit.Record(r.Context(), tx, id.UserID, audit.AccountUpdated, httpx.ClientIP(r), r.UserAgent(),
-			map[string]any{"fields": []string{"display_name"}})
+			map[string]any{"fields": fields})
 	})
 	switch {
 	case errors.Is(err, errStale):

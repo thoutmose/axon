@@ -189,7 +189,7 @@ export interface paths {
 		delete: operations['deleteAccount'];
 		options?: never;
 		head?: never;
-		/** Rename the account */
+		/** Change the account's name and/or time zone */
 		patch: operations['updateMe'];
 		trace?: never;
 	};
@@ -616,6 +616,99 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/tasks': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A view of the task list */
+		get: operations['listTasks'];
+		put?: never;
+		/** Capture or create a task (status inbox unless given) */
+		post: operations['createTask'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/tasks/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One task */
+		get: operations['getTask'];
+		put?: never;
+		post?: never;
+		/** Delete a task and its links */
+		delete: operations['deleteTask'];
+		options?: never;
+		head?: never;
+		/** Change a task; completing a recurring task creates its next occurrence once */
+		patch: operations['updateTask'];
+		trace?: never;
+	};
+	'/v1/contexts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** GTD contexts in use, with open task counts */
+		get: operations['listContexts'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/checkins': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Check-ins in a date range (default the last 30 days) */
+		get: operations['listCheckins'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/checkins/{kind}/{day}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/**
+		 * Record (or update) a daily, weekly, or monthly check-in
+		 * @description Weekly check-ins are stored on the Monday of the week, monthly ones on the first of the month.
+		 */
+		put: operations['checkIn'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -637,6 +730,7 @@ export interface components {
 			/** Format: uuid */
 			id: string;
 			display_name: string;
+			timezone: string;
 			/** Format: date-time */
 			created_at: string;
 			totp_enabled: boolean;
@@ -725,6 +819,54 @@ export interface components {
 			/** @enum {unknown} */
 			kind: 'created' | 'updated' | 'deleted' | 'linked' | 'unlinked';
 			fields: string[];
+			/** Format: date-time */
+			created_at: string;
+		};
+		Task: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			notes: string;
+			status: components['schemas']['TaskStatus'];
+			context: string | null;
+			/** Format: date */
+			scheduled_on: string | null;
+			/** Format: date */
+			due_on: string | null;
+			/** @description RFC 5545 RRULE, e.g. FREQ=WEEKLY;BYDAY=MO */
+			recurrence: string | null;
+			/** Format: uuid */
+			series_id: string | null;
+			/** Format: date */
+			occurrence_on: string | null;
+			/** Format: date-time */
+			completed_at: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		/** @enum {unknown} */
+		TaskStatus: 'inbox' | 'next' | 'waiting' | 'someday' | 'done' | 'cancelled';
+		TaskFields: {
+			title?: string;
+			notes?: string;
+			status?: components['schemas']['TaskStatus'];
+			/** @example @home */
+			context?: string | null;
+			/** Format: date */
+			scheduled_on?: string | null;
+			/** Format: date */
+			due_on?: string | null;
+			/** @example FREQ=WEEKLY;BYDAY=MO,TH */
+			recurrence?: string | null;
+		};
+		Checkin: {
+			/** @enum {unknown} */
+			kind: 'daily' | 'weekly' | 'monthly';
+			/** Format: date */
+			day: string;
+			note: string;
 			/** Format: date-time */
 			created_at: string;
 		};
@@ -1074,7 +1216,9 @@ export interface operations {
 		requestBody: {
 			content: {
 				'application/json': {
-					display_name: components['schemas']['Name'];
+					display_name?: components['schemas']['Name'];
+					/** @description IANA time zone, e.g. Europe/Paris; decides what “today” is. */
+					timezone?: string;
 				};
 			};
 		};
@@ -1732,6 +1876,248 @@ export interface operations {
 			};
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
+		};
+	};
+	listTasks: {
+		parameters: {
+			query?: {
+				/** @description today and week/month include overdue and upcoming dated work in the user's time zone; done is newest first. */
+				view?:
+					'all' | 'inbox' | 'next' | 'waiting' | 'someday' | 'today' | 'week' | 'month' | 'done';
+				context?: string;
+				/** @description next_cursor from the previous page. */
+				after?: string;
+				limit?: components['parameters']['Limit'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A page of tasks. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Task'][];
+						/** Format: date */
+						today: string;
+						next_cursor: string | null;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createTask: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['TaskFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Task'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The task. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Task'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateTask: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['TaskFields'];
+			};
+		};
+		responses: {
+			/** @description The updated task. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Task'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	listContexts: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Contexts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							context: string;
+							open: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listCheckins: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Check-ins, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Checkin'][];
+						/** Format: date */
+						today: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	checkIn: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				kind: 'daily' | 'weekly' | 'monthly';
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The check-in. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Checkin'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 }

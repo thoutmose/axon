@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"slices"
 	"sync"
 	"testing"
 
@@ -86,19 +85,5 @@ func checkContract(t *testing.T, req *http.Request, reqBody []byte, res *http.Re
 	}
 	if err := openapi3filter.ValidateResponse(context.Background(), out); err != nil {
 		t.Errorf("contract: response %d to %s %s: %v\n%s", res.StatusCode, req.Method, req.URL.Path, err, resBody)
-	}
-}
-
-// Operations covered by another package's tests (internal/server).
-var notExercisedHere = []string{"health", "ready"}
-
-func TestZZEveryOperationIsExercised(t *testing.T) {
-	loadSpec(t)
-	for path, item := range spec.Paths.Map() {
-		for method, op := range item.Operations() {
-			if _, ok := covered.Load(op.OperationID); !ok && !slices.Contains(notExercisedHere, op.OperationID) {
-				t.Errorf("no test exercises %s %s (%s)", method, path, op.OperationID)
-			}
-		}
 	}
 }

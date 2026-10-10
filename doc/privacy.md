@@ -16,6 +16,8 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | WebAuthn challenges | `webauthn_ceremonies` | Transient | Complete a passkey ceremony | 5 minutes |
 | Personal access tokens (SHA-256 hashes, names, use times) | `api_tokens` | Security | Script and sync access | Until expiry (≤ 365 days) or revocation |
 | Idempotency records (stored responses) | `idempotency_keys` | Personal (copies of responses) | Safe retries | 24 hours |
+| Tasks (titles, notes, dates, contexts, recurrence) and check-ins | `tasks`, `checkins` | Personal | Planning and doing | Until deleted or erasure |
+| Account time zone | `users.timezone` | Personal | Decide what “today” means | Until changed or erasure |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |
 | Health, food, training data (EP-18) | — | **Special category (GDPR Art. 9)** | Health tracking | Not stored before explicit `health_data` consent |
 | Request logs (method, route pattern, status, duration, request ID) | Loki on `srv-monitoring` | Operational, no personal data | Operations | Fleet Loki retention |

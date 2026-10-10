@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/server"
+	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
 // Handler builds the complete API handler.
@@ -27,6 +28,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv := privacy.New(pool, log, authn.ClearSessionCookie)
 	priv.Register("graph", graph.Export)
 	graphAPI := graph.NewHandlers(pool, log)
+	tasksAPI := tasks.NewHandlers(pool, log)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -42,6 +44,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
 				graphAPI.Routes(r)
+				tasksAPI.Routes(r)
 			})
 		})
 	}), nil

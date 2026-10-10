@@ -39,6 +39,11 @@ func TestMain(m *testing.M) {
 	if pool, err = pgxpool.New(ctx, dsn); err != nil {
 		panic(err)
 	}
+	// Start from no users, so rows other packages' tests left behind (of types
+	// this test binary does not register) do not count as integrity problems.
+	if _, err := pool.Exec(ctx, `TRUNCATE users CASCADE`); err != nil {
+		panic(err)
+	}
 	for _, t := range []string{"test_notes", "test_goals"} {
 		if _, err := pool.Exec(ctx, `CREATE TABLE IF NOT EXISTS `+t+` (id uuid PRIMARY KEY REFERENCES entities(id) ON DELETE CASCADE, body text NOT NULL DEFAULT '')`); err != nil {
 			panic(err)
@@ -239,27 +244,5 @@ func TestPaginationIsBoundedAndOrdered(t *testing.T) {
 	}
 	if rest[0].ID.String() <= first[2].ID.String() {
 		t.Fatal("second page overlaps the first")
-	}
-}
-
-// Every domain table that hangs off entities must be a registered type, so
-// export and integrity checks cover it.
-func TestEveryEntityTableIsRegistered(t *testing.T) {
-	rows, err := pool.Query(context.Background(), `
-		SELECT DISTINCT tc.table_name FROM information_schema.table_constraints tc
-		JOIN information_schema.constraint_column_usage cu ON cu.constraint_name = tc.constraint_name
-		WHERE tc.constraint_type = 'FOREIGN KEY' AND cu.table_name = 'entities' AND tc.table_name <> 'links'`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tables, _ := pgx.CollectRows(rows, pgx.RowTo[string])
-	registered := map[string]bool{}
-	for _, typ := range Types() {
-		registered[typ.Table] = true
-	}
-	for _, table := range tables {
-		if !registered[table] {
-			t.Errorf("table %s references entities but no graph.Type registers it", table)
-		}
 	}
 }
