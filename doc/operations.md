@@ -38,7 +38,7 @@ deploy/deploy.sh staging
 deploy/deploy.sh prod
 ```
 
-The script builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
+The script refuses to deploy a commit without a green `ci` run on GitHub, and refuses a production version that staging is not serving. It then builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
 
 ## Roll back
 

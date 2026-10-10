@@ -4,7 +4,7 @@ Axon is a self-hosted life OS. Product and architecture: [README.md](README.md).
 
 ## Current state
 
-EP-00 and EP-01 delivered. Next Epic: EP-02 (see [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order)). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
+EP-00–EP-02 delivered. Next Epic: EP-03 (see [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order)). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
 
 - `api/` — Go API (`chi`, `pgx`, `goose` migrations embedded in `internal/db/migrations`).
 - `web/` — SvelteKit 2 + TypeScript, Node 24.
@@ -15,7 +15,7 @@ EP-00 and EP-01 delivered. Next Epic: EP-02 (see [doc/BACKLOG.md](doc/BACKLOG.md
 - `make check` — all formatting, lint, and unit tests (run before every commit).
 - `make test-integration` — migrations against real PostgreSQL.
 - `make up` / `make down` — local stack; then `docker compose exec api axon migrate up`.
-- `deploy/deploy.sh staging|prod [--rollback]` — deploy the committed state (staging first).
+- `deploy/deploy.sh staging|prod [--rollback]` — deploy the committed state; needs green CI, and prod only takes what staging serves.
 
 Server host configuration belongs to the fleet repository `thoutmose/terraform-proxmox`, not here (ADR 0004).
 
