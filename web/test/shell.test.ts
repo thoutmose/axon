@@ -17,7 +17,7 @@ async function noSeriousA11yViolations(p: Page) {
 }
 
 test.beforeAll(async ({ browser }) => {
-	page = await browser.newPage();
+	page = await (await browser.newContext()).newPage(); // axe needs an explicit context
 	// A platform authenticator that always verifies the user, as Touch ID would.
 	const cdp = await page.context().newCDPSession(page);
 	await cdp.send('WebAuthn.enable');
