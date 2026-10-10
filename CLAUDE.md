@@ -19,7 +19,7 @@ EP-00–EP-02 delivered. Next Epic: EP-03 (see [doc/BACKLOG.md](doc/BACKLOG.md#d
 
 Server host configuration belongs to the fleet repository `thoutmose/terraform-proxmox`, not here (ADR 0004).
 
-Docker bridge networks on the maintainer's dev host have no internet access, so image builds and the web check container use host networking.
+Docker bridge networks on the maintainer's dev host have no internet access: its `.env` sets `AXON_BUILD_NETWORK=host`, and the web check container uses host networking.
 
 ## Rules
 
