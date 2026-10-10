@@ -73,7 +73,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 |---|---|---|---|---:|---|---|
 | EP-00 | Project foundation & governance | Repository, license, decision records, contributor norms, agent rules, and a walking skeleton. | MUST | 34 pts | None | Done |
 | EP-01 | Infrastructure & IaC | Axon deployed to `srv-prod` and `srv-staging` on the tailnet, with rollback and tested backups. | MUST | 27 pts | EP-00 | Done |
-| EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Planned |
+| EP-02 | CI/CD & promotion | Every change is checked, built reproducibly, and promoted staging → production with rollback. | MUST | 34 pts | EP-00, EP-01 | Done |
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | Planned |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Planned |
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Planned |
@@ -225,23 +225,23 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-02/IS-02.01 — Pull-request checks** · 8 pts · MUST
-  - [ ] Every PR runs formatting, linting, unit tests, `svelte-check`, and builds; all are required to merge.
-  - [ ] The pipeline finishes in under 10 minutes on a typical PR.
-- [ ] **EP-02/IS-02.02 — Integration tests** · 5 pts · MUST
-  - [ ] Integration tests run against a real PostgreSQL 16 + pgvector service, including migrations up and down.
-- [ ] **EP-02/IS-02.03 — Supply chain** · 8 pts · MUST
-  - [ ] Base images are pinned by digest.
-  - [ ] Trivy fails the build on fixable HIGH/CRITICAL vulnerabilities.
-  - [ ] An SBOM is produced for each release image.
-  - [ ] Renovate opens grouped dependency PRs on a schedule.
-  - [ ] Secret scanning runs on every PR.
-- [ ] **EP-02/IS-02.04 — Release builds** · 5 pts · MUST
-  - [ ] A version tag produces versioned images in a registry; `/healthz` reports that version.
-- [ ] **EP-02/IS-02.05 — Deploy, promote, roll back** · 8 pts · MUST
-  - [ ] One job deploys a version to staging and runs migrations.
-  - [ ] Promotion to production requires manual approval.
-  - [ ] Rolling back to the previous version is documented and rehearsed (evidence: log).
+- [x] **EP-02/IS-02.01 — Pull-request checks** · 8 pts · MUST
+  - [x] Every PR runs formatting, linting, unit tests, `svelte-check`, and builds. GitHub cannot enforce required checks on a free private repository, so `deploy.sh` refuses any commit without a green CI run.
+  - [x] The pipeline finishes in under 10 minutes on a typical PR (first run: ~4 min).
+- [x] **EP-02/IS-02.02 — Integration tests** · 5 pts · MUST
+  - [x] Integration tests run against a real PostgreSQL 16 + pgvector service, including migrations up and down.
+- [x] **EP-02/IS-02.03 — Supply chain** · 8 pts · MUST
+  - [x] Base images are pinned by digest.
+  - [x] Trivy fails the build on fixable HIGH/CRITICAL vulnerabilities.
+  - [x] An SBOM is produced for each image on every PR and attached to each release.
+  - [x] Dependabot (built into GitHub, no app to install) opens grouped weekly dependency PRs.
+  - [x] Secret scanning runs on every PR.
+- [x] **EP-02/IS-02.04 — Release builds** · 5 pts · MUST
+  - [x] A version tag produces versioned images in a registry; `/healthz` reports that version.
+- [x] **EP-02/IS-02.05 — Deploy, promote, roll back** · 8 pts · MUST
+  - [x] One command deploys a version to staging and runs migrations (`deploy/deploy.sh`; GitHub runners cannot reach the tailnet).
+  - [x] Promotion to production is a manual command and only accepts the version staging is serving.
+  - [x] Rolling back to the previous version is documented and rehearsed (EP-01 staging log).
 
 **Exit evidence.** A PR that went from commit to production through the pipeline, plus a rollback log.
 
