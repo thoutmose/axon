@@ -1167,6 +1167,86 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/habits': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Habits with a status (default active) and where each stands today */
+		get: operations['listHabits'];
+		put?: never;
+		/** Create a habit (every day unless days are given) */
+		post: operations['createHabit'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One habit and where it stands today */
+		get: operations['getHabit'];
+		put?: never;
+		post?: never;
+		/** Delete a habit, its check-ins, and its links */
+		delete: operations['deleteHabit'];
+		options?: never;
+		head?: never;
+		/** Change a habit's design, schedule, or status */
+		patch: operations['updateHabit'];
+		trace?: never;
+	};
+	'/v1/habits/{id}/checkins': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Check-ins in a range (default the last 28 days), newest first */
+		get: operations['listHabitCheckins'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits/{id}/checkins/{day}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Record a day as done, done in its two-minute version, or a planned skip */
+		put: operations['checkInHabit'];
+		post?: never;
+		/** Remove a day's check-in */
+		delete: operations['uncheckHabit'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1511,6 +1591,61 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			decided_at: string | null;
+		};
+		HabitFields: {
+			/** @description The action: “Read one page”. */
+			title?: string;
+			cue?: string;
+			craving?: string;
+			reward?: string;
+			/** @example After I pour my coffee */
+			stack_after?: string;
+			/** @example Put on my running shoes */
+			two_minute?: string;
+			/** @description ISO weekdays in the user's time zone, 1 = Monday. */
+			days?: number[];
+			/** @enum {unknown} */
+			status?: 'active' | 'paused' | 'archived';
+		};
+		Habit: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			cue: string;
+			craving: string;
+			reward: string;
+			stack_after: string;
+			two_minute: string;
+			days: number[];
+			/** @enum {unknown} */
+			status: 'active' | 'paused' | 'archived';
+			state: {
+				/** Format: date */
+				today: string;
+				scheduled_today: boolean;
+				/** @enum {string|null} */
+				checked_in: 'done' | 'two_minute' | 'skipped' | null;
+				/** @description Scheduled days kept in a row, up to 366; planned skips neither count nor break it. */
+				streak: number;
+				recovery: null | {
+					/** @description Scheduled days missed in a row (up to 7). */
+					missed: number;
+					message: string;
+				};
+			};
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		HabitCheckin: {
+			/** Format: date */
+			day: string;
+			/** @enum {unknown} */
+			status: 'done' | 'two_minute' | 'skipped';
+			note: string;
+			/** Format: date-time */
+			created_at: string;
 		};
 	};
 	responses: {
@@ -3862,6 +3997,243 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	listHabits: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'paused' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 habits, oldest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Habit'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createHabit: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The habit. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateHabit: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitFields'];
+			};
+		};
+		responses: {
+			/** @description The updated habit. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	listHabitCheckins: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Check-ins. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['HabitCheckin'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	checkInHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					status: 'done' | 'two_minute' | 'skipped';
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The check-in. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitCheckin'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	uncheckHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 }

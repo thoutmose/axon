@@ -2,6 +2,7 @@
 package httpx
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -49,6 +50,13 @@ func DecodeN(r *http.Request, v any, limit int64) error {
 		return errors.New("the request body is not valid JSON for this endpoint")
 	}
 	return nil
+}
+
+// DecodeStrict reads JSON bytes into v, rejecting unknown fields.
+func DecodeStrict(b []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.DisallowUnknownFields()
+	return dec.Decode(v)
 }
 
 // ClientIP returns the caller's address. Caddy sets X-Real-IP from the

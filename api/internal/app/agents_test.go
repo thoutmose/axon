@@ -122,7 +122,8 @@ func snapshot(t *testing.T) string {
 	err := pool.QueryRow(context.Background(), `SELECT concat_ws('/',
 		(SELECT count(*) FROM entities), (SELECT count(*) FROM links), (SELECT count(*) FROM agent_memories),
 		(SELECT string_agg(t.status || coalesce(t.context, '') || coalesce(t.due_on::text, '') || e.title, ',' ORDER BY t.id) FROM tasks t JOIN entities e ON e.id = t.id),
-		(SELECT count(*) FROM milestones))`).Scan(&s)
+		(SELECT count(*) FROM milestones),
+		(SELECT string_agg(two_minute, ',' ORDER BY id) FROM habits))`).Scan(&s)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,6 +228,8 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 	task := alice.createTask(`{"title":"Stretch","status":"next"}`)
 	var g goalJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals", []byte(`{"title":"Touch my toes"}`)), &g)
+	var habit habitJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Read one page"}`)), &habit)
 
 	inputs := map[string]struct{ agent, input string }{
 		"update_task":       {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
@@ -234,6 +237,8 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		"add_milestone":     {"goals", `{"goal_id":"` + g.ID + `","title":"Reach my shins","reason":"Halfway."}`},
 		"link_task_to_goal": {"goals", `{"task_id":"` + task.ID + `","goal_id":"` + g.ID + `","reason":"Stretching moves it."}`},
 		"remember":          {"goals", `{"fact":"Prefers morning routines","reason":"Stated today."}`},
+		"create_habit":      {"habits", `{"title":"Floss one tooth","two_minute":"Floss one tooth","stack_after":"After I brush","reason":"Tiny start."}`},
+		"update_habit":      {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
 	}
 	var tested []string
 	for name := range inputs {

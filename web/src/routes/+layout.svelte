@@ -29,6 +29,7 @@
 			<a href="/tasks">Tasks</a>
 			<a href="/notes">Notes</a>
 			<a href="/goals">Goals</a>
+			<a href="/habits">Habits</a>
 			<a href="/calendar">Calendar</a>
 			<a href="/agents">Agents</a>
 			<a href="/account">Account</a>

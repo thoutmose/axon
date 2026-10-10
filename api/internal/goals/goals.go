@@ -34,7 +34,7 @@ func init() {
 	graph.RegisterType(graph.Type{Name: MilestoneType, Table: "milestones", Export: exportMilestones})
 	graph.RegisterRelation(graph.Relation{
 		Name:    Supports,
-		Sources: []string{tasks.Type, notes.Type},
+		Sources: []string{tasks.Type, notes.Type, "habit"}, // habits (EP-12) import goals, not the reverse
 		Targets: []string{Type, MilestoneType},
 	})
 }

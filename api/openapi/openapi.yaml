@@ -40,6 +40,8 @@ tags:
     description: The daily view with defined KPIs, the calendar, and read-only iCal feeds.
   - name: agents
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
+  - name: habits
+    description: Habits with a cue, stack, two-minute version, and reward; check-ins on local calendar days; recovery prompts after a miss.
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -1770,6 +1772,168 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/habits:
+    get:
+      tags: [habits]
+      operationId: listHabits
+      summary: Habits with a status (default active) and where each stands today
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, paused, archived] }
+      responses:
+        "200":
+          description: Up to 200 habits, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Habit" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [habits]
+      operationId: createHabit
+      summary: Create a habit (every day unless days are given)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/HabitFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Habit" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/habits/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [habits]
+      operationId: getHabit
+      summary: One habit and where it stands today
+      responses:
+        "200":
+          description: The habit.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Habit" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [habits]
+      operationId: updateHabit
+      summary: Change a habit's design, schedule, or status
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HabitFields" }
+      responses:
+        "200":
+          description: The updated habit.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Habit" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [habits]
+      operationId: deleteHabit
+      summary: Delete a habit, its check-ins, and its links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/habits/{id}/checkins:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [habits]
+      operationId: listHabitCheckins
+      summary: Check-ins in a range (default the last 28 days), newest first
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Check-ins.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/HabitCheckin" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/habits/{id}/checkins/{day}:
+    parameters:
+      - { $ref: "#/components/parameters/ID" }
+      - { name: day, in: path, required: true, description: "A local date: today or up to 7 days back.", schema: { type: string, format: date } }
+    put:
+      tags: [habits]
+      operationId: checkInHabit
+      summary: Record a day as done, done in its two-minute version, or a planned skip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              additionalProperties: false
+              properties:
+                status: { enum: [done, two_minute, skipped] }
+                note: { type: string, maxLength: 1000 }
+      responses:
+        "200":
+          description: The check-in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HabitCheckin" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [habits]
+      operationId: uncheckHabit
+      summary: Remove a day's check-in
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -2189,3 +2353,54 @@ components:
         status: { enum: [pending, approved, rejected, failed] }
         created_at: { type: string, format: date-time }
         decided_at: { type: [string, "null"], format: date-time }
+    HabitFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500, description: "The action: “Read one page”." }
+        cue: { type: string, maxLength: 500 }
+        craving: { type: string, maxLength: 500 }
+        reward: { type: string, maxLength: 500 }
+        stack_after: { type: string, maxLength: 500, example: "After I pour my coffee" }
+        two_minute: { type: string, maxLength: 500, example: "Put on my running shoes" }
+        days: { type: array, minItems: 1, maxItems: 7, items: { type: integer, minimum: 1, maximum: 7 }, description: "ISO weekdays in the user's time zone, 1 = Monday." }
+        status: { enum: [active, paused, archived] }
+    Habit:
+      type: object
+      required: [id, title, cue, craving, reward, stack_after, two_minute, days, status, state, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        cue: { type: string }
+        craving: { type: string }
+        reward: { type: string }
+        stack_after: { type: string }
+        two_minute: { type: string }
+        days: { type: array, items: { type: integer } }
+        status: { enum: [active, paused, archived] }
+        state:
+          type: object
+          required: [today, scheduled_today, checked_in, streak, recovery]
+          properties:
+            today: { type: string, format: date }
+            scheduled_today: { type: boolean }
+            checked_in: { type: [string, "null"], enum: [done, two_minute, skipped, null] }
+            streak: { type: integer, description: "Scheduled days kept in a row, up to 366; planned skips neither count nor break it." }
+            recovery:
+              oneOf:
+                - type: "null"
+                - type: object
+                  required: [missed, message]
+                  properties:
+                    missed: { type: integer, description: Scheduled days missed in a row (up to 7). }
+                    message: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    HabitCheckin:
+      type: object
+      required: [day, status, note, created_at]
+      properties:
+        day: { type: string, format: date }
+        status: { enum: [done, two_minute, skipped] }
+        note: { type: string }
+        created_at: { type: string, format: date-time }

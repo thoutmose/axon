@@ -83,7 +83,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
-| EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Planned |
+| EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Done |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
 | EP-14 | Roadmaps, Tutor agent & skill graph | Import or generate learning roadmaps and visualize progress. | SHOULD | 89 pts | EP-11, EP-13, EP-19 | Planned |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
@@ -554,13 +554,20 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **In scope.** Habit model (cue, craving, response, reward, stack, two-minute version, schedule); check-ins; recovery after a miss (“never miss twice”); links to goals; Habits agent suggestions as drafts.
 
-**Acceptance criteria**
+**Issues**
 
-- A missed day produces a recovery prompt, never shaming copy (copy reviewed against the product quality questions).
-- Schedules respect the user’s time zone, including travel and daylight-saving changes.
-- Habits work fully with the agent disabled.
-
-**Candidate issues.** Habit model and API (8) · Check-in flow (5) · Schedules and time zones (8) · Recovery flow (5) · Habit screens (13) · Habits agent (13).
+- [x] **EP-12/IS-12.01 — Habit model and API** · 8 pts · MUST
+  - [x] Habits are graph entities with cue, craving, response (title), reward, stack (“After I…”), two-minute version, weekday schedule, and status; they can support goals.
+- [x] **EP-12/IS-12.02 — Check-in flow** · 5 pts · MUST
+  - [x] Done, two-minute version, or planned rest, for today or up to 7 days back (never the future); undo; 28-day history.
+- [x] **EP-12/IS-12.03 — Schedules and time zones** · 8 pts · MUST
+  - [x] Check-ins are keyed by local calendar date in the user's time zone; tests cover 300 days across DST in three zones and travel from Paris to Tokyo (no double count, no false miss).
+- [x] **EP-12/IS-12.04 — Recovery flow** · 5 pts · MUST
+  - [x] After a missed scheduled day the habit shows a recovery prompt (“Never miss twice: even the two-minute version counts today”); copy is tested against a list of shaming words and loss framing; rest days and planned skips are never misses.
+- [x] **EP-12/IS-12.05 — Habit screens** · 13 pts · MUST
+  - [x] Today's habits with Done / two-minute / rest buttons and undo; habit page with four-week history, goal links, design fields, and delete confirmation (e2e and axe).
+- [x] **EP-12/IS-12.06 — Habits agent** · 13 pts · SHOULD
+  - [x] Proposes new habits and design changes as drafts the user approves (`create_habit`, `update_habit`; covered by the every-write-tool test); its skill forbids shame, pressure, and medical advice. Habits work fully with agents off (e2e runs without a provider).
 
 ### EP-10 — Projects, Kanban, docs & delivery agents
 

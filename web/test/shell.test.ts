@@ -92,7 +92,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/goals',
 		'/today',
 		'/calendar',
-		'/agents'
+		'/agents',
+		'/habits'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -245,6 +246,29 @@ test('subscribe to a calendar feed, read it, and revoke it', async () => {
 	await page.getByRole('button', { name: 'Revoke Phone' }).click();
 	await expect(page.getByText('Its URL no longer works.')).toBeVisible();
 	expect((await page.request.get(url)).status()).toBe(404);
+});
+
+test('design a habit, check in with the two-minute version, and link it to a goal', async () => {
+	await page.goto('/habits');
+	await expect(page.getByText('No habits yet.')).toBeVisible();
+	await page.getByLabel('Habit', { exact: true }).fill('Swim one length');
+	await page.getByLabel('Two-minute version').fill('Pack my swim bag');
+	await page.getByLabel('After…').fill('After breakfast');
+	await page.getByRole('button', { name: 'Create habit' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Swim one length' })).toBeVisible();
+	await page.getByLabel('Goal', { exact: true }).selectOption({ label: 'Learn to swim 1 km' });
+	await page.getByRole('button', { name: 'Link', exact: true }).click();
+	await expect(page.getByRole('region', { name: 'Goals it supports' })).toContainText(
+		'Learn to swim 1 km'
+	);
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/habits');
+	await page.getByRole('button', { name: 'Did the two-minute version: Pack my swim bag' }).click();
+	await expect(page.getByText('Two-minute version today')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: "Undo today's check-in for Swim one length" }).click();
+	await expect(page.getByRole('button', { name: 'Done: Swim one length' })).toBeVisible();
 });
 
 test('without an AI provider, agents say so and nothing else depends on them', async () => {

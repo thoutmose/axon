@@ -15,6 +15,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -85,6 +86,10 @@ func notFound(err error, what string) error {
 	var g goals.ValidationError
 	if errors.As(err, &g) {
 		return toolError{g.Msg}
+	}
+	var h habits.ValidationError
+	if errors.As(err, &h) {
+		return toolError{h.Msg}
 	}
 	return err
 }
@@ -446,6 +451,93 @@ var registry = map[string]Tool{
 			return err
 		},
 	},
+	"list_habits": {
+		Name:        "list_habits",
+		Description: "List the person's active habits: cue, stack, two-minute version, schedule (ISO weekdays), and how today stands.",
+		Properties:  map[string]any{},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			if err := decode(raw, &struct{}{}); err != nil {
+				return nil, err
+			}
+			return habits.List(ctx, q, userID, "active", time.Now())
+		},
+	},
+	"create_habit": {
+		Name:        "create_habit",
+		Description: "Propose a new habit. Nothing is created until the person approves. title is the action (\"Read one page\").",
+		Properties:  habitProperties(false),
+		Required:    []string{"title", "two_minute", "reason"},
+		Write:       true,
+		Summary: func(_ context.Context, _ db.Querier, _ uuid.UUID, raw json.RawMessage) (string, error) {
+			f, err := habitFields(raw)
+			if err != nil {
+				return "", err
+			}
+			return "Create habit “" + deref(f.Title) + "”" + habitChanges(f, true), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			f, err := habitFields(raw)
+			if err != nil {
+				return err
+			}
+			_, err = habits.Create(ctx, tx, userID, actor, f, time.Now())
+			return notFound(err, "habit")
+		},
+	},
+	"update_habit": {
+		Name:        "update_habit",
+		Description: "Propose changes to a habit's design (cue, stack, two-minute version, reward, schedule). Nothing changes until the person approves.",
+		Properties:  habitProperties(true),
+		Required:    []string{"id", "reason"},
+		Write:       true,
+		Summary: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (string, error) {
+			var in struct {
+				ID string `json:"id"`
+			}
+			_ = json.Unmarshal(raw, &in)
+			id, _ := uuid.Parse(in.ID)
+			h, err := habits.Get(ctx, q, userID, id, time.Now())
+			if err != nil {
+				return "", notFound(err, "habit")
+			}
+			f, err := habitFields(raw)
+			if err != nil {
+				return "", err
+			}
+			return "Change habit “" + h.Title + "”" + habitChanges(f, false), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in struct {
+				ID      string     `json:"id"`
+				Version *time.Time `json:"version"`
+			}
+			_ = json.Unmarshal(raw, &in)
+			id, err := parseID(in.ID, "id")
+			if err != nil {
+				return err
+			}
+			f, err := habitFields(raw)
+			if err != nil {
+				return err
+			}
+			if habitChanges(f, false) == "" {
+				return toolErrorf("include at least one field to change")
+			}
+			cur, err := habits.Get(ctx, tx, userID, id, time.Now())
+			if err != nil {
+				return notFound(err, "habit")
+			}
+			version := cur.UpdatedAt
+			if in.Version != nil {
+				version = *in.Version
+			}
+			_, err = habits.Update(ctx, tx, userID, id, actor, version, f, time.Now())
+			if errors.Is(err, habits.ErrStale) {
+				return toolErrorf("the habit changed after this was proposed")
+			}
+			return notFound(err, "habit")
+		},
+	},
 	"remember": {
 		Name:        "remember",
 		Description: "Propose remembering a stable preference the person stated, for future runs. Needs approval; the person can delete it any time.",
@@ -514,4 +606,68 @@ func inputReason(raw json.RawMessage) string {
 		return in.Reason[:1000]
 	}
 	return in.Reason
+}
+
+func habitProperties(withID bool) map[string]any {
+	p := map[string]any{
+		"title":       map[string]any{"type": "string", "description": "The action, small and specific."},
+		"cue":         map[string]any{"type": "string", "description": "When and where: \"At 7:00 in the kitchen\"."},
+		"craving":     map[string]any{"type": "string", "description": "Why it matters to the person, in their words."},
+		"stack_after": map[string]any{"type": "string", "description": "An existing habit it follows: \"After I pour my coffee\"."},
+		"two_minute":  map[string]any{"type": "string", "description": "A version that takes two minutes or less."},
+		"reward":      map[string]any{"type": "string", "description": "Something immediately satisfying afterwards."},
+		"days":        map[string]any{"type": "array", "items": map[string]any{"type": "integer", "minimum": 1, "maximum": 7}, "description": "ISO weekdays, 1 = Monday."},
+		"reason":      reason,
+	}
+	if withID {
+		p["id"] = idField
+		delete(p, "title")
+	}
+	return p
+}
+
+// habitFields reads a habit tool input, dropping the agent-only keys.
+func habitFields(raw json.RawMessage) (habits.Fields, error) {
+	var m map[string]json.RawMessage
+	if err := decode(raw, &m); err != nil {
+		return habits.Fields{}, err
+	}
+	for _, k := range []string{"id", "reason", "version"} {
+		delete(m, k)
+	}
+	b, _ := json.Marshal(m)
+	f, err := habits.DecodeFields(b)
+	if err != nil {
+		return f, toolErrorf("invalid habit fields")
+	}
+	return f, nil
+}
+
+func deref(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
+func habitChanges(f habits.Fields, creating bool) string {
+	var parts []string
+	for _, kv := range []struct {
+		name string
+		v    *string
+	}{{"cue", f.Cue}, {"craving", f.Craving}, {"after", f.StackAfter}, {"two-minute version", f.TwoMinute}, {"reward", f.Reward}, {"status", f.Status}} {
+		if kv.v != nil && *kv.v != "" {
+			parts = append(parts, kv.name+": "+*kv.v)
+		}
+	}
+	if !creating && f.Title != nil {
+		parts = append(parts, "title: "+*f.Title)
+	}
+	if f.Days != nil {
+		parts = append(parts, fmt.Sprintf("days: %v", f.Days))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return " (" + strings.Join(parts, "; ") + ")"
 }

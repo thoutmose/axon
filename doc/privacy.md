@@ -26,6 +26,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Agent proposals (proposed change and its summary) | `agent_proposals` | Personal | Let the user approve or reject | Until erasure |
 | Agent memories (facts the user approved) | `agent_memories` | Personal | Context for later runs | Until deleted or erasure |
 | Agent replies | API process memory only | Personal | Show the run's answer | 1 hour; never stored or logged |
+| Habits (design, schedule, status) and habit check-ins (day, status, note) | `habits`, `habit_checkins` | Personal | Building habits | Until deleted or erasure |
 | Paths of deleted notes | `note_tombstones` | Personal | Let a sync client delete the file too | 30 days, or erasure |
 | Sync state (path → content hash; no content) | `.axon-sync-<vault>.json` next to the vault, on the vault host | Personal | Detect changes on both sides | Until the file is deleted |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |

@@ -22,6 +22,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
@@ -364,6 +365,23 @@ func (r *Runner) propose(ctx context.Context, userID uuid.UUID, skill Skill, run
 // stamp records the version of the task an update is based on, so approving
 // it later fails instead of overwriting newer edits.
 func stamp(ctx context.Context, q db.Querier, userID uuid.UUID, t Tool, input json.RawMessage) (json.RawMessage, error) {
+	if t.Name == "update_habit" {
+		var m map[string]any
+		if err := decode(input, &m); err != nil {
+			return nil, err
+		}
+		s, _ := m["id"].(string)
+		id, err := parseID(s, "id")
+		if err != nil {
+			return nil, err
+		}
+		cur, err := habits.Get(ctx, q, userID, id, time.Now())
+		if err != nil {
+			return nil, notFound(err, "habit")
+		}
+		m["version"] = cur.UpdatedAt
+		return json.Marshal(m)
+	}
 	if t.Name != "update_task" {
 		return input, nil
 	}
