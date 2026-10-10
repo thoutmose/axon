@@ -17,6 +17,8 @@
 		"gen:api": "openapi-typescript ../api/openapi/openapi.yaml -o src/lib/api-types.ts && prettier --write src/lib/api-types.ts"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "4.13.0",
+		"@playwright/test": "1.63.0",
 		"@simplewebauthn/browser": "^13.3.0",
 		"@sveltejs/adapter-node": "^5.5.7",
 		"@sveltejs/kit": "^2.70.3",
@@ -29,5 +31,10 @@
 		"typescript": "^5.9.3",
 		"vite": "^7.3.7",
 		"vitest": "^4.1.11"
+	},
+	"overrides": {
+		"@axe-core/playwright": {
+			"playwright-core": "1.63.0"
+		}
 	}
 }

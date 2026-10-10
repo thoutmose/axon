@@ -1,59 +1,84 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { startAuthentication } from '@simplewebauthn/browser';
 	import { api, message } from '$lib/api';
+	import Button from '$lib/ui/Button.svelte';
+	import Section from '$lib/ui/Section.svelte';
+	import TextField from '$lib/ui/TextField.svelte';
 
 	let busy = $state(false);
 	let error = $state('');
 	let code = $state('');
 	let totp = $state('');
 
-	async function withPasskey() {
+	// Only same-site paths, so a crafted link cannot send you elsewhere.
+	const next = $derived.by(() => {
+		const n = page.url.searchParams.get('next') ?? '/';
+		return n.startsWith('/') && !n.startsWith('//') ? n : '/';
+	});
+
+	async function attempt(action: () => Promise<unknown>) {
 		busy = true;
 		error = '';
 		try {
+			await action();
+			await goto(next);
+		} catch (err) {
+			error = message(err);
+		} finally {
+			busy = false;
+		}
+	}
+
+	const withPasskey = () =>
+		attempt(async () => {
 			const options = await api<{ publicKey: never }>('/v1/auth/login/begin', { method: 'POST' });
 			const response = await startAuthentication({ optionsJSON: options.publicKey });
 			await api('/v1/auth/login/finish', { method: 'POST', body: response });
-			await goto('/account');
-		} catch (err) {
-			error = message(err);
-		} finally {
-			busy = false;
-		}
-	}
+		});
 
-	async function withRecoveryCode(event: SubmitEvent) {
-		event.preventDefault();
-		busy = true;
-		error = '';
-		try {
-			await api('/v1/auth/recovery', { method: 'POST', body: { code, totp } });
-			await goto('/account');
-		} catch (err) {
-			error = message(err);
-		} finally {
-			busy = false;
-		}
-	}
+	const withRecoveryCode = (e: SubmitEvent) => {
+		e.preventDefault();
+		return attempt(() => api('/v1/auth/recovery', { method: 'POST', body: { code, totp } }));
+	};
 </script>
 
-<svelte:head>
-	<title>Sign in · Axon</title>
-</svelte:head>
+<svelte:head><title>Sign in · Axon</title></svelte:head>
 
 <h1>Sign in</h1>
-<p><button onclick={withPasskey} disabled={busy}>Sign in with a passkey</button></p>
-
+<p class="muted">Use the passkey on this device or your phone.</p>
+<p><Button onclick={withPasskey} {busy}>Sign in with a passkey</Button></p>
 {#if error}<p class="error" role="alert">{error}</p>{/if}
 
-<details>
-	<summary>Lost your passkey? Use a recovery code</summary>
+<Section
+	id="recovery"
+	title="Lost your passkey?"
+	description="Use one of the recovery codes you saved when you created your account."
+>
 	<form onsubmit={withRecoveryCode}>
-		<label for="code">Recovery code</label>
-		<input id="code" bind:value={code} autocomplete="one-time-code" required />
-		<label for="totp">Authenticator code (only if you turned it on)</label>
-		<input id="totp" bind:value={totp} inputmode="numeric" autocomplete="one-time-code" />
-		<p><button class="secondary" disabled={busy}>Sign in with recovery code</button></p>
+		<TextField
+			id="code"
+			label="Recovery code"
+			placeholder="xxxx-xxxx-xxxx-xxxx"
+			autocomplete="off"
+			bind:value={code}
+			required
+		/>
+		<TextField
+			id="totp"
+			label="Authenticator code"
+			hint="Only if you turned on the authenticator app."
+			inputmode="numeric"
+			autocomplete="one-time-code"
+			bind:value={totp}
+		/>
+		<Button type="submit" variant="secondary" {busy}>Sign in with recovery code</Button>
 	</form>
-</details>
+</Section>
+
+<style>
+	.error {
+		color: var(--bad);
+	}
+</style>
