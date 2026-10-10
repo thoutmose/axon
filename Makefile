@@ -10,7 +10,7 @@ check: check-api check-web
 check-api:
 	@cd api && unformatted="$$(gofmt -l .)" && if [ -n "$$unformatted" ]; then echo "gofmt needed:"; echo "$$unformatted"; exit 1; fi
 	cd api && go vet ./... && go test ./...
-	docker run --rm --network host -v $(CURDIR)/api:/src -v axon-gomod:/go/pkg/mod -w /src golangci/golangci-lint:v2.13.2 golangci-lint run ./...
+	cd api && golangci-lint run ./... # install v2.13.2, the version CI uses
 
 check-web:
 	cd web && $(WEB_RUN) sh -c 'npm ci --no-fund --no-audit && npm run check && npm run lint && npm test'
