@@ -45,13 +45,16 @@ version=$(git rev-parse --short HEAD)
 
 echo "building $version"
 AXON_VERSION=$version docker compose build api web
+docker build -q --network host -t "axon-backup:$version" deploy/backup >/dev/null
 
 echo "copying images to $host"
-docker save "axon-api:$version" "axon-web:$version" | ssh "$host" docker load
+docker save "axon-api:$version" "axon-web:$version" "axon-backup:$version" | ssh "$host" docker load
 
 echo "copying configuration"
-ssh "$host" "sudo install -d -o \$(id -un) -g \$(id -gn) -m 0750 $remote_dir"
-rsync -R compose.yaml deploy/compose.server.yaml deploy/Caddyfile "$host:$remote_dir/"
+ssh "$host" "sudo install -d -o \$(id -un) -g \$(id -gn) -m 0750 $remote_dir && mkdir -p -m 0700 $remote_dir/backups"
+rsync -R compose.yaml deploy/compose.server.yaml deploy/Caddyfile deploy/env/recipients.txt "$host:$remote_dir/"
+# Key for copying backups off-host; authorized on srv-services by deploy/setup-offsite.sh.
+remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@$(hostname)" -f backup_ed25519'
 {
   age --decrypt -i "$key" "deploy/env/$env.env.age"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"

@@ -13,3 +13,19 @@ services:
     restart: unless-stopped
   valkey:
     restart: unless-stopped
+  backup:
+    image: axon-backup:${AXON_VERSION:?}
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      BACKUP_OFFSITE: ${BACKUP_OFFSITE:-}
+    volumes:
+      - ./backups:/backups
+      - ./deploy/env/recipients.txt:/etc/axon/recipients.txt:ro
+      - ./backup_ed25519:/run/secrets/backup_ed25519:ro
+    depends_on:
+      db:
+        condition: service_healthy
