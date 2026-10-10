@@ -4,11 +4,15 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 	_ "time/tzdata" // users' time zones, even in images without /usr/share/zoneinfo
@@ -22,6 +26,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
 )
 
@@ -50,11 +55,13 @@ func run(args []string) error {
 		return migrate(args[1])
 	case "integrity":
 		return integrity()
+	case "notes-sync":
+		return notesSync(args[1:])
 	case "version":
 		fmt.Println(version)
 		return nil
 	default:
-		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, or version)", cmd)
+		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, notes-sync, or version)", cmd)
 	}
 }
 
@@ -151,6 +158,72 @@ func migrate(direction string) error {
 		return err
 	}
 	return db.Migrate(context.Background(), dsn, direction, os.Stdout)
+}
+
+// notesSync keeps a Markdown vault and Axon's notes in step (see internal/notesync).
+func notesSync(args []string) error {
+	fs := flag.NewFlagSet("notes-sync", flag.ContinueOnError)
+	dir := fs.String("dir", "", "vault folder")
+	url := fs.String("url", "", "Axon base URL, e.g. https://srv-prod.tail781d53.ts.net")
+	tokenFile := fs.String("token-file", "", "file holding a write-scope access token")
+	statePath := fs.String("state", "", "sync state file (default <dir>/../.axon-sync-<folder>.json)")
+	twoWay := fs.Bool("two-way", false, "also copy Axon's changes and deletions to the files (default: import only)")
+	useGit := fs.Bool("git", false, "git pull before and commit + push after")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *dir == "" || *url == "" || *tokenFile == "" {
+		return errors.New("usage: axon notes-sync -dir DIR -url URL -token-file FILE [-two-way] [-git]")
+	}
+	token, err := os.ReadFile(*tokenFile)
+	if err != nil {
+		return err
+	}
+	if *statePath == "" {
+		abs, err := filepath.Abs(*dir)
+		if err != nil {
+			return err
+		}
+		*statePath = filepath.Join(filepath.Dir(abs), ".axon-sync-"+filepath.Base(abs)+".json")
+	}
+	git := func(args ...string) error {
+		cmd := exec.Command("git", append([]string{"-C", *dir}, args...)...)
+		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr
+		return cmd.Run()
+	}
+	if *useGit {
+		if err := git("pull", "--rebase", "--autostash", "--quiet"); err != nil {
+			return fmt.Errorf("git pull: %w", err)
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	rep, err := notesync.Run(ctx, notesync.Config{
+		Dir: *dir, URL: *url, Token: strings.TrimSpace(string(token)), StatePath: *statePath, TwoWay: *twoWay,
+		HTTP: &http.Client{Timeout: time.Minute},
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("pushed %d, pulled %d, deleted %d, unchanged %d, conflicts %d\n",
+		rep.Pushed, rep.Pulled, rep.Deleted, rep.Unchanged, len(rep.Conflicts))
+	for _, c := range rep.Conflicts {
+		fmt.Printf("conflict: %s (Axon's version is next to it as *%s)\n", c, notesync.ConflictSuffix)
+	}
+	if *useGit && (rep.Pulled > 0 || rep.Deleted > 0 || len(rep.Conflicts) > 0) {
+		if err := git("add", "-A"); err != nil {
+			return err
+		}
+		if git("diff", "--cached", "--quiet") != nil {
+			if err := git("commit", "--quiet", "-m", "axon: sync notes"); err != nil {
+				return err
+			}
+			if err := git("push", "--quiet"); err != nil {
+				return fmt.Errorf("git push: %w", err)
+			}
+		}
+	}
+	return nil
 }
 
 // integrity reports data the schema cannot rule out by itself; exit status 1 if any.

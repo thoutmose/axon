@@ -46,13 +46,21 @@ type Service struct {
 	db          *pgxpool.Pool
 	log         *slog.Logger
 	exporters   map[string]Exporter
+	files       map[string]FileExporter
 	clearCookie func(http.ResponseWriter)
 }
+
+// FileExporter returns files (path → bytes) to include in the export archive
+// under a folder named after the section, e.g. notes as Markdown.
+type FileExporter func(ctx context.Context, q db.Querier, userID uuid.UUID) (map[string][]byte, error)
+
+// RegisterFiles adds a folder of files to the export archive.
+func (s *Service) RegisterFiles(folder string, f FileExporter) { s.files[folder] = f }
 
 // New returns the service with the built-in account sections registered.
 // clearCookie signs the browser out after erasure.
 func New(pool *pgxpool.Pool, log *slog.Logger, clearCookie func(http.ResponseWriter)) *Service {
-	s := &Service{db: pool, log: log, exporters: map[string]Exporter{}, clearCookie: clearCookie}
+	s := &Service{db: pool, log: log, exporters: map[string]Exporter{}, files: map[string]FileExporter{}, clearCookie: clearCookie}
 	s.Register("account", exportAccount)
 	s.Register("passkeys", exportPasskeys)
 	s.Register("sessions", exportSessions)
@@ -192,6 +200,17 @@ func (s *Service) export(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
+	files := map[string][]byte{}
+	for folder, f := range s.files {
+		got, err := f(r.Context(), s.db, id.UserID)
+		if err != nil {
+			s.fail(w, err)
+			return
+		}
+		for p, b := range got {
+			files[folder+"/"+p] = b
+		}
+	}
 	if err := audit.Record(r.Context(), s.db, id.UserID, audit.DataExported, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
 		s.fail(w, err)
 		return
@@ -206,6 +225,16 @@ func (s *Service) export(w http.ResponseWriter, r *http.Request) {
 	}
 	if f, err := zw.Create("README.md"); err == nil {
 		_, _ = f.Write([]byte(readme(data)))
+	}
+	paths := make([]string, 0, len(files))
+	for p := range files {
+		paths = append(paths, p)
+	}
+	slices.Sort(paths)
+	for _, p := range paths {
+		if f, err := zw.Create(p); err == nil {
+			_, _ = f.Write(files[p])
+		}
 	}
 	if err := zw.Close(); err != nil {
 		s.log.Error("export stream failed", "err", err)

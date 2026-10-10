@@ -14,6 +14,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
+	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/tasks"
@@ -29,13 +30,19 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("graph", graph.Export)
 	graphAPI := graph.NewHandlers(pool, log)
 	tasksAPI := tasks.NewHandlers(pool, log)
+	notesAPI := notes.NewHandlers(pool, log)
+	priv.RegisterFiles("notes", notes.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
 			_, _ = w.Write(openapi.Spec)
 		})
 		r.Group(func(r chi.Router) {
-			r.Use(limitBody, authn.SameOrigin)
+			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))
+			notesAPI.Routes(r)
+		})
+		r.Group(func(r chi.Router) {
+			r.Use(limitBody(httpx.MaxBody), authn.SameOrigin)
 			authn.Routes(r)
 			r.Group(func(r chi.Router) {
 				r.Use(authn.RequireSession)
@@ -50,9 +57,11 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	}), nil
 }
 
-func limitBody(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, httpx.MaxBody)
-		next.ServeHTTP(w, r)
-	})
+func limitBody(n int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, n)
+			next.ServeHTTP(w, r)
+		})
+	}
 }
