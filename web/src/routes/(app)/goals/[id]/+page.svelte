@@ -3,16 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { Goal, Milestone } from '$lib/goals';
-	import type { Note } from '$lib/notes';
+	import Connections from '$lib/Connections.svelte';
 	import ProgressBar from '$lib/ProgressBar.svelte';
-	import type { Task } from '$lib/tasks';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Link = Schemas['Link'];
 	type Explanation = Schemas['Progress'] & {
 		items: { id: string; type: string; title: string; done: boolean; via: string | null }[];
 	};
@@ -23,9 +21,6 @@
 	let error = $state('');
 	let busy = $state(false);
 	let explanation = $state<Explanation | null>(null);
-	let linked = $state<Link[]>([]);
-	let candidates = $state<{ tasks: Task[]; notes: Note[] }>({ tasks: [], notes: [] });
-	let pick = $state('');
 	let confirmDelete = $state(false);
 	let form = $state({
 		title: '',
@@ -64,24 +59,10 @@
 		}
 	}
 
-	// Progress and links change when milestones or links do; the goal's own
+	// Progress changes when milestones or connections do; the goal's own
 	// fields (and its ETag) do not.
 	async function refresh() {
-		const [ex, links, open, notes] = await Promise.all([
-			api<Explanation>(`/v1/goals/${id}/progress`),
-			api<{ items: Link[] }>(`/v1/entities/${id}/links?direction=incoming&limit=100`),
-			api<{ items: Task[] }>('/v1/tasks?view=all&limit=100'),
-			api<{ items: Note[] }>('/v1/notes?limit=100')
-		]);
-		explanation = ex;
-		linked = links.items.filter((l) => l.relation === 'supports');
-		const taken = new Set(linked.map((l) => l.entity.id));
-		candidates = {
-			tasks: open.items.filter(
-				(t) => !taken.has(t.id) && t.status !== 'done' && t.status !== 'cancelled'
-			),
-			notes: notes.items.filter((n) => !taken.has(n.id))
-		};
+		explanation = await api<Explanation>(`/v1/goals/${id}/progress`);
 		if (goal) {
 			const fresh = await api<Goal>(`/v1/goals/${id}`);
 			goal.milestones = fresh.milestones;
@@ -162,29 +143,6 @@
 		try {
 			await api(`/v1/milestones/${m.id}`, { method: 'DELETE' });
 			toast(`Removed “${m.title}”.`);
-			await refresh();
-		} catch (err) {
-			toast(message(err), 'error');
-		}
-	}
-
-	async function link(e: SubmitEvent) {
-		e.preventDefault();
-		try {
-			await api('/v1/links', {
-				method: 'POST',
-				body: { source_id: pick, relation: 'supports', target_id: id }
-			});
-			pick = '';
-			await refresh();
-		} catch (err) {
-			toast(message(err), 'error');
-		}
-	}
-
-	async function unlink(l: Link) {
-		try {
-			await api(`/v1/links/${l.id}`, { method: 'DELETE' });
 			await refresh();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -292,47 +250,7 @@
 		</form>
 	</section>
 
-	<section class="card" aria-labelledby="linked-title">
-		<h2 id="linked-title">Linked work</h2>
-		{#if linked.length === 0}
-			<p class="muted">Link the tasks that move this goal, and notes that inform it.</p>
-		{:else}
-			<ul class="rows">
-				{#each linked as l (l.id)}
-					<li>
-						{#if l.entity.type === 'note'}
-							<a class="grow" href="/notes/{l.entity.id}">{l.entity.title}</a>
-						{:else}
-							<span class="grow">{l.entity.title}</span>
-						{/if}
-						<span class="muted small">{l.entity.type}</span>
-						<Button variant="ghost" onclick={() => unlink(l)} aria-label="Unlink {l.entity.title}"
-							>Unlink</Button
-						>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		{#if candidates.tasks.length || candidates.notes.length}
-			<form class="inline" onsubmit={link}>
-				<label for="link-pick" class="visually-hidden">Task or note to link</label>
-				<select id="link-pick" bind:value={pick} required>
-					<option value="" disabled>Choose a task or note…</option>
-					{#if candidates.tasks.length}
-						<optgroup label="Open tasks">
-							{#each candidates.tasks as t (t.id)}<option value={t.id}>{t.title}</option>{/each}
-						</optgroup>
-					{/if}
-					{#if candidates.notes.length}
-						<optgroup label="Notes">
-							{#each candidates.notes as n (n.id)}<option value={n.id}>{n.title}</option>{/each}
-						</optgroup>
-					{/if}
-				</select>
-				<Button type="submit" variant="secondary">Link</Button>
-			</form>
-		{/if}
-	</section>
+	<Connections id={goal.id} type="goal" onchange={refresh} />
 
 	<section class="card" aria-labelledby="details-title">
 		<h2 id="details-title">Details</h2>
@@ -483,7 +401,6 @@
 		flex-wrap: wrap;
 	}
 	.inline input,
-	.inline select,
 	textarea,
 	.field select {
 		font: inherit;
@@ -494,8 +411,7 @@
 		background: var(--surface);
 		color: var(--fg);
 	}
-	.inline input:first-of-type,
-	.inline select {
+	.inline input:first-of-type {
 		flex: 1;
 		min-width: 10rem;
 	}

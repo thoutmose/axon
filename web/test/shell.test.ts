@@ -172,8 +172,9 @@ test('write notes, link them with wikilinks, and follow backlinks', async () => 
 	await expect(page.getByRole('link', { name: 'Forgetting curve' }).first()).toBeVisible();
 	await page.getByRole('article').getByRole('link', { name: 'Forgetting curve' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Forgetting curve' })).toBeVisible();
-	const backlinks = page.getByRole('region', { name: 'Backlinks' });
-	await expect(backlinks.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
+	const connections = page.getByRole('region', { name: 'Connections' });
+	await expect(connections).toContainText('Mentioned in');
+	await expect(connections.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 
 	await page.goto('/notes?para=inbox');
@@ -201,9 +202,11 @@ test('set a goal, break it into milestones, link work, and see how progress is w
 		'50'
 	);
 
-	await page.getByLabel('Task or note to link').selectOption({ label: 'Buy stamps' });
-	await page.getByRole('button', { name: 'Link', exact: true }).click();
-	await expect(page.getByRole('region', { name: 'Linked work' })).toContainText('Buy stamps');
+	await page.getByLabel('Connect to').fill('Buy');
+	await page.getByRole('button', { name: /Buy stamps/ }).click();
+	await page.getByRole('button', { name: 'Connect', exact: true }).click();
+	await expect(page.getByRole('region', { name: 'Connections' })).toContainText('Supported by');
+	await expect(page.getByRole('region', { name: 'Connections' })).toContainText('Buy stamps');
 	await expect(page.getByText('1 of 3 milestones and linked tasks done')).toBeVisible();
 	await page.getByText('How is this worked out?').click();
 	await expect(page.getByRole('region', { name: 'Progress' }).getByRole('listitem')).toHaveCount(3);
@@ -264,9 +267,11 @@ test('design a habit, check in with the two-minute version, and link it to a goa
 	await page.getByLabel('After…').fill('After breakfast');
 	await page.getByRole('button', { name: 'Create habit' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Swim one length' })).toBeVisible();
-	await page.getByLabel('Goal', { exact: true }).selectOption({ label: 'Learn to swim 1 km' });
-	await page.getByRole('button', { name: 'Link', exact: true }).click();
-	await expect(page.getByRole('region', { name: 'Goals it supports' })).toContainText(
+	await page.getByLabel('Connect to').fill('swim 1');
+	await page.getByRole('button', { name: /Learn to swim 1 km/ }).click();
+	await page.getByRole('button', { name: 'Connect', exact: true }).click();
+	await expect(page.getByRole('region', { name: 'Connections' })).toContainText('Supports');
+	await expect(page.getByRole('region', { name: 'Connections' })).toContainText(
 		'Learn to swim 1 km'
 	);
 	await noSeriousA11yViolations(page);
@@ -277,6 +282,29 @@ test('design a habit, check in with the two-minute version, and link it to a goa
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: "Undo today's check-in for Swim one length" }).click();
 	await expect(page.getByRole('button', { name: 'Done: Swim one length' })).toBeVisible();
+});
+
+test('connect a task to a note by keyboard alone, and see it from both ends', async () => {
+	await page.goto('/tasks?view=inbox');
+	await page.getByRole('button', { name: 'Buy stamps' }).click();
+	await page.getByRole('link', { name: 'Open page and connections' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Buy stamps' })).toBeVisible();
+	await page.getByLabel('Connect to').focus();
+	await page.keyboard.type('Forgetting');
+	await expect(page.getByRole('button', { name: /Forgetting curve/ })).toBeVisible();
+	await page.keyboard.press('Tab');
+	await page.keyboard.press('Enter');
+	await page.getByLabel('How they connect').focus();
+	await page.keyboard.press('Tab');
+	await page.keyboard.press('Enter');
+	const here = page.getByRole('region', { name: 'Connections' });
+	await expect(here.getByRole('link', { name: 'Forgetting curve' })).toBeVisible();
+	await expect(here).toContainText('Supports'); // the goal link made earlier
+	await noSeriousA11yViolations(page);
+	await here.getByRole('link', { name: 'Forgetting curve' }).click();
+	await expect(
+		page.getByRole('region', { name: 'Connections' }).getByRole('link', { name: 'Buy stamps' })
+	).toBeVisible();
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {

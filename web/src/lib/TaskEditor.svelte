@@ -137,6 +137,7 @@
 		{/if}
 		<div class="actions">
 			<Button variant="danger" onclick={remove} {busy}>Delete</Button>
+			<a class="open" href="/tasks/{id}">Open page and connections</a>
 			<span class="spacer"></span>
 			<Button variant="secondary" onclick={() => (open = false)}>Cancel</Button>
 			<Button type="submit" {busy}>Save</Button>
@@ -175,5 +176,8 @@
 	}
 	.spacer {
 		flex: 1;
+	}
+	.open {
+		align-self: center;
 	}
 </style>

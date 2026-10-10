@@ -225,6 +225,13 @@ func TestSearchIsScopedToOwnerAndLanguageNeutral(t *testing.T) {
 	if hits, _ := Search(ctx, pool, alice, `japonais -kanji`, 0, 10); len(hits) != 0 {
 		t.Fatalf("exclusion ignored: %+v", hits)
 	}
+	// While typing: part of a title is enough; LIKE wildcards are literal.
+	if hits, _ := Search(ctx, pool, alice, "japon", 0, 10); len(hits) != 1 {
+		t.Fatalf("prefix search = %+v", hits)
+	}
+	if hits, _ := Search(ctx, pool, alice, "%", 0, 10); len(hits) != 0 {
+		t.Fatalf("%% matched everything: %+v", hits)
+	}
 }
 
 func TestPaginationIsBoundedAndOrdered(t *testing.T) {

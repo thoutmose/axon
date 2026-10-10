@@ -95,7 +95,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
 | EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
 | EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
-| EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Planned |
+| EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Planned |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Planned |
 
@@ -717,10 +717,15 @@ Consumer chat subscriptions (Claude Pro/Max, ChatGPT Plus) are out of scope: pro
 
 **In scope.** A reusable “Connections” panel on tasks, notes, goals, milestones, and habits: search any entity, choose a relation, see outgoing links and backlinks, remove a link; a task detail page.
 
-**Acceptance criteria**
+**Issues**
 
-- From each entity page, a person can link it to any other entity type allowed by the relation rules, by keyboard alone.
-- Every link is visible from both ends.
+- [x] **EP-24/IS-24.01 — Connections panel** · 8 pts · MUST
+  - [x] One panel on task, note, goal, and habit pages: search anything by part of its title, choose how they connect (both directions, specific relations first), see every connection with its wording (“Supports” / “Supported by”, “Mentions” / “Mentioned in”), remove links. Automatic wikilink references are shown but not editable.
+  - [x] Works by keyboard alone (e2e connects a task to a note without the mouse) and passes axe.
+- [x] **EP-24/IS-24.02 — Task page** · 3 pts · MUST
+  - [x] `/tasks/{id}` with the task's details, editor, and connections; reachable from the task editor.
+- [x] **EP-24/IS-24.03 — Search while typing** · 2 pts · MUST
+  - [x] Search also matches part of a title (LIKE wildcards escaped); queries with operators keep exact web-search meaning (integration test).
 
 ### EP-25 — Notes workspace & Second Brain
 

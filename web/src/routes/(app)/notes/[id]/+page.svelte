@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { ApiError, api, apiResponse, message, type Schemas } from '$lib/api';
+	import Connections from '$lib/Connections.svelte';
 	import { createNote, render, stem, wikilinks, type Note } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
@@ -213,37 +214,7 @@
 		</section>
 	{/if}
 
-	<section class="links" aria-labelledby="backlinks-title">
-		<h2 id="backlinks-title">Backlinks</h2>
-		{#if backlinks.length === 0}
-			<p class="muted">No other note links here yet.</p>
-		{:else}
-			<ul>
-				{#each backlinks as l (l.id)}
-					<li>
-						{#if href(l)}<a href={href(l)}>{l.entity.title}</a>{:else}<span>{l.entity.title}</span
-							>{/if}
-						<span class="muted small">{l.entity.type}</span>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</section>
-
-	{#if outgoing.length}
-		<section class="links" aria-labelledby="outgoing-title">
-			<h2 id="outgoing-title">Links</h2>
-			<ul>
-				{#each outgoing as l (l.id)}
-					<li>
-						{#if href(l)}<a href={href(l)}>{l.entity.title}</a>{:else}<span>{l.entity.title}</span
-							>{/if}
-						<span class="muted small">{l.entity.type}</span>
-					</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
+	<Connections id={note.id} type="note" />
 {/if}
 
 <Dialog bind:open={confirmDelete} title="Delete this note?">
@@ -396,8 +367,5 @@
 		padding: var(--space-2) 0;
 		border-bottom: 1px solid var(--border);
 		flex-wrap: wrap;
-	}
-	.links a {
-		overflow-wrap: anywhere;
 	}
 </style>

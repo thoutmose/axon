@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -336,11 +337,20 @@ func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, o
 	if offset < 0 || offset > 1000 {
 		offset = 0
 	}
+	// Full-text matches rank first; a title containing the text also matches,
+	// so a picker finds "Learn to swim" while the person types "lea".
+	// Queries using operators ("phrase", -word, or) keep exact web-search meaning.
+	var like *string
+	if plain := strings.TrimSpace(query); !strings.ContainsAny(plain, `"`) && !strings.HasPrefix(plain, "-") &&
+		!strings.Contains(plain, " -") && !strings.Contains(strings.ToLower(" "+plain+" "), " or ") {
+		l := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(plain) + "%"
+		like = &l
+	}
 	rows, err := q.Query(ctx, `
-		SELECT id, type, title, created_at, updated_at, ts_rank(search, query) AS rank
+		SELECT id, type, title, created_at, updated_at, ts_rank(search, query) + CASE WHEN $5::text IS NOT NULL AND title ILIKE $5 THEN 0.01 ELSE 0 END AS rank
 		FROM entities, websearch_to_tsquery('simple', $2) AS query
-		WHERE user_id = $1 AND search @@ query
-		ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4`, userID, query, offset, Page{Limit: limit}.limit())
+		WHERE user_id = $1 AND (search @@ query OR ($5::text IS NOT NULL AND title ILIKE $5))
+		ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4`, userID, query, offset, Page{Limit: limit}.limit(), like)
 	if err != nil {
 		return nil, err
 	}

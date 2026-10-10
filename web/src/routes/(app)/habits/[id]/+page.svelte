@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { api, apiResponse, message, type Schemas } from '$lib/api';
-	import type { Goal } from '$lib/goals';
+	import { api, apiResponse, message } from '$lib/api';
+	import Connections from '$lib/Connections.svelte';
 	import {
 		isoWeekday,
 		lastDays,
@@ -17,17 +17,12 @@
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Link = Schemas['Link'];
-
 	const id = $derived(page.params.id ?? '');
 	let habit = $state<Habit | null>(null);
 	let etag = '';
 	let error = $state('');
 	let busy = $state(false);
 	let checkins = $state<Record<string, string>>({});
-	let goals = $state<Goal[]>([]);
-	let links = $state<Link[]>([]);
-	let pickGoal = $state('');
 	let confirmDelete = $state(false);
 	let form = $state({
 		title: '',
@@ -57,14 +52,8 @@
 				days: [...h.days],
 				status: h.status
 			};
-			const [hist, g, l] = await Promise.all([
-				api<{ items: HabitCheckin[] }>(`/v1/habits/${id}/checkins`),
-				api<{ items: Goal[] }>('/v1/goals'),
-				api<{ items: Link[] }>(`/v1/entities/${id}/links`)
-			]);
+			const hist = await api<{ items: HabitCheckin[] }>(`/v1/habits/${id}/checkins`);
 			checkins = Object.fromEntries(hist.items.map((c) => [c.day, c.status]));
-			links = l.items.filter((x) => x.relation === 'supports');
-			goals = g.items.filter((x) => !links.some((l) => l.entity.id === x.id));
 		} catch (err) {
 			error = message(err);
 		}
@@ -92,29 +81,6 @@
 			toast(message(err), 'error');
 		} finally {
 			busy = false;
-		}
-	}
-
-	async function link(e: SubmitEvent) {
-		e.preventDefault();
-		try {
-			await api('/v1/links', {
-				method: 'POST',
-				body: { source_id: id, relation: 'supports', target_id: pickGoal }
-			});
-			pickGoal = '';
-			await load();
-		} catch (err) {
-			toast(message(err), 'error');
-		}
-	}
-
-	async function unlink(l: Link) {
-		try {
-			await api(`/v1/links/${l.id}`, { method: 'DELETE' });
-			await load();
-		} catch (err) {
-			toast(message(err), 'error');
 		}
 	}
 
@@ -175,33 +141,7 @@
 		</p>
 	</section>
 
-	<section class="card" aria-labelledby="goals-title">
-		<h2 id="goals-title">Goals it supports</h2>
-		{#if links.length === 0}
-			<p class="muted">Not linked to a goal.</p>
-		{:else}
-			<ul class="rows">
-				{#each links as l (l.id)}
-					<li>
-						<a href="/goals/{l.entity.id}" class="grow">{l.entity.title}</a>
-						<Button variant="ghost" onclick={() => unlink(l)} aria-label="Unlink {l.entity.title}"
-							>Unlink</Button
-						>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		{#if goals.length}
-			<form class="inline" onsubmit={link}>
-				<label for="goal-pick" class="visually-hidden">Goal</label>
-				<select id="goal-pick" bind:value={pickGoal} required>
-					<option value="" disabled>Choose a goal…</option>
-					{#each goals as g (g.id)}<option value={g.id}>{g.title}</option>{/each}
-				</select>
-				<Button type="submit" variant="secondary">Link</Button>
-			</form>
-		{/if}
-	</section>
+	<Connections id={habit.id} type="habit" />
 
 	<section class="card" aria-labelledby="design-title">
 		<h2 id="design-title">Design</h2>
@@ -345,13 +285,6 @@
 		padding: 0;
 		margin: 0 0 var(--space-3);
 	}
-	.rows li {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		padding: var(--space-2) 0;
-		border-bottom: 1px solid var(--border);
-	}
 	.grow {
 		flex: 1;
 		overflow-wrap: anywhere;
@@ -374,10 +307,6 @@
 		border: 1px solid var(--border);
 		background: var(--surface);
 		color: var(--fg);
-	}
-	.inline select {
-		flex: 1;
-		min-width: 10rem;
 	}
 	.field {
 		display: grid;
