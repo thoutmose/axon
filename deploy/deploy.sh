@@ -87,7 +87,14 @@ remote '
   docker compose up -d --wait db valkey
   docker compose run --rm --no-deps api migrate up
   docker compose up -d --wait --remove-orphans
+  # Keep only the running and previous versions for rollback.
+  keep="$(grep "^AXON_VERSION=" .env | cut -d= -f2)|$(cat previous-version 2>/dev/null || echo none)"
+  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|backup):" \
+    | grep -vE ":($keep)\$" | xargs -r docker rmi >/dev/null
 '
+# Locally, only the version just deployed is worth keeping.
+docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|backup):" \
+  | grep -vE ":($version|dev)\$" | xargs -r docker rmi >/dev/null || true
 
 echo "serving on the tailnet"
 ssh "$host" 'sudo tailscale serve status --json | grep -q "127.0.0.1:3000" || sudo tailscale serve --bg --https=443 http://127.0.0.1:3000 >/dev/null'
