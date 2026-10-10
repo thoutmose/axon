@@ -14,9 +14,10 @@ run_once() {
 	mv "$out.partial" "$out"
 	find /backups -name 'axon-*.dump.age' -mtime +"${BACKUP_KEEP_DAYS:-14}" -delete
 	if [ -n "${BACKUP_OFFSITE:-}" ]; then
-		rsync -e "ssh -i /run/secrets/backup_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes \
-			-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/backups/.known_hosts" \
-			"$out" "$BACKUP_OFFSITE:"
+		# rsync splits -e on spaces only, so keep the ssh command on one line.
+		ssh_cmd="ssh -i /run/secrets/backup_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes"
+		ssh_cmd="$ssh_cmd -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/backups/.known_hosts"
+		rsync -e "$ssh_cmd" "$out" "$BACKUP_OFFSITE:"
 	fi
 	date -u +%FT%TZ > /backups/last-success
 	echo "backup ok: $out"
