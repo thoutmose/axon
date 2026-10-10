@@ -36,9 +36,9 @@ type Type struct {
 
 // Relation is a typed edge. Empty Sources/Targets allow any type.
 type Relation struct {
-	Name    string
-	Sources []string
-	Targets []string
+	Name    string   `json:"name"`
+	Sources []string `json:"sources"`
+	Targets []string `json:"targets"`
 }
 
 // RelatesTo is always available between two distinct entities.

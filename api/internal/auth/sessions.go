@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,9 +23,12 @@ const (
 )
 
 // Identity is the signed-in caller, available to handlers behind Require.
+// Exactly one of SessionID (browser) and TokenID (personal access token) is set.
 type Identity struct {
 	UserID    uuid.UUID
 	SessionID uuid.UUID
+	TokenID   uuid.UUID
+	Scope     string // "session", or the token's "read" / "write"
 }
 
 type ctxKey struct{}
@@ -85,8 +89,18 @@ func (s *Service) clearCookie(w http.ResponseWriter, name string) {
 	s.setCookie(w, name, "", time.Unix(0, 0))
 }
 
-// identify resolves the session cookie, enforcing idle and absolute expiry.
+// bearer returns the token from an "Authorization: Bearer" header.
+func bearer(r *http.Request) (string, bool) {
+	token, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	return token, ok
+}
+
+// identify resolves a personal access token or, without one, the session
+// cookie. A request with an Authorization header never falls back to the cookie.
 func (s *Service) identify(r *http.Request) (Identity, error) {
+	if token, ok := bearer(r); ok {
+		return s.identifyToken(r, token)
+	}
 	c, err := r.Cookie(sessionCookie)
 	if err != nil || c.Value == "" {
 		return Identity{}, errNotFound
@@ -109,11 +123,23 @@ func (s *Service) identify(r *http.Request) (Identity, error) {
 	if time.Since(lastSeen) > 5*time.Minute { // avoid a write on every request
 		_, _ = s.db.Exec(r.Context(), `UPDATE sessions SET last_seen_at = now() WHERE id = $1`, id.SessionID)
 	}
+	id.Scope = "session"
 	return id, nil
 }
 
-// Require rejects requests without a valid session and puts the Identity in the context.
+// Require accepts a browser session or a personal access token; read-only
+// tokens may only make safe (GET/HEAD) requests.
 func (s *Service) Require(next http.Handler) http.Handler {
+	return s.require(next, false)
+}
+
+// RequireSession accepts browser sessions only. Account security, export, and
+// erasure must not be reachable with a token that a script could leak.
+func (s *Service) RequireSession(next http.Handler) http.Handler {
+	return s.require(next, true)
+}
+
+func (s *Service) require(next http.Handler, sessionOnly bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := s.identify(r)
 		if err != nil {
@@ -122,8 +148,20 @@ func (s *Service) Require(next http.Handler) http.Handler {
 				httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
 				return
 			}
+			if _, isToken := bearer(r); isToken {
+				httpx.Problem(w, http.StatusUnauthorized, "The access token is invalid, expired, or revoked.")
+				return
+			}
 			s.clearCookie(w, sessionCookie)
 			httpx.Problem(w, http.StatusUnauthorized, "Sign in to continue.")
+			return
+		}
+		if sessionOnly && id.Scope != "session" {
+			httpx.Problem(w, http.StatusForbidden, "Access tokens cannot manage the account. Use the web app.")
+			return
+		}
+		if id.Scope == "read" && r.Method != http.MethodGet && r.Method != http.MethodHead {
+			httpx.Problem(w, http.StatusForbidden, "This access token is read-only.")
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, id)))
@@ -132,11 +170,14 @@ func (s *Service) Require(next http.Handler) http.Handler {
 
 // SameOrigin blocks cross-site state-changing requests (CSRF). Browsers send
 // Origin on every non-GET fetch; requests without it must at least declare
-// themselves same-origin through Sec-Fetch-Site.
+// themselves same-origin through Sec-Fetch-Site. Token requests are exempt:
+// a cross-site page cannot attach an Authorization header (Axon allows no
+// CORS), and identify never falls back to the cookie when one is present.
 func (s *Service) SameOrigin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet, http.MethodHead, http.MethodOptions:
+		_, isToken := bearer(r)
+		switch {
+		case isToken, r.Method == http.MethodGet, r.Method == http.MethodHead, r.Method == http.MethodOptions:
 			next.ServeHTTP(w, r)
 			return
 		}

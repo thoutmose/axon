@@ -26,6 +26,9 @@ const (
 	TOTPDisabled        = "totp.disabled"
 	ConsentChanged      = "consent.changed"
 	DataExported        = "data.exported"
+	AccountUpdated      = "account.updated"
+	TokenCreated        = "token.created"
+	TokenRevoked        = "token.revoked"
 )
 
 // Event is one audit log entry.

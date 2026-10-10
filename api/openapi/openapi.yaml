@@ -1,0 +1,950 @@
+openapi: 3.1.0
+info:
+  title: Axon API
+  version: "1"
+  summary: Self-hosted life OS — accounts, privacy, and the universal graph.
+  description: |
+    Conventions (EP-06):
+
+    - Every route is under `/v1`; the web app reaches the API at `/api`.
+    - Errors are RFC 9457 problem documents (`application/problem+json`); `detail` is safe to show to people.
+    - Lists return `{"items": [...], "next_cursor": ...}`; pass the cursor back as `?after=` (or `?before=` for timelines). `?limit=` is 1–100, default 100.
+    - `POST` accepts `Idempotency-Key`; a retry with the same key and body returns the original response with `Idempotent-Replayed: true`.
+    - `PATCH` requires `If-Match` with the `ETag` you last read; a stale version gets `412`.
+    - Browsers authenticate with the session cookie and must send a matching `Origin` on writes. Scripts use a personal access token (`Authorization: Bearer axon_…`); tokens cannot manage the account.
+  license:
+    name: AGPL-3.0-or-later
+    identifier: AGPL-3.0-or-later
+servers:
+  - url: /api
+security:
+  - session: []
+  - token: []
+
+tags:
+  - name: health
+    description: Liveness, readiness, and this document.
+  - name: auth
+    description: Passkey registration and sign-in, recovery codes, sign-out.
+  - name: account
+    description: The signed-in account, its devices, factors, and access tokens. Browser sessions only.
+  - name: privacy
+    description: Consent, export, and erasure. Browser sessions only.
+  - name: graph
+    description: Entities shared by every domain type, the links between them, their timelines, and search.
+
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      operationId: health
+      summary: Liveness and build version
+      security: []
+      responses:
+        "200":
+          description: The process is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version]
+                properties:
+                  status: { const: ok }
+                  version: { type: string }
+  /readyz:
+    get:
+      tags: [health]
+      operationId: ready
+      summary: Readiness (database reachable)
+      security: []
+      responses:
+        "200":
+          description: Ready.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Status" }
+        "503":
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Status" }
+  /v1/openapi.yaml:
+    get:
+      tags: [health]
+      operationId: spec
+      summary: This document
+      security: []
+      responses:
+        "200":
+          description: The OpenAPI document.
+          content:
+            application/yaml:
+              schema: { type: string }
+
+  /v1/auth/status:
+    get:
+      tags: [auth]
+      operationId: authStatus
+      summary: Whether registration is open and the caller is signed in
+      security: []
+      responses:
+        "200":
+          description: Status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [registration_open, signed_in, totp_available]
+                properties:
+                  registration_open: { type: boolean }
+                  signed_in: { type: boolean }
+                  totp_available: { type: boolean }
+  /v1/auth/register/begin:
+    post:
+      tags: [auth]
+      operationId: registerBegin
+      summary: Start creating an account with a passkey
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [display_name]
+              additionalProperties: false
+              properties:
+                display_name: { $ref: "#/components/schemas/Name" }
+      responses:
+        "200": { $ref: "#/components/responses/WebAuthnOptions" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/register/finish:
+    post:
+      tags: [auth]
+      operationId: registerFinish
+      summary: Finish creating the account; returns recovery codes once
+      security: []
+      requestBody: { $ref: "#/components/requestBodies/WebAuthnCredential" }
+      responses:
+        "201":
+          description: Account created and signed in.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [display_name, recovery_codes]
+                properties:
+                  display_name: { type: string }
+                  recovery_codes: { $ref: "#/components/schemas/RecoveryCodes" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/login/begin:
+    post:
+      tags: [auth]
+      operationId: loginBegin
+      summary: Start a usernameless passkey sign-in
+      security: []
+      responses:
+        "200": { $ref: "#/components/responses/WebAuthnOptions" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/login/finish:
+    post:
+      tags: [auth]
+      operationId: loginFinish
+      summary: Finish the passkey sign-in
+      security: []
+      requestBody: { $ref: "#/components/requestBodies/WebAuthnCredential" }
+      responses:
+        "200": { $ref: "#/components/responses/SignedIn" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/recovery:
+    post:
+      tags: [auth]
+      operationId: recoverySignIn
+      summary: Sign in with a single-use recovery code (plus TOTP when enabled)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              additionalProperties: false
+              properties:
+                code: { type: string }
+                totp: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/SignedIn" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Sign out this browser
+      security: []
+      responses:
+        "204": { description: Signed out. }
+
+  /v1/me:
+    get:
+      tags: [account]
+      operationId: getMe
+      summary: The signed-in account
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: The account. The ETag is needed to PATCH it.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [account]
+      operationId: updateMe
+      summary: Rename the account
+      security: [{ session: [] }]
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [display_name]
+              additionalProperties: false
+              properties:
+                display_name: { $ref: "#/components/schemas/Name" }
+      responses:
+        "204":
+          description: Renamed.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [privacy]
+      operationId: deleteAccount
+      summary: Erase the account and all its data, immediately
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [confirm]
+              properties:
+                confirm: { const: DELETE }
+      responses:
+        "204": { description: Erased and signed out. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/logout-all:
+    post:
+      tags: [account]
+      operationId: logoutAll
+      summary: Sign out every device
+      security: [{ session: [] }]
+      responses:
+        "204": { description: All sessions revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/sessions:
+    get:
+      tags: [account]
+      operationId: listSessions
+      summary: Signed-in devices
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Sessions, most recently active first (at most 100).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Session" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/sessions/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [account]
+      operationId: revokeSession
+      summary: Sign out one device
+      security: [{ session: [] }]
+      responses:
+        "204": { description: Revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/me/passkeys:
+    get:
+      tags: [account]
+      operationId: listPasskeys
+      summary: Registered passkeys
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Passkeys, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Passkey" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/passkeys/begin:
+    post:
+      tags: [account]
+      operationId: addPasskeyBegin
+      summary: Start adding a passkey
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              additionalProperties: false
+              properties:
+                name: { $ref: "#/components/schemas/Name" }
+      responses:
+        "200": { $ref: "#/components/responses/WebAuthnOptions" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/passkeys/finish:
+    post:
+      tags: [account]
+      operationId: addPasskeyFinish
+      summary: Finish adding a passkey
+      security: [{ session: [] }]
+      requestBody: { $ref: "#/components/requestBodies/WebAuthnCredential" }
+      responses:
+        "201": { description: Added. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/passkeys/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [account]
+      operationId: removePasskey
+      summary: Remove a passkey (not the last one)
+      security: [{ session: [] }]
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /v1/me/recovery-codes:
+    post:
+      tags: [account]
+      operationId: issueRecoveryCodes
+      summary: Replace all recovery codes; returns the new ones once
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: New codes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recovery_codes]
+                properties:
+                  recovery_codes: { $ref: "#/components/schemas/RecoveryCodes" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/totp/begin:
+    post:
+      tags: [account]
+      operationId: totpBegin
+      summary: Generate an authenticator-app secret (inactive until confirmed)
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Secret to add to an authenticator app.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [secret, otpauth_url]
+                properties:
+                  secret: { type: string }
+                  otpauth_url: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+  /v1/me/totp/confirm:
+    post:
+      tags: [account]
+      operationId: totpConfirm
+      summary: Turn authenticator codes on
+      security: [{ session: [] }]
+      requestBody: { $ref: "#/components/requestBodies/TOTPCode" }
+      responses:
+        "204": { description: On. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/totp/disable:
+    post:
+      tags: [account]
+      operationId: totpDisable
+      summary: Turn authenticator codes off
+      security: [{ session: [] }]
+      requestBody: { $ref: "#/components/requestBodies/TOTPCode" }
+      responses:
+        "204": { description: Off. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/audit:
+    get:
+      tags: [account]
+      operationId: listAudit
+      summary: Recent security events (at most 200)
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Events, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AuditEvent" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/tokens:
+    get:
+      tags: [account]
+      operationId: listTokens
+      summary: Personal access tokens
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Tokens (never the secret).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Token" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [account]
+      operationId: createToken
+      summary: Create a token; the secret is returned once
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, scope, expires_in_days]
+              additionalProperties: false
+              properties:
+                name: { $ref: "#/components/schemas/Name" }
+                scope: { enum: [read, write] }
+                expires_in_days: { type: integer, minimum: 1, maximum: 365 }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, info]
+                properties:
+                  token: { type: string, pattern: "^axon_" }
+                  info: { $ref: "#/components/schemas/Token" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/tokens/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [account]
+      operationId: revokeToken
+      summary: Revoke a token
+      security: [{ session: [] }]
+      responses:
+        "204": { description: Revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
+  /v1/me/consents:
+    get:
+      tags: [privacy]
+      operationId: listConsents
+      summary: Consent per purpose (all off by default)
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Every purpose with its current state.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Consent" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/consents/{purpose}:
+    put:
+      tags: [privacy]
+      operationId: setConsent
+      summary: Grant or withdraw consent for a purpose
+      security: [{ session: [] }]
+      parameters:
+        - name: purpose
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [granted]
+              additionalProperties: false
+              properties:
+                granted: { type: boolean }
+      responses:
+        "204": { description: Recorded. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/me/export:
+    get:
+      tags: [privacy]
+      operationId: exportData
+      summary: Download everything (ZIP with axon-export.json and README.md)
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: The archive.
+          content:
+            application/zip:
+              schema: { type: string, contentMediaType: application/zip }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
+  /v1/relations:
+    get:
+      tags: [graph]
+      operationId: listRelations
+      summary: Relations and the entity types they connect
+      responses:
+        "200":
+          description: Relations; empty sources/targets mean any type.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Relation" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/entities/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [graph]
+      operationId: getEntity
+      summary: Shared fields of any entity
+      responses:
+        "200":
+          description: The entity.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Entity" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/entities/{id}/links:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [graph]
+      operationId: listLinks
+      summary: Outgoing links, or backlinks with direction=incoming
+      parameters:
+        - name: direction
+          in: query
+          schema: { enum: [outgoing, incoming], default: outgoing }
+        - $ref: "#/components/parameters/After"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: A page of links, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Link" }
+                  next_cursor: { $ref: "#/components/schemas/Cursor" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/entities/{id}/timeline:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [graph]
+      operationId: entityTimeline
+      summary: Changes to an entity (field names only), newest first
+      parameters:
+        - name: before
+          in: query
+          description: next_cursor from the previous page.
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: A page of events.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Event" }
+                  next_cursor: { $ref: "#/components/schemas/Cursor" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/links:
+    post:
+      tags: [graph]
+      operationId: createLink
+      summary: Link two entities
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source_id, relation, target_id]
+              additionalProperties: false
+              properties:
+                source_id: { type: string, format: uuid }
+                relation: { type: string }
+                target_id: { type: string, format: uuid }
+      responses:
+        "201":
+          description: Linked.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id: { type: string, format: uuid }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/links/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [graph]
+      operationId: deleteLink
+      summary: Remove a link
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/search:
+    get:
+      tags: [graph]
+      operationId: search
+      summary: Full-text search across all of the caller's entities
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Web-style query ("quoted phrase", -exclude, or).
+          schema: { type: string, minLength: 1, maxLength: 500 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 1000, default: 0 }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Matches, best first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/SearchHit" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: axon_session
+      description: Browser session; writes also need a matching Origin header.
+    token:
+      type: http
+      scheme: bearer
+      description: Personal access token (axon_…); read or write scope.
+
+  parameters:
+    ID:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    After:
+      name: after
+      in: query
+      description: next_cursor from the previous page.
+      schema: { type: string, format: uuid }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 100 }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag from the last GET.
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Any unique string (e.g. a UUID); retries with the same key and body replay the first response.
+      schema: { type: string, maxLength: 200 }
+
+  headers:
+    ETag:
+      description: Current version, for If-Match.
+      schema: { type: string }
+
+  requestBodies:
+    WebAuthnCredential:
+      required: true
+      description: The browser's PublicKeyCredential, JSON-encoded (WebAuthn Level 3 toJSON()).
+      content:
+        application/json:
+          schema: { type: object }
+    TOTPCode:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code]
+            additionalProperties: false
+            properties:
+              code: { type: string }
+
+  responses:
+    Problem:
+      description: RFC 9457 problem document.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    WebAuthnOptions:
+      description: Options to pass to navigator.credentials (publicKey member).
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [publicKey]
+            properties:
+              publicKey: { type: object }
+    SignedIn:
+      description: Signed in; the session cookie is set.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [display_name]
+            properties:
+              display_name: { type: string }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status, detail]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+    Status:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+    Name:
+      type: string
+      minLength: 1
+      maxLength: 100
+    Cursor:
+      type: [string, "null"]
+      description: Pass back as after/before to get the next page; null on the last page.
+    RecoveryCodes:
+      type: array
+      minItems: 10
+      maxItems: 10
+      items: { type: string, pattern: "^[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}$" }
+    Me:
+      type: object
+      required: [id, display_name, created_at, totp_enabled, passkeys, recovery_codes_remaining]
+      properties:
+        id: { type: string, format: uuid }
+        display_name: { type: string }
+        created_at: { type: string, format: date-time }
+        totp_enabled: { type: boolean }
+        passkeys: { type: integer }
+        recovery_codes_remaining: { type: integer }
+    Session:
+      type: object
+      required: [id, user_agent, created_at, last_seen_at, current]
+      properties:
+        id: { type: string, format: uuid }
+        user_agent: { type: string }
+        created_at: { type: string, format: date-time }
+        last_seen_at: { type: string, format: date-time }
+        current: { type: boolean }
+    Passkey:
+      type: object
+      required: [id, name, created_at, last_used_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: [string, "null"], format: date-time }
+    Token:
+      type: object
+      required: [id, name, scope, created_at, last_used_at, expires_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        scope: { enum: [read, write] }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: [string, "null"], format: date-time }
+        expires_at: { type: string, format: date-time }
+    AuditEvent:
+      type: object
+      required: [id, action, ip, user_agent, details, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        action: { type: string }
+        ip: { type: string }
+        user_agent: { type: string }
+        details: { type: object }
+        created_at: { type: string, format: date-time }
+    Consent:
+      type: object
+      required: [id, description, granted, updated_at]
+      properties:
+        id: { type: string }
+        description: { type: string }
+        granted: { type: boolean }
+        updated_at: { type: [string, "null"], format: date-time }
+    Relation:
+      type: object
+      required: [name, sources, targets]
+      properties:
+        name: { type: string }
+        sources: { type: array, items: { type: string } }
+        targets: { type: array, items: { type: string } }
+    Entity:
+      type: object
+      required: [id, type, title, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string }
+        title: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Link:
+      type: object
+      required: [id, relation, entity, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        relation: { type: string }
+        entity: { $ref: "#/components/schemas/Entity" }
+        created_at: { type: string, format: date-time }
+    Event:
+      type: object
+      required: [id, actor, entity_type, entity_id, kind, fields, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        actor: { type: string }
+        entity_type: { type: string }
+        entity_id: { type: string, format: uuid }
+        kind: { enum: [created, updated, deleted, linked, unlinked] }
+        fields: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+    SearchHit:
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - type: object
+          required: [rank]
+          properties:
+            rank: { type: number }

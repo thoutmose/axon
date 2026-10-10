@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+	"crypto/subtle"
 	"errors"
 	"net/http"
 	"time"
@@ -16,6 +18,7 @@ import (
 
 func (s *Service) me(w http.ResponseWriter, r *http.Request) {
 	id, _ := FromContext(r.Context())
+	var version time.Time
 	var out struct {
 		ID                     uuid.UUID `json:"id"`
 		DisplayName            string    `json:"display_name"`
@@ -25,16 +28,63 @@ func (s *Service) me(w http.ResponseWriter, r *http.Request) {
 		RecoveryCodesRemaining int       `json:"recovery_codes_remaining"`
 	}
 	err := s.db.QueryRow(r.Context(),
-		`SELECT u.id, u.display_name, u.created_at, u.totp_enabled_at IS NOT NULL,
+		`SELECT u.updated_at, u.id, u.display_name, u.created_at, u.totp_enabled_at IS NOT NULL,
 		        (SELECT count(*) FROM passkeys WHERE user_id = u.id),
 		        (SELECT count(*) FROM recovery_codes WHERE user_id = u.id AND used_at IS NULL)
 		 FROM users u WHERE u.id = $1`, id.UserID).
-		Scan(&out.ID, &out.DisplayName, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining)
+		Scan(&version, &out.ID, &out.DisplayName, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining)
 	if err != nil {
 		s.fail(w, r, err)
 		return
 	}
+	w.Header().Set("ETag", httpx.ETag(version))
 	httpx.JSON(w, http.StatusOK, out)
+}
+
+// updateMe renames the account. It needs If-Match with the ETag from GET
+// /v1/me, so a stale tab cannot silently overwrite a newer change.
+func (s *Service) updateMe(w http.ResponseWriter, r *http.Request) {
+	id, _ := FromContext(r.Context())
+	version, ok := httpx.IfMatch(w, r)
+	if !ok {
+		return
+	}
+	var body struct {
+		DisplayName string `json:"display_name"`
+	}
+	if err := httpx.Decode(r, &body); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	name, valid := cleanName(body.DisplayName)
+	if !valid {
+		httpx.Problem(w, http.StatusUnprocessableEntity, "Enter a name between 1 and 100 characters.")
+		return
+	}
+	errStale := errors.New("stale")
+	var updated time.Time
+	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+		err := tx.QueryRow(r.Context(),
+			`UPDATE users SET display_name = $3, updated_at = clock_timestamp()
+			 WHERE id = $1 AND updated_at = $2 RETURNING updated_at`, id.UserID, version, name).Scan(&updated)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errStale
+		}
+		if err != nil {
+			return err
+		}
+		return audit.Record(r.Context(), tx, id.UserID, audit.AccountUpdated, httpx.ClientIP(r), r.UserAgent(),
+			map[string]any{"fields": []string{"display_name"}})
+	})
+	switch {
+	case errors.Is(err, errStale):
+		httpx.Problem(w, http.StatusPreconditionFailed, "Your account changed since you loaded it. Reload and try again.")
+	case err != nil:
+		s.fail(w, r, err)
+	default:
+		w.Header().Set("ETag", httpx.ETag(updated))
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 // --- Sessions ---
@@ -265,8 +315,11 @@ func (s *Service) regenerateRecoveryCodes(w http.ResponseWriter, r *http.Request
 
 // --- TOTP ---
 
-func (s *Service) validTOTP(sealed []byte, code string) bool {
-	if s.sealer == nil || sealed == nil || code == "" {
+// useTOTP accepts a code for the current, previous, or next 30-second step
+// and records the step, so the same code cannot be used twice. Call it inside
+// the transaction that acts on the code, after locking the user's row.
+func (s *Service) useTOTP(ctx context.Context, tx pgx.Tx, userID uuid.UUID, sealed []byte, code string) bool {
+	if s.sealer == nil || sealed == nil || len(code) != 6 {
 		return false
 	}
 	secret, err := s.sealer.Open(sealed)
@@ -274,7 +327,18 @@ func (s *Service) validTOTP(sealed []byte, code string) bool {
 		s.log.Error("cannot open TOTP secret; was AXON_ENCRYPTION_KEY changed?", "err", err)
 		return false
 	}
-	return totp.Validate(code, string(secret))
+	now := time.Now()
+	for _, skew := range []int64{0, -1, 1} {
+		at := now.Add(time.Duration(skew) * 30 * time.Second)
+		want, err := totp.GenerateCode(string(secret), at)
+		if err != nil || subtle.ConstantTimeCompare([]byte(want), []byte(code)) != 1 {
+			continue
+		}
+		step := at.Unix() / 30
+		tag, err := tx.Exec(ctx, `UPDATE users SET totp_last_step = $2 WHERE id = $1 AND totp_last_step < $2`, userID, step)
+		return err == nil && tag.RowsAffected() == 1
+	}
+	return false
 }
 
 func (s *Service) totpBegin(w http.ResponseWriter, r *http.Request) {
@@ -336,7 +400,7 @@ func (s *Service) totpSwitch(w http.ResponseWriter, r *http.Request, on bool) {
 		if err != nil {
 			return err
 		}
-		if enabled == on || !s.validTOTP(sealed, body.Code) {
+		if enabled == on || !s.useTOTP(r.Context(), tx, id.UserID, sealed, body.Code) {
 			return errBadCode
 		}
 		action := audit.TOTPEnabled

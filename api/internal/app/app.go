@@ -8,9 +8,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/thoutmose/axon/api/openapi"
+
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/server"
 )
@@ -23,13 +26,22 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	}
 	priv := privacy.New(pool, log, authn.ClearSessionCookie)
 	priv.Register("graph", graph.Export)
+	graphAPI := graph.NewHandlers(pool, log)
 	return server.New(version, pool, log, m, func(r chi.Router) {
+		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/yaml")
+			_, _ = w.Write(openapi.Spec)
+		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody, authn.SameOrigin)
 			authn.Routes(r)
 			r.Group(func(r chi.Router) {
-				r.Use(authn.Require)
+				r.Use(authn.RequireSession)
 				priv.Routes(r)
+			})
+			r.Group(func(r chi.Router) {
+				r.Use(authn.Require, idem.Middleware(pool, log))
+				graphAPI.Routes(r)
 			})
 		})
 	}), nil

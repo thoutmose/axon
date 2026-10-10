@@ -71,8 +71,16 @@ h2 {
 	color: var(--ok);
 }
 button,
-input {
+input,
+select {
 	font: inherit;
+}
+select {
+	padding: 0.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--fg);
 }
 button {
 	padding: 0.5rem 1rem;

@@ -1,0 +1,5 @@
+extends:
+  - recommended
+rules:
+  # Health checks, sign-out, and this document have no client-error outcome.
+  operation-4xx-response: off

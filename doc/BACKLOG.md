@@ -77,7 +77,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-03 | Observability | Actionable logs, metrics, traces, dashboards, alerts, and SLOs. | MUST | 34 pts | EP-01, EP-02 | In progress (fleet apply pending) |
 | EP-04 | Security, authentication & privacy | Passkeys/TOTP, sessions, ownership checks, audit, export/erasure, consent. | MUST | 55 pts | EP-00, EP-01 | Done (independent review owed) |
 | EP-05 | Core data model & universal links | Entity conventions, typed links, event log, retention and erasure hooks, search. | MUST | 34 pts | EP-04 | Done |
-| EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Planned |
+| EP-06 | API platform | Spec-first REST/OpenAPI 3.1 with errors, pagination, idempotency, and tokens. | MUST | 34 pts | EP-05 | Done |
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Planned |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Planned |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Planned |
@@ -354,24 +354,24 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Issues**
 
-- [ ] **EP-06/IS-06.01 — Spec-first OpenAPI 3.1** · 5 pts · MUST
-  - [ ] The spec lives in the repository, is linted in CI, and generates server types.
-  - [ ] Reference docs are served from the API.
-- [ ] **EP-06/IS-06.02 — Conventions** · 5 pts · MUST
-  - [ ] All routes are under `/v1`.
-  - [ ] Errors use RFC 9457 `application/problem+json`.
-  - [ ] Lists use cursor pagination with a maximum page size.
-- [ ] **EP-06/IS-06.03 — Safe mutations** · 5 pts · MUST
-  - [ ] `POST` accepts an `Idempotency-Key`; a replay returns the original result.
-  - [ ] `PATCH` requires `If-Match`; a stale version returns `412`.
-- [ ] **EP-06/IS-06.04 — Contract tests** · 5 pts · MUST
-  - [ ] CI validates real responses against the spec.
-- [ ] **EP-06/IS-06.05 — TypeScript client** · 3 pts · MUST
-  - [ ] A generated client is used by the web app; CI fails if it is stale.
-- [ ] **EP-06/IS-06.06 — Links and timeline endpoints** · 5 pts · MUST
-  - [ ] Create, list, and delete links; list backlinks; read an entity’s event timeline.
-- [ ] **EP-06/IS-06.07 — Personal access tokens** · 5 pts · SHOULD
-  - [ ] Read-only or read-write tokens with expiry, shown once, stored hashed, and revocable; used by scripts and Markdown sync.
+- [x] **EP-06/IS-06.01 — Spec-first OpenAPI 3.1** · 5 pts · MUST
+  - [x] The spec lives in the repository (`api/openapi/openapi.yaml`) and is linted in CI (Redocly). Instead of generated server types, contract tests check every request and response the integration tests make against it, and fail if any operation is untested.
+  - [x] The spec is served at `/api/v1/openapi.yaml` (load it in any OpenAPI viewer).
+- [x] **EP-06/IS-06.02 — Conventions** · 5 pts · MUST
+  - [x] All routes are under `/v1`.
+  - [x] Errors use RFC 9457 `application/problem+json`.
+  - [x] Lists use cursor pagination with a maximum page size (100).
+- [x] **EP-06/IS-06.03 — Safe mutations** · 5 pts · MUST
+  - [x] `POST` accepts an `Idempotency-Key`; a replay returns the original result; reuse with a different body gets 422.
+  - [x] `PATCH` requires `If-Match` (428 without); a stale version returns `412`.
+- [x] **EP-06/IS-06.04 — Contract tests** · 5 pts · MUST
+  - [x] CI validates real requests and responses against the spec (`internal/app/contract_test.go`).
+- [x] **EP-06/IS-06.05 — TypeScript client** · 3 pts · MUST
+  - [x] Generated TypeScript types (`web/src/lib/api-types.ts`) are used by the web app; CI fails if they are stale.
+- [x] **EP-06/IS-06.06 — Links and timeline endpoints** · 5 pts · MUST
+  - [x] Create, list, and delete links; list backlinks; read an entity’s event timeline; search.
+- [x] **EP-06/IS-06.07 — Personal access tokens** · 5 pts · SHOULD
+  - [x] Read-only or read-write tokens with expiry, shown once, stored hashed, and revocable; tokens can never manage the account.
 
 **Exit evidence.** Published API docs, contract test report, idempotency and concurrency tests.
 
