@@ -3,7 +3,7 @@ module github.com/thoutmose/axon/api
 go 1.26.0
 
 require (
-	github.com/fxamacker/cbor/v2 v2.9.4
+	github.com/fxamacker/cbor/v2 v2.9.6
 	github.com/getkin/kin-openapi v0.149.0
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-webauthn/webauthn v0.18.2
@@ -12,6 +12,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/pressly/goose/v3 v3.28.0
 	github.com/prometheus/client_golang v1.25.0
+	github.com/teambition/rrule-go v1.8.2
 	golang.org/x/time v0.16.0
 )
 
@@ -41,7 +42,6 @@ require (
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/sethvargo/go-retry v0.4.0 // indirect
-	github.com/teambition/rrule-go v1.8.2 // indirect
 	github.com/tinylib/msgp v1.6.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
