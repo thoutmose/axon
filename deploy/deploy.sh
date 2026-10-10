@@ -71,6 +71,8 @@ ssh "$host" "sudo install -d -o \$(id -un) -g \$(id -gn) -m 0750 $remote_dir && 
 rsync -R compose.yaml deploy/compose.server.yaml deploy/Caddyfile deploy/env/recipients.txt "$host:$remote_dir/"
 # Key for copying backups off-host; authorized on srv-services by deploy/setup-offsite.sh.
 remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@$(hostname)" -f backup_ed25519'
+# Backup metrics file for node_exporter's textfile collector (directory owned by root).
+ssh "$host" 'f=/var/lib/prometheus/node-exporter/axon_backup.prom; [ -f $f ] || sudo install -o "$(id -un)" -m 0644 /dev/null $f'
 {
   age --decrypt -i "$key" "deploy/env/$env.env.age"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"

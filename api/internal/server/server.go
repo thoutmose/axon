@@ -18,9 +18,10 @@ type Pinger interface {
 }
 
 // New returns the API handler.
-func New(version string, db Pinger, log *slog.Logger) http.Handler {
+func New(version string, db Pinger, log *slog.Logger, m *Metrics) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
+	r.Use(observe(m, log)) // outside Recoverer, so panics are recorded as 500s
 	r.Use(middleware.Recoverer)
 
 	// Liveness: the process is up. Never depends on other services.

@@ -4,6 +4,7 @@
 #
 # Env: PGHOST PGUSER PGPASSWORD PGDATABASE, BACKUP_OFFSITE (user@host, optional),
 # BACKUP_KEEP_DAYS (default 14). Recipients: /etc/axon/recipients.txt.
+# Metrics (optional): /textfile/axon_backup.prom.
 # Off-site key: /run/secrets/backup_ed25519. Output: /backups.
 set -eu
 
@@ -20,6 +21,11 @@ run_once() {
 		rsync -e "$ssh_cmd" "$out" "$BACKUP_OFFSITE:"
 	fi
 	date -u +%FT%TZ > /backups/last-success
+	# Picked up by the host's node_exporter textfile collector (fleet monitoring).
+	if [ -w /textfile/axon_backup.prom ]; then
+		printf 'axon_backup_last_success_timestamp_seconds %s\naxon_backup_last_size_bytes %s\n' \
+			"$(date -u +%s)" "$(wc -c < "$out")" > /textfile/axon_backup.prom
+	fi
 	echo "backup ok: $out"
 }
 
