@@ -11,6 +11,7 @@ services:
     depends_on: [api, web]
 
   api:
+    image: axon-api:${AXON_VERSION:-dev}
     build:
       context: ./api
       network: host # bridge networks on the dev host have no internet egress
@@ -25,6 +26,7 @@ services:
         condition: service_healthy
 
   web:
+    image: axon-web:${AXON_VERSION:-dev}
     build:
       context: ./web
       network: host # bridge networks on the dev host have no internet egress

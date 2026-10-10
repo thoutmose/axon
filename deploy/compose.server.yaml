@@ -1,0 +1,15 @@
+# Server overlay for staging and production: run images copied by deploy/deploy.sh
+# and restart after reboots. Selected on servers through COMPOSE_FILE in /opt/axon/.env.
+services:
+  caddy:
+    restart: unless-stopped
+  api:
+    build: !reset null
+    restart: unless-stopped
+  web:
+    build: !reset null
+    restart: unless-stopped
+  db:
+    restart: unless-stopped
+  valkey:
+    restart: unless-stopped
