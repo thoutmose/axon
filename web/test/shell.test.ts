@@ -85,7 +85,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/account/tokens',
 		'/account/privacy',
 		'/tasks',
-		'/notes'
+		'/notes',
+		'/goals'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -163,6 +164,45 @@ test('write notes, link them with wikilinks, and follow backlinks', async () => 
 	await page.goto('/notes?para=inbox');
 	await expect(page.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
 	await expect(page.getByRole('link', { name: 'Forgetting curve' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('set a goal, break it into milestones, link work, and see how progress is worked out', async () => {
+	await page.goto('/goals');
+	await expect(page.getByText('No active goals.')).toBeVisible();
+	await page.getByLabel('New goal').fill('Learn to swim 1 km');
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('heading', { level: 1, name: 'Learn to swim 1 km' })).toBeVisible();
+	await expect(page.getByText('No progress measure yet')).toBeVisible();
+
+	await page.getByLabel('New milestone').fill('Swim 100 m');
+	await page.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.getByLabel('Done: Swim 100 m')).toBeVisible();
+	await page.getByLabel('New milestone').fill('Swim 500 m');
+	await page.getByRole('button', { name: 'Add', exact: true }).click();
+	await page.getByLabel('Done: Swim 100 m').check();
+	await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute(
+		'aria-valuenow',
+		'50'
+	);
+
+	await page.getByLabel('Task or note to link').selectOption({ label: 'Buy stamps' });
+	await page.getByRole('button', { name: 'Link', exact: true }).click();
+	await expect(page.getByRole('region', { name: 'Linked work' })).toContainText('Buy stamps');
+	await expect(page.getByText('1 of 3 milestones and linked tasks done')).toBeVisible();
+	await page.getByText('How is this worked out?').click();
+	await expect(page.getByRole('region', { name: 'Progress' }).getByRole('listitem')).toHaveCount(3);
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/goals');
+	await expect(page.getByRole('heading', { name: 'Weekly goal review' })).toBeVisible();
+	await page
+		.getByLabel("What moved forward, and what's next?")
+		.fill('First lengths without stopping.');
+	await page.getByRole('button', { name: 'Save review' }).click();
+	await expect(page.getByText('Weekly review saved.')).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Weekly goal review' })).toHaveCount(0);
+	await expect(page.getByRole('link', { name: 'Learn to swim 1 km' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 

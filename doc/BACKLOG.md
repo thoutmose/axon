@@ -84,7 +84,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-10 | Projects, Kanban, docs & delivery agents | Projects, epics/issues/sub-tasks, Kanban, docs, repo analysis, and code review. | MUST | 89 pts | EP-09, EP-11, EP-19 | Planned |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Planned |
-| EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Planned |
+| EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
 | EP-14 | Roadmaps, Tutor agent & skill graph | Import or generate learning roadmaps and visualize progress. | SHOULD | 89 pts | EP-11, EP-13, EP-19 | Planned |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, reviewed cards, and Anki sync. | SHOULD | 89 pts | EP-11, EP-14, EP-19 | Planned |
@@ -470,13 +470,19 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Out of scope.** Goals agent (EP-19).
 
-**Acceptance criteria**
+**Issues**
 
-- Every progress figure can be expanded to show exactly what it was computed from.
-- No date or commitment is created without the user entering or confirming it.
-- Archiving a goal keeps its history and links.
-
-**Candidate issues.** Goal and milestone model and API (5) · Progress calculation and explanation (5) · Goal screens (8) · Weekly goal review prompt (3).
+- [x] **EP-13/IS-13.01 — Goal and milestone model and API** · 5 pts · MUST
+  - [x] Goals (title, outcome, status, optional target date, optional measure) and milestones are graph entities; tasks and notes link to them with `supports`.
+  - [x] No date or commitment is created without the user entering it: new goals and milestones have no date unless one is sent (integration test).
+  - [x] Archiving a goal is a status change: milestones, links, and timeline stay (integration test).
+- [x] **EP-13/IS-13.02 — Progress calculation and explanation** · 5 pts · MUST
+  - [x] Progress comes from the measure (start → target, capped 0–100%) or from done milestones and linked tasks (cancelled tasks and notes excluded); unit-tested.
+  - [x] Every figure expands to exactly what it was computed from (`GET /v1/goals/{id}/progress`, “How is this worked out?”).
+- [x] **EP-13/IS-13.03 — Goal screens** · 8 pts · MUST
+  - [x] Goals by status with progress bars; goal page with progress, milestones, linked work, details, measure, and delete confirmation (e2e and axe).
+- [x] **EP-13/IS-13.04 — Weekly goal review prompt** · 3 pts · SHOULD
+  - [x] Until this week's weekly check-in exists, the goals page invites a short review and saves it as that check-in; “Not this week” dismisses it.
 
 ### EP-08 — Dashboard & calendar
 

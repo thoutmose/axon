@@ -34,6 +34,8 @@ tags:
     description: Entities shared by every domain type, the links between them, their timelines, and search.
   - name: tasks
     description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
+  - name: goals
+    description: Goals with an optional measure, milestones, and progress that explains exactly what it was computed from. Link tasks and notes to a goal or milestone with the supports relation.
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -1159,6 +1161,222 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/SyncConflict" }
 
+  /v1/goals:
+    get:
+      tags: [goals]
+      operationId: listGoals
+      summary: Goals with a status (default active), soonest target date first
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/GoalStatus" }
+      responses:
+        "200":
+          description: Up to 200 goals with milestones and progress.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Goal" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [goals]
+      operationId: createGoal
+      summary: Create a goal; dates and measures are only what you send
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/GoalFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Goal" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/goals/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [goals]
+      operationId: getGoal
+      summary: One goal with milestones and progress
+      responses:
+        "200":
+          description: The goal.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Goal" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [goals]
+      operationId: updateGoal
+      summary: Change a goal; archiving keeps its milestones, links, and history
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GoalFields" }
+      responses:
+        "200":
+          description: The updated goal.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Goal" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [goals]
+      operationId: deleteGoal
+      summary: Delete a goal, its milestones, and their links (linked tasks and notes stay)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/goals/{id}/progress:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [goals]
+      operationId: explainGoalProgress
+      summary: The progress figure and exactly what it was computed from
+      responses:
+        "200":
+          description: The figure, its method, and its inputs.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Progress"
+                  - type: object
+                    required: [measure, items]
+                    properties:
+                      measure:
+                        oneOf:
+                          - $ref: "#/components/schemas/Measure"
+                          - type: "null"
+                      items:
+                        type: array
+                        description: The goal's milestones and the tasks that support the goal or one of its milestones (cancelled tasks are left out).
+                        items:
+                          type: object
+                          required: [id, type, title, done, via]
+                          properties:
+                            id: { type: string, format: uuid }
+                            type: { enum: [milestone, task] }
+                            title: { type: string }
+                            done: { type: boolean }
+                            via: { type: [string, "null"], description: "The milestone a task supports, or null when it supports the goal." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/goals/{id}/milestones:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [goals]
+      operationId: addMilestone
+      summary: Add a milestone to a goal
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/MilestoneFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Milestone" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/milestones/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [goals]
+      operationId: getMilestone
+      summary: One milestone
+      responses:
+        "200":
+          description: The milestone.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Milestone" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [goals]
+      operationId: updateMilestone
+      summary: Rename, reschedule, or complete a milestone
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MilestoneFields" }
+      responses:
+        "200":
+          description: The updated milestone.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Milestone" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [goals]
+      operationId: deleteMilestone
+      summary: Delete a milestone and its links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -1448,3 +1666,73 @@ components:
     NoteContent:
       type: string
       maxLength: 1000000
+    GoalStatus:
+      type: string
+      enum: [active, achieved, archived]
+    Measure:
+      type: object
+      required: [unit, start, target, current]
+      additionalProperties: false
+      properties:
+        unit: { type: string, minLength: 1, maxLength: 40, example: km }
+        start: { type: number }
+        target: { type: number, description: Must differ from start; may be below it (e.g. weight). }
+        current: { type: number }
+    Progress:
+      type: object
+      required: [percent, method, done, total, summary]
+      properties:
+        percent: { type: [integer, "null"], minimum: 0, maximum: 100, description: "Rounded down; null when there is nothing to measure." }
+        method:
+          enum: [measure, items, none]
+          description: "measure: how far current moved from start to target. items: done milestones and linked tasks over all of them. none: nothing to measure yet."
+        done: { type: integer }
+        total: { type: integer }
+        summary: { type: string, example: "3 of 5 milestones and linked tasks done" }
+    Milestone:
+      type: object
+      required: [id, goal_id, title, due_on, done_at, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        goal_id: { type: string, format: uuid }
+        title: { type: string }
+        due_on: { type: [string, "null"], format: date }
+        done_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MilestoneFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        due_on: { type: [string, "null"], format: date }
+        done: { type: boolean }
+    Goal:
+      type: object
+      required: [id, title, outcome, status, target_date, measure, progress, milestones, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        outcome: { type: string, description: What will be true when the goal is reached. }
+        status: { $ref: "#/components/schemas/GoalStatus" }
+        target_date: { type: [string, "null"], format: date }
+        measure:
+          oneOf:
+            - $ref: "#/components/schemas/Measure"
+            - type: "null"
+        progress: { $ref: "#/components/schemas/Progress" }
+        milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    GoalFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        outcome: { type: string, maxLength: 20000 }
+        status: { $ref: "#/components/schemas/GoalStatus" }
+        target_date: { type: [string, "null"], format: date }
+        measure:
+          oneOf:
+            - $ref: "#/components/schemas/Measure"
+            - type: "null"

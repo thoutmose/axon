@@ -803,6 +803,104 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/goals': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Goals with a status (default active), soonest target date first */
+		get: operations['listGoals'];
+		put?: never;
+		/** Create a goal; dates and measures are only what you send */
+		post: operations['createGoal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/goals/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One goal with milestones and progress */
+		get: operations['getGoal'];
+		put?: never;
+		post?: never;
+		/** Delete a goal, its milestones, and their links (linked tasks and notes stay) */
+		delete: operations['deleteGoal'];
+		options?: never;
+		head?: never;
+		/** Change a goal; archiving keeps its milestones, links, and history */
+		patch: operations['updateGoal'];
+		trace?: never;
+	};
+	'/v1/goals/{id}/progress': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The progress figure and exactly what it was computed from */
+		get: operations['explainGoalProgress'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/goals/{id}/milestones': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add a milestone to a goal */
+		post: operations['addMilestone'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/milestones/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One milestone */
+		get: operations['getMilestone'];
+		put?: never;
+		post?: never;
+		/** Delete a milestone and its links */
+		delete: operations['deleteMilestone'];
+		options?: never;
+		head?: never;
+		/** Rename, reschedule, or complete a milestone */
+		patch: operations['updateMilestone'];
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -997,6 +1095,75 @@ export interface components {
 		 */
 		NotePath: string;
 		NoteContent: string;
+		/** @enum {string} */
+		GoalStatus: 'active' | 'achieved' | 'archived';
+		Measure: {
+			/** @example km */
+			unit: string;
+			start: number;
+			/** @description Must differ from start; may be below it (e.g. weight). */
+			target: number;
+			current: number;
+		};
+		Progress: {
+			/** @description Rounded down; null when there is nothing to measure. */
+			percent: number | null;
+			/**
+			 * @description measure: how far current moved from start to target. items: done milestones and linked tasks over all of them. none: nothing to measure yet.
+			 * @enum {unknown}
+			 */
+			method: 'measure' | 'items' | 'none';
+			done: number;
+			total: number;
+			/** @example 3 of 5 milestones and linked tasks done */
+			summary: string;
+		};
+		Milestone: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			goal_id: string;
+			title: string;
+			/** Format: date */
+			due_on: string | null;
+			/** Format: date-time */
+			done_at: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		MilestoneFields: {
+			title?: string;
+			/** Format: date */
+			due_on?: string | null;
+			done?: boolean;
+		};
+		Goal: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** @description What will be true when the goal is reached. */
+			outcome: string;
+			status: components['schemas']['GoalStatus'];
+			/** Format: date */
+			target_date: string | null;
+			measure: components['schemas']['Measure'] | null;
+			progress: components['schemas']['Progress'];
+			milestones: components['schemas']['Milestone'][];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		GoalFields: {
+			title?: string;
+			outcome?: string;
+			status?: components['schemas']['GoalStatus'];
+			/** Format: date */
+			target_date?: string | null;
+			measure?: components['schemas']['Measure'] | null;
+		};
 	};
 	responses: {
 		/** @description RFC 9457 problem document. */
@@ -2549,6 +2716,308 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			409: components['responses']['SyncConflict'];
+		};
+	};
+	listGoals: {
+		parameters: {
+			query?: {
+				status?: components['schemas']['GoalStatus'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 goals with milestones and progress. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Goal'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createGoal: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['GoalFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getGoal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The goal. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteGoal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateGoal: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['GoalFields'];
+			};
+		};
+		responses: {
+			/** @description The updated goal. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	explainGoalProgress: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The figure, its method, and its inputs. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Progress'] & {
+						measure: components['schemas']['Measure'] | null;
+						/** @description The goal's milestones and the tasks that support the goal or one of its milestones (cancelled tasks are left out). */
+						items: {
+							/** Format: uuid */
+							id: string;
+							/** @enum {unknown} */
+							type: 'milestone' | 'task';
+							title: string;
+							done: boolean;
+							/** @description The milestone a task supports, or null when it supports the goal. */
+							via: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	addMilestone: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MilestoneFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getMilestone: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The milestone. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteMilestone: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateMilestone: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MilestoneFields'];
+			};
+		};
+		responses: {
+			/** @description The updated milestone. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
 		};
 	};
 }

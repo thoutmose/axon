@@ -11,6 +11,7 @@ import (
 	"github.com/thoutmose/axon/api/openapi"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
@@ -31,6 +32,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	graphAPI := graph.NewHandlers(pool, log)
 	tasksAPI := tasks.NewHandlers(pool, log)
 	notesAPI := notes.NewHandlers(pool, log)
+	goalsAPI := goals.NewHandlers(pool, log)
 	priv.RegisterFiles("notes", notes.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
@@ -52,6 +54,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				r.Use(authn.Require, idem.Middleware(pool, log))
 				graphAPI.Routes(r)
 				tasksAPI.Routes(r)
+				goalsAPI.Routes(r)
 			})
 		})
 	}), nil
