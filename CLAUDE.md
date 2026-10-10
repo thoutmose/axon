@@ -4,7 +4,19 @@ Axon is a self-hosted life OS. Product and architecture: [README.md](README.md).
 
 ## Current state
 
-EP-00 (project foundation) in progress. No application code yet.
+EP-00 (project foundation) delivered: governance docs and a walking skeleton. Next Epic: EP-01 (see [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order)).
+
+- `api/` — Go API (`chi`, `pgx`, `goose` migrations embedded in `internal/db/migrations`).
+- `web/` — SvelteKit 2 + TypeScript, Node 24.
+- `compose.yaml`, `deploy/Caddyfile` — local stack on http://localhost:3000.
+
+## Commands
+
+- `make check` — all formatting, lint, and unit tests (run before every commit).
+- `make test-integration` — migrations against real PostgreSQL.
+- `make up` / `make down` — local stack; then `docker compose exec api axon migrate up`.
+
+Docker bridge networks on the maintainer's dev host have no internet access, so image builds and the web check container use host networking.
 
 ## Rules
 
