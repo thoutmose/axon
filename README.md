@@ -89,6 +89,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
 - ✅ A profile picture, with a generated default (your initials on your own colours); uploads are re-encoded so no location data survives.
 - ✅ Themed spaces: each area has its own original scenery, in light and dark: a Da Vinci notebook for notes, an Oxford library for learning, resources, and flashcards, a workshop blueprint for projects, a garden for habits, a contour map for goals and progress, a star chart for the calendar, a ledger for the budget, an old atlas for areas and the archive, and dotted paper for tasks and focus. Effects are slow, stop with reduced motion, and can be turned off in Preferences.
+- ✅ Move your whole Axon to another server: `axon instance export` and `axon instance import` carry every table and picture with a checksummed manifest, into a fresh installation, older versions included.
 - ✅ Preferences in one place: English or French, theme, font, text size, icons, motion, templates for notes, projects, and resources, and your AI provider and budget. Edit them in the app or as a YAML file (keys are write-only).
 
 ## Screenshots
@@ -447,7 +448,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, and EP-37 done; EP-40 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, and EP-40 done; EP-17 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 
