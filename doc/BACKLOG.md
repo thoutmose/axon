@@ -88,6 +88,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-14 | Roadmaps & skill graph | Manual roadmaps, OSSU import, and a skill graph view. | SHOULD | 42 pts | EP-11, EP-13 | Done |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Done |
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, illustrated cards, practice tests, a Teacher agent, and Anki packages. | SHOULD | 76 pts | EP-11, EP-14, EP-19 | Done |
+| EP-43 | Daily-use fixes | Full window width, GTD and Kanban task boards by default, a month calendar by default, skill graphs made of skills (resources under each), Areas, Resources, and Archive pages, and templates for every kind of note, project, area, resource, goal, milestone, and habit. Merged from the parallel branch `claude/axon-ui-features-9ryyt4`. | MUST | 21 pts | EP-36 | Done |
 | EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
 | EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
@@ -124,7 +125,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
 | R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 | Human-approved agents, habits, projects, roadmaps |
-| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
+| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -966,6 +967,26 @@ Cross-cutting matrix:
 - reliability: back-off, and state saved after each run;
 - remaining rows unchanged.
 
+### EP-43 — Daily-use fixes
+
+**Goal.** Fix what the owner hit in daily use, keeping the work already done on the parallel branch `claude/axon-ui-features-9ryyt4` (built from EP-34).
+
+**Issues**
+
+- [x] **EP-43/IS-43.01 — Full width** · 2 pts · MUST — pages use the whole width of the window.
+- [x] **EP-43/IS-43.02 — Task boards** · 5 pts · MUST — Tasks open on a GTD board (inbox, next, waiting, someday), with a Kanban board (to do, doing, done) one click away.
+- [x] **EP-43/IS-43.03 — Calendar grid** · 3 pts · MUST — the calendar opens on a month grid; the agenda is the second view.
+- [x] **EP-43/IS-43.04 — Skills, not resources** · 5 pts · MUST — skill-graph nodes are competencies, with the resources that teach them listed under each ([ADR 0020](adr/0020-skills-are-competencies.md)).
+- [x] **EP-43/IS-43.05 — Areas, Resources, Archive** · 3 pts · MUST — PARA pages in the nav, started from templates, with archive and restore.
+- [x] **EP-43/IS-43.06 — Templates everywhere** · 3 pts · MUST — fleeting, literature, permanent, project, area, resource, archive, and daily note templates kept as files in the vault's `Templates/` folder (with Obsidian and Templater placeholders), plus templates for goals, milestones, habits, and projects.
+
+**Integration notes.**
+- The branch's three migrations were renumbered after the existing 00026 (00027–00029), and its ADR 0017 became 0020.
+- Its duplicate live-sync and flashcard commits were not taken: EP-36 and EP-16 already deliver them.
+- Its budget, themed-space, and explorer commits follow as EP-39, EP-38, and EP-37.
+
+**Exit evidence.** `make check`, the integration suite, and 33 Playwright scenarios with axe pass. The new scenarios cover the GTD and Kanban boards, the month grid, PARA pages from templates with archive and restore, goal, habit, and project templates, and vault note templates.
+
 ### EP-37 — Knowledge explorer & NLP graph
 
 **Goal.** See what you know: filter, chart, and navigate notes as a knowledge graph.
@@ -1352,6 +1373,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 
 ## Standard issue evidence template

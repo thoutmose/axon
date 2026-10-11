@@ -234,28 +234,6 @@ test('notes workspace: command center, daily note with [[ suggestions, templates
 	await expect(page.getByText(/Zettel\/permanent\/\d{12}-atomic-notes\.md/)).toBeVisible();
 	await expect(page.getByRole('heading', { level: 1, name: 'Atomic notes' })).toBeVisible();
 
-	// A template kept in the vault's Templates/ folder is offered too.
-	await page.request.post('/api/v1/notes', {
-		headers: { Origin: 'http://localhost:3000' },
-		data: {
-			path: 'Templates/Meeting.md',
-			content: '# {{title}}\n\nDate: {{date}}\n\n## Decisions\n'
-		}
-	});
-	await page.reload();
-	await page.getByRole('button', { name: '＋ New note' }).click();
-	await page
-		.getByRole('dialog', { name: 'New note' })
-		.getByRole('textbox', { name: 'Title' })
-		.fill('Weekly sync');
-	await page
-		.getByRole('radio', { name: /Meeting.*Templates\/Meeting\.md/ })
-		.check();
-	await page.getByRole('button', { name: 'Create', exact: true }).click();
-	await expect(page.getByLabel('Markdown')).toHaveValue(
-		/^# Weekly sync\n\nDate: \d{4}-\d{2}-\d{2}\n\n## Decisions/
-	);
-
 	// Full-text search with highlighted excerpts.
 	await page.getByLabel('Search notes').fill('forgetting');
 	await page.keyboard.press('Enter');
@@ -617,26 +595,6 @@ test('note templates live in the vault and fill their placeholders', async () =>
 	await expect(page.getByRole('textbox', { name: /Markdown/ })).toHaveValue(
 		/title: Raft consensus/
 	);
-});
-
-test('budget: categories, a monthly budget, and exact totals', async () => {
-	await page.goto('/budget');
-	await page.getByRole('button', { name: 'Start with common categories' }).click();
-	await page.getByRole('button', { name: 'Edit Groceries' }).click();
-	const edit = page.getByRole('dialog', { name: 'Edit category' });
-	await edit.getByLabel(/Monthly budget/).fill('400');
-	await edit.getByRole('button', { name: 'Save' }).click();
-	await page.getByLabel('Amount', { exact: true }).fill('0,29');
-	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
-	await page.getByLabel('Payee', { exact: true }).fill('Bakery');
-	await page.getByRole('button', { name: 'Record' }).click();
-	await page.getByLabel('Amount', { exact: true }).fill('12.71');
-	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
-	await page.getByRole('button', { name: 'Record' }).click();
-	const spent = page.getByRole('region', { name: 'This month' });
-	await expect(spent).toContainText(/13[.,]00/); // 0.29 + 12.71, with no float drift
-	await expect(page.getByRole('progressbar', { name: /Groceries: 3 % of budget/ })).toBeVisible();
-	await noSeriousA11yViolations(page);
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
