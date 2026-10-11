@@ -83,7 +83,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ### 🥗 Health and sport
 - ✅ Food and training logs, only after you consent to keeping health data (turning it off deletes them): meals with energy and macronutrients, looked up in Open Food Facts (by name or barcode) or USDA FoodData Central once you allow lookups, or typed in; workouts with sets, minutes, and effort. Never in search or AI agents, no targets or restriction.
-- Planned: Personal Trainer and Nutritionist agents with conservative, educational outputs and their own consent.
+- ✅ Personal Trainer and Nutritionist agents that read your logs only with a separate consent to share them with your AI provider, propose sessions or simple meal tasks for approval, hand red-flag topics (chest pain, fainting, eating disorders, pregnancy, medication…) to a professional without calling the model, and can never suggest under 1,200 kcal a day or multi-day fasts.
 
 ### ✨ Humane progress
 - ✅ Opt-in progress rewards: points from every area (tasks, projects, habits, focus, flashcards, notes, roadmaps, goals), each traceable in a ledger, levels, badges, one daily streak with freezes bought only with earned points, and no shame or notifications.
@@ -415,8 +415,8 @@ Privacy controls include consent records, purpose limitation, retention policies
 | Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. | ✅ |
 | Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | ✅ |
 | Media | Suggest what to watch or read next, and propose new titles. | Sees only your list (no reviews, no catalogue text); every addition needs approval. | ✅ |
-| Personal Trainer | Suggest training plans. | Conservative, non-medical, injury-aware. | Planned |
-| Nutritionist | Help log food and patterns. | Educational; no diagnosis or unsafe restriction. | Planned |
+| Personal Trainer | Suggest next sessions from your training log, as tasks to approve. | Own consent (`health_ai`); red flags referred without a model call; non-medical. | ✅ |
+| Nutritionist | Gentle suggestions from your food log, as tasks to approve. | Own consent; never calorie targets, fasting, or diagnosis (enforced, not only prompted). | ✅ |
 
 All agents share a constitution: simple, explicit, small diffs, read before write, think in data, test everything, do not be clever. Skills are versioned `SKILL.md` files. Each task ends with reflection, lessons learned, evaluation evidence, and—when needed—human-in-the-loop approval.
 
@@ -451,7 +451,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, and EP-46 done; EP-44 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, and EP-44 done; EP-20 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

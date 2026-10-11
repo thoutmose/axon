@@ -83,7 +83,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 
 ### 🥗 Santé et sport
 - ✅ Journaux d’alimentation et d’entraînement, seulement après votre consentement à conserver des données de santé (le retirer les supprime) : repas avec énergie et macronutriments, trouvés dans Open Food Facts (par nom ou code-barres) ou USDA FoodData Central une fois les recherches autorisées, ou saisis ; séances avec séries, minutes et effort. Jamais dans la recherche ni les agents IA, sans objectifs ni restriction.
-- Prévu : agents Coach sportif et Nutritionniste aux conseils prudents et pédagogiques, avec leur propre consentement.
+- ✅ Agents Coach sportif et Nutritionniste qui ne lisent vos journaux qu’avec un consentement distinct pour les partager avec votre fournisseur d’IA, proposent des séances ou des tâches de repas simples à approuver, renvoient les sujets d’alerte (douleur thoracique, malaise, troubles alimentaires, grossesse, médicaments…) vers un professionnel sans appeler le modèle, et ne peuvent jamais suggérer moins de 1 200 kcal par jour ni des jeûnes de plusieurs jours.
 
 ### ✨ Progrès à taille humaine
 - ✅ Récompenses de progression optionnelles : des points pour chaque domaine (tâches, projets, habitudes, concentration, cartes mémoire, notes, parcours, objectifs), chacun traçable dans un registre, des niveaux, des badges, une série quotidienne avec des gels achetés uniquement avec des points gagnés, sans honte ni notifications.
@@ -415,8 +415,8 @@ Les contrôles de confidentialité comprennent les registres de consentement, la
 | Ressources | Trouver et classer des ressources citées. | Sites autorisés uniquement, robots.txt respecté, 15 pages par exécution, des liens et pas des copies. | ✅ |
 | Enseignant | Produire des exercices de récupération et des cartes mémoire relus. | Ne lit que les notes de lecture et permanentes. | ✅ |
 | Médias | Suggérer quoi voir ou lire ensuite, et proposer de nouveaux titres. | Ne voit que votre liste (ni critiques, ni texte de catalogue) ; chaque ajout demande votre approbation. | ✅ |
-| Coach sportif | Suggérer des plans d’entraînement. | Prudent, non médical, attentif aux blessures. | Prévu |
-| Nutritionniste | Aider à noter les repas et les tendances. | Pédagogique ; pas de diagnostic ni de restriction dangereuse. | Prévu |
+| Coach sportif | Proposer les prochaines séances depuis votre journal, en tâches à approuver. | Consentement propre (`health_ai`) ; alertes renvoyées sans appel au modèle ; non médical. | ✅ |
+| Nutritionniste | Suggestions douces depuis votre journal alimentaire, en tâches à approuver. | Consentement propre ; jamais d’objectif calorique, de jeûne ni de diagnostic (imposé, pas seulement demandé). | ✅ |
 
 Tous les agents partagent une constitution : simple, explicite, petites modifications, lire avant d’écrire, raisonner sur des données, tout tester, ne pas faire le malin. Les compétences sont des fichiers `SKILL.md` versionnés. Chaque tâche se termine par une réflexion, des enseignements, des preuves d’évaluation et, si besoin, une approbation humaine.
 
@@ -451,7 +451,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45 et EP-46 terminés ; EP-44 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46 et EP-44 terminés ; EP-20 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
