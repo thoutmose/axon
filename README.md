@@ -87,6 +87,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ### ✨ Humane progress
 - ✅ Opt-in progress rewards: points from every area (tasks, projects, habits, focus, flashcards, notes, roadmaps, goals), each traceable in a ledger, levels, badges, one daily streak with freezes bought only with earned points, and no shame or notifications.
+- ✅ Insights: nine weekly metrics (tasks completed and captured, habit check-ins, milestones, focus minutes, notes, flashcards reviewed, recall rate, skills learned), each with its formula, its source, a trend in plain words, and the items behind every number; a weekly review against the week before, with what changed and open tasks to carry over; CSV export. All computed on your server.
 - ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
 - ✅ A profile picture, with a generated default (your initials on your own colours); uploads are re-encoded so no location data survives.
 - ✅ Themed spaces: each area has its own original scenery, in light and dark: a Da Vinci notebook for notes, an Oxford library for learning, resources, and flashcards, a workshop blueprint for projects, a garden for habits, a contour map for goals and progress, a star chart for the calendar, a ledger for the budget, an old atlas for areas and the archive, and dotted paper for tasks and focus. Effects are slow, stop with reduced motion, and can be turned off in Preferences.
@@ -451,7 +452,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, and EP-44 done; EP-20 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, and EP-20 done; EP-21 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

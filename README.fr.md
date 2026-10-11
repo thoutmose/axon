@@ -87,6 +87,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 
 ### ✨ Progrès à taille humaine
 - ✅ Récompenses de progression optionnelles : des points pour chaque domaine (tâches, projets, habitudes, concentration, cartes mémoire, notes, parcours, objectifs), chacun traçable dans un registre, des niveaux, des badges, une série quotidienne avec des gels achetés uniquement avec des points gagnés, sans honte ni notifications.
+- ✅ Analyses : neuf indicateurs hebdomadaires (tâches terminées et capturées, bilans d’habitudes, jalons, minutes de concentration, notes, cartes révisées, taux de rappel, compétences acquises), chacun avec sa formule, sa source, une tendance en mots simples et les éléments derrière chaque chiffre ; une revue hebdomadaire comparée à la semaine précédente, avec ce qui a changé et les tâches ouvertes à reporter ; export CSV. Tout est calculé sur votre serveur.
 - ✅ Conception éthique : pas de dark patterns, pas de honte, pas de consentement caché, des contrôles conformes au RGPD.
 - ✅ Une photo de profil, avec une image par défaut générée (vos initiales sur vos couleurs) ; les envois sont réencodés, aucune donnée de localisation ne subsiste.
 - ✅ Des espaces thématiques : chaque domaine a son propre décor original, en clair et en sombre : un carnet de Léonard de Vinci pour les notes, une bibliothèque d’Oxford pour l’apprentissage, les ressources et les cartes mémoire, un plan d’atelier pour les projets, un jardin pour les habitudes, une carte topographique pour les objectifs et la progression, une carte du ciel pour le calendrier, un registre pour le budget, un vieil atlas pour les domaines et les archives, et du papier pointillé pour les tâches et la concentration. Les effets sont lents, s’arrêtent avec la réduction des animations et peuvent être désactivés dans les préférences.
@@ -451,7 +452,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46 et EP-44 terminés ; EP-20 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44 et EP-20 terminés ; EP-21 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
