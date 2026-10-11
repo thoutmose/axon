@@ -25,6 +25,8 @@ type Appearance struct {
 	FontSize string `json:"font_size" yaml:"font_size"` // small, normal, large
 	Icons    string `json:"icons" yaml:"icons"`         // emoji, symbols, none
 	Motion   string `json:"motion" yaml:"motion"`       // system, reduced, full
+	// Spaces turns the themed scenery of each area (EP-38) on or off; empty means on.
+	Spaces string `json:"spaces,omitempty" yaml:"spaces,omitempty"`
 }
 
 // ProjectTemplate are defaults for new projects.
@@ -91,7 +93,7 @@ type Doc struct {
 func Defaults() Doc {
 	return Doc{
 		Language:   "en",
-		Appearance: Appearance{Theme: "system", Font: "system", FontSize: "normal", Icons: "emoji", Motion: "system"},
+		Appearance: Appearance{Theme: "system", Font: "system", FontSize: "normal", Icons: "emoji", Motion: "system", Spaces: "on"},
 		Templates: Templates{
 			Note:     "---\ntags: []\n---\n# {title}\n\n",
 			Project:  ProjectTemplate{DocsFolder: "1-Projects/{slug}"},
@@ -127,6 +129,7 @@ func (d Doc) Validate() error {
 		oneOf("appearance.font_size", d.Appearance.FontSize, "small", "normal", "large"),
 		oneOf("appearance.icons", d.Appearance.Icons, "emoji", "symbols", "none"),
 		oneOf("appearance.motion", d.Appearance.Motion, "system", "reduced", "full"),
+		oneOf("appearance.spaces", d.Appearance.Spaces, "", "on", "off"),
 		oneOf("templates.resource.kind", d.Templates.Resource.Kind, "hard", "soft"),
 	}
 	for _, err := range checks {

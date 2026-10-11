@@ -6,6 +6,8 @@ export type Appearance = {
 	font_size: 'small' | 'normal' | 'large';
 	icons: 'emoji' | 'symbols' | 'none';
 	motion: 'system' | 'reduced' | 'full';
+	/** Themed scenery per area; absent means on. */
+	spaces?: '' | 'on' | 'off';
 };
 
 const key = 'axon-appearance';
@@ -18,6 +20,7 @@ export function applyAppearance(a: Appearance) {
 	root.dataset.size = a.font_size;
 	root.dataset.icons = a.icons;
 	root.dataset.motion = a.motion;
+	root.dataset.spaces = a.spaces === 'off' ? 'off' : 'on';
 	try {
 		localStorage.setItem(key, JSON.stringify(a));
 	} catch {

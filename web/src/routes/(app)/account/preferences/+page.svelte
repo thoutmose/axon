@@ -44,6 +44,7 @@
 			const loaded = await api<Schemas['Settings']>('/v1/me/settings');
 			s = {
 				...loaded,
+				appearance: { ...loaded.appearance, spaces: loaded.appearance.spaces ?? 'on' },
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
 				gamification: loaded.gamification ?? { enabled: false }
@@ -135,7 +136,7 @@
 
 		<Section id="appearance" title={t('Appearance')}>
 			<div class="grid">
-				{#each [['theme', 'Theme', choice( [['system', 'Follow the system'], ['light', 'Light'], ['dark', 'Dark']] )], ['font', 'Font', choice( [['system', 'System sans-serif'], ['serif', 'Serif'], ['rounded', 'Rounded'], ['mono', 'Monospace']] )], ['font_size', 'Text size', choice( [['small', 'Small'], ['normal', 'Normal'], ['large', 'Large']] )], ['icons', 'Icons', choice( [['emoji', 'Emoji'], ['symbols', 'Symbols'], ['none', 'None']] )], ['motion', 'Motion', choice( [['system', 'Follow the system'], ['reduced', 'Reduced'], ['full', 'Full']] )]] as const as [key, label, options] (key)}
+				{#each [['theme', 'Theme', choice( [['system', 'Follow the system'], ['light', 'Light'], ['dark', 'Dark']] )], ['font', 'Font', choice( [['system', 'System sans-serif'], ['serif', 'Serif'], ['rounded', 'Rounded'], ['mono', 'Monospace']] )], ['font_size', 'Text size', choice( [['small', 'Small'], ['normal', 'Normal'], ['large', 'Large']] )], ['icons', 'Icons', choice( [['emoji', 'Emoji'], ['symbols', 'Symbols'], ['none', 'None']] )], ['motion', 'Motion', choice( [['system', 'Follow the system'], ['reduced', 'Reduced'], ['full', 'Full']] )], ['spaces', 'Themed spaces', choice( [['on', 'On: a notebook for notes, a library for learning…'], ['off', 'Off']] )]] as const as [key, label, options] (key)}
 					<div class="field">
 						<label for="pref-{key}">{t(label)}</label>
 						<select id="pref-{key}" bind:value={s.appearance[key]}>

@@ -3121,6 +3121,11 @@ export interface components {
 				icons: 'emoji' | 'symbols' | 'none';
 				/** @enum {unknown} */
 				motion: 'system' | 'reduced' | 'full';
+				/**
+				 * @description Themed scenery for each area: a notebook for notes, a library for learning, a workshop for projects. On when absent.
+				 * @enum {unknown}
+				 */
+				spaces?: 'on' | 'off';
 			};
 			templates: {
 				/** @description Markdown for new notes; {title} is replaced. */
