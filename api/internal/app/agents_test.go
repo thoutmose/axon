@@ -255,6 +255,7 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		"post_review_comment": {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
 		"draft_roadmap":       {"tutor", `{"title":"Yoga","skills":[{"title":"Sun salutation","url":"https://en.wikipedia.org/wiki/Sun_Salutation"}],"reason":"Asked."}`},
 		"propose_cards":       {"teacher", `{"cards":[{"front":"Stretch why?","back":"Flexibility.","note_id":"` + studyNote.ID + `"}],"reason":"Basics."}`},
+		"suggest_media":       {"media", `{"kind":"book","title":"Stretching","creators":"Bob Anderson","year":1980,"reason":"Like your stretching notes."}`},
 		"suggest_resources":   {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
 	}
 	var tested []string
