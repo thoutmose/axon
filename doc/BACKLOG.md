@@ -90,7 +90,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, illustrated cards, practice tests, a Teacher agent, and Anki packages. | SHOULD | 76 pts | EP-11, EP-14, EP-19 | Done |
 | EP-43 | Daily-use fixes | Full window width, GTD and Kanban task boards by default, a month calendar by default, skill graphs made of skills (resources under each), Areas, Resources, and Archive pages, and templates for every kind of note, project, area, resource, goal, milestone, and habit. Merged from the parallel branch `claude/axon-ui-features-9ryyt4`. | MUST | 21 pts | EP-36 | Done |
 | EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
-| EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
+| EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Done |
 | EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
@@ -1213,7 +1213,21 @@ Cross-cutting matrix:
 - Tracking works with both providers unavailable.
 - Each recommendation states why it was made.
 
-**Candidate issues.** Media model and API (5) · TMDB adapter (5) · Open Library adapter (5) · Media screens (8) · Media agent (8).
+**Terms checked at Epic start (2026-10-11).** TMDB: show the TMDB logo and the notice "This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB." in an About or Credits place; cache at most six months; the base licence is non-commercial, and its content must not train AI. Open Library: identify with a User-Agent and contact (three requests a second, one without); covers by cover ID are not rate-limited; a link back is appreciated.
+
+**Issues**
+
+- [x] **EP-17/IS-17.01 — Media model and API** · 5 pts · COULD — films, series, and books as graph entities with want, doing, done, and dropped, ratings out of 10, progress and total (pages, episodes, or minutes), dates filled in on status changes, and reviews; `/v1/media` CRUD, private per person, in the account export.
+- [x] **EP-17/IS-17.02 — TMDB adapter** · 5 pts · COULD — on when the operator sets `TMDB_API_KEY` (their own key; v3 key or v4 token); search and details (genres, director or creators, episodes); text and covers older than six months are pruned daily; the logo and notice are on the Media page and in the README credits.
+- [x] **EP-17/IS-17.03 — Open Library adapter** · 5 pts · COULD — search and work details through the search index, identified by User-Agent (`AXON_CONTACT`), paced to three requests a second, covers by ID; HTTPS-only redirects.
+- [x] **EP-17/IS-17.04 — Media screens** · 8 pts · COULD — `/media` with kind tabs, search or add by hand, shelves by status with covers, an edit dialog, "Up next" with reasons, and attribution; `g m` shortcut; the library space.
+- [x] **EP-17/IS-17.05 — Media agent** · 8 pts · COULD — `list_media` (no reviews or catalogue text), `media_recommendations`, and `suggest_media` proposals; recommendations without AI come from Axon's own explained ranking.
+
+**Notes**
+
+- Searches are cached for a week and capped at 30 lookups a minute per person; a catalogue that cannot be reached answers 503 with "add it by hand".
+- Covers are copied to Axon (at most 2 MB, type checked from the bytes) so the CSP stays same-origin and readers' IP addresses never reach the providers.
+- Catalogue text is never sent to the AI provider, which keeps TMDB content out of models.
 
 ### EP-18 — Health, nutrition, sport & coach agents
 
@@ -1409,6 +1423,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-17 delivered: media trackers with Open Library and TMDB (terms checked), explained recommendations, and a Media agent. |
 | 2026-10-11 | EP-40 delivered: instance export and import with a checksummed manifest, closing R2.5. Next: R3 (EP-17). |
 | 2026-10-11 | EP-37 delivered from the parallel branch: notes explorer, charts, and a local NLP knowledge graph. Embeddings (IS-37.04) stay open. |
 | 2026-10-11 | EP-38 delivered from the parallel branch: themed spaces with original artwork for every area, AA contrast in light and dark, and a switch in Preferences. |

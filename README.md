@@ -78,7 +78,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### 📚 Learning and media
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
 - ✅ Anki packages (.apkg) per deck, pictures included, and automatic sync to your own `anki-sync-server` (for example on `srv-services`), by hand or right after you approve the Teacher's cards; Anki-only cards are never deleted.
-- Planned: movie, TV, and book tracking backed by TMDB and Open Library.
+- ✅ Films, series, and books: want, in progress, finished, or dropped, with ratings out of 10, progress in pages, episodes, or minutes, and reviews. Books come from Open Library; films and series from TMDB when the server has a key, or by hand. Covers are copied to Axon, so pages never load images from elsewhere. "Up next" ranks your list with the reasons (same creator or genre as what you rated 8 or more, or something you started), and a Media agent proposes new titles for your approval.
 
 ### 🥗 Health and sport
 - Planned: food logging through Open Food Facts and USDA FoodData Central.
@@ -383,7 +383,8 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
 | `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
-| `TMDB_API_KEY` | Optional | secret | Media metadata adapter. |
+| `TMDB_API_KEY` | Optional | secret | Film and series lookups (your own non-commercial TMDB key, v3 key or v4 read token). |
+| `AXON_CONTACT` | Optional | `you@example.org` | How Open Library can reach the operator (sent in the User-Agent); defaults to `AXON_BASE_URL`. |
 | `ANKI_SYNC_URL` | Optional | private URL | Suggested anki-sync-server address for the Anki bridge (each person enters their own account). |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Optional | private URL | Trace export. |
 | `S3_BACKUP_BUCKET` | Optional | bucket | Encrypted backup destination. |
@@ -411,7 +412,7 @@ Privacy controls include consent records, purpose limitation, retention policies
 | Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. | ✅ |
 | Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. | ✅ |
 | Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | ✅ |
-| Media | Normalize metadata and recommend. | Explain sources; user controls profile. | Planned |
+| Media | Suggest what to watch or read next, and propose new titles. | Sees only your list (no reviews, no catalogue text); every addition needs approval. | ✅ |
 | Personal Trainer | Suggest training plans. | Conservative, non-medical, injury-aware. | Planned |
 | Nutritionist | Help log food and patterns. | Educational; no diagnosis or unsafe restriction. | Planned |
 
@@ -448,7 +449,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, and EP-40 done; EP-17 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, and EP-17 done; EP-18 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 
@@ -459,6 +460,8 @@ Contributions are welcome when they improve user agency, accessibility, privacy,
 Axon is licensed under **AGPL-3.0-or-later** so hosted modifications remain available to the community. See [LICENSE](LICENSE) for the authoritative text.
 
 Acknowledgements and reading: [roadmap.sh](https://roadmap.sh/), [OSSU](https://github.com/ossu/computer-science), [Anki sync server](https://github.com/ankicommunity/anki-sync-server), [TMDB API](https://developer.themoviedb.org/docs/getting-started), [Open Library API](https://openlibrary.org/developers/api), [Open Food Facts](https://world.openfoodfacts.org/data), [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/), [Twelve-Factor App](https://12factor.net/), [Google SRE book](https://sre.google/sre-book/table-of-contents/), [FSRS](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler), and [Anthropic documentation](https://docs.anthropic.com/en/docs).
+
+Catalogue data: book data and covers come from [Open Library](https://openlibrary.org/). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
 
 Books that shape the product: *Understanding How We Learn* (Weinstein, Sumeracki, Caviglioli), *Moonwalking with Einstein* (Foer), *Make It Stick*, *Atomic Habits* (Clear), *Hooked* (Eyal), *The Octalysis Framework* (Chou), *Building a Second Brain* (Forte), *How to Take Smart Notes* (Ahrens), and *Designing Data-Intensive Applications* (Kleppmann).
 

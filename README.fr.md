@@ -78,7 +78,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 ### 📚 Apprentissage et médias
 - ✅ Des cartes mémoire illustrées à consulter, ajouter, modifier et supprimer, révisées avec FSRS-5 (le planificateur d’Anki, vérifié sur son implémentation de référence), des tests d’entraînement, et un agent Enseignant qui rédige des questions de récupération à partir de vos notes de lecture et permanentes, soumises à votre approbation.
 - ✅ Paquets Anki (.apkg) par paquet de cartes, images comprises, et synchronisation automatique avec votre propre `anki-sync-server` (par exemple sur `srv-services`), à la demande ou dès que vous approuvez les cartes de l’Enseignant ; les cartes présentes seulement dans Anki ne sont jamais supprimées.
-- Prévu : suivi des films, séries et livres avec TMDB et Open Library.
+- ✅ Films, séries et livres : à voir ou à lire, en cours, terminés ou abandonnés, avec une note sur 10, la progression en pages, épisodes ou minutes, et une critique. Les livres viennent d’Open Library ; les films et séries de TMDB si le serveur a une clé, ou à la main. Les couvertures sont copiées dans Axon, donc les pages ne chargent jamais d’images ailleurs. « À suivre » classe votre liste avec ses raisons (même créateur ou genre que ce que vous avez noté 8 ou plus, ou ce que vous avez commencé), et un agent Médias propose de nouveaux titres soumis à votre approbation.
 
 ### 🥗 Santé et sport
 - Prévu : journal alimentaire via Open Food Facts et USDA FoodData Central.
@@ -383,7 +383,8 @@ Ouvrez ensuite <http://localhost:3000>. L’API est servie sous `/api` (par exem
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Identifiant de la partie de confiance pour les clés d’accès. |
 | `ANTHROPIC_API_KEY` | Facultatif | secret | Clé Anthropic par défaut du serveur pour les agents (chacun peut aussi choisir son fournisseur). |
 | `AXON_ANTHROPIC_OAUTH` | Facultatif | config | `1` pour utiliser un profil `ant auth login` au lieu d’une clé. |
-| `TMDB_API_KEY` | Facultatif | secret | Adaptateur de métadonnées des médias. |
+| `TMDB_API_KEY` | Facultatif | secret | Recherche des films et séries (votre propre clé TMDB non commerciale, clé v3 ou jeton de lecture v4). |
+| `AXON_CONTACT` | Facultatif | `vous@example.org` | Comment Open Library peut joindre l’opérateur (envoyé dans le User-Agent) ; par défaut `AXON_BASE_URL`. |
 | `ANKI_SYNC_URL` | Facultatif | URL privée | Adresse suggérée du serveur anki-sync-server pour le pont Anki (chacun saisit son propre compte). |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Facultatif | URL privée | Export des traces. |
 | `S3_BACKUP_BUCKET` | Facultatif | bucket | Destination des sauvegardes chiffrées. |
@@ -411,7 +412,7 @@ Les contrôles de confidentialité comprennent les registres de consentement, la
 | Tuteur | Interroger, rechercher et rédiger des parcours. | Chaque compétence cite une source de la bibliothèque ou d’un site autorisé ; vous approuvez. | ✅ |
 | Ressources | Trouver et classer des ressources citées. | Sites autorisés uniquement, robots.txt respecté, 15 pages par exécution, des liens et pas des copies. | ✅ |
 | Enseignant | Produire des exercices de récupération et des cartes mémoire relus. | Ne lit que les notes de lecture et permanentes. | ✅ |
-| Médias | Normaliser les métadonnées et recommander. | Sources expliquées ; vous contrôlez votre profil. | Prévu |
+| Médias | Suggérer quoi voir ou lire ensuite, et proposer de nouveaux titres. | Ne voit que votre liste (ni critiques, ni texte de catalogue) ; chaque ajout demande votre approbation. | ✅ |
 | Coach sportif | Suggérer des plans d’entraînement. | Prudent, non médical, attentif aux blessures. | Prévu |
 | Nutritionniste | Aider à noter les repas et les tendances. | Pédagogique ; pas de diagnostic ni de restriction dangereuse. | Prévu |
 
@@ -448,7 +449,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37 et EP-40 terminés ; EP-17 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40 et EP-17 terminés ; EP-18 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
@@ -459,6 +460,8 @@ Les contributions sont bienvenues quand elles renforcent l’autonomie des utili
 Axon est sous licence **AGPL-3.0-or-later**, pour que les modifications hébergées restent disponibles pour la communauté. Le texte de référence est dans [LICENSE](LICENSE).
 
 Remerciements et lectures : [roadmap.sh](https://roadmap.sh/), [OSSU](https://github.com/ossu/computer-science), [Anki sync server](https://github.com/ankicommunity/anki-sync-server), [API TMDB](https://developer.themoviedb.org/docs/getting-started), [API Open Library](https://openlibrary.org/developers/api), [Open Food Facts](https://world.openfoodfacts.org/data), [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/), [Twelve-Factor App](https://12factor.net/), [livre SRE de Google](https://sre.google/sre-book/table-of-contents/), [FSRS](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler) et la [documentation d’Anthropic](https://docs.anthropic.com/en/docs).
+
+Données de catalogue : les données et couvertures des livres viennent d’[Open Library](https://openlibrary.org/). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
 
 Livres qui façonnent le produit : *Understanding How We Learn* (Weinstein, Sumeracki, Caviglioli), *Aventures au cœur de la mémoire* (*Moonwalking with Einstein*, Foer), *Make It Stick*, *Atomic Habits* (Clear), *Hooked* (Eyal), *The Octalysis Framework* (Chou), *Building a Second Brain* (Forte), *How to Take Smart Notes* (Ahrens) et *Designing Data-Intensive Applications* (Kleppmann).
 

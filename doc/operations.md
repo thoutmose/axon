@@ -156,6 +156,13 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 - The demo cannot create tokens or passkeys, set AI providers, connect repositories, delete the account, or run agents. Real accounts never see its data.
 - To turn it off, set `AXON_DEMO=` in the settings file and deploy. The demo user stays in the database, unused, until you run `axon demo reset` again or remove it with `DELETE FROM users WHERE demo`.
 
+## Media catalogues (EP-17)
+
+- **Books** come from Open Library with no key. Set `AXON_CONTACT` (an email address) so Open Library can reach you; it is sent in the User-Agent. Without it, Axon sends `AXON_BASE_URL`.
+- **Films and series** need `TMDB_API_KEY`: your own key from your TMDB account settings (a v3 API key or a v4 read access token). TMDB's base licence is non-commercial, so a paid or revenue-generating Axon needs a separate agreement with TMDB. Keep the key in the encrypted env file, never in `*.settings.env`.
+- Without a key, or when a catalogue is down, people add items by hand.
+- Searches are cached for a week. Covers are copied into `media_covers` once and served by Axon. A daily job drops TMDB covers and descriptions older than six months, as TMDB's terms require.
+
 ## Anki packages
 
 `GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. 
