@@ -224,6 +224,17 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
 	}
 
+	// A skills assessment, as taken before starting the roadmaps.
+	if s.err == nil {
+		_, s.err = roadmaps.CreateAssessment(ctx, tx, user, graph.UserActor, roadmaps.AssessmentInput{
+			Profile: roadmaps.Profile{Role: "Support engineer", Experience: "3 years of scripting and SQL",
+				Goals: "Become a backend engineer within a year.", HoursPerWeek: 6, Formats: []string{"book", "practice"}},
+			Interests: []string{"python", "system-design", "soft-skills"},
+			Ratings:   map[string]int{"python": 3, "system-design": 1, "soft-skills": 3},
+			Answers:   map[string]int{},
+		}, now)
+	}
+
 	// Everything connects.
 	if s.err == nil {
 		s.link(project.ID, goals.Supports, career.ID)

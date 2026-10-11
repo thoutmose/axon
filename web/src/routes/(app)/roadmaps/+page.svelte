@@ -82,6 +82,17 @@
 	Plan what to learn as skills with prerequisites, and watch the graph fill in.
 </p>
 
+<aside class="assess glass" aria-labelledby="assess-title">
+	<div>
+		<h2 id="assess-title">New here? Start with the skills assessment</h2>
+		<p class="muted small">
+			Your situation, goals, and a few quick checks per domain. Roadmaps then start at your level,
+			and the Tutor agent knows where you are.
+		</p>
+	</div>
+	<Button href="/roadmaps/assessment" variant="secondary">Take the assessment</Button>
+</aside>
+
 <form class="quick" onsubmit={create}>
 	<label for="new-roadmap" class="visually-hidden">New roadmap</label>
 	<input
@@ -255,6 +266,25 @@
 	}
 	.library {
 		margin-bottom: var(--space-6);
+	}
+	.assess {
+		display: flex;
+		gap: var(--space-4);
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--surface);
+		padding: var(--space-4);
+		margin-top: var(--space-4);
+	}
+	.assess h2 {
+		font-size: var(--text-lg);
+		margin: 0;
+	}
+	.assess p {
+		margin: var(--space-1) 0 0;
 	}
 	.filter {
 		font: inherit;

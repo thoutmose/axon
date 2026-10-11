@@ -102,7 +102,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Done |
 | EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Done |
 | EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Done |
-| EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Planned |
+| EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Done |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
@@ -745,13 +745,39 @@ Cross-cutting matrix:
   - is read by the Tutor agent (with consent) instead of asking again;
   - can be retaken at any time, with results compared over time on the dashboard.
 
-**Acceptance criteria**
+**Issues**
 
-- The assessment works without AI; the Tutor only reads it.
-- Placement is explained ("marked done because you rated it 4/5 and answered 3 of 3").
-- Results are exportable and erasable like all personal data.
+- [x] **EP-41/IS-41.01 — Questionnaire and profile** · 8 pts · SHOULD
+  - [x] Four steps: situation (role, experience, goals, hours per week, formats), domains to learn, quick checks, results.
+  - [x] Stored as an `assessment` entity: exported, erased, deletable, and retakable, with a levels-over-time table.
+- [x] **EP-41/IS-41.02 — Domain checks and placement** · 8 pts · SHOULD
+  - [x] 72 check questions, three per library domain. Answers are never sent to the browser, and their positions are shuffled.
+  - [x] Level = round((self-rating + 5 × correct/total) / 2), with the reason written out.
+  - [x] Import with `place: true`: level 3 marks the first section done and level 4 or 5 the first two, always leaving the last section; the roadmap description explains why.
+- [x] **EP-41/IS-41.03 — Tutor and Learn integration** · 5 pts · SHOULD
+  - [x] `get_assessment` tool for the Tutor (1.1.0) and Resources (1.1.0) agents; the Tutor asks only what is missing.
+  - [x] Learn page invitation, results with "Start here" per domain and suggested first domains; the demo includes an assessment.
 
-**Candidate issues.** Questionnaire and profile (8) · Domain checks and placement (8) · Tutor and dashboard integration (5).
+**Exit evidence.** The integration test covers:
+- no answers leaked;
+- validation (no domains, unknown domain, missing or out-of-range rating);
+- scoring and reasons, and suggestions;
+- placement on Python (two sections done, explained) and Rust (none), and a 422 for an unassessed domain;
+- the Tutor receiving the profile and levels;
+- history and deletion.
+
+Playwright: 22 scenarios with axe, including the full assessment flow and placed import.
+
+Cross-cutting matrix:
+- identity and authorization: owner-scoped;
+- privacy: register row, exported and erased with the entity registry, agents read it only with consent;
+- accessibility: fieldsets and legends, labelled radios and level, axe;
+- reliability: one transaction;
+- performance: bounded;
+- observability: n/a;
+- documentation: README and BACKLOG;
+- AI safety: read-only tool, no write;
+- supply chain: no dependency.
 
 ### EP-31 — Settings, languages & YAML configuration
 

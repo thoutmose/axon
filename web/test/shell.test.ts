@@ -456,6 +456,31 @@ test('import a library roadmap of the best resources, then rename and edit it', 
 	await noSeriousA11yViolations(page);
 });
 
+test('take the skills assessment, then start a roadmap at your level', async () => {
+	await page.goto('/roadmaps');
+	await page.getByRole('link', { name: 'Take the assessment' }).click();
+	await page.getByLabel('Your role or situation').fill('Support engineer');
+	await page.getByLabel('What do you want to achieve?').fill('Become a backend engineer');
+	await page.getByLabel('Practice and projects').check();
+	await page.getByRole('button', { name: 'Next' }).click();
+	await page.getByLabel('Python', { exact: true }).check();
+	await page.getByRole('button', { name: 'Next' }).click();
+	const python = page.getByRole('region', { name: 'Python' });
+	await python.getByLabel('How well do you know it?').selectOption('5');
+	await python.getByLabel('[0, 2, 4]').check();
+	await python.getByLabel('tuple').check();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'See my results' }).click();
+	await expect(
+		page.getByRole('cell', { name: /You rated it 5\/5 and answered 2 of 3/ })
+	).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Start Python at my level' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Python' })).toBeVisible();
+	await expect(page.getByText(/Placed by your skills assessment/)).toBeVisible();
+	await expect(page.getByText(/^\d+ of \d+ skills done/)).not.toHaveText(/^0 of/);
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();

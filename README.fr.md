@@ -67,6 +67,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Des habitudes avec déclencheurs, enchaînement, versions de deux minutes, bilans et invitations bienveillantes à reprendre ; prévu : la méthode complète d’*Atomic Habits* de James Clear (quatre lois, intentions de mise en œuvre, identité).
 - ✅ Objectifs et jalons reliés aux tâches, notes, habitudes, projets et parcours, avec une progression expliquée et une revue hebdomadaire.
 - ✅ Des parcours d’apprentissage créés à la main, importés d’OSSU ou tirés de la bibliothèque d’Axon : 24 domaines avec les livres, articles, cours universitaires, formations et chaînes les plus recommandés, de l’informatique et des maths à Kubernetes, au MLOps et à la sécurité. Chacun s’affiche en liste ou en graphe de compétences par niveaux.
+- ✅ Une évaluation des compétences avant de commencer : votre situation, vos objectifs et quelques questions par domaine donnent un niveau expliqué, et les parcours démarrent à votre niveau.
 - ✅ Un agent Tuteur qui vous interroge puis rédige un parcours dont chaque compétence cite sa source, et un agent Ressources qui trouve de quoi apprendre. Les deux attendent votre approbation.
 - ✅ Reliez n’importe quel élément à n’importe quel autre, là où il s’affiche.
 
@@ -439,7 +440,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-30 terminés ; EP-41 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-30 et EP-41 terminés ; EP-31 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

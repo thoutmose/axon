@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -39,6 +40,11 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
 	r.Patch("/v1/skills/{id}", h.updateSkill)
 	r.Delete("/v1/skills/{id}", h.deleteSkill)
+	r.Get("/v1/assessment/questions", h.questions)
+	r.Get("/v1/assessments", h.listAssessments)
+	r.Post("/v1/assessments", h.createAssessment)
+	r.Get("/v1/assessments/{id}", h.getAssessment)
+	r.Delete("/v1/assessments/{id}", h.deleteAssessment)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
@@ -47,7 +53,7 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 	case errors.As(err, &v):
 		httpx.Problem(w, http.StatusUnprocessableEntity, v.Msg)
 	case errors.Is(err, graph.ErrNotFound):
-		httpx.Problem(w, http.StatusNotFound, "No such roadmap or skill.")
+		httpx.Problem(w, http.StatusNotFound, "No such roadmap, skill, or assessment.")
 	case errors.Is(err, graph.ErrDuplicate):
 		httpx.Problem(w, http.StatusConflict, "That prerequisite already exists.")
 	default:
@@ -116,13 +122,70 @@ func (h *Handlers) importRoadmap(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
 	var body struct {
 		Source string `json:"source"`
+		Place  bool   `json:"place"`
 	}
 	if err := httpx.Decode(r, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	h.tx(w, r, http.StatusCreated, func(tx pgx.Tx) (any, error) {
+		if body.Place {
+			return ImportPlaced(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
+		}
 		return Import(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
+	})
+}
+
+func (h *Handlers) questions(w http.ResponseWriter, _ *http.Request) {
+	httpx.JSON(w, http.StatusOK, map[string]any{"domains": Questions()})
+}
+
+func (h *Handlers) createAssessment(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	var in AssessmentInput
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	h.tx(w, r, http.StatusCreated, func(tx pgx.Tx) (any, error) {
+		return CreateAssessment(r.Context(), tx, who.UserID, graph.UserActor, in, time.Now())
+	})
+}
+
+func (h *Handlers) listAssessments(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	items, err := ListAssessments(r.Context(), h.db, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handlers) getAssessment(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	aid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	a, err := GetAssessment(r.Context(), h.db, who.UserID, aid)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, a)
+}
+
+func (h *Handlers) deleteAssessment(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	aid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	h.tx(w, r, http.StatusNoContent, func(tx pgx.Tx) (any, error) {
+		return nil, DeleteAssessment(r.Context(), tx, who.UserID, aid, graph.UserActor)
 	})
 }
 

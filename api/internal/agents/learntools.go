@@ -141,6 +141,25 @@ func init() {
 			return p, nil
 		},
 	}
+	registry["get_assessment"] = Tool{
+		Name: "get_assessment",
+		Description: "Get the person's latest skills assessment: their role, experience, goals, hours per week, preferred formats, " +
+			"and their level (0 to 5, with the reason) in each domain they chose. Use it instead of asking again.",
+		Properties: map[string]any{},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			if err := decode(raw, &struct{}{}); err != nil {
+				return nil, err
+			}
+			all, err := roadmaps.ListAssessments(ctx, q, userID)
+			if err != nil {
+				return nil, err
+			}
+			if len(all) == 0 {
+				return map[string]string{"assessment": "none yet; interview the person instead"}, nil
+			}
+			return all[0], nil
+		},
+	}
 	registry["list_roadmaps"] = Tool{
 		Name:        "list_roadmaps",
 		Description: "List the person's roadmaps with progress.",

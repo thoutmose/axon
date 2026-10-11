@@ -1600,6 +1600,61 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/assessment/questions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The skills assessment's check questions per library domain (answers are not included) */
+		get: operations['listAssessmentQuestions'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/assessments': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your skills assessments, newest first, to compare over time */
+		get: operations['listAssessments'];
+		put?: never;
+		/** Take the skills assessment; each chosen domain gets an explained level from 0 to 5 */
+		post: operations['createAssessment'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/assessments/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One assessment */
+		get: operations['getAssessment'];
+		put?: never;
+		post?: never;
+		/** Delete an assessment */
+		delete: operations['deleteAssessment'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}': {
 		parameters: {
 			query?: never;
@@ -2183,6 +2238,33 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
+		};
+		AssessmentProfile: {
+			/** @example Support engineer */
+			role: string;
+			/** @example 3 years of scripting */
+			experience: string;
+			goals: string;
+			hours_per_week: number;
+			formats: ('book' | 'course' | 'video' | 'practice' | 'paper')[];
+		};
+		Assessment: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date-time */
+			created_at: string;
+			profile: components['schemas']['AssessmentProfile'];
+			results: {
+				domain: string;
+				title: string;
+				rating: number;
+				correct: number;
+				total: number;
+				level: number;
+				reason: string;
+			}[];
+			/** @description Up to three library domains to start with, lowest level first. */
+			suggested: string[];
 		};
 		DayCount: {
 			/** Format: date */
@@ -5679,6 +5761,11 @@ export interface operations {
 				'application/json': {
 					/** @example ossu */
 					source: string;
+					/**
+					 * @description Library domains only: mark the first sections done as far as your latest skills assessment of the domain justifies, and explain why in the description.
+					 * @default false
+					 */
+					place?: boolean;
 				};
 			};
 		};
@@ -5697,6 +5784,150 @@ export interface operations {
 			403: components['responses']['Problem'];
 			409: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listAssessmentQuestions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Questions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						domains: {
+							id: string;
+							title: string;
+							questions: {
+								id: string;
+								question: string;
+								choices: string[];
+							}[];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listAssessments: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Assessments. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Assessment'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createAssessment: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					profile: components['schemas']['AssessmentProfile'];
+					/** @description Library domain ids. */
+					interests: string[];
+					/** @description Self-rating per chosen domain. */
+					ratings: {
+						[key: string]: number;
+					};
+					/** @description Chosen answer index per question id. */
+					answers: {
+						[key: string]: number;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description The scored assessment. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Assessment'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getAssessment: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The assessment. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Assessment'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteAssessment: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	getRoadmap: {
