@@ -1197,6 +1197,36 @@ paths:
               schema: { $ref: "#/components/schemas/NoteExploration" }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
+  /v1/notes/analysis:
+    get:
+      tags: [notes]
+      operationId: analyseNotes
+      summary: Topics and a concept graph of your literature and permanent notes
+      description: "All local, no AI provider: Snowball stemming (English and French), TextRank key phrases, topics by label propagation over TF-IDF similarity, concepts in at least two notes linked by NPMI or as Open English WordNet synonyms."
+      parameters:
+        - { name: kind, in: query, schema: { type: string, enum: [literature, permanent] }, description: "Both kinds when omitted." }
+      responses:
+        "200":
+          description: The analysis.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NoteCorpusAnalysis" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}/analysis:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [notes]
+      operationId: analyseNote
+      summary: One note's key phrases, readability, topic, and closest literature and permanent notes with reasons
+      responses:
+        "200":
+          description: The analysis.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NoteAnalysis" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/notes/graph:
     get:
       tags: [notes]
@@ -5198,6 +5228,88 @@ components:
         properties:
           label: { type: string }
           count: { type: integer }
+    NoteBrief:
+      type: object
+      required: [id, title, kind]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        kind: { type: string }
+    NoteTopic:
+      type: object
+      required: [id, label, terms, notes]
+      properties:
+        id: { type: integer }
+        label: { type: string }
+        terms: { type: array, items: { type: string } }
+        notes: { type: array, items: { $ref: "#/components/schemas/NoteBrief" } }
+    KeyPhrase:
+      type: object
+      required: [text, score]
+      properties:
+        text: { type: string }
+        score: { type: number, description: "0 to 1, relative to the note's best phrase." }
+    Readability:
+      type: object
+      required: [language, words, sentences, reading_minutes, ease]
+      properties:
+        language: { type: string, enum: [en, fr] }
+        words: { type: integer }
+        sentences: { type: integer }
+        reading_minutes: { type: integer }
+        ease: { type: number, description: "Flesch reading ease (English) or Kandel–Moles (French), 0 to 100." }
+    NoteCorpusAnalysis:
+      type: object
+      required: [notes, words, languages, ease, topics, concepts, edges, truncated]
+      properties:
+        notes: { type: integer }
+        words: { type: integer }
+        languages: { type: object, additionalProperties: { type: integer } }
+        ease: { type: number }
+        topics: { type: array, items: { $ref: "#/components/schemas/NoteTopic" } }
+        concepts:
+          type: array
+          items:
+            type: object
+            required: [id, text, notes, of]
+            properties:
+              id: { type: string }
+              text: { type: string }
+              notes: { type: integer }
+              of: { type: [array, "null"], items: { $ref: "#/components/schemas/NoteBrief" } }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to, relation, together, npmi, reason]
+            properties:
+              from: { type: string }
+              to: { type: string }
+              relation: { type: string, enum: [co-occurs, synonym] }
+              together: { type: integer }
+              npmi: { type: number }
+              reason: { type: string }
+        truncated: { type: boolean }
+    NoteAnalysis:
+      type: object
+      required: [readability, phrases, topic, related]
+      properties:
+        readability: { $ref: "#/components/schemas/Readability" }
+        phrases: { type: array, items: { $ref: "#/components/schemas/KeyPhrase" } }
+        topic:
+          oneOf:
+            - $ref: "#/components/schemas/NoteTopic"
+            - type: "null"
+        related:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/NoteBrief"
+              - type: object
+                required: [similarity, reasons]
+                properties:
+                  similarity: { type: number }
+                  reasons: { type: array, minItems: 1, items: { type: string } }
     KnowledgeGraph:
       type: object
       required: [nodes, edges, truncated]

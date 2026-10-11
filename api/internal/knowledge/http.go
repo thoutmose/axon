@@ -1,6 +1,8 @@
 package knowledge
 
 import (
+	"errors"
+	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -28,6 +30,47 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/notes/explore", h.explore)
 	r.Get("/v1/notes/graph", h.graph)
+	r.Get("/v1/notes/analysis", h.analysis)
+	r.Get("/v1/notes/{id}/analysis", h.noteAnalysis)
+}
+
+func (h *Handlers) analysis(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	kinds := AnalysedKinds
+	switch k := r.URL.Query().Get("kind"); k {
+	case "":
+	case "literature", "permanent":
+		kinds = []string{k}
+	default:
+		httpx.Problem(w, http.StatusBadRequest, "kind is literature or permanent.")
+		return
+	}
+	a, err := Analyse(r.Context(), h.db, who.UserID, kinds)
+	if err != nil {
+		h.log.Error("note analysis failed", "err", err)
+		httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
+		return
+	}
+	httpx.JSON(w, http.StatusOK, a)
+}
+
+func (h *Handlers) noteAnalysis(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		httpx.Problem(w, http.StatusNotFound, "No such note.")
+		return
+	}
+	a, err := AnalyseNote(r.Context(), h.db, who.UserID, id)
+	switch {
+	case errors.Is(err, errNoNote):
+		httpx.Problem(w, http.StatusNotFound, "No such note.")
+	case err != nil:
+		h.log.Error("note analysis failed", "err", err)
+		httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
+	default:
+		httpx.JSON(w, http.StatusOK, a)
+	}
 }
 
 var paras = []string{"inbox", "projects", "areas", "resources", "archive", "other"}
