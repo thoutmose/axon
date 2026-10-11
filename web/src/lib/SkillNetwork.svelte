@@ -14,8 +14,7 @@
 	const at = $derived(new Map(placed.map((p) => [p.id, p])));
 	const counts = $derived({
 		hard: nodes.filter((n) => n.kind === 'hard').length,
-		soft: nodes.filter((n) => n.kind === 'soft').length,
-		other: nodes.filter((n) => n.type !== 'skill').length
+		soft: nodes.filter((n) => n.kind === 'soft').length
 	});
 	const cls = (n: NetNode) => (n.type === 'skill' ? `${n.kind} ${n.status}` : n.type);
 	const radius = (n: NetNode) => (n.type === 'skill' ? (n.status === 'done' ? 9 : 7) : 11);
@@ -46,7 +45,7 @@
 		<svg
 			viewBox="0 0 {W} {H}"
 			role="group"
-			aria-label="Skills network: {counts.hard} hard skills, {counts.soft} soft skills, {counts.other} goals, projects, and notes"
+			aria-label="Skills network: {counts.hard} hard skills and {counts.soft} soft skills"
 		>
 			{#each visibleEdges as e, i (i)}
 				{@const a = at.get(e.from)}
@@ -81,9 +80,6 @@
 		<p class="legend small">
 			<span><i class="hard"></i>Hard skill</span>
 			<span><i class="soft"></i>Soft skill</span>
-			<span><i class="goal"></i>Goal</span>
-			<span><i class="project"></i>Project</span>
-			<span><i class="note"></i>Note</span>
 			<span
 				>Larger dots are learned; faded dots are still to learn; dashed lines are prerequisites.</span
 			>
@@ -163,21 +159,6 @@
 	}
 	circle.todo {
 		opacity: 0.45;
-	}
-	circle.goal,
-	i.goal {
-		fill: var(--ok);
-		background: var(--ok);
-	}
-	circle.project,
-	i.project {
-		fill: var(--chart-3);
-		background: var(--chart-3);
-	}
-	circle.note,
-	i.note {
-		fill: var(--muted);
-		background: var(--muted);
 	}
 	a:focus-visible circle {
 		stroke: var(--accent);

@@ -424,3 +424,32 @@ func moveLinks(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	}
 	return nil
 }
+
+// competencyOf maps a curated resource or OSSU course title to the skill it
+// teaches. Roadmaps imported before skills were competencies (ADR 0020) have
+// one skill per resource; this lets views show them as the skill instead.
+var competencyOf = func() map[string]string {
+	m := map[string]string{}
+	for _, d := range lib.Roadmaps {
+		for _, r := range d.Resources {
+			if r.Skill != "" {
+				m[strings.ToLower(r.Title)] = r.Skill
+			}
+		}
+	}
+	var c curriculum
+	if json.Unmarshal(ossuJSON, &c) == nil {
+		for _, course := range c.Courses {
+			if course.Skill != "" {
+				m[strings.ToLower(course.Title)] = course.Skill
+			}
+		}
+	}
+	return m
+}()
+
+// Competency returns the skill a curated resource or course teaches, if title is one.
+func Competency(title string) (string, bool) {
+	s, ok := competencyOf[strings.ToLower(strings.TrimSpace(title))]
+	return s, ok
+}

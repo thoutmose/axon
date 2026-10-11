@@ -29,9 +29,12 @@ type overviewJSON struct {
 	} `json:"tables"`
 	Skills struct {
 		Nodes []struct {
-			ID   string  `json:"id"`
-			Type string  `json:"type"`
-			Kind *string `json:"kind"`
+			ID        string  `json:"id"`
+			Type      string  `json:"type"`
+			Title     string  `json:"title"`
+			Kind      *string `json:"kind"`
+			Status    *string `json:"status"`
+			RoadmapID *string `json:"roadmap_id"`
 		} `json:"nodes"`
 		Edges []json.RawMessage `json:"edges"`
 	} `json:"skills"`
@@ -79,8 +82,36 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 			kinds[*n.Kind]++
 		}
 	}
-	if kinds["hard"] == 0 || kinds["soft"] == 0 || types["goal"] == 0 || types["project"] == 0 || len(o.Skills.Edges) == 0 {
+	// Skills only: hard and soft, with their prerequisites; no resources, goals, projects, or notes.
+	if kinds["hard"] == 0 || kinds["soft"] == 0 || len(types) != 1 || types["skill"] == 0 || len(o.Skills.Edges) == 0 {
 		t.Fatalf("network kinds %v types %v edges %d", kinds, types, len(o.Skills.Edges))
+	}
+
+	// A roadmap from before skills were competencies, with one skill per
+	// course, shows as the skill those courses teach, in one node.
+	var legacy struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Old OSSU import"}`)), &legacy)
+	for _, course := range []struct{ title, status string }{{"Systematic Program Design", "learning"}, {"Class-based Program Design", "done"}} {
+		var sk struct {
+			ID string `json:"id"`
+		}
+		_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps/"+legacy.ID+"/skills", []byte(`{"title":"`+course.title+`"}`)), &sk)
+		c.mustDo(200, "PATCH", "/v1/skills/"+sk.ID, []byte(`{"status":"`+course.status+`"}`))
+	}
+	_ = json.Unmarshal(c.mustDo(200, "GET", "/v1/dashboard/overview", nil), &o)
+	merged := 0
+	for _, n := range o.Skills.Nodes {
+		if n.RoadmapID != nil && *n.RoadmapID == legacy.ID {
+			merged++
+			if n.Title != "Systematic program design" || n.Status == nil || *n.Status != "done" {
+				t.Fatalf("legacy node = %+v", n)
+			}
+		}
+	}
+	if merged != 1 {
+		t.Fatalf("%d nodes for the legacy roadmap, want 1", merged)
 	}
 
 	_ = json.Unmarshal(c.mustDo(200, "GET", "/v1/dashboard/overview?days=90", nil), &o)
