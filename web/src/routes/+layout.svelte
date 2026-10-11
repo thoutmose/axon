@@ -110,6 +110,7 @@
 			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}
 				>{t('Calendar')}</a
 			>
+			<a href="/health" aria-current={current('/health') ? 'page' : undefined}>{t('Health')}</a>
 			<a href="/media" aria-current={current('/media') ? 'page' : undefined}>{t('Media')}</a>
 			<a href="/budget" aria-current={current('/budget') ? 'page' : undefined}>{t('Budget')}</a>
 			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>{t('Agents')}</a>

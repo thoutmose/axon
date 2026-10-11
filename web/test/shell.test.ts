@@ -118,7 +118,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/archive',
 		'/budget',
 		'/notes/explore',
-		'/media'
+		'/media',
+		'/health'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -548,7 +549,7 @@ test('areas and resources: start from a template, archive, and restore', async (
 	await page.getByRole('button', { name: 'Archive' }).click();
 	await expect(page.getByText('Archived. Find it in the Archive.')).toBeVisible();
 	await page.goto('/archive');
-	await page.getByRole('link', { name: 'Health' }).click();
+	await page.locator('#main').getByRole('link', { name: 'Health' }).click();
 	await page.getByRole('button', { name: 'Restore' }).click();
 	await expect(page.getByText('Restored.')).toBeVisible();
 
@@ -735,6 +736,28 @@ test('track films by hand, rate them, and see recommendations that say why', asy
 		'By Denis Villeneuve, like Arrival, which you rated 9/10.'
 	);
 	await expect(page.getByText('Rated 9/10', { exact: true })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('health logging waits for consent, then logs food and a workout', async () => {
+	await page.goto('/health');
+	await expect(page.getByRole('heading', { name: 'Health logging is off' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Turn on health logging' }).click();
+	await page.getByLabel('What you ate').fill('Lentil soup');
+	await page.getByLabel('kcal').fill('320,5');
+	await page.getByRole('button', { name: 'Log it' }).click();
+	await expect(page.getByRole('region', { name: 'This day' })).toContainText('320.5');
+	await expect(page.getByText('Lentil soup · 320.5 kcal')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('link', { name: 'Training' }).click();
+	await page.getByLabel('Title').fill('Full body');
+	await page.getByLabel('Minutes').fill('40');
+	await page.getByLabel('Exercise 1').fill('Squat');
+	await page.getByRole('button', { name: 'Save workout' }).click();
+	await expect(page.getByText('Full body')).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Last seven days' })).toContainText('40');
 	await noSeriousA11yViolations(page);
 });
 
