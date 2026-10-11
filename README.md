@@ -60,7 +60,8 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Tasks with Today, week, and GTD views (inbox, next, waiting, someday), contexts, recurrence, one-key capture, and daily check-ins.
 - ✅ Projects with Kanban boards (keyboard-accessible, WIP limits), epics, issues, sub-tasks, and project docs.
 - ✅ Today dashboard with defined KPIs, a calendar, and iCal feeds.
-- Planned: a detailed command dashboard (KPIs, charts, tables, skills network), Pomodoro focus sessions, and personal finance.
+- ✅ A command dashboard on Today: KPIs compared with the previous period, daily activity and 12-month charts, tables of what needs attention, and a network of your hard and soft skills linked to goals, projects, and notes.
+- Planned: Pomodoro focus sessions and personal finance.
 
 ### 🌱 Habits, goals, and roadmaps
 - ✅ Habits with cues, stacking, two-minute versions, check-ins, and gentle recovery prompts; planned: James Clear's full Atomic Habits method (four laws, implementation intentions, identity).
@@ -88,9 +89,9 @@ Axon brings together the things that are usually scattered across note apps, tas
 |---|---|---|
 | ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view with a scenic hero, task counts, and cards](doc/screenshots/today.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
 
-| Notes workspace | Command center |
-|---|---|
-| ![Notes workspace with a folder tree, Markdown editor, and live preview](doc/screenshots/notes-edit.png) | ![Command center searching notes](doc/screenshots/command-center.png) |
+| Command dashboard | Notes workspace | Command center |
+|---|---|---|
+| ![Command dashboard with KPIs, an activity chart, a heatmap, a skills network, and tables](doc/screenshots/dashboard.png) | ![Notes workspace with a folder tree, Markdown editor, and live preview](doc/screenshots/notes-edit.png) | ![Command center searching notes](doc/screenshots/command-center.png) |
 
 Captured from a test account with sample data.
 
@@ -434,11 +435,11 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Foundation | Secure deployment, CI, observability, auth, privacy. | EP-00 → 01 → 02 → 03 → 04 |
 | Personal graph | Links, tasks, notes, goals, dashboard — no AI required. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
 | Guided growth | Agents, habits, projects, roadmaps, notes workspace, delivery and tutor agents. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
-| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
+| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-29 done; EP-30 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-30 done; EP-41 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

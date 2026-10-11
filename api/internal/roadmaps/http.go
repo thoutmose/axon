@@ -179,6 +179,7 @@ type skillBody struct {
 	URL         *string     `json:"url"`
 	Section     *string     `json:"section"`
 	Status      *string     `json:"status"`
+	Kind        *string     `json:"kind"`
 	Position    *int        `json:"position"`
 	Requires    []uuid.UUID `json:"requires"`
 }

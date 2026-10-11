@@ -63,6 +63,7 @@ type Skill struct {
 	URL         *string   `json:"url"`
 	Section     string    `json:"section"`
 	Status      string    `json:"status"`
+	Kind        string    `json:"kind"` // hard or soft
 	Position    int       `json:"position"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -99,11 +100,11 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Roadmap, error
 	return out, err
 }
 
-const skillColumns = `s.id, e.title, s.description, s.url, s.section, s.status, s.position, s.updated_at`
+const skillColumns = `s.id, e.title, s.description, s.url, s.section, s.status, s.kind, s.position, s.updated_at`
 
 func scanSkill(row pgx.Row) (Skill, error) {
 	var s Skill
-	err := row.Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Position, &s.UpdatedAt)
+	err := row.Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.UpdatedAt)
 	return s, err
 }
 
@@ -224,9 +225,9 @@ func Delete(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 
 // SkillFields are the editable parts of a skill.
 type SkillFields struct {
-	Title, Description, URL, Section, Status *string
-	Position                                 *int
-	Requires                                 []uuid.UUID // on create only
+	Title, Description, URL, Section, Status, Kind *string
+	Position                                       *int
+	Requires                                       []uuid.UUID // on create only
 }
 
 func (f *SkillFields) validate() error {
@@ -248,6 +249,9 @@ func (f *SkillFields) validate() error {
 	if f.Status != nil && !slices.Contains(statuses, *f.Status) {
 		return ValidationError{"Status is todo, learning, done, or skipped."}
 	}
+	if f.Kind != nil && *f.Kind != "hard" && *f.Kind != "soft" {
+		return ValidationError{"Kind is hard or soft."}
+	}
 	return nil
 }
 
@@ -263,7 +267,7 @@ func GetSkill(ctx context.Context, q db.Querier, userID, id uuid.UUID) (Skill, u
 	var roadmap uuid.UUID
 	var s Skill
 	err := q.QueryRow(ctx, `SELECT `+skillColumns+`, s.roadmap_id FROM skills s JOIN entities e ON e.id = s.id WHERE s.id = $1 AND e.user_id = $2`, id, userID).
-		Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Position, &s.UpdatedAt, &roadmap)
+		Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.UpdatedAt, &roadmap)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return s, roadmap, graph.ErrNotFound
 	}
@@ -313,12 +317,15 @@ func addSkill(ctx context.Context, tx pgx.Tx, userID, roadmapID uuid.UUID, actor
 	} else if err := tx.QueryRow(ctx, `SELECT coalesce(max(position), 0) + 1 FROM skills WHERE roadmap_id = $1`, roadmapID).Scan(&pos); err != nil {
 		return id, err
 	}
-	status := "todo"
+	status, kind := "todo", "hard"
 	if f.Status != nil {
 		status = *f.Status
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO skills (id, roadmap_id, description, url, section, status, position) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		id, roadmapID, or(f.Description, ""), nullable(f.URL), or(f.Section, ""), status, pos)
+	if f.Kind != nil {
+		kind = *f.Kind
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO skills (id, roadmap_id, description, url, section, status, kind, position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		id, roadmapID, or(f.Description, ""), nullable(f.URL), or(f.Section, ""), status, kind, pos)
 	return id, err
 }
 
@@ -343,6 +350,7 @@ func UpdateSkill(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor gra
 	set("description", f.Description, &next.Description)
 	set("section", f.Section, &next.Section)
 	set("status", f.Status, &next.Status)
+	set("kind", f.Kind, &next.Kind)
 	if f.URL != nil {
 		next.URL = nullable(f.URL)
 		changed = append(changed, "url")
@@ -357,8 +365,8 @@ func UpdateSkill(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor gra
 	if err := graph.UpdateEntity(ctx, tx, userID, id, actor, next.Title, next.Description, changed); err != nil {
 		return Skill{}, err
 	}
-	if _, err := tx.Exec(ctx, `UPDATE skills SET description = $2, url = $3, section = $4, status = $5, position = $6,
-		updated_at = clock_timestamp() WHERE id = $1`, id, next.Description, next.URL, next.Section, next.Status, next.Position); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE skills SET description = $2, url = $3, section = $4, status = $5, position = $6, kind = $7,
+		updated_at = clock_timestamp() WHERE id = $1`, id, next.Description, next.URL, next.Section, next.Status, next.Position, next.Kind); err != nil {
 		return Skill{}, err
 	}
 	s, _, err := GetSkill(ctx, tx, userID, id)

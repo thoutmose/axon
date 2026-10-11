@@ -504,6 +504,21 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await page.getByRole('button', { name: 'Try the demo' }).click();
 	await expect(page).toHaveURL(/\/today$/);
 	await expect(page.getByRole('note')).toContainText('You are in the shared demo');
+
+	// The command dashboard: KPIs, charts, tables, and the skills network.
+	const overview = page.getByRole('region', { name: 'Your progress' });
+	await expect(overview.getByRole('link', { name: /Habit consistency/ })).toBeVisible();
+	await expect(overview.getByRole('img', { name: /Daily activity/ })).toBeVisible();
+	await expect(overview.getByRole('img', { name: /The last 12 months/ })).toBeVisible();
+	const network = overview.getByRole('group', {
+		name: /Skills network: \d+ hard skills, \d+ soft skills/
+	});
+	await expect(network).toBeVisible();
+	await overview.getByRole('button', { name: /^Soft/ }).click();
+	await expect(network.getByRole('link', { name: /soft skill/ }).first()).toBeVisible();
+	await expect(overview.getByRole('cell', { name: /Call the dentist/ })).toBeVisible();
+	await overview.getByLabel('Period').selectOption('90');
+	await expect(overview.getByText(/vs previous period|same as before/).first()).toBeVisible();
 	await noSeriousA11yViolations(page);
 
 	await page.goto('/projects');

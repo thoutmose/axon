@@ -101,7 +101,8 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps, a curated library of the best resources per domain, and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Done |
 | EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Done |
 | EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Done |
-| EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Planned |
+| EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Done |
+| EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Planned |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
@@ -122,7 +123,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
 | R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 | Human-approved agents, habits, projects, roadmaps |
-| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
+| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -704,14 +705,53 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Goal.** The home page answers "how am I doing?" at a glance: KPIs, trends, tables, and a skills network.
 
-**In scope.** KPI tiles (tasks done, focus time, habit consistency, goal progress, learning, notes written) with week-over-week change; charts (trends, heatmap, burn-down); tables (due soon, stalled projects, reviews due); a network graph of skills from roadmaps, tagged hard or soft, linked to the goals, projects, and notes that use them. Every number opens the items behind it (as in EP-08).
+**Issues**
+
+- [x] **EP-30/IS-30.01 — KPI service** · 8 pts · MUST
+  - [x] `GET /v1/dashboard/overview?days=7…365`: seven KPIs, each with a written definition and a link to its items:
+    - tasks done, habit consistency (scheduled days met, counted from each habit's start), goal progress, skills learned, learning now, notes written, active projects;
+    - each compares with the previous period where that makes sense.
+- [x] **EP-30/IS-30.02 — Charts** · 8 pts · MUST
+  - [x] Daily activity line chart (tasks, habit check-ins, notes) and a 12-month activity heatmap. Hand-drawn SVG, with no chart dependency, and each has a table alternative.
+- [x] **EP-30/IS-30.03 — Tables** · 5 pts · MUST
+  - [x] Due in the next 7 days, learning now, and active projects without activity for 14 days.
+- [x] **EP-30/IS-30.04 — Skills network** · 13 pts · MUST
+  - [x] Skills gain a hard/soft `kind`: library soft skills import as soft, existing ones are backfilled, and the kind can be changed with PATCH.
+  - [x] The network shows up to 250 skills plus the goals, projects, and notes linked to them, with prerequisites dashed.
+  - [x] Its force layout is deterministic and bounded (300 nodes in under 2 s in unit tests). You can filter All, Hard, or Soft, every node is a link, and there is a list alternative.
+
+**Exit evidence.** Integration test on the demo data (KPIs, consistency bounds, series lengths, a 365-day heatmap, tables, a network with hard and soft skills, goals, and projects, `days` validation, skill kind validation). Vitest covers trend, heatmap levels, and the layout (deterministic, framed, linked nodes closer, no ring, speed). Playwright: the demo journey checks the KPIs, both charts, the network's Soft filter, a due-soon row, and the 90-day period, with axe. Screenshot `doc/screenshots/dashboard.png`.
+
+Cross-cutting matrix:
+- identity and authorization: owner-scoped queries;
+- privacy: no new data beyond the skill kind;
+- accessibility: table and list alternatives, a focusable scroll region, labelled links, axe;
+- performance: bounded nodes and indexed queries;
+- reliability and observability: read-only endpoint;
+- documentation: README and BACKLOG;
+- AI safety: n/a;
+- supply chain: no dependency.
+
+### EP-41 — Skills assessment
+
+**Goal.** Before starting a roadmap, a short assessment establishes where you are: your situation, job, goals, available time, and current level in each domain. Roadmaps then start at the right place.
+
+**In scope.**
+- A guided questionnaire: role, experience, goals, hours per week, and preferred formats.
+- Short self-ratings and a few objective check questions per domain, drawn from the library's sections.
+- Results stored as a profile you can edit, which:
+  - marks skills you already know as done or skipped on import;
+  - suggests library roadmaps;
+  - is read by the Tutor agent (with consent) instead of asking again;
+  - can be retaken at any time, with results compared over time on the dashboard.
 
 **Acceptance criteria**
 
-- Every KPI has a written definition, and its number matches the items it opens (tested).
-- Charts have table alternatives and pass axe; the page loads in under 500 ms with a year of data.
+- The assessment works without AI; the Tutor only reads it.
+- Placement is explained ("marked done because you rated it 4/5 and answered 3 of 3").
+- Results are exportable and erasable like all personal data.
 
-**Candidate issues.** KPI service (8) · Charts (8) · Tables (5) · Skills network with hard/soft tags (13).
+**Candidate issues.** Questionnaire and profile (8) · Domain checks and placement (8) · Tutor and dashboard integration (5).
 
 ### EP-31 — Settings, languages & YAML configuration
 
@@ -1088,6 +1128,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Refinement (EP-00/IS-00.05): replaced templated Epic text with specific goals, scope, and acceptance criteria; detailed EP-00–EP-06 into issues. Fixed dependencies so each points to an earlier Epic: EP-08 now follows EP-09/11/13; Task Manager and Goals agents moved into EP-19, so EP-09 and EP-13 no longer depend on it; EP-21 depends on MUST Epics instead of EP-20. EP-01 reduced to one host per ADR 0003 (55 → 34 pts); EP-09 55 → 34 and EP-13 34 → 21 after moving their agents. Added delivery order and a walking skeleton to EP-00. |
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
+| 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 
 ## Standard issue evidence template

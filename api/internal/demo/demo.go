@@ -202,6 +202,24 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
 	}
+	var soft roadmaps.Roadmap
+	if s.err == nil {
+		soft, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "soft-skills")
+	}
+	for i, sk := range soft.Skills {
+		if s.err != nil || i > 2 {
+			break
+		}
+		status := map[int]string{0: "done", 1: "learning", 2: "learning"}[i]
+		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
+	}
+	if s.err == nil && len(soft.Skills) > 2 {
+		s.link(soft.Skills[2].ID, goals.Supports, career.ID)
+		s.link(soft.Skills[0].ID, graph.RelatesTo, moc)
+	}
+	if s.err == nil && len(python.Skills) > 1 {
+		s.link(python.Skills[1].ID, graph.RelatesTo, project.ID)
+	}
 	if s.err == nil && len(design.Skills) > 0 {
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
 	}

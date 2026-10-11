@@ -971,6 +971,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/dashboard/overview': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The command dashboard; KPIs with their definitions and the previous period, daily series, a year of activity, tables, and the skills network */
+		get: operations['getDashboardOverview'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/calendar': {
 		parameters: {
 			query?: never;
@@ -2167,6 +2184,11 @@ export interface components {
 			/** Format: date-time */
 			updated_at: string;
 		};
+		DayCount: {
+			/** Format: date */
+			day: string;
+			value: number;
+		};
 		Skill: {
 			/** Format: uuid */
 			id: string;
@@ -2176,6 +2198,11 @@ export interface components {
 			section: string;
 			/** @enum {unknown} */
 			status: 'todo' | 'learning' | 'done' | 'skipped';
+			/**
+			 * @description Hard (technical) or soft (interpersonal, learning, leadership).
+			 * @enum {unknown}
+			 */
+			kind: 'hard' | 'soft';
 			position: number;
 			/** Format: date-time */
 			updated_at: string;
@@ -2187,6 +2214,8 @@ export interface components {
 			section?: string;
 			/** @enum {unknown} */
 			status?: 'todo' | 'learning' | 'done' | 'skipped';
+			/** @enum {unknown} */
+			kind?: 'hard' | 'soft';
 			position?: number;
 		};
 	};
@@ -4204,6 +4233,100 @@ export interface operations {
 					};
 				};
 			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getDashboardOverview: {
+		parameters: {
+			query?: {
+				/** @description The period length. */
+				days?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The overview. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						today: string;
+						days: number;
+						kpis: {
+							id: string;
+							label: string;
+							value: number;
+							/** @description The same KPI over the period before; null when no comparison makes sense. */
+							previous: number | null;
+							/** @enum {unknown} */
+							unit: 'count' | 'percent';
+							definition: string;
+							/** @description The page that lists the items behind the number. */
+							href: string;
+						}[];
+						series: {
+							id: string;
+							label: string;
+							points: components['schemas']['DayCount'][];
+						}[];
+						/** @description Changes per day over the last 365 days. */
+						activity: components['schemas']['DayCount'][];
+						tables: {
+							due_soon: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: date */
+								due_on: string;
+							}[];
+							stalled_projects: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: date-time */
+								last_activity: string;
+							}[];
+							learning: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: uuid */
+								roadmap_id: string;
+								roadmap_title: string;
+							}[];
+						};
+						skills: {
+							nodes: {
+								/** Format: uuid */
+								id: string;
+								/** @enum {unknown} */
+								type: 'skill' | 'goal' | 'project' | 'note';
+								title: string;
+								/** @enum {unknown} */
+								kind?: 'hard' | 'soft';
+								/** @enum {unknown} */
+								status?: 'todo' | 'learning' | 'done' | 'skipped';
+								/** Format: uuid */
+								roadmap_id?: string;
+							}[];
+							edges: {
+								/** Format: uuid */
+								from: string;
+								/** Format: uuid */
+								to: string;
+								relation: string;
+							}[];
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 		};
 	};

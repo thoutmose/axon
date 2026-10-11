@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Overview from '$lib/Overview.svelte';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import { capturing } from '$lib/capture.svelte';
@@ -211,6 +212,7 @@
 				{/if}
 			</section>
 		</div>
+		<Overview />
 	{/if}
 </div>
 

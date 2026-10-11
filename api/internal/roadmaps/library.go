@@ -117,10 +117,14 @@ func importLibrary(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph
 	if err != nil {
 		return Roadmap{}, err
 	}
+	kind := "hard"
+	if d.ID == "soft-skills" {
+		kind = "soft"
+	}
 	ids := map[string]uuid.UUID{}
 	for i, r := range d.Resources {
 		desc, pos := r.describe(), i+1
-		sid, err := addSkill(ctx, tx, userID, id, actor, SkillFields{Title: &r.Title, Description: &desc, URL: &r.URL, Section: &r.Section, Position: &pos})
+		sid, err := addSkill(ctx, tx, userID, id, actor, SkillFields{Title: &r.Title, Description: &desc, URL: &r.URL, Section: &r.Section, Kind: &kind, Position: &pos})
 		if err != nil {
 			return Roadmap{}, err
 		}

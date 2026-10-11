@@ -48,6 +48,9 @@
 	--accent-fg: #ffffff;
 	--accent-soft: rgb(0 98 196 / 0.1);
 	--ok: #137a3a;
+	--chart-1: #0062c4;
+	--chart-2: #b45309;
+	--chart-3: #7c3aed;
 	--warn: #8a5100;
 	--bad: #b42318;
 	--bad-soft: #fdecea;
@@ -72,6 +75,9 @@
 		--accent-fg: #00142a;
 		--accent-soft: rgb(78 165 255 / 0.16);
 		--ok: #4ade80;
+		--chart-1: #4ea5ff;
+		--chart-2: #fbbf24;
+		--chart-3: #c4b5fd;
 		--warn: #fbbf24;
 		--bad: #ff7b72;
 		--bad-soft: rgb(255 123 114 / 0.14);
@@ -94,6 +100,9 @@
 	--accent-fg: #00142a;
 	--accent-soft: rgb(78 165 255 / 0.16);
 	--ok: #4ade80;
+	--chart-1: #4ea5ff;
+	--chart-2: #fbbf24;
+	--chart-3: #c4b5fd;
 	--warn: #fbbf24;
 	--bad: #ff7b72;
 	--bad-soft: rgb(255 123 114 / 0.14);

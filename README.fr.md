@@ -60,7 +60,8 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Des tâches avec les vues Aujourd’hui, semaine et GTD (boîte de réception, prochaines actions, en attente, un jour peut-être), contextes, récurrence, capture en une touche et bilans quotidiens.
 - ✅ Des projets avec tableaux Kanban (utilisables au clavier, limites de travail en cours), epics, tickets, sous-tâches et documentation de projet.
 - ✅ Un tableau de bord Aujourd’hui avec des indicateurs définis, un calendrier et des flux iCal.
-- Prévu : un tableau de bord détaillé (indicateurs, graphiques, tableaux, réseau de compétences), des sessions Pomodoro et la gestion des finances personnelles.
+- ✅ Un tableau de bord sur Aujourd’hui : indicateurs comparés à la période précédente, graphiques d’activité quotidienne et sur 12 mois, tableaux de ce qui demande votre attention, et un réseau de vos compétences techniques et humaines relié aux objectifs, projets et notes.
+- Prévu : sessions Pomodoro et gestion des finances personnelles.
 
 ### 🌱 Habitudes, objectifs et parcours
 - ✅ Des habitudes avec déclencheurs, enchaînement, versions de deux minutes, bilans et invitations bienveillantes à reprendre ; prévu : la méthode complète d’*Atomic Habits* de James Clear (quatre lois, intentions de mise en œuvre, identité).
@@ -88,9 +89,9 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 |---|---|---|
 | ![Page d’accueil avec un paysage de montagne nocturne et des sections de fonctionnalités](doc/screenshots/home.png) | ![Vue Aujourd’hui avec un bandeau paysager, des compteurs de tâches et des cartes](doc/screenshots/today.png) | ![Vue Aujourd’hui en mode sombre sur téléphone](doc/screenshots/today-mobile-dark.png) |
 
-| Espace de notes | Centre de commandes |
-|---|---|
-| ![Espace de notes avec arborescence, éditeur Markdown et aperçu en direct](doc/screenshots/notes-edit.png) | ![Centre de commandes cherchant dans les notes](doc/screenshots/command-center.png) |
+| Tableau de bord | Espace de notes | Centre de commandes |
+|---|---|---|
+| ![Tableau de bord avec indicateurs, graphique d’activité, carte de chaleur, réseau de compétences et tableaux](doc/screenshots/dashboard.png) | ![Espace de notes avec arborescence, éditeur Markdown et aperçu en direct](doc/screenshots/notes-edit.png) | ![Centre de commandes cherchant dans les notes](doc/screenshots/command-center.png) |
 
 Capturées sur un compte de test avec des données d’exemple.
 
@@ -434,11 +435,11 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Fondations | Déploiement sécurisé, CI, observabilité, authentification, confidentialité. | EP-00 → 01 → 02 → 03 → 04 |
 | Graphe personnel | Liens, tâches, notes, objectifs, tableau de bord, sans IA. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
 | Croissance guidée | Agents, habitudes, projets, parcours, espace de notes, agents de livraison et Tuteur. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
-| Usage quotidien | Démo, docs bilingues, tableau de bord, réglages, raccourcis, avatars, Atomic Habits, Pomodoro, apprentissage et Anki, gamification, coffre en direct, graphe de connaissances, espaces thématiques, finances, portabilité. | EP-28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
+| Usage quotidien | Démo, docs bilingues, tableau de bord, réglages, raccourcis, avatars, Atomic Habits, Pomodoro, apprentissage et Anki, gamification, coffre en direct, graphe de connaissances, espaces thématiques, finances, portabilité. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-29 terminés ; EP-30 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-30 terminés ; EP-41 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

@@ -1523,6 +1523,106 @@ paths:
                       notes: { type: integer }
                       goals: { type: integer }
         "401": { $ref: "#/components/responses/Problem" }
+  /v1/dashboard/overview:
+    get:
+      tags: [dashboard]
+      operationId: getDashboardOverview
+      summary: The command dashboard; KPIs with their definitions and the previous period, daily series, a year of activity, tables, and the skills network
+      parameters:
+        - { name: days, in: query, schema: { type: integer, minimum: 7, maximum: 365, default: 30 }, description: The period length. }
+      responses:
+        "200":
+          description: The overview.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [today, days, kpis, series, activity, tables, skills]
+                properties:
+                  today: { type: string, format: date }
+                  days: { type: integer }
+                  kpis:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, label, value, previous, unit, definition, href]
+                      properties:
+                        id: { type: string }
+                        label: { type: string }
+                        value: { type: integer }
+                        previous: { type: [integer, "null"], description: The same KPI over the period before; null when no comparison makes sense. }
+                        unit: { enum: [count, percent] }
+                        definition: { type: string }
+                        href: { type: string, description: The page that lists the items behind the number. }
+                  series:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, label, points]
+                      properties:
+                        id: { type: string }
+                        label: { type: string }
+                        points: { type: array, items: { $ref: "#/components/schemas/DayCount" } }
+                  activity: { type: array, items: { $ref: "#/components/schemas/DayCount" }, description: Changes per day over the last 365 days. }
+                  tables:
+                    type: object
+                    required: [due_soon, stalled_projects, learning]
+                    properties:
+                      due_soon:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, title, due_on]
+                          properties:
+                            id: { type: string, format: uuid }
+                            title: { type: string }
+                            due_on: { type: string, format: date }
+                      stalled_projects:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, title, last_activity]
+                          properties:
+                            id: { type: string, format: uuid }
+                            title: { type: string }
+                            last_activity: { type: string, format: date-time }
+                      learning:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, title, roadmap_id, roadmap_title]
+                          properties:
+                            id: { type: string, format: uuid }
+                            title: { type: string }
+                            roadmap_id: { type: string, format: uuid }
+                            roadmap_title: { type: string }
+                  skills:
+                    type: object
+                    required: [nodes, edges]
+                    properties:
+                      nodes:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, type, title]
+                          properties:
+                            id: { type: string, format: uuid }
+                            type: { enum: [skill, goal, project, note] }
+                            title: { type: string }
+                            kind: { enum: [hard, soft] }
+                            status: { enum: [todo, learning, done, skipped] }
+                            roadmap_id: { type: string, format: uuid }
+                      edges:
+                        type: array
+                        items:
+                          type: object
+                          required: [from, to, relation]
+                          properties:
+                            from: { type: string, format: uuid }
+                            to: { type: string, format: uuid }
+                            relation: { type: string }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/calendar:
     get:
       tags: [dashboard]
@@ -3213,9 +3313,15 @@ components:
               to: { type: string, format: uuid }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    DayCount:
+      type: object
+      required: [day, value]
+      properties:
+        day: { type: string, format: date }
+        value: { type: integer }
     Skill:
       type: object
-      required: [id, title, description, url, section, status, position, updated_at]
+      required: [id, title, description, url, section, status, kind, position, updated_at]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -3223,6 +3329,7 @@ components:
         url: { type: [string, "null"] }
         section: { type: string }
         status: { enum: [todo, learning, done, skipped] }
+        kind: { enum: [hard, soft], description: "Hard (technical) or soft (interpersonal, learning, leadership)." }
         position: { type: integer }
         updated_at: { type: string, format: date-time }
     SkillFields:
@@ -3233,4 +3340,5 @@ components:
         url: { type: string, maxLength: 1000 }
         section: { type: string, maxLength: 200 }
         status: { enum: [todo, learning, done, skipped] }
+        kind: { enum: [hard, soft] }
         position: { type: integer }

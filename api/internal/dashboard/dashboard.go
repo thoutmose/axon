@@ -37,6 +37,7 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 // Routes mounts the signed-in endpoints; the caller wraps them in auth.Require.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/dashboard", h.dashboard)
+	r.Get("/v1/dashboard/overview", h.overview)
 	r.Get("/v1/calendar", h.calendar)
 }
 
