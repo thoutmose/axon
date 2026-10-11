@@ -57,6 +57,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Raccourcis Vim dans l’éditeur de notes (en option), et raccourcis clavier partout : `?` pour la liste, `g` puis une lettre pour aller à une page.
 - ✅ Synchronisation en direct avec votre coffre Markdown : ajoutez, modifiez, renommez ou supprimez un fichier et la note suit en quelques secondes, et inversement ; les modèles du coffre apparaissent dans Axon.
 - ✅ Un explorateur de connaissances (Notes → Explorer) : filtres par PARA, type Zettelkasten, étiquette, texte, date ou notes non reliées ; graphiques des notes dans le temps, par PARA et par type, des étiquettes et des mots-clés partagés ; et un graphe de connaissances qui ajoute à vos liens des relations NLP locales (entités partagées, mots-clés distinctifs, synonymes anglais et français, formulations proches), chacune expliquant pourquoi elle existe. Aucun fournisseur d’IA n’est utilisé.
+- ✅ Analyse des notes de lecture et permanentes (Notes → Analyse) : racinisation Snowball en anglais et en français, expressions clés par TextRank, lisibilité, thèmes issus de formulations proches, un graphe de concepts dont chaque lien s’explique (ensemble plus souvent que le hasard selon la NPMI, ou synonymes d’Open English WordNet), et sur chaque note ses expressions clés, son thème et des idées liées avec leurs raisons. Tout reste local.
 
 ### ✅ Action et exécution
 - ✅ Des tâches avec les vues Aujourd’hui, semaine et GTD (boîte de réception, prochaines actions, en attente, un jour peut-être), contextes, récurrence, capture en une touche et bilans quotidiens.
@@ -450,7 +451,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18 et EP-45 terminés ; EP-46 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45 et EP-46 terminés ; EP-44 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
@@ -462,7 +463,7 @@ Axon est sous licence **AGPL-3.0-or-later**, pour que les modifications héberg�
 
 Remerciements et lectures : [roadmap.sh](https://roadmap.sh/), [OSSU](https://github.com/ossu/computer-science), [Anki sync server](https://github.com/ankicommunity/anki-sync-server), [API TMDB](https://developer.themoviedb.org/docs/getting-started), [API Open Library](https://openlibrary.org/developers/api), [Open Food Facts](https://world.openfoodfacts.org/data), [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/), [Twelve-Factor App](https://12factor.net/), [livre SRE de Google](https://sre.google/sre-book/table-of-contents/), [FSRS](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler) et la [documentation d’Anthropic](https://docs.anthropic.com/en/docs).
 
-Données de catalogue : les données et couvertures des livres viennent d’[Open Library](https://openlibrary.org/) ; les données alimentaires d’[Open Food Facts](https://world.openfoodfacts.org/) (ODbL) et d’[USDA FoodData Central](https://fdc.nal.usda.gov/) (domaine public). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
+Données de catalogue : les données et couvertures des livres viennent d’[Open Library](https://openlibrary.org/) ; les synonymes anglais d’[Open English WordNet](https://github.com/globalwordnet/english-wordnet) (CC BY 4.0) ; les données alimentaires d’[Open Food Facts](https://world.openfoodfacts.org/) (ODbL) et d’[USDA FoodData Central](https://fdc.nal.usda.gov/) (domaine public). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
 
 Livres qui façonnent le produit : *Understanding How We Learn* (Weinstein, Sumeracki, Caviglioli), *Aventures au cœur de la mémoire* (*Moonwalking with Einstein*, Foer), *Make It Stick*, *Atomic Habits* (Clear), *Hooked* (Eyal), *The Octalysis Framework* (Chou), *Building a Second Brain* (Forte), *How to Take Smart Notes* (Ahrens) et *Designing Data-Intensive Applications* (Kleppmann).
 

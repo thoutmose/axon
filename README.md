@@ -57,6 +57,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Vim keybindings in the note editor (optional), and keyboard shortcuts everywhere: press `?` for the list, `g` then a letter to jump to a page.
 - ✅ Live sync with your Markdown vault: add, edit, rename, or delete a file and the note follows within seconds, and the other way round; vault templates appear in Axon.
 - ✅ A knowledge explorer (Notes → Explore): filter by PARA, Zettelkasten type, tag, text, date, or unconnected notes; charts of notes over time, by PARA and type, tags, and shared keywords; and a knowledge graph that adds local NLP edges to your links (shared entities, distinctive keywords, English and French synonyms, similar wording), each saying why it exists. No AI provider involved.
+- ✅ Analysis of literature and permanent notes (Notes → Analysis): English and French Snowball stemming, key phrases by TextRank, readability, topics found from similar wording, a concept graph whose links say why (together more than chance by NPMI, or synonyms from Open English WordNet), and on every note its key phrases, topic, and related ideas with reasons. All local.
 
 ### ✅ Action and execution
 - ✅ Tasks with Today, week, and GTD views (inbox, next, waiting, someday), contexts, recurrence, one-key capture, and daily check-ins.
@@ -450,7 +451,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, and EP-45 done; EP-46 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, and EP-46 done; EP-44 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 
@@ -462,7 +463,7 @@ Axon is licensed under **AGPL-3.0-or-later** so hosted modifications remain avai
 
 Acknowledgements and reading: [roadmap.sh](https://roadmap.sh/), [OSSU](https://github.com/ossu/computer-science), [Anki sync server](https://github.com/ankicommunity/anki-sync-server), [TMDB API](https://developer.themoviedb.org/docs/getting-started), [Open Library API](https://openlibrary.org/developers/api), [Open Food Facts](https://world.openfoodfacts.org/data), [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/), [Twelve-Factor App](https://12factor.net/), [Google SRE book](https://sre.google/sre-book/table-of-contents/), [FSRS](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler), and [Anthropic documentation](https://docs.anthropic.com/en/docs).
 
-Catalogue data: book data and covers come from [Open Library](https://openlibrary.org/); food data from [Open Food Facts](https://world.openfoodfacts.org/) (ODbL) and [USDA FoodData Central](https://fdc.nal.usda.gov/) (public domain). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
+Catalogue data: book data and covers come from [Open Library](https://openlibrary.org/); English synonyms from [Open English WordNet](https://github.com/globalwordnet/english-wordnet) (CC BY 4.0); food data from [Open Food Facts](https://world.openfoodfacts.org/) (ODbL) and [USDA FoodData Central](https://fdc.nal.usda.gov/) (public domain). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
 
 Books that shape the product: *Understanding How We Learn* (Weinstein, Sumeracki, Caviglioli), *Moonwalking with Einstein* (Foer), *Make It Stick*, *Atomic Habits* (Clear), *Hooked* (Eyal), *The Octalysis Framework* (Chou), *Building a Second Brain* (Forte), *How to Take Smart Notes* (Ahrens), and *Designing Data-Intensive Applications* (Kleppmann).
 
