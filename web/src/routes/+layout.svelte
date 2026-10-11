@@ -13,12 +13,6 @@
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
 	const wide = $derived(page.url.pathname === '/' || page.url.pathname === '/today');
-	// The notes workspace and project boards need the wide column.
-	const workspace = $derived(
-		page.url.pathname.startsWith('/notes') ||
-			page.url.pathname.startsWith('/projects/') ||
-			page.url.pathname.startsWith('/roadmaps/')
-	);
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
@@ -140,7 +134,7 @@
 	</p>
 {/if}
 
-<main id="main" class:wide class:workspace>
+<main id="main" class:wide>
 	{@render children()}
 </main>
 <Toaster />
@@ -156,9 +150,7 @@
 		border-bottom: 1px solid var(--border);
 	}
 	.bar {
-		max-width: var(--wide-width);
-		margin: 0 auto;
-		padding: var(--space-2) var(--space-4);
+		padding: var(--space-2) var(--gutter);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -221,15 +213,9 @@
 		background: var(--accent-soft);
 	}
 	main {
-		max-width: var(--content-width);
-		margin: 0 auto;
-		padding: var(--space-8) var(--space-4) var(--space-16);
-	}
-	main.workspace {
-		max-width: var(--wide-width);
+		padding: var(--space-8) var(--gutter) var(--space-16);
 	}
 	main.wide {
-		max-width: none;
 		padding: 0 0 var(--space-16);
 	}
 	.banner {

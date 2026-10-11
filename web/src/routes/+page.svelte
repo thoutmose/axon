@@ -153,7 +153,7 @@
 		max-width: var(--wide-width);
 		width: 100%;
 		margin: 0 auto;
-		padding: var(--space-16) var(--space-4) clamp(3rem, 10vh, 6rem);
+		padding: var(--space-16) var(--gutter) clamp(3rem, 10vh, 6rem);
 	}
 	.eyebrow {
 		text-transform: uppercase;
@@ -188,7 +188,7 @@
 	.features {
 		max-width: var(--wide-width);
 		margin: 0 auto;
-		padding: var(--space-16) var(--space-4) 0;
+		padding: var(--space-16) var(--gutter) 0;
 		display: grid;
 		gap: clamp(3rem, 10vw, 7rem);
 	}
@@ -277,7 +277,7 @@
 	.status {
 		max-width: var(--wide-width);
 		margin: var(--space-16) auto 0;
-		padding: 0 var(--space-4);
+		padding: 0 var(--gutter);
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);

@@ -28,8 +28,10 @@
 	--radius: 0.75rem;
 	--radius-lg: 1.25rem;
 	--radius-xl: 1.75rem;
-	--content-width: 46rem;
-	--wide-width: 72rem;
+	/* Pages use the whole window; only the gutter grows with it. */
+	--content-width: 100%;
+	--wide-width: 100%;
+	--gutter: clamp(1rem, 3vw, 3rem);
 
 	--motion-fast: 150ms;
 	--motion: 300ms;
