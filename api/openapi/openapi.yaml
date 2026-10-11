@@ -48,6 +48,8 @@ tags:
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
   - name: progress
     description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
+  - name: wellbeing
+    description: "Food and training logs: special-category data behind the health_data consent (EP-18)."
   - name: media
     description: Films, series, and books with catalogue lookups and explained recommendations (EP-17).
   - name: focus
@@ -3348,6 +3350,232 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/health/status:
+    get:
+      tags: [wellbeing]
+      operationId: getHealthStatus
+      summary: Whether health logging and food lookups are allowed, and which catalogues exist
+      responses:
+        "200":
+          description: Consents and catalogues.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [consented, lookups_consented, usda]
+                properties:
+                  consented: { type: boolean, description: "Consent health_data: needed to store or read any log." }
+                  lookups_consented: { type: boolean, description: "Consent food_lookups: needed to search the catalogues." }
+                  usda: { type: boolean, description: "Whether USDA FoodData Central is set up on this server." }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/health/data:
+    delete:
+      tags: [wellbeing]
+      operationId: deleteHealthData
+      summary: Delete every food entry and workout (withdrawing the consent does this too)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/health/food:
+    get:
+      tags: [wellbeing]
+      operationId: getFoodDay
+      summary: "One day of food: entries, totals, and the seven days ending on it"
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date }, description: "Defaults to today in your time zone." }
+      responses:
+        "200":
+          description: The day.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [date, entries, totals, week]
+                properties:
+                  date: { type: string, format: date }
+                  entries: { type: array, items: { $ref: "#/components/schemas/FoodEntry" } }
+                  totals: { $ref: "#/components/schemas/Nutrients" }
+                  week:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Nutrients"
+                        - type: object
+                          required: [date]
+                          properties:
+                            date: { type: string, format: date }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [wellbeing]
+      operationId: addFoodEntry
+      summary: Log something eaten, from a catalogue food and grams or with the numbers typed in
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eaten_on, meal]
+              additionalProperties: false
+              properties:
+                eaten_on: { type: string, format: date }
+                meal: { type: string, enum: [breakfast, lunch, dinner, snack] }
+                name: { type: string, maxLength: 300, description: "Defaults to the food's name." }
+                grams: { type: number, exclusiveMinimum: 0, maximum: 10000, description: "With food_id; defaults to one serving." }
+                kcal: { type: number, minimum: 0, maximum: 20000 }
+                protein_g: { type: number, minimum: 0, maximum: 2000 }
+                carbs_g: { type: number, minimum: 0, maximum: 2000 }
+                fat_g: { type: number, minimum: 0, maximum: 2000 }
+                food_id: { type: string, format: uuid, description: "Nutrients are then worked out from the food and grams." }
+      responses:
+        "201":
+          description: The entry.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FoodEntry" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/health/food/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [wellbeing]
+      operationId: deleteFoodEntry
+      summary: Delete a food entry
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/health/foods/search:
+    get:
+      tags: [wellbeing]
+      operationId: searchFoods
+      summary: Search Open Food Facts (default) or USDA FoodData Central
+      description: "Needs the food_lookups consent. Cached for 30 days; 10 lookups a minute per person, and Open Food Facts' own limit of 10 searches a minute for the server."
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { name: source, in: query, schema: { type: string, enum: [off, usda] } }
+      responses:
+        "200":
+          description: Foods, per 100 g.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Food" } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+  /v1/health/foods/barcode/{code}:
+    parameters:
+      - { name: code, in: path, required: true, schema: { type: string, pattern: "^[0-9]{8,14}$" } }
+    get:
+      tags: [wellbeing]
+      operationId: getFoodByBarcode
+      summary: Look a packaged food up in Open Food Facts by barcode
+      responses:
+        "200":
+          description: The food.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Food" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+  /v1/health/workouts:
+    get:
+      tags: [wellbeing]
+      operationId: listWorkouts
+      summary: Workouts in a date range (the last 30 days by default) and this week's totals
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Workouts, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, week]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Workout" } }
+                  week:
+                    type: object
+                    required: [sessions, minutes, days]
+                    properties:
+                      sessions: { type: integer }
+                      minutes: { type: integer }
+                      days: { type: integer }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [wellbeing]
+      operationId: createWorkout
+      summary: Log a workout with its sets
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WorkoutInput" }
+      responses:
+        "201":
+          description: The workout.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Workout" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/health/workouts/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    put:
+      tags: [wellbeing]
+      operationId: replaceWorkout
+      summary: Replace a workout and its sets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WorkoutInput" }
+      responses:
+        "200":
+          description: The workout.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Workout" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [wellbeing]
+      operationId: deleteWorkout
+      summary: Delete a workout
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/progress:
     get:
       tags: [progress]
@@ -5112,6 +5340,77 @@ components:
         overview: { type: string }
         total: { type: [integer, "null"] }
         has_cover: { type: boolean }
+    Nutrients:
+      type: object
+      required: [kcal, protein_g, carbs_g, fat_g]
+      properties:
+        kcal: { type: number }
+        protein_g: { type: number }
+        carbs_g: { type: number }
+        fat_g: { type: number }
+    FoodEntry:
+      type: object
+      required: [id, eaten_on, meal, name, grams, kcal, protein_g, carbs_g, fat_g, food_id]
+      properties:
+        id: { type: string, format: uuid }
+        eaten_on: { type: string, format: date }
+        meal: { type: string, enum: [breakfast, lunch, dinner, snack] }
+        name: { type: string }
+        grams: { type: [number, "null"] }
+        kcal: { type: [number, "null"] }
+        protein_g: { type: [number, "null"] }
+        carbs_g: { type: [number, "null"] }
+        fat_g: { type: [number, "null"] }
+        food_id: { type: [string, "null"], format: uuid }
+    Food:
+      type: object
+      required: [id, source, source_id, name, brand, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_g]
+      description: "Per 100 g. Open Food Facts data is under the ODbL; USDA FoodData Central is public domain."
+      properties:
+        id: { type: string, format: uuid }
+        source: { type: string, enum: [off, usda] }
+        source_id: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        kcal: { type: [number, "null"] }
+        protein_g: { type: [number, "null"] }
+        carbs_g: { type: [number, "null"] }
+        fat_g: { type: [number, "null"] }
+        fiber_g: { type: [number, "null"] }
+        serving_g: { type: [number, "null"] }
+    WorkoutSet:
+      type: object
+      required: [exercise]
+      properties:
+        exercise: { type: string, minLength: 1, maxLength: 120 }
+        reps: { type: [integer, "null"], minimum: 1, maximum: 1000 }
+        weight_kg: { type: [number, "null"], minimum: 0, maximum: 1000 }
+        distance_km: { type: [number, "null"], exclusiveMinimum: 0, maximum: 1000 }
+        seconds: { type: [integer, "null"], minimum: 1, maximum: 86400 }
+    WorkoutInput:
+      type: object
+      required: [done_on, kind, title]
+      additionalProperties: false
+      properties:
+        done_on: { type: string, format: date }
+        kind: { type: string, enum: [strength, cardio, mobility, sport, other] }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        minutes: { type: [integer, "null"], minimum: 1, maximum: 1440 }
+        effort: { type: [integer, "null"], minimum: 1, maximum: 10, description: "How hard it felt (RPE), 1 to 10." }
+        notes: { type: string, maxLength: 4000 }
+        sets: { type: array, maxItems: 200, items: { $ref: "#/components/schemas/WorkoutSet" } }
+    Workout:
+      type: object
+      required: [id, done_on, kind, title, minutes, effort, notes, sets]
+      properties:
+        id: { type: string, format: uuid }
+        done_on: { type: string, format: date }
+        kind: { type: string, enum: [strength, cardio, mobility, sport, other] }
+        title: { type: string }
+        minutes: { type: [integer, "null"] }
+        effort: { type: [integer, "null"] }
+        notes: { type: string }
+        sets: { type: array, items: { $ref: "#/components/schemas/WorkoutSet" } }
     HabitScorecard:
       type: object
       required: [items]

@@ -28,7 +28,17 @@ import (
 var Purposes = []Purpose{
 	{"ai_agents", "Send selected data to the configured AI provider so agents can draft suggestions."},
 	{"external_metadata", "Look up films, series, and books with TMDB and Open Library."},
-	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9)."},
+	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data."},
+	{"food_lookups", "Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them."},
+}
+
+// onWithdraw holds what must happen when a consent is withdrawn, such as
+// deleting the data that only that consent allowed to keep.
+var onWithdraw = map[string]func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error{}
+
+// OnWithdraw registers fn to run, in the same transaction, when purpose is withdrawn.
+func OnWithdraw(purpose string, fn func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error) {
+	onWithdraw[purpose] = fn
 }
 
 // Purpose is one consentable use of data.
@@ -163,6 +173,11 @@ func (s *Service) setConsent(w http.ResponseWriter, r *http.Request) {
 			id.UserID, purpose, *body.Granted)
 		if err != nil {
 			return err
+		}
+		if fn := onWithdraw[purpose]; fn != nil && !*body.Granted {
+			if err := fn(r.Context(), tx, id.UserID); err != nil {
+				return err
+			}
 		}
 		return audit.Record(r.Context(), tx, id.UserID, audit.ConsentChanged, httpx.ClientIP(r), r.UserAgent(),
 			map[string]any{"purpose": purpose, "granted": *body.Granted})
