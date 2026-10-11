@@ -7,7 +7,6 @@
 	import ProgressBar from '$lib/ProgressBar.svelte';
 	import { overdue, relativeDay, type Task } from '$lib/tasks';
 	import Button from '$lib/ui/Button.svelte';
-	import Scenery, { timeOfDay } from '$lib/ui/Scenery.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
@@ -67,7 +66,6 @@
 		}
 	}
 
-	const tod = timeOfDay();
 	const dateLabel = new Date().toLocaleDateString(undefined, {
 		weekday: 'long',
 		day: 'numeric',
@@ -82,12 +80,10 @@
 
 <svelte:head><title>Today · Axon</title></svelte:head>
 
+<!-- A compact header: the dashboard starts right under the navigation. -->
 <section class="hero" aria-labelledby="today-title">
-	<Scenery time={tod} />
-	<div class="shade" aria-hidden="true"></div>
 	<div class="hero-copy">
-		<p class="date">{dateLabel}</p>
-		<h1 id="today-title">{greeting()}</h1>
+		<h1 id="today-title">{greeting()} <span class="date">· {dateLabel}</span></h1>
 		{#if d}
 			<Button
 				variant={d.checked_in ? 'ghost' : 'secondary'}
@@ -218,57 +214,29 @@
 </div>
 
 <style>
-	/* Buttons on scenery: frosted white instead of a grey surface. */
-	.hero :global(.btn.secondary),
-	.hero :global(.btn.ghost) {
-		background: rgb(255 255 255 / 0.18);
-		color: #fff;
-		border-color: rgb(255 255 255 / 0.35);
-	}
-	.hero :global(.btn.secondary:hover) {
-		background: rgb(255 255 255 / 0.28);
-	}
-	.hero {
-		position: relative;
-		min-height: clamp(16rem, 42vh, 26rem);
-		display: grid;
-		align-items: end;
-		overflow: hidden;
-		color: #fff;
-	}
-	.shade {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(180deg, rgb(0 0 0 / 0) 35%, rgb(0 0 0 / 0.5) 100%);
-	}
 	.hero-copy {
-		position: relative;
 		max-width: var(--wide-width);
-		width: 100%;
 		margin: 0 auto;
-		padding: var(--space-8) var(--gutter) var(--space-12);
+		padding: var(--space-6) var(--gutter) 0;
 		display: flex;
-		align-items: flex-end;
+		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-4);
 		flex-wrap: wrap;
 	}
 	.hero-copy h1 {
 		margin: 0;
-		flex-basis: 100%;
-		text-shadow: 0 2px 24px rgb(0 0 0 / 0.3);
+		font-size: var(--text-2xl);
 	}
 	.date {
-		margin: 0;
-		flex-basis: 100%;
-		font-weight: 600;
-		opacity: 0.92;
-		text-shadow: 0 1px 10px rgb(0 0 0 / 0.35);
+		font-weight: 400;
+		color: var(--muted);
+		font-size: var(--text-lg);
 	}
 	.body {
 		position: relative;
 		max-width: var(--wide-width);
-		margin: var(--space-8) auto 0;
+		margin: var(--space-4) auto 0;
 		padding: 0 var(--gutter);
 	}
 	.columns {
