@@ -6,6 +6,7 @@
 	const tabs = [
 		{ href: '/budget', label: 'Overview' },
 		{ href: '/budget/accounts', label: 'Accounts' },
+		{ href: '/budget/pots', label: 'Savings pots' },
 		{ href: '/budget/recurring', label: 'Recurring' },
 		{ href: '/budget/rules', label: 'Rules' },
 		{ href: '/budget/import', label: 'Import' },

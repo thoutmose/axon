@@ -1263,6 +1263,83 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/budget/pots': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Savings pots (tirelire) with what is saved, their history, and what to put in each month */
+		get: operations['listSavingsPots'];
+		put?: never;
+		/** Start a savings pot for something to buy later */
+		post: operations['createSavingsPot'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a pot and its history */
+		delete: operations['deleteSavingsPot'];
+		options?: never;
+		head?: never;
+		/** Rename, retarget, or archive a pot */
+		patch: operations['updateSavingsPot'];
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}/moves': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Put money in (positive) or take it out (negative); a pot never goes below zero */
+		post: operations['moveSavingsPot'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}/moves/{move}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				move: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove one move from a pot's history */
+		delete: operations['deleteSavingsPotMove'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/budget/report': {
 		parameters: {
 			query?: never;
@@ -3726,6 +3803,38 @@ export interface components {
 			/** Format: date */
 			day: string;
 			value: number;
+		};
+		SavingsPot: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			target_cents: number;
+			/** Format: date */
+			target_date: string | null;
+			note: string;
+			archived: boolean;
+			saved_cents: number;
+			/** @description To put in each month from this month on to reach the target by its date. */
+			monthly_cents: number | null;
+			moves: {
+				/** Format: uuid */
+				id: string;
+				/** Format: date */
+				occurred_on: string;
+				amount_cents: number;
+				note: string;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+		};
+		/** @description Unknown fields are refused by the server. */
+		SavingsPotFields: {
+			name?: string;
+			target_cents?: number;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			target_date?: string;
+			note?: string;
+			archived?: boolean;
 		};
 		BudgetAccount: {
 			/** Format: uuid */
@@ -6792,6 +6901,181 @@ export interface operations {
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listSavingsPots: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Pots, open ones first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['SavingsPot'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SavingsPotFields'] & Record<string, never>;
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SavingsPotFields'];
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	moveSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Not zero; negative takes money out. */
+					amount_cents: number;
+					/**
+					 * Format: date
+					 * @description Defaults to today.
+					 */
+					occurred_on?: string;
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSavingsPotMove: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				move: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The pot. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 		};
 	};
