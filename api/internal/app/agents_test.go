@@ -230,15 +230,23 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals", []byte(`{"title":"Touch my toes"}`)), &g)
 	var habit habitJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Read one page"}`)), &habit)
+	gh := newFakeGitHub(t)
+	var proj struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/projects", []byte(`{"title":"Garden"}`)), &proj)
+	repo := alice.connectRepo(`{"owner":"ada","repo":"garden","allow_comments":true,"project_id":"` + proj.ID + `"}`)
 
 	inputs := map[string]struct{ agent, input string }{
-		"update_task":       {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
-		"create_task":       {"task-manager", `{"title":"Buy a yoga mat","reason":"Helps stretching."}`},
-		"add_milestone":     {"goals", `{"goal_id":"` + g.ID + `","title":"Reach my shins","reason":"Halfway."}`},
-		"link_task_to_goal": {"goals", `{"task_id":"` + task.ID + `","goal_id":"` + g.ID + `","reason":"Stretching moves it."}`},
-		"remember":          {"goals", `{"fact":"Prefers morning routines","reason":"Stated today."}`},
-		"create_habit":      {"habits", `{"title":"Floss one tooth","two_minute":"Floss one tooth","stack_after":"After I brush","reason":"Tiny start."}`},
-		"update_habit":      {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
+		"update_task":         {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
+		"create_task":         {"task-manager", `{"title":"Buy a yoga mat","reason":"Helps stretching."}`},
+		"add_milestone":       {"goals", `{"goal_id":"` + g.ID + `","title":"Reach my shins","reason":"Halfway."}`},
+		"link_task_to_goal":   {"goals", `{"task_id":"` + task.ID + `","goal_id":"` + g.ID + `","reason":"Stretching moves it."}`},
+		"remember":            {"goals", `{"fact":"Prefers morning routines","reason":"Stated today."}`},
+		"create_habit":        {"habits", `{"title":"Floss one tooth","two_minute":"Floss one tooth","stack_after":"After I brush","reason":"Tiny start."}`},
+		"update_habit":        {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
+		"draft_issue":         {"side-projects", `{"repo_id":"` + repo.ID + `","title":"Add tests","details":"Start with main.go.","reason":"Missing."}`},
+		"post_review_comment": {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
 	}
 	var tested []string
 	for name := range inputs {
@@ -252,6 +260,7 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		in := inputs[name]
 		fake.load(toolUse(name, in.input), finalText("Proposed."))
 		before := snapshot(t)
+		posted := len(gh.writes())
 		r := alice.runAgent(in.agent, "Please help")
 		if r.Run.Status != "completed" || len(r.Proposals) != 1 {
 			t.Fatalf("%s: run = %+v", name, r)
@@ -259,7 +268,16 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		if snapshot(t) != before {
 			t.Fatalf("%s changed data before approval", name)
 		}
+		if len(gh.writes()) != posted {
+			t.Fatalf("%s wrote to GitHub before approval", name)
+		}
 		alice.mustDo(200, "POST", "/v1/proposals/"+r.Proposals[0].ID+"/approve", nil)
+		if name == "post_review_comment" { // its effect is on GitHub, not in Axon
+			if len(gh.writes()) != posted+1 {
+				t.Fatalf("approved comment not posted: %v", gh.writes())
+			}
+			continue
+		}
 		if snapshot(t) == before {
 			t.Fatalf("%s: approval did not apply the change", name)
 		}

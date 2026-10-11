@@ -3,6 +3,7 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import ProviderSettings from '$lib/ProviderSettings.svelte';
+	import RepoConnections from '$lib/RepoConnections.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -209,9 +210,14 @@
 					maxlength="4000"
 					required
 					bind:value={instructions[a.name]}
-					placeholder={a.name === 'goals'
-						? 'Suggest milestones for my running goal'
-						: 'Clarify my inbox into next actions'}
+					placeholder={(
+						{
+							goals: 'Suggest milestones for my running goal',
+							habits: 'Help me restart my reading habit',
+							'side-projects': 'What should I work on next in my repository?',
+							'code-review': 'Review the open pull request'
+						} as Record<string, string>
+					)[a.name] ?? 'Clarify my inbox into next actions'}
 				></textarea>
 				<Button
 					type="submit"
@@ -223,6 +229,8 @@
 	{/each}
 
 	<ProviderSettings onchange={load} />
+
+	<RepoConnections />
 
 	<section class="card" aria-labelledby="budget-title">
 		<h2 id="budget-title">Budget</h2>

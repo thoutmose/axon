@@ -35,6 +35,9 @@ type Tool struct {
 	Summary func(ctx context.Context, q db.Querier, userID uuid.UUID, in json.RawMessage) (string, error)
 	// Apply makes the change, attributed to the agent (write tools).
 	Apply func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, in json.RawMessage) error
+	// Check validates a write whose Apply reaches outside Axon (a GitHub
+	// comment cannot be rolled back). Such tools must never be dry-run.
+	Check func(ctx context.Context, q db.Querier, userID uuid.UUID, in json.RawMessage) error
 }
 
 // toolError is a problem the model can fix (bad id, invalid field). It goes

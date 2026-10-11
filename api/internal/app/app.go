@@ -21,6 +21,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/projects"
+	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
@@ -48,6 +49,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 		}
 	}
 	agentsAPI, err := agents.NewRunner(pool, log, provider, sealer)
+	reposAPI := repos.NewHandlers(pool, log, sealer)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +73,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				priv.Routes(r)
 				dashboardAPI.FeedRoutes(r)
 				agentsAPI.SessionRoutes(r)
+				reposAPI.Routes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))

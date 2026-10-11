@@ -2302,6 +2302,95 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/repos:
+    get:
+      tags: [agents]
+      operationId: listRepos
+      summary: Repositories the delivery agents may read (browser sessions only; tokens are never returned)
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: Connections.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, can_store_tokens]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/RepoConnection" } }
+                  can_store_tokens: { type: boolean }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [agents]
+      operationId: connectRepo
+      summary: Connect a GitHub repository (read-only unless comments are allowed)
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [owner, repo]
+              additionalProperties: false
+              properties:
+                owner: { type: string, pattern: "^[A-Za-z0-9-]{1,39}$" }
+                repo: { type: string, pattern: "^[A-Za-z0-9._-]{1,100}$" }
+                token: { type: string, maxLength: 500, description: "Optional fine-grained token (Contents and Pull requests read; Pull requests write only for comments). Sealed at rest." }
+                allow_comments: { type: boolean, default: false }
+                project_id: { type: string, format: uuid, description: The board drafted issues go to. }
+      responses:
+        "201":
+          description: Connected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RepoConnection" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/repos/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [agents]
+      operationId: updateRepo
+      summary: Change a connection's token (empty removes it), comments, or project
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                token: { type: string, maxLength: 500 }
+                allow_comments: { type: boolean }
+                project_id: { type: [string, "null"], format: uuid }
+      responses:
+        "200":
+          description: The connection.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RepoConnection" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [agents]
+      operationId: disconnectRepo
+      summary: Disconnect a repository
+      security: [{ session: [] }]
+      responses:
+        "204": { description: Disconnected. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -2829,3 +2918,14 @@ components:
         parent_id: { type: [string, "null"], format: uuid, description: "Issues belong to epics; sub-tasks to issues or epics." }
         before: { type: string, format: uuid, description: Place before this card; omit for the end of the column. }
         over_limit: { type: boolean, description: The person confirmed going over the WIP limit. }
+    RepoConnection:
+      type: object
+      required: [id, owner, repo, has_token, allow_comments, project_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        owner: { type: string }
+        repo: { type: string }
+        has_token: { type: boolean }
+        allow_comments: { type: boolean, description: "false (default): the agents only read." }
+        project_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }

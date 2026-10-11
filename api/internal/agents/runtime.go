@@ -25,6 +25,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/privacy"
+	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -172,7 +173,7 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 	bg := context.WithoutCancel(ctx)
 	go func() {
 		defer r.wg.Done()
-		ctx, cancel := context.WithTimeout(bg, runTimeout)
+		ctx, cancel := context.WithTimeout(repos.WithSealer(bg, r.sealer), runTimeout)
 		defer cancel()
 		r.execute(ctx, id, userID, skill, res, instruction, budget)
 	}()
@@ -362,14 +363,21 @@ func (r *Runner) propose(ctx context.Context, userID uuid.UUID, skill Skill, run
 	if err != nil {
 		return uuid.Nil, "", err
 	}
-	dry, err := r.db.Begin(ctx)
-	if err != nil {
-		return uuid.Nil, "", err
-	}
-	err = t.Apply(ctx, dry, userID, graph.Actor("agent:"+skill.Name), input)
-	_ = dry.Rollback(ctx)
-	if err != nil {
-		return uuid.Nil, "", err
+	if t.Check != nil {
+		// External effect: validate only; Apply runs once, after approval.
+		if err := t.Check(ctx, r.db, userID, input); err != nil {
+			return uuid.Nil, "", err
+		}
+	} else {
+		dry, err := r.db.Begin(ctx)
+		if err != nil {
+			return uuid.Nil, "", err
+		}
+		err = t.Apply(ctx, dry, userID, graph.Actor("agent:"+skill.Name), input)
+		_ = dry.Rollback(ctx)
+		if err != nil {
+			return uuid.Nil, "", err
+		}
 	}
 	summary, err := t.Summary(ctx, r.db, userID, input)
 	if err != nil {

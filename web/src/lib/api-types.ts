@@ -1457,6 +1457,44 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/repos': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Repositories the delivery agents may read (browser sessions only; tokens are never returned) */
+		get: operations['listRepos'];
+		put?: never;
+		/** Connect a GitHub repository (read-only unless comments are allowed) */
+		post: operations['connectRepo'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/repos/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Disconnect a repository */
+		delete: operations['disconnectRepo'];
+		options?: never;
+		head?: never;
+		/** Change a connection's token (empty removes it), comments, or project */
+		patch: operations['updateRepo'];
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1930,6 +1968,19 @@ export interface components {
 			before?: string;
 			/** @description The person confirmed going over the WIP limit. */
 			over_limit?: boolean;
+		};
+		RepoConnection: {
+			/** Format: uuid */
+			id: string;
+			owner: string;
+			repo: string;
+			has_token: boolean;
+			/** @description false (default): the agents only read. */
+			allow_comments: boolean;
+			/** Format: uuid */
+			project_id: string | null;
+			/** Format: date-time */
+			created_at: string;
 		};
 	};
 	responses: {
@@ -5000,6 +5051,131 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	listRepos: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Connections. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['RepoConnection'][];
+						can_store_tokens: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	connectRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					owner: string;
+					repo: string;
+					/** @description Optional fine-grained token (Contents and Pull requests read; Pull requests write only for comments). Sealed at rest. */
+					token?: string;
+					/** @default false */
+					allow_comments?: boolean;
+					/**
+					 * Format: uuid
+					 * @description The board drafted issues go to.
+					 */
+					project_id?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Connected. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RepoConnection'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	disconnectRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Disconnected. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					token?: string;
+					allow_comments?: boolean;
+					/** Format: uuid */
+					project_id?: string | null;
+				};
+			};
+		};
+		responses: {
+			/** @description The connection. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RepoConnection'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 }

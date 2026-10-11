@@ -4,7 +4,7 @@ Axon is a self-hosted life OS. Product and architecture: [README.md](README.md).
 
 ## Current state
 
-EP-00–EP-13, EP-19, and EP-22–EP-25 delivered. Next Epic: EP-26 (see [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order)). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
+EP-00–EP-13, EP-19, and EP-22–EP-26 delivered. Next Epic: EP-14 (see [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order)). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
 
 - `api/` — Go API (`chi`, `pgx`, `goose` migrations embedded in `internal/db/migrations`).
 - `web/` — SvelteKit 2 + TypeScript, Node 24.

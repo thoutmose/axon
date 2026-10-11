@@ -29,6 +29,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Agent replies | API process memory only | Personal | Show the run's answer | 1 hour; never stored or logged |
 | Habits (design, schedule, status) and habit check-ins (day, status, note) | `habits`, `habit_checkins` | Personal | Building habits | Until deleted or erasure |
 | Projects (title, outcome, status, WIP limit, docs folder) and board cards (column, order, kind, parent) | `projects`, `project_cards` | Personal | Running projects | Until deleted or erasure |
+| Repository connections (owner/name, token sealed with `AXON_ENCRYPTION_KEY`, comment switch, project) | `repo_connections` | Secret (token), personal | Let delivery agents read repositories | Until disconnected or erasure; the token is never exported |
 | Paths of deleted notes | `note_tombstones` | Personal | Let a sync client delete the file too | 30 days, or erasure |
 | Sync state (path → content hash; no content) | `.axon-sync-<vault>.json` next to the vault, on the vault host | Personal | Detect changes on both sides | Until the file is deleted |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |
@@ -54,6 +55,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 
 | Service | Receives | When | Status |
 |---|---|---|---|
+| GitHub | Requests to read the repositories the person connected; approved comments | Only for connected repositories, during runs the person starts | Available (EP-26) |
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |

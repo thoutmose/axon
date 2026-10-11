@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/repos"
 )
 
 // Routes mounts what scripts may also use; the caller wraps them in auth.Require.
@@ -342,7 +343,8 @@ func (r *Runner) approve(w http.ResponseWriter, req *http.Request) {
 		if !ok || !t.Write {
 			return "", toolErrorf("this kind of change is no longer supported")
 		}
-		return "approved", t.Apply(req.Context(), tx, who.UserID, graph.Actor("agent:"+p.Agent), p.Input)
+		ctx := repos.WithSealer(req.Context(), r.sealer)
+		return "approved", t.Apply(ctx, tx, who.UserID, graph.Actor("agent:"+p.Agent), p.Input)
 	})
 }
 

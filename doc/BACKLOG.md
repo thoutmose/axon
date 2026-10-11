@@ -97,7 +97,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Done |
-| EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Planned |
+| EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Done |
 
 ## Delivery order
 
@@ -762,12 +762,14 @@ LaTeX, diagrams, and embedded media are not rendered yet (ADR 0011).
 
 **Goal.** Side-Projects agent and Code Review agent, split from EP-10.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0012](adr/0012-delivery-agents.md))
 
-- Repository access is read-only by default; drafted issues require approval.
-- The Code Review agent can comment but cannot approve or merge.
-
-**Candidate issues.** Repository connector, read-only (13) · Side-Projects agent (21) · Code Review agent (21).
+- [x] **EP-26/IS-26.01 — Repository connector, read-only** · 13 pts · MUST
+  - [x] Per-person GitHub connections with sealed optional tokens, managed from browser sessions only; the client can only read, plus one plain comment endpoint refused unless comments are allowed (off by default).
+- [x] **EP-26/IS-26.02 — Side-Projects agent** · 21 pts · SHOULD
+  - [x] Reads the tree, files, and pull requests; drafts issues that become backlog cards only after approval (integration test with a fake GitHub and an injected README).
+- [x] **EP-26/IS-26.03 — Code Review agent** · 21 pts · SHOULD
+  - [x] Reviews diffs; can propose a comment, posted once after approval and only where allowed; no approve, merge, or review tool exists (tested). External writes are validated with `Check`, never dry-run, so nothing reaches GitHub before approval.
 
 ### EP-21 — Documentation, release 1.0 & hardening
 

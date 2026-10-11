@@ -408,6 +408,19 @@ test('without an AI provider agents say so, and a local model can be chosen', as
 	await expect(page.getByText('Your agents use Local model')).toBeVisible();
 	await page.getByRole('button', { name: 'Test connection' }).click();
 	await expect(page.getByText('The provider did not answer')).toBeVisible();
+
+	// Repositories for the delivery agents: read-only unless comments are allowed.
+	await page.getByLabel('Repository', { exact: true }).fill('ada/garden');
+	await page.getByRole('button', { name: 'Connect repository' }).click();
+	const repos = page.getByRole('region', { name: 'Repositories' });
+	await expect(repos).toContainText('ada/garden');
+	await expect(repos).toContainText('public, no token');
+	await expect(
+		repos.getByRole('checkbox', { name: 'Allow approved comments' }).first()
+	).not.toBeChecked();
+	await noSeriousA11yViolations(page);
+	await repos.getByRole('button', { name: 'Disconnect ada/garden' }).click();
+	await expect(repos).not.toContainText('ada/garden');
 	await expect(page.getByText('Nothing. Agents can only remember what you approve.')).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
