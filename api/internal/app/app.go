@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/avatars"
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/focus"
 	"github.com/thoutmose/axon/api/internal/goals"
@@ -52,6 +53,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	projectsAPI := projects.NewHandlers(pool, log)
 	roadmapsAPI := roadmaps.NewHandlers(pool, log)
 	paraAPI := para.NewHandlers(pool, log)
+	budgetAPI := budget.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
@@ -68,6 +70,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("agents", agents.Export)
 	priv.Register("settings", settings.Export)
 	priv.Register("habit_scorecard", habits.ExportScorecard)
+	priv.Register("budget", budget.Export)
 	settingsAPI := settings.NewHandlers(pool, log, agentsAPI)
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	focusAPI := focus.NewHandlers(pool, log)
@@ -120,6 +123,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				cardsAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
+				budgetAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})

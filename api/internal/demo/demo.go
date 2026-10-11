@@ -14,6 +14,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/fsrs"
+	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
@@ -175,6 +176,40 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		if s.err == nil {
 			_, s.err = para.Resources.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(r[0]), URL: ptr(r[1])})
 		}
+	}
+
+	// A month of budget: categories with budgets, income, and spending.
+	cats := map[string]uuid.UUID{}
+	for _, c := range []struct {
+		name, kind string
+		budget     int64
+	}{{"Salary", "income", 0}, {"Rent", "expense", 95000}, {"Groceries", "expense", 40000}, {"Transport", "expense", 8000}, {"Eating out", "expense", 15000}} {
+		if s.err != nil {
+			break
+		}
+		f := budget.CategoryFields{Name: ptr(c.name), Kind: ptr(c.kind)}
+		if c.budget > 0 {
+			f.MonthlyCents = &c.budget
+		}
+		var cat budget.Category
+		cat, s.err = budget.CreateCategory(ctx, tx, user, f)
+		cats[c.name] = cat.ID
+	}
+	first := time.Date(s.today.Year(), s.today.Month(), 1, 0, 0, 0, 0, time.UTC)
+	for _, t := range []struct {
+		day       int
+		kind, cat string
+		cents     int64
+		payee     string
+	}{{0, "income", "Salary", 260000, "Employer"}, {1, "expense", "Rent", 95000, "Landlord"}, {2, "expense", "Groceries", 6420, "Market"},
+		{4, "expense", "Transport", 7500, "Monthly pass"}, {6, "expense", "Eating out", 2850, "Pizzeria"}, {8, "expense", "Groceries", 4315, "Supermarket"}} {
+		on := first.AddDate(0, 0, t.day)
+		if s.err != nil || on.After(s.today) {
+			continue
+		}
+		id := cats[t.cat]
+		_, s.err = budget.CreateTransaction(ctx, tx, user, budget.TransactionFields{OccurredOn: ptr(on.Format(time.DateOnly)), Kind: ptr(t.kind),
+			AmountCents: &t.cents, CategoryID: &id, Payee: ptr(t.payee)})
 	}
 
 	// Habits with a month of history.

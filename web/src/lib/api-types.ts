@@ -951,6 +951,116 @@ export interface paths {
 		patch: operations['updateResource'];
 		trace?: never;
 	};
+	'/v1/budget': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** One month of the budget, with income, expenses, and actual against budget per category */
+		get: operations['getBudgetMonth'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/currency': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Choose the currency amounts are shown in (amounts are not converted) */
+		put: operations['setBudgetCurrency'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/categories': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Income and expense categories, archived ones last */
+		get: operations['listBudgetCategories'];
+		put?: never;
+		/** Create a category, optionally with a monthly budget */
+		post: operations['createBudgetCategory'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/categories/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a category; its transactions become uncategorised */
+		delete: operations['deleteBudgetCategory'];
+		options?: never;
+		head?: never;
+		/** Rename, rebudget, or archive a category (its kind is fixed) */
+		patch: operations['updateBudgetCategory'];
+		trace?: never;
+	};
+	'/v1/budget/transactions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A month's transactions, newest first */
+		get: operations['listBudgetTransactions'];
+		put?: never;
+		/** Record income or an expense */
+		post: operations['createBudgetTransaction'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/transactions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a transaction */
+		delete: operations['deleteBudgetTransaction'];
+		options?: never;
+		head?: never;
+		/** Change a transaction */
+		patch: operations['updateBudgetTransaction'];
+		trace?: never;
+	};
 	'/v1/goals': {
 		parameters: {
 			query?: never;
@@ -2924,6 +3034,88 @@ export interface components {
 			/** Format: date */
 			day: string;
 			value: number;
+		};
+		BudgetCategory: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense';
+			/**
+			 * Format: int64
+			 * @description Monthly budget in cents (expense categories), or null.
+			 */
+			monthly_cents: number | null;
+			archived: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetCategoryFields: {
+			name?: string;
+			/**
+			 * @description On create only.
+			 * @enum {unknown}
+			 */
+			kind?: 'income' | 'expense';
+			/** Format: int64 */
+			monthly_cents?: number | null;
+			archived?: boolean;
+		};
+		BudgetTransaction: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			occurred_on: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense';
+			/** Format: int64 */
+			amount_cents: number;
+			/** Format: uuid */
+			category_id: string | null;
+			payee: string;
+			note: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetTransactionFields: {
+			/** Format: date */
+			occurred_on?: string;
+			/** @enum {unknown} */
+			kind?: 'income' | 'expense';
+			/** Format: int64 */
+			amount_cents?: number;
+			/** Format: uuid */
+			category_id?: string | null;
+			payee?: string;
+			note?: string;
+		};
+		BudgetMonth: {
+			/** @example 2026-10 */
+			month: string;
+			/** @example EUR */
+			currency: string;
+			/** Format: int64 */
+			income_cents: number;
+			/** Format: int64 */
+			expense_cents: number;
+			/**
+			 * Format: int64
+			 * @description Sum of active expense budgets.
+			 */
+			budgeted_cents: number;
+			/** Format: int64 */
+			uncategorised_income_cents: number;
+			/** Format: int64 */
+			uncategorised_expense_cents: number;
+			/** @description Categories with their actual amount this month; the lines plus the uncategorised amounts add up to the totals. */
+			lines: (components['schemas']['BudgetCategory'] & {
+				/** Format: int64 */
+				actual_cents: number;
+			})[];
 		};
 		ParaItem: {
 			/** Format: uuid */
@@ -4952,6 +5144,290 @@ export interface operations {
 			412: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			428: components['responses']['Problem'];
+		};
+	};
+	getBudgetMonth: {
+		parameters: {
+			query?: {
+				/** @description YYYY-MM; the current month (UTC) by default. */
+				month?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The month. All amounts are integer cents in the person's currency. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetMonth'];
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	setBudgetCurrency: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/**
+					 * @description ISO 4217 code.
+					 * @example EUR
+					 */
+					currency: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The currency. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						currency: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetCategories: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 categories. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetCategory'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetCategoryFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetCategory'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetCategoryFields'];
+			};
+		};
+		responses: {
+			/** @description The category. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetCategory'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetTransactions: {
+		parameters: {
+			query?: {
+				month?: string;
+				category?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 1,000 transactions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetTransaction'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	createBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetTransactionFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetTransaction'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetTransactionFields'];
+			};
+		};
+		responses: {
+			/** @description The transaction. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetTransaction'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listGoals: {
