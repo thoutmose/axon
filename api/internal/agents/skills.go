@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"slices"
 	"strings"
+
+	"github.com/thoutmose/axon/api/internal/privacy"
 )
 
 //go:embed skills/*/SKILL.md
@@ -21,7 +23,11 @@ type Skill struct {
 	Model       string   `json:"-"`
 	Effort      string   `json:"-"`
 	Tools       []string `json:"tools"`
-	Prompt      string   `json:"-"`
+	// Consents are needed on top of ai_agents (health coaches need health_data and health_ai).
+	Consents []string `json:"consents"`
+	// Safety "health" turns on the red-flag referral and the unsafe-advice guards.
+	Safety string `json:"safety,omitempty"`
+	Prompt string `json:"-"`
 }
 
 // ParseSkill reads a SKILL.md: "---" front matter of key: value lines, then the prompt.
@@ -52,6 +58,14 @@ func ParseSkill(src string) (Skill, error) {
 			s.Model = v
 		case "effort":
 			s.Effort = v
+		case "consents":
+			for _, c := range strings.Split(v, ",") {
+				if c = strings.TrimSpace(c); c != "" {
+					s.Consents = append(s.Consents, c)
+				}
+			}
+		case "safety":
+			s.Safety = v
 		case "tools":
 			for _, t := range strings.Split(v, ",") {
 				if t = strings.TrimSpace(t); t != "" {
@@ -66,6 +80,17 @@ func ParseSkill(src string) (Skill, error) {
 		return Skill{}, fmt.Errorf("skill %q needs name, version, model, and a prompt", s.Name)
 	case !slices.Contains([]string{"low", "medium", "high", "xhigh", "max"}, s.Effort):
 		return Skill{}, fmt.Errorf("skill %q: effort must be low, medium, high, xhigh, or max", s.Name)
+	}
+	if s.Safety != "" && s.Safety != "health" {
+		return Skill{}, fmt.Errorf("skill %q: safety must be health", s.Name)
+	}
+	for _, c := range s.Consents {
+		if !slices.ContainsFunc(privacy.Purposes, func(p privacy.Purpose) bool { return p.ID == c }) {
+			return Skill{}, fmt.Errorf("skill %q needs unknown consent %q", s.Name, c)
+		}
+	}
+	if s.Consents == nil {
+		s.Consents = []string{}
 	}
 	for _, t := range s.Tools {
 		if _, ok := registry[t]; !ok {
