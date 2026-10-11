@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 )
@@ -15,10 +16,14 @@ type roadmapJSON struct {
 	Done        int    `json:"done"`
 	Total       int    `json:"total"`
 	Skills      []struct {
-		ID      string `json:"id"`
-		Title   string `json:"title"`
-		Section string `json:"section"`
-		Status  string `json:"status"`
+		ID        string `json:"id"`
+		Title     string `json:"title"`
+		Section   string `json:"section"`
+		Status    string `json:"status"`
+		Resources []struct {
+			Title string `json:"title"`
+			URL   string `json:"url"`
+		} `json:"resources"`
 	} `json:"skills"`
 	Edges []struct {
 		From string `json:"from"`
@@ -40,9 +45,15 @@ func TestRoadmapsImportManualEditingAndProgress(t *testing.T) {
 	}
 	var ossu roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"ossu"}`)), &ossu)
-	if ossu.Source != "ossu" || len(ossu.Skills) != 63 || len(ossu.Edges) != 24 || ossu.Total != 63 ||
+	// 63 courses grouped into 42 skills: the three calculus courses are one skill.
+	if ossu.Source != "ossu" || len(ossu.Skills) != 42 || len(ossu.Edges) != 13 || ossu.Total != 42 ||
 		!bytes.Contains([]byte(ossu.Attribution), []byte("MIT License")) {
 		t.Fatalf("ossu = %d skills, %d edges, %+v", len(ossu.Skills), len(ossu.Edges), ossu.Attribution)
+	}
+	for _, s := range ossu.Skills {
+		if s.Title == "Calculus" && len(s.Resources) != 3 {
+			t.Fatalf("calculus resources = %+v", s.Resources)
+		}
 	}
 
 	// A manual roadmap with prerequisites.
@@ -107,4 +118,61 @@ func TestLargeRoadmapStaysFast(t *testing.T) {
 	if d := time.Since(start); d > 300*time.Millisecond {
 		t.Errorf("a 500-skill roadmap took %s", d)
 	}
+}
+
+// Roadmaps imported before skills were competencies (one skill per book or
+// course) can be regrouped: progress and connections survive, and skills
+// the person added by hand stay.
+func TestRegroupTurnsAnOlderImportIntoSkills(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+
+	var rm roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Python"}`)), &rm)
+	if _, err := pool.Exec(context.Background(), `UPDATE roadmaps SET source = 'library' WHERE id = $1`, rm.ID); err != nil {
+		t.Fatal(err)
+	}
+	add := func(title, status string) string {
+		var s struct {
+			ID string `json:"id"`
+		}
+		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"`+title+`","status":"`+status+`"}`)), &s)
+		return s.ID
+	}
+	tutorial := add("The Python Tutorial", "done")
+	add("Python for Everybody", "learning")
+	fluent := add("Fluent Python, 2nd edition", "todo")
+	alice.link(fluent, "requires", tutorial)
+	add("Write a CLI tool", "learning")
+	var goal struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals", []byte(`{"title":"Ship a Python package"}`)), &goal)
+	alice.link(fluent, "supports", goal.ID)
+
+	alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/regroup", nil)
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/regroup", nil), &rm) // twice changes nothing
+	got := map[string]string{}
+	var idiomatic string
+	for _, s := range rm.Skills {
+		got[s.Title] = s.Status
+		if s.Title == "Idiomatic Python" {
+			idiomatic = s.ID
+		}
+	}
+	want := map[string]string{"Python fundamentals": "learning", "Idiomatic Python": "todo", "Write a CLI tool": "learning",
+		"Automation with Python": "todo", "Packaging and distribution": "todo", "Application architecture in Python": "todo"}
+	if fmt.Sprint(got) != fmt.Sprint(want) || rm.Skills[len(rm.Skills)-1].Title != "Write a CLI tool" {
+		t.Fatalf("regrouped = %v", got)
+	}
+	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/entities/"+idiomatic+"/links", nil), []byte(goal.ID)) {
+		t.Error("the goal connection did not move to the skill")
+	}
+	if len(rm.Edges) < 3 {
+		t.Errorf("edges = %+v", rm.Edges)
+	}
+	var manual roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Mine"}`)), &manual)
+	alice.mustDo(422, "POST", "/v1/roadmaps/"+manual.ID+"/regroup", nil)
 }

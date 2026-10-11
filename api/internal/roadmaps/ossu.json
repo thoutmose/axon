@@ -5,6 +5,215 @@
  "attribution": "Curriculum by Open Source Society University (OSSU), https://github.com/ossu/computer-science, used under the MIT License. Copyright (c) 2015-2023 Open Source Society University.",
  "license": "MIT",
  "license_url": "https://github.com/ossu/computer-science/blob/master/LICENSE",
+ "skills": [
+  {
+   "title": "Programming fundamentals",
+   "section": "Intro CS"
+  },
+  {
+   "title": "Systematic program design",
+   "section": "Core CS: Core programming"
+  },
+  {
+   "title": "Programming language concepts",
+   "section": "Core CS: Core programming",
+   "requires": [
+    "Systematic program design"
+   ]
+  },
+  {
+   "title": "Object-oriented design and architecture",
+   "section": "Core CS: Core programming",
+   "requires": [
+    "Systematic program design"
+   ]
+  },
+  {
+   "title": "Calculus",
+   "section": "Core CS: Core math"
+  },
+  {
+   "title": "Discrete mathematics",
+   "section": "Core CS: Core math",
+   "requires": [
+    "Calculus"
+   ]
+  },
+  {
+   "title": "Developer tooling",
+   "section": "Core CS: CS Tools"
+  },
+  {
+   "title": "Computer systems from first principles",
+   "section": "Core CS: Core systems"
+  },
+  {
+   "title": "Operating systems",
+   "section": "Core CS: Core systems",
+   "requires": [
+    "Computer systems from first principles"
+   ]
+  },
+  {
+   "title": "Computer networking",
+   "section": "Core CS: Core systems"
+  },
+  {
+   "title": "Algorithms",
+   "section": "Core CS: Core theory",
+   "requires": [
+    "Discrete mathematics"
+   ]
+  },
+  {
+   "title": "Security fundamentals",
+   "section": "Core CS: Core security"
+  },
+  {
+   "title": "Vulnerability analysis",
+   "section": "Core CS: Core security"
+  },
+  {
+   "title": "Databases and SQL",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Machine learning",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Computer graphics",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Software engineering",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Ethics, intellectual property, and privacy",
+   "section": "Core CS: Core ethics"
+  },
+  {
+   "title": "Parallel programming",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Compilers",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Functional and logic programming",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Testing and debugging",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Computer architecture",
+   "section": "Advanced CS: Advanced systems"
+  },
+  {
+   "title": "Theory of computation",
+   "section": "Advanced CS: Advanced theory",
+   "requires": [
+    "Discrete mathematics"
+   ]
+  },
+  {
+   "title": "Computational geometry",
+   "section": "Advanced CS: Advanced theory"
+  },
+  {
+   "title": "Algorithmic game theory",
+   "section": "Advanced CS: Advanced theory"
+  },
+  {
+   "title": "Web security",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Security governance and forensics",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Secure software development",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Linear algebra",
+   "section": "Advanced CS: Advanced math"
+  },
+  {
+   "title": "Numerical methods",
+   "section": "Advanced CS: Advanced math",
+   "requires": [
+    "Linear algebra"
+   ]
+  },
+  {
+   "title": "Formal logic",
+   "section": "Advanced CS: Advanced math"
+  },
+  {
+   "title": "Probability",
+   "section": "Advanced CS: Advanced math",
+   "requires": [
+    "Calculus"
+   ]
+  },
+  {
+   "title": "Full-stack web development (project)",
+   "section": "Final project",
+   "requires": [
+    "Programming fundamentals"
+   ]
+  },
+  {
+   "title": "Robotics (project)",
+   "section": "Final project",
+   "requires": [
+    "Linear algebra"
+   ]
+  },
+  {
+   "title": "Data mining (project)",
+   "section": "Final project",
+   "requires": [
+    "Machine learning"
+   ]
+  },
+  {
+   "title": "Big data (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Internet of Things (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Cloud computing (project)",
+   "section": "Final project",
+   "requires": [
+    "Vulnerability analysis"
+   ]
+  },
+  {
+   "title": "Data science (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Functional programming in Scala (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Game development (project)",
+   "section": "Final project",
+   "requires": [
+    "Programming fundamentals"
+   ]
+  }
+ ],
  "courses": [
   {
    "title": "Introduction to Computer Science and Programming using Python",
@@ -13,7 +222,8 @@
    "duration": "14 weeks",
    "effort": "6-10 hours/week",
    "prerequisites": "high school algebra",
-   "requires": []
+   "requires": [],
+   "skill": "Programming fundamentals"
   },
   {
    "title": "Systematic Program Design",
@@ -22,7 +232,8 @@
    "duration": "13 weeks",
    "effort": "8-10 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Systematic program design"
   },
   {
    "title": "Class-based Program Design",
@@ -33,7 +244,8 @@
    "prerequisites": "Systematic Program Design, High School Math",
    "requires": [
     "Systematic Program Design"
-   ]
+   ],
+   "skill": "Systematic program design"
   },
   {
    "title": "Programming Languages",
@@ -44,7 +256,8 @@
    "prerequisites": "Systematic Program Design",
    "requires": [
     "Systematic Program Design"
-   ]
+   ],
+   "skill": "Programming language concepts"
   },
   {
    "title": "Object-Oriented Design",
@@ -55,7 +268,8 @@
    "prerequisites": "Class-based Program Design",
    "requires": [
     "Class-based Program Design"
-   ]
+   ],
+   "skill": "Object-oriented design and architecture"
   },
   {
    "title": "Software Architecture",
@@ -66,7 +280,8 @@
    "prerequisites": "Object Oriented Design",
    "requires": [
     "Object-Oriented Design"
-   ]
+   ],
+   "skill": "Object-oriented design and architecture"
   },
   {
    "title": "Calculus 1A: Differentiation",
@@ -75,7 +290,8 @@
    "duration": "13 weeks",
    "effort": "6-10 hours/week",
    "prerequisites": "high school math",
-   "requires": []
+   "requires": [],
+   "skill": "Calculus"
   },
   {
    "title": "Calculus 1B: Integration",
@@ -86,7 +302,8 @@
    "prerequisites": "Calculus 1A",
    "requires": [
     "Calculus 1A: Differentiation"
-   ]
+   ],
+   "skill": "Calculus"
   },
   {
    "title": "Calculus 1C: Coordinate Systems & Infinite Series",
@@ -97,7 +314,8 @@
    "prerequisites": "Calculus 1B",
    "requires": [
     "Calculus 1B: Integration"
-   ]
+   ],
+   "skill": "Calculus"
   },
   {
    "title": "Mathematics for Computer Science",
@@ -108,7 +326,8 @@
    "prerequisites": "Calculus 1C",
    "requires": [
     "Calculus 1C: Coordinate Systems & Infinite Series"
-   ]
+   ],
+   "skill": "Discrete mathematics"
   },
   {
    "title": "The Missing Semester of Your CS Education",
@@ -117,7 +336,8 @@
    "duration": "2 weeks",
    "effort": "12 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Developer tooling"
   },
   {
    "title": "Build a Modern Computer from First Principles: From Nand to Tetris",
@@ -126,7 +346,8 @@
    "duration": "6 weeks",
    "effort": "7-13 hours/week",
    "prerequisites": "C-like programming language",
-   "requires": []
+   "requires": [],
+   "skill": "Computer systems from first principles"
   },
   {
    "title": "Build a Modern Computer from First Principles: Nand to Tetris Part II",
@@ -137,7 +358,8 @@
    "prerequisites": "one of these programming languages, From Nand to Tetris Part I",
    "requires": [
     "Build a Modern Computer from First Principles: From Nand to Tetris"
-   ]
+   ],
+   "skill": "Computer systems from first principles"
   },
   {
    "title": "Operating Systems: Three Easy Pieces",
@@ -148,7 +370,8 @@
    "prerequisites": "Nand to Tetris Part II",
    "requires": [
     "Build a Modern Computer from First Principles: Nand to Tetris Part II"
-   ]
+   ],
+   "skill": "Operating systems"
   },
   {
    "title": "Computer Networking: a Top-Down Approach",
@@ -157,7 +380,8 @@
    "duration": "8 weeks",
    "effort": "4–12 hours/week",
    "prerequisites": "algebra, probability, basic CS",
-   "requires": []
+   "requires": [],
+   "skill": "Computer networking"
   },
   {
    "title": "Algorithms: Design and Analysis, Part 1",
@@ -168,7 +392,8 @@
    "prerequisites": "any programming language, Mathematics for Computer Science",
    "requires": [
     "Mathematics for Computer Science"
-   ]
+   ],
+   "skill": "Algorithms"
   },
   {
    "title": "Algorithms: Design and Analysis, Part 2",
@@ -179,7 +404,8 @@
    "prerequisites": "Algorithms Part 1",
    "requires": [
     "Algorithms: Design and Analysis, Part 1"
-   ]
+   ],
+   "skill": "Algorithms"
   },
   {
    "title": "Cybersecurity Fundamentals",
@@ -188,7 +414,8 @@
    "duration": "8 weeks",
    "effort": "10-12 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Security fundamentals"
   },
   {
    "title": "Principles of Secure Coding",
@@ -197,7 +424,8 @@
    "duration": "4 weeks",
    "effort": "4 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Security fundamentals"
   },
   {
    "title": "Identifying Security Vulnerabilities",
@@ -206,7 +434,8 @@
    "duration": "4 weeks",
    "effort": "4 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Vulnerability analysis"
   },
   {
    "title": "Identifying Security Vulnerabilities in C/C++ Programming",
@@ -215,7 +444,8 @@
    "duration": "4 weeks",
    "effort": "5 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Vulnerability analysis"
   },
   {
    "title": "Exploiting and Securing Vulnerabilities in Java Applications",
@@ -224,7 +454,8 @@
    "duration": "4 weeks",
    "effort": "5 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Vulnerability analysis"
   },
   {
    "title": "Databases: Modeling and Theory",
@@ -233,7 +464,8 @@
    "duration": "2 weeks",
    "effort": "10 hours/week",
    "prerequisites": "core programming",
-   "requires": []
+   "requires": [],
+   "skill": "Databases and SQL"
   },
   {
    "title": "Databases: Relational Databases and SQL",
@@ -242,7 +474,8 @@
    "duration": "2 weeks",
    "effort": "10 hours/week",
    "prerequisites": "core programming",
-   "requires": []
+   "requires": [],
+   "skill": "Databases and SQL"
   },
   {
    "title": "Databases: Semistructured Data",
@@ -251,7 +484,8 @@
    "duration": "2 weeks",
    "effort": "10 hours/week",
    "prerequisites": "core programming",
-   "requires": []
+   "requires": [],
+   "skill": "Databases and SQL"
   },
   {
    "title": "Machine Learning",
@@ -260,7 +494,8 @@
    "duration": "11 weeks",
    "effort": "9 hours/week",
    "prerequisites": "Basic coding",
-   "requires": []
+   "requires": [],
+   "skill": "Machine learning"
   },
   {
    "title": "Computer Graphics",
@@ -269,7 +504,8 @@
    "duration": "6 weeks",
    "effort": "12 hours/week",
    "prerequisites": "C++ or Java, Basic Linear Algebra",
-   "requires": []
+   "requires": [],
+   "skill": "Computer graphics"
   },
   {
    "title": "Software Engineering: Introduction",
@@ -278,7 +514,8 @@
    "duration": "6 weeks",
    "effort": "8-10 hours/week",
    "prerequisites": "Core Programming, and a sizable project",
-   "requires": []
+   "requires": [],
+   "skill": "Software engineering"
   },
   {
    "title": "Ethics, Technology and Engineering",
@@ -287,7 +524,8 @@
    "duration": "9 weeks",
    "effort": "2 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
   },
   {
    "title": "Introduction to Intellectual Property",
@@ -296,7 +534,8 @@
    "duration": "4 weeks",
    "effort": "2 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
   },
   {
    "title": "Data Privacy Fundamentals",
@@ -305,7 +544,8 @@
    "duration": "3 weeks",
    "effort": "3 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
   },
   {
    "title": "Parallel Programming",
@@ -314,7 +554,8 @@
    "duration": "4 weeks",
    "effort": "6-8 hours/week",
    "prerequisites": "Scala programming",
-   "requires": []
+   "requires": [],
+   "skill": "Parallel programming"
   },
   {
    "title": "Compilers",
@@ -323,7 +564,8 @@
    "duration": "9 weeks",
    "effort": "6-8 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Compilers"
   },
   {
    "title": "Introduction to Haskell",
@@ -332,7 +574,8 @@
    "duration": "14 weeks",
    "effort": "-",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Functional and logic programming"
   },
   {
    "title": "Learn Prolog Now!",
@@ -341,7 +584,8 @@
    "duration": "12 weeks",
    "effort": "-",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Functional and logic programming"
   },
   {
    "title": "Software Debugging",
@@ -350,7 +594,8 @@
    "duration": "8 weeks",
    "effort": "6 hours/week",
    "prerequisites": "Python, object-oriented programming",
-   "requires": []
+   "requires": [],
+   "skill": "Testing and debugging"
   },
   {
    "title": "Software Testing",
@@ -359,7 +604,8 @@
    "duration": "4 weeks",
    "effort": "6 hours/week",
    "prerequisites": "Python, programming experience",
-   "requires": []
+   "requires": [],
+   "skill": "Testing and debugging"
   },
   {
    "title": "Computation Structures 1: Digital Circuits",
@@ -368,7 +614,8 @@
    "duration": "10 weeks",
    "effort": "6 hours/week",
    "prerequisites": "Nand2Tetris II",
-   "requires": []
+   "requires": [],
+   "skill": "Computer architecture"
   },
   {
    "title": "Computation Structures 2: Computer Architecture",
@@ -379,7 +626,8 @@
    "prerequisites": "Computation Structures 1",
    "requires": [
     "Computation Structures 1: Digital Circuits"
-   ]
+   ],
+   "skill": "Computer architecture"
   },
   {
    "title": "Computation Structures 3: Computer Organization",
@@ -390,7 +638,8 @@
    "prerequisites": "Computation Structures 2",
    "requires": [
     "Computation Structures 2: Computer Architecture"
-   ]
+   ],
+   "skill": "Computer architecture"
   },
   {
    "title": "Theory of Computation",
@@ -401,7 +650,8 @@
    "prerequisites": "Mathematics for Computer Science, logic, algorithms",
    "requires": [
     "Mathematics for Computer Science"
-   ]
+   ],
+   "skill": "Theory of computation"
   },
   {
    "title": "Computational Geometry",
@@ -410,7 +660,8 @@
    "duration": "16 weeks",
    "effort": "8 hours/week",
    "prerequisites": "algorithms, C++",
-   "requires": []
+   "requires": [],
+   "skill": "Computational geometry"
   },
   {
    "title": "Algorithmic Game Theory",
@@ -419,7 +670,8 @@
    "duration": "10 weeks",
    "effort": "12 hours/week",
    "prerequisites": "Core Theory",
-   "requires": []
+   "requires": [],
+   "skill": "Algorithmic game theory"
   },
   {
    "title": "Web Security Fundamentals",
@@ -428,7 +680,8 @@
    "duration": "5 weeks",
    "effort": "4-6 hours/week",
    "prerequisites": "understanding basic web technologies",
-   "requires": []
+   "requires": [],
+   "skill": "Web security"
   },
   {
    "title": "Security Governance & Compliance",
@@ -437,7 +690,8 @@
    "duration": "3 weeks",
    "effort": "3 hours/week",
    "prerequisites": "-",
-   "requires": []
+   "requires": [],
+   "skill": "Security governance and forensics"
   },
   {
    "title": "Digital Forensics Concepts",
@@ -446,7 +700,8 @@
    "duration": "3 weeks",
    "effort": "2-3 hours/week",
    "prerequisites": "Core Security",
-   "requires": []
+   "requires": [],
+   "skill": "Security governance and forensics"
   },
   {
    "title": "Secure Software Development: Requirements, Design, and Reuse",
@@ -455,7 +710,8 @@
    "duration": "7 weeks",
    "effort": "1-2 hours/week",
    "prerequisites": "Core Programming and Core Security",
-   "requires": []
+   "requires": [],
+   "skill": "Secure software development"
   },
   {
    "title": "Secure Software Development: Implementation",
@@ -466,7 +722,8 @@
    "prerequisites": "Secure Software Development: Requirements, Design, and Reuse",
    "requires": [
     "Secure Software Development: Requirements, Design, and Reuse"
-   ]
+   ],
+   "skill": "Secure software development"
   },
   {
    "title": "Secure Software Development: Verification and More Specialized Topics",
@@ -477,7 +734,8 @@
    "prerequisites": "Secure Software Development: Implementation",
    "requires": [
     "Secure Software Development: Implementation"
-   ]
+   ],
+   "skill": "Secure software development"
   },
   {
    "title": "Essence of Linear Algebra",
@@ -486,7 +744,8 @@
    "duration": "-",
    "effort": "-",
    "prerequisites": "high school math",
-   "requires": []
+   "requires": [],
+   "skill": "Linear algebra"
   },
   {
    "title": "Linear Algebra",
@@ -495,7 +754,8 @@
    "duration": "14 weeks",
    "effort": "12 hours/week",
    "prerequisites": "corequisite: Essence of Linear Algebra",
-   "requires": []
+   "requires": [],
+   "skill": "Linear algebra"
   },
   {
    "title": "Introduction to Numerical Methods",
@@ -506,7 +766,8 @@
    "prerequisites": "Linear Algebra",
    "requires": [
     "Essence of Linear Algebra"
-   ]
+   ],
+   "skill": "Numerical methods"
   },
   {
    "title": "Introduction to Formal Logic",
@@ -515,7 +776,8 @@
    "duration": "10 weeks",
    "effort": "4-8 hours/week",
    "prerequisites": "Set Theory",
-   "requires": []
+   "requires": [],
+   "skill": "Formal logic"
   },
   {
    "title": "Probability",
@@ -527,7 +789,8 @@
    "requires": [
     "Calculus 1A: Differentiation",
     "Calculus 1B: Integration"
-   ]
+   ],
+   "skill": "Probability"
   },
   {
    "title": "Fullstack Open",
@@ -538,7 +801,8 @@
    "prerequisites": "programming",
    "requires": [
     "Introduction to Computer Science and Programming using Python"
-   ]
+   ],
+   "skill": "Full-stack web development (project)"
   },
   {
    "title": "Modern Robotics",
@@ -549,7 +813,8 @@
    "prerequisites": "freshman-level physics, linear algebra, calculus, linear ordinary differential equations",
    "requires": [
     "Essence of Linear Algebra"
-   ]
+   ],
+   "skill": "Robotics (project)"
   },
   {
    "title": "Data Mining (Specialization)",
@@ -560,7 +825,8 @@
    "prerequisites": "machine learning",
    "requires": [
     "Machine Learning"
-   ]
+   ],
+   "skill": "Data mining (project)"
   },
   {
    "title": "Big Data (Specialization)",
@@ -569,7 +835,8 @@
    "duration": "30 weeks",
    "effort": "3-5 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Big data (project)"
   },
   {
    "title": "Internet of Things (Specialization)",
@@ -578,7 +845,8 @@
    "duration": "30 weeks",
    "effort": "1-5 hours/week",
    "prerequisites": "strong programming",
-   "requires": []
+   "requires": [],
+   "skill": "Internet of Things (project)"
   },
   {
    "title": "Cloud Computing (Specialization)",
@@ -589,7 +857,8 @@
    "prerequisites": "C++ programming",
    "requires": [
     "Identifying Security Vulnerabilities in C/C++ Programming"
-   ]
+   ],
+   "skill": "Cloud computing (project)"
   },
   {
    "title": "Data Science (Specialization)",
@@ -598,7 +867,8 @@
    "duration": "43 weeks",
    "effort": "1-6 hours/week",
    "prerequisites": "none",
-   "requires": []
+   "requires": [],
+   "skill": "Data science (project)"
   },
   {
    "title": "Functional Programming in Scala (Specialization)",
@@ -607,7 +877,8 @@
    "duration": "29 weeks",
    "effort": "4-5 hours/week",
    "prerequisites": "One year programming experience",
-   "requires": []
+   "requires": [],
+   "skill": "Functional programming in Scala (project)"
   },
   {
    "title": "Game Design and Development with Unity 2020 (Specialization)",
@@ -618,7 +889,8 @@
    "prerequisites": "programming, interactive design",
    "requires": [
     "Introduction to Computer Science and Programming using Python"
-   ]
+   ],
+   "skill": "Game development (project)"
   }
  ]
 }

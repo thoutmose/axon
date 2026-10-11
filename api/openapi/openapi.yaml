@@ -3308,7 +3308,7 @@ paths:
                     type: array
                     items:
                       type: object
-                      required: [id, kind, title, description, attribution, license_url, count]
+                      required: [id, kind, title, description, attribution, license_url, count, skills]
                       properties:
                         id: { type: string, example: system-design }
                         kind: { type: string, enum: [curriculum, library] }
@@ -3317,6 +3317,7 @@ paths:
                         attribution: { type: string }
                         license_url: { type: [string, "null"] }
                         count: { type: integer, description: Courses or resources in it. }
+                        skills: { type: integer, description: Skills the courses or resources are grouped into. }
         "401": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/import:
     post:
@@ -3495,6 +3496,26 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/{id}/regroup:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [roadmaps]
+      operationId: regroupRoadmap
+      summary: Group an older import (one skill per course or book) into skills with their resources
+      description: >
+        Progress is combined (done when every part is done, learning once any part is started),
+        connections move to the skill that absorbs them, and skills added by hand are kept.
+        Running it again changes nothing.
+      responses:
+        "200":
+          description: The regrouped roadmap.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Roadmap" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/{id}/skills:
     parameters: [{ $ref: "#/components/parameters/ID" }]
     post:
@@ -4321,7 +4342,7 @@ components:
         value: { type: integer }
     Skill:
       type: object
-      required: [id, title, description, url, section, status, kind, position, updated_at]
+      required: [id, title, description, url, section, status, kind, position, resources, updated_at]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -4331,6 +4352,19 @@ components:
         status: { enum: [todo, learning, done, skipped] }
         kind: { enum: [hard, soft], description: "Hard (technical) or soft (interpersonal, learning, leadership)." }
         position: { type: integer }
+        resources:
+          type: array
+          description: Books, courses, and sites that teach this skill (set by imports).
+          items:
+            type: object
+            required: [title, kind, by, free, url]
+            properties:
+              title: { type: string }
+              kind: { type: string, enum: [book, course, video, channel, paper, site, practice] }
+              by: { type: string }
+              free: { type: boolean }
+              url: { type: string }
+              note: { type: string, description: "Duration and effort, for curriculum courses." }
         updated_at: { type: string, format: date-time }
     SkillFields:
       type: object

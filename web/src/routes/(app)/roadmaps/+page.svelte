@@ -15,6 +15,7 @@
 		attribution: string;
 		license_url: string | null;
 		count: number;
+		skills: number;
 	};
 	const sourceNames: Record<string, string> = {
 		ossu: 'OSSU',
@@ -163,7 +164,7 @@
 					<strong>{s.title}</strong>
 					<p class="muted small">{s.description}</p>
 					<div class="row">
-						<span class="muted small">{s.count} resources</span>
+						<span class="muted small">{s.skills} skills · {s.count} resources</span>
 						<Button
 							variant="secondary"
 							busy={importing}

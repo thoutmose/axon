@@ -38,6 +38,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Patch("/v1/roadmaps/{id}", h.update)
 	r.Delete("/v1/roadmaps/{id}", h.delete)
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
+	r.Post("/v1/roadmaps/{id}/regroup", h.regroup)
 	r.Patch("/v1/skills/{id}", h.updateSkill)
 	r.Delete("/v1/skills/{id}", h.deleteSkill)
 	r.Get("/v1/assessment/questions", h.questions)
@@ -133,6 +134,18 @@ func (h *Handlers) importRoadmap(w http.ResponseWriter, r *http.Request) {
 			return ImportPlaced(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
 		}
 		return Import(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
+	})
+}
+
+func (h *Handlers) regroup(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	rid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	h.tx(w, r, http.StatusOK, func(tx pgx.Tx) (any, error) {
+		return Regroup(r.Context(), tx, who.UserID, rid, graph.UserActor)
 	})
 }
 
@@ -248,7 +261,8 @@ type skillBody struct {
 }
 
 func (b skillBody) fields() SkillFields {
-	return SkillFields(b)
+	return SkillFields{Title: b.Title, Description: b.Description, URL: b.URL, Section: b.Section, Status: b.Status,
+		Kind: b.Kind, Position: b.Position, Requires: b.Requires}
 }
 
 func (h *Handlers) addSkill(w http.ResponseWriter, r *http.Request) {

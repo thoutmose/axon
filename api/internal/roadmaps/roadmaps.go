@@ -65,7 +65,19 @@ type Skill struct {
 	Status      string    `json:"status"`
 	Kind        string    `json:"kind"` // hard or soft
 	Position    int       `json:"position"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	// Resources are the books, courses, and sites that teach this skill.
+	Resources []SkillResource `json:"resources"`
+	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+// SkillResource is one way to learn a skill.
+type SkillResource struct {
+	Title string `json:"title"`
+	Kind  string `json:"kind"` // book, course, video, channel, paper, site, practice
+	By    string `json:"by"`
+	Free  bool   `json:"free"`
+	URL   string `json:"url"`
+	Note  string `json:"note,omitempty"` // e.g. duration and effort
 }
 
 // Edge says a skill requires another (from requires to).
@@ -100,11 +112,11 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Roadmap, error
 	return out, err
 }
 
-const skillColumns = `s.id, e.title, s.description, s.url, s.section, s.status, s.kind, s.position, s.updated_at`
+const skillColumns = `s.id, e.title, s.description, s.url, s.section, s.status, s.kind, s.position, s.resources, s.updated_at`
 
 func scanSkill(row pgx.Row) (Skill, error) {
 	var s Skill
-	err := row.Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.UpdatedAt)
+	err := row.Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.Resources, &s.UpdatedAt)
 	return s, err
 }
 
@@ -227,7 +239,8 @@ func Delete(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 type SkillFields struct {
 	Title, Description, URL, Section, Status, Kind *string
 	Position                                       *int
-	Requires                                       []uuid.UUID // on create only
+	Requires                                       []uuid.UUID     // on create only
+	Resources                                      []SkillResource // set by imports only
 }
 
 func (f *SkillFields) validate() error {
@@ -267,7 +280,7 @@ func GetSkill(ctx context.Context, q db.Querier, userID, id uuid.UUID) (Skill, u
 	var roadmap uuid.UUID
 	var s Skill
 	err := q.QueryRow(ctx, `SELECT `+skillColumns+`, s.roadmap_id FROM skills s JOIN entities e ON e.id = s.id WHERE s.id = $1 AND e.user_id = $2`, id, userID).
-		Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.UpdatedAt, &roadmap)
+		Scan(&s.ID, &s.Title, &s.Description, &s.URL, &s.Section, &s.Status, &s.Kind, &s.Position, &s.Resources, &s.UpdatedAt, &roadmap)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return s, roadmap, graph.ErrNotFound
 	}
@@ -324,8 +337,13 @@ func addSkill(ctx context.Context, tx pgx.Tx, userID, roadmapID uuid.UUID, actor
 	if f.Kind != nil {
 		kind = *f.Kind
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO skills (id, roadmap_id, description, url, section, status, kind, position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		id, roadmapID, or(f.Description, ""), nullable(f.URL), or(f.Section, ""), status, kind, pos)
+	resources := f.Resources
+	if resources == nil {
+		resources = []SkillResource{}
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO skills (id, roadmap_id, description, url, section, status, kind, position, resources)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		id, roadmapID, or(f.Description, ""), nullable(f.URL), or(f.Section, ""), status, kind, pos, resources)
 	return id, err
 }
 
@@ -385,10 +403,11 @@ func DeleteSkill(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor gra
 var ossuJSON []byte
 
 type curriculum struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Attribution string `json:"attribution"`
-	LicenseURL  string `json:"license_url"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Attribution string         `json:"attribution"`
+	LicenseURL  string         `json:"license_url"`
+	Skills      []LibrarySkill `json:"skills"`
 	Courses     []struct {
 		Title    string   `json:"title"`
 		URL      string   `json:"url"`
@@ -396,6 +415,7 @@ type curriculum struct {
 		Duration string   `json:"duration"`
 		Effort   string   `json:"effort"`
 		Requires []string `json:"requires"`
+		Skill    string   `json:"skill"`
 	} `json:"courses"`
 }
 
@@ -403,9 +423,11 @@ type curriculum struct {
 func Sources() []Source {
 	var c curriculum
 	_ = json.Unmarshal(ossuJSON, &c)
-	out := []Source{{ID: "ossu", Kind: "curriculum", Title: c.Title, Description: c.Description, Attribution: c.Attribution, LicenseURL: &c.LicenseURL, Count: len(c.Courses)}}
+	out := []Source{{ID: "ossu", Kind: "curriculum", Title: c.Title, Description: c.Description, Attribution: c.Attribution,
+		LicenseURL: &c.LicenseURL, Count: len(c.Courses), Skills: len(c.Skills)}}
 	for _, d := range lib.Roadmaps {
-		out = append(out, Source{ID: d.ID, Kind: "library", Title: d.Title, Description: d.Description, Attribution: lib.Attribution, Count: len(d.Resources)})
+		out = append(out, Source{ID: d.ID, Kind: "library", Title: d.Title, Description: d.Description, Attribution: lib.Attribution,
+			Count: len(d.Resources), Skills: len(d.Skills)})
 	}
 	return out
 }
@@ -425,26 +447,17 @@ func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err := json.Unmarshal(ossuJSON, &c); err != nil {
 		return Roadmap{}, err
 	}
+	byskill := map[string][]SkillResource{}
+	for _, course := range c.Courses {
+		note := strings.Trim(strings.Join([]string{course.Duration, course.Effort}, " · "), " ·")
+		byskill[course.Skill] = append(byskill[course.Skill], SkillResource{Title: course.Title, Kind: "course", By: "OSSU", Free: true, URL: course.URL, Note: note})
+	}
 	id, err := create(ctx, tx, userID, actor, c.Title, c.Description, "ossu", c.Attribution, &c.LicenseURL)
 	if err != nil {
 		return Roadmap{}, err
 	}
-	ids := map[string]uuid.UUID{}
-	for i, course := range c.Courses {
-		desc := strings.Trim(strings.Join([]string{course.Duration, course.Effort}, " · "), " ·")
-		pos := i + 1
-		sid, err := addSkill(ctx, tx, userID, id, actor, SkillFields{Title: &course.Title, Description: &desc, URL: &course.URL, Section: &course.Section, Position: &pos})
-		if err != nil {
-			return Roadmap{}, err
-		}
-		ids[course.Title] = sid
-		for _, req := range course.Requires {
-			if to, ok := ids[req]; ok {
-				if _, err := graph.CreateLink(ctx, tx, userID, actor, sid, Requires, to); err != nil {
-					return Roadmap{}, err
-				}
-			}
-		}
+	if err := addSkills(ctx, tx, userID, id, actor, c.Skills, byskill, "hard"); err != nil {
+		return Roadmap{}, err
 	}
 	return Get(ctx, tx, userID, id)
 }

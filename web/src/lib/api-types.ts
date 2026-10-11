@@ -2057,6 +2057,28 @@ export interface paths {
 		patch: operations['updateRoadmap'];
 		trace?: never;
 	};
+	'/v1/roadmaps/{id}/regroup': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Group an older import (one skill per course or book) into skills with their resources
+		 * @description Progress is combined (done when every part is done, learning once any part is started), connections move to the skill that absorbs them, and skills added by hand are kept. Running it again changes nothing.
+		 */
+		post: operations['regroupRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}/skills': {
 		parameters: {
 			query?: never;
@@ -2840,6 +2862,17 @@ export interface components {
 			 */
 			kind: 'hard' | 'soft';
 			position: number;
+			/** @description Books, courses, and sites that teach this skill (set by imports). */
+			resources: {
+				title: string;
+				/** @enum {string} */
+				kind: 'book' | 'course' | 'video' | 'channel' | 'paper' | 'site' | 'practice';
+				by: string;
+				free: boolean;
+				url: string;
+				/** @description Duration and effort, for curriculum courses. */
+				note?: string;
+			}[];
 			/** Format: date-time */
 			updated_at: string;
 		};
@@ -7304,6 +7337,8 @@ export interface operations {
 							license_url: string | null;
 							/** @description Courses or resources in it. */
 							count: number;
+							/** @description Skills the courses or resources are grouped into. */
+							skills: number;
 						}[];
 					};
 				};
@@ -7570,6 +7605,32 @@ export interface operations {
 				};
 			};
 			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	regroupRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The regrouped roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
