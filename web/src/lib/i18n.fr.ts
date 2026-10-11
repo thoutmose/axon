@@ -307,5 +307,6 @@ export const fr: Record<string, string> = {
 	Cardio: 'Cardio',
 	Mobility: 'Mobilité',
 	Sport: 'Sport',
-	Other: 'Autre'
+	Other: 'Autre',
+	Insights: 'Analyses'
 };

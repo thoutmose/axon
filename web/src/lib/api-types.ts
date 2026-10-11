@@ -2270,6 +2270,76 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/insights': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every metric week by week, with its formula, source, and trend */
+		get: operations['getInsights'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/review': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The weekly review: each metric against the week before, highlights, what was done, and open tasks to carry over */
+		get: operations['getWeeklyReview'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/metrics/{id}/items': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		/** The items behind a metric's number for one week (up to 200) */
+		get: operations['getInsightItems'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/export.csv': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every metric week by week as CSV (52 weeks by default) */
+		get: operations['exportInsightsCSV'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/progress': {
 		parameters: {
 			query?: never;
@@ -3577,6 +3647,64 @@ export interface components {
 			effort: number | null;
 			notes: string;
 			sets: components['schemas']['WorkoutSet'][];
+		};
+		InsightMetric: {
+			id: string;
+			title: string;
+			/** @enum {string} */
+			unit: 'count' | 'minutes' | 'percent';
+			formula: string;
+			source: string;
+		};
+		InsightItem: {
+			/** Format: uuid */
+			id: string;
+			type: string;
+			title: string;
+			/** Format: date-time */
+			when: string;
+		};
+		InsightSeries: components['schemas']['InsightMetric'] & {
+			points: {
+				week: string;
+				/** Format: date */
+				monday: string;
+				value: number;
+			}[];
+			total: number;
+			trend: {
+				/** @enum {string} */
+				direction: 'up' | 'down' | 'flat' | 'new';
+				change: number;
+				recent: number;
+				before: number;
+				sentence: string;
+			};
+		};
+		WeeklyReview: {
+			week: string;
+			/** Format: date */
+			from: string;
+			/** Format: date */
+			to: string;
+			previous: string;
+			next: string | null;
+			metrics: {
+				id: string;
+				title: string;
+				unit: string;
+				formula: string;
+				value: number;
+				previous: number;
+			}[];
+			highlights: string[];
+			sections: {
+				metric: string;
+				title: string;
+				items: components['schemas']['InsightItem'][];
+				more: number;
+			}[];
+			carry_over: components['schemas']['InsightItem'][];
 		};
 		HabitScorecard: {
 			items: {
@@ -9322,6 +9450,114 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	getInsights: {
+		parameters: {
+			query?: {
+				weeks?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Weekly series, oldest week first, ending with the current week. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						weeks: number;
+						time_zone: string;
+						metrics: components['schemas']['InsightSeries'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getWeeklyReview: {
+		parameters: {
+			query?: {
+				/** @description An ISO week; the current week by default. */
+				week?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The review. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WeeklyReview'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getInsightItems: {
+		parameters: {
+			query?: {
+				week?: string;
+			};
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The metric and its items. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						metric: components['schemas']['InsightMetric'];
+						week: string;
+						items: components['schemas']['InsightItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	exportInsightsCSV: {
+		parameters: {
+			query?: {
+				weeks?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description One row per week: week, monday, then one column per metric id. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/csv': string;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	getProgress: {
