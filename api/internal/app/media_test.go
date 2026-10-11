@@ -101,9 +101,16 @@ func TestMediaTrackingCatalogueAndRecommendations(t *testing.T) {
 	alice.register("Alice")
 	bob.register("Bob")
 
-	if out := alice.mustDo(200, "GET", "/v1/media/catalogs", nil); !bytes.Contains(out, []byte(`"films_and_series":false`)) {
+	if out := alice.mustDo(200, "GET", "/v1/media/catalogs", nil); !bytes.Contains(out, []byte(`"films_and_series":false`)) || !bytes.Contains(out, []byte(`"consented":false`)) {
 		t.Fatalf("catalogs = %s", out)
 	}
+	// Lookups send the search text away, so they wait for consent.
+	alice.mustDo(403, "GET", "/v1/media/search?kind=book&q=dune", nil)
+	alice.mustDo(403, "POST", "/v1/media", []byte(`{"kind":"book","catalog":{"source":"openlibrary","source_id":"OL1W"}}`))
+	if n := fake.count("/"); n != 0 {
+		t.Fatalf("%d catalogue calls without consent", n)
+	}
+	alice.mustDo(204, "PUT", "/v1/me/consents/external_metadata", []byte(`{"granted":true}`))
 	alice.mustDo(503, "GET", "/v1/media/search?kind=film&q=matrix", nil) // no TMDB key: say so, add by hand instead
 	out := alice.mustDo(200, "GET", "/v1/media/search?kind=book&q=dune", nil)
 	if !bytes.Contains(out, []byte(`"source_id":"OL1W"`)) || bytes.Contains(out, []byte("Not a work")) || !bytes.Contains(out, []byte(`"has_cover":true`)) {
@@ -200,6 +207,7 @@ func TestMediaTMDBAndRetention(t *testing.T) {
 	e := newEnv(t, true)
 	alice := e.client()
 	alice.register("Alice")
+	alice.mustDo(204, "PUT", "/v1/me/consents/external_metadata", []byte(`{"granted":true}`))
 
 	if out := alice.mustDo(200, "GET", "/v1/media/search?kind=film&q=matrix", nil); !bytes.Contains(out, []byte(`"title":"The Matrix"`)) {
 		t.Fatalf("search = %s", out)

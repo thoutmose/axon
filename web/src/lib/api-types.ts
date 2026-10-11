@@ -1932,7 +1932,7 @@ export interface paths {
 		};
 		/**
 		 * Search Open Library (books) or TMDB (films and series)
-		 * @description Results are cached for a week. Each person has 30 lookups a minute.
+		 * @description Needs the external_metadata consent, since the search text goes to the provider. Results are cached for a week. Each person has 30 lookups a minute.
 		 */
 		get: operations['searchMediaCatalog'];
 		put?: never;
@@ -8164,6 +8164,8 @@ export interface operations {
 					'application/json': {
 						books: boolean;
 						films_and_series: boolean;
+						/** @description Whether you allowed lookups (consent external_metadata). */
+						consented: boolean;
 					};
 				};
 			};
@@ -8194,6 +8196,7 @@ export interface operations {
 				};
 			};
 			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			429: components['responses']['Problem'];
 			503: components['responses']['Problem'];
