@@ -1319,6 +1319,144 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/projects': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Projects with a status (default active), newest first */
+		get: operations['listProjects'];
+		put?: never;
+		/** Create a project (docs folder 1-Projects/<slug> unless given) */
+		post: operations['createProject'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One project */
+		get: operations['getProject'];
+		put?: never;
+		post?: never;
+		/** Delete a project and its board; its tasks stay */
+		delete: operations['deleteProject'];
+		options?: never;
+		head?: never;
+		/** Change a project (wip_limit null removes the limit) */
+		patch: operations['updateProject'];
+		trace?: never;
+	};
+	'/v1/projects/{id}/board': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The Kanban board; a card whose task is done always shows in Done */
+		get: operations['getBoard'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/docs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Notes in the project's docs folder */
+		get: operations['listProjectDocs'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/cards': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Create a task and put it on the board */
+		post: operations['addCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/cards/{task}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				task: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/**
+		 * Put an existing task on the board, or move, reorder, or re-parent its card
+		 * @description Entering Doing past the WIP limit answers 409 unless over_limit is true. Moving to Done completes the task; moving a done task out reopens it.
+		 */
+		put: operations['placeCard'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/cards/{task}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				task: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Take a task off its board; the task stays */
+		delete: operations['removeCard'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1732,6 +1870,66 @@ export interface components {
 			has_key: boolean;
 			input_price: number | null;
 			output_price: number | null;
+		};
+		Project: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			/** @enum {unknown} */
+			status: 'active' | 'on_hold' | 'done' | 'archived';
+			wip_limit: number | null;
+			/** @example 1-Projects/axon */
+			docs_folder: string;
+			/** @description Cards whose task is done. */
+			done: number;
+			total: number;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		ProjectFields: {
+			title?: string;
+			description?: string;
+			/** @enum {unknown} */
+			status?: 'active' | 'on_hold' | 'done' | 'archived';
+			wip_limit?: number | null;
+			docs_folder?: string;
+		};
+		Card: {
+			/** Format: uuid */
+			task_id: string;
+			title: string;
+			status: components['schemas']['TaskStatus'];
+			/** Format: date */
+			due_on: string | null;
+			/** @enum {unknown} */
+			column: 'backlog' | 'todo' | 'doing' | 'done';
+			/** @enum {unknown} */
+			kind: 'epic' | 'issue' | 'subtask';
+			/** Format: uuid */
+			parent_id: string | null;
+			children_done: number;
+			children: number;
+		};
+		CardFields: {
+			/** @enum {unknown} */
+			column?: 'backlog' | 'todo' | 'doing' | 'done';
+			/** @enum {unknown} */
+			kind?: 'epic' | 'issue' | 'subtask';
+			/**
+			 * Format: uuid
+			 * @description Issues belong to epics; sub-tasks to issues or epics.
+			 */
+			parent_id?: string | null;
+			/**
+			 * Format: uuid
+			 * @description Place before this card; omit for the end of the column.
+			 */
+			before?: string;
+			/** @description The person confirmed going over the WIP limit. */
+			over_limit?: boolean;
 		};
 	};
 	responses: {
@@ -4498,6 +4696,310 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+		};
+	};
+	listProjects: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'on_hold' | 'done' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 projects. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Project'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createProject: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ProjectFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getProject: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The project. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteProject: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateProject: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ProjectFields'];
+			};
+		};
+		responses: {
+			/** @description The updated project. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	getBoard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The board. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						project: components['schemas']['Project'];
+						columns: {
+							/** @enum {unknown} */
+							id: 'backlog' | 'todo' | 'doing' | 'done';
+							label: string;
+							/** @description The WIP limit (Doing only). */
+							limit: number | null;
+							cards: components['schemas']['Card'][];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listProjectDocs: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 notes, by path. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** Format: date-time */
+							updated_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	addCard: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['CardFields'] & {
+					title: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Card'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	placeCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				task: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['CardFields'];
+			};
+		};
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Card'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	removeCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				task: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 }

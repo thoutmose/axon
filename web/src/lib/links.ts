@@ -50,7 +50,8 @@ export function href(e: { id: string; type: string }): string | null {
 		note: '/notes/',
 		goal: '/goals/',
 		habit: '/habits/',
-		task: '/tasks/'
+		task: '/tasks/',
+		project: '/projects/'
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;
 }
@@ -60,5 +61,6 @@ export const typeNames: Record<string, string> = {
 	note: 'Note',
 	goal: 'Goal',
 	milestone: 'Milestone',
-	habit: 'Habit'
+	habit: 'Habit',
+	project: 'Project'
 };

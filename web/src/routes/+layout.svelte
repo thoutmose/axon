@@ -9,8 +9,10 @@
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
 	const wide = $derived(page.url.pathname === '/' || page.url.pathname === '/today');
-	// The notes workspace has a sidebar, so it gets the wide column.
-	const workspace = $derived(page.url.pathname.startsWith('/notes'));
+	// The notes workspace and project boards need the wide column.
+	const workspace = $derived(
+		page.url.pathname.startsWith('/notes') || page.url.pathname.startsWith('/projects/')
+	);
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
@@ -63,6 +65,7 @@
 			<a href="/tasks" aria-current={current('/tasks') ? 'page' : undefined}>Tasks</a>
 			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>Notes</a>
 			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>Goals</a>
+			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}>Projects</a>
 			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>Habits</a>
 			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}>Calendar</a>
 			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>Agents</a>

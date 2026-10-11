@@ -81,7 +81,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-07 | Design system & frontend shell | Calm, accessible SvelteKit shell, components, and auth screens. | MUST | 34 pts | EP-04, EP-06 | Done |
 | EP-08 | Dashboard & calendar | One trustworthy daily view of priorities, commitments, and progress. | SHOULD | 34 pts | EP-09, EP-11, EP-13 | Done |
 | EP-09 | Tasks & recurring work | Capture, plan, and complete daily/weekly/monthly work with GTD contexts and recurrence. | MUST | 34 pts | EP-05, EP-06, EP-07 | Done |
-| EP-10 | Projects, Kanban & docs | Projects, epics/issues/sub-tasks, Kanban, and project docs. | MUST | 34 pts | EP-09, EP-11 | Planned |
+| EP-10 | Projects, Kanban & docs | Projects, epics/issues/sub-tasks, Kanban, and project docs. | MUST | 34 pts | EP-09, EP-11 | Done |
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Done |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
@@ -574,18 +574,24 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 - [x] **EP-12/IS-12.06 — Habits agent** · 13 pts · SHOULD
   - [x] Proposes new habits and design changes as drafts the user approves (`create_habit`, `update_habit`; covered by the every-write-tool test); its skill forbids shame, pressure, and medical advice. Habits work fully with agents off (e2e runs without a provider).
 
-### EP-10 — Projects, Kanban, docs & delivery agents
+### EP-10 — Projects, Kanban & docs
 
 **Goal.** Run personal and side projects in Axon: projects, epics, issues, sub-tasks, Kanban, documentation, repository analysis, and code review.
 
 **In scope.** Project hierarchy built on tasks; Kanban with WIP limits; project docs as notes. The delivery agents moved to EP-26.
 
-**Acceptance criteria**
+**Issues**
 
-- Kanban moves are keyboard-accessible.
-- A WIP limit is visible and exceeding it asks for confirmation; nothing is blocked silently.
-
-**Candidate issues.** Project and hierarchy model (8) · Kanban (13) · Project docs (8) · Project screens (5).
+- [x] **EP-10/IS-10.01 — Project and hierarchy model** · 8 pts · MUST
+  - [x] Projects are graph entities (status, WIP limit, docs folder) that can support goals; epics, issues, and sub-tasks are tasks with a card, with hierarchy rules enforced (integration test).
+- [x] **EP-10/IS-10.02 — Kanban** · 13 pts · MUST
+  - [x] Backlog, To do, Doing, Done; drag and drop, Shift+arrow keys, and a “Move to” menu; moves are announced and keep focus (e2e).
+  - [x] The WIP limit is shown on Doing; going over answers 409 and the board asks for confirmation; nothing is blocked silently (integration and e2e).
+  - [x] Done on the board completes the task; a task completed elsewhere shows in Done; moving it out reopens it.
+- [x] **EP-10/IS-10.03 — Project docs** · 8 pts · MUST
+  - [x] Notes in the project's folder (`1-Projects/<slug>` by default) are its docs; “New doc” creates one there.
+- [x] **EP-10/IS-10.04 — Project screens** · 5 pts · MUST
+  - [x] Projects by status with progress; project page with board, docs, connections, settings, and delete (tasks and docs stay).
 
 ### EP-14 — Roadmaps, Tutor agent & skill graph
 

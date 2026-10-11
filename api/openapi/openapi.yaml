@@ -42,6 +42,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: habits
     description: Habits with a cue, stack, two-minute version, and reward; check-ins on local calendar days; recovery prompts after a miss.
+  - name: projects
+    description: Projects on a Kanban board built on tasks (epics, issues, sub-tasks), with a WIP limit and docs from a notes folder.
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -2078,6 +2080,228 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
 
+  /v1/projects:
+    get:
+      tags: [projects]
+      operationId: listProjects
+      summary: Projects with a status (default active), newest first
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [active, on_hold, done, archived] } }
+      responses:
+        "200":
+          description: Up to 200 projects.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Project" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [projects]
+      operationId: createProject
+      summary: Create a project (docs folder 1-Projects/<slug> unless given)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ProjectFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Project" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/projects/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [projects]
+      operationId: getProject
+      summary: One project
+      responses:
+        "200":
+          description: The project.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Project" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [projects]
+      operationId: updateProject
+      summary: Change a project (wip_limit null removes the limit)
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProjectFields" }
+      responses:
+        "200":
+          description: The updated project.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Project" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [projects]
+      operationId: deleteProject
+      summary: Delete a project and its board; its tasks stay
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/projects/{id}/board:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [projects]
+      operationId: getBoard
+      summary: The Kanban board; a card whose task is done always shows in Done
+      responses:
+        "200":
+          description: The board.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [project, columns]
+                properties:
+                  project: { $ref: "#/components/schemas/Project" }
+                  columns:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, label, limit, cards]
+                      properties:
+                        id: { enum: [backlog, todo, doing, done] }
+                        label: { type: string }
+                        limit: { type: [integer, "null"], description: The WIP limit (Doing only). }
+                        cards: { type: array, items: { $ref: "#/components/schemas/Card" } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/projects/{id}/docs:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [projects]
+      operationId: listProjectDocs
+      summary: Notes in the project's docs folder
+      responses:
+        "200":
+          description: Up to 200 notes, by path.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, path, updated_at]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        path: { type: string }
+                        updated_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/projects/{id}/cards:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [projects]
+      operationId: addCard
+      summary: Create a task and put it on the board
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CardFields"
+                - type: object
+                  required: [title]
+                  properties:
+                    title: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/projects/{id}/cards/{task}:
+    parameters:
+      - { $ref: "#/components/parameters/ID" }
+      - { name: task, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [projects]
+      operationId: placeCard
+      summary: Put an existing task on the board, or move, reorder, or re-parent its card
+      description: Entering Doing past the WIP limit answers 409 unless over_limit is true. Moving to Done completes the task; moving a done task out reopens it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CardFields" }
+      responses:
+        "200":
+          description: The card.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/cards/{task}:
+    parameters:
+      - { name: task, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [projects]
+      operationId: removeCard
+      summary: Take a task off its board; the task stays
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -2561,3 +2785,47 @@ components:
         has_key: { type: boolean }
         input_price: { type: [number, "null"] }
         output_price: { type: [number, "null"] }
+    Project:
+      type: object
+      required: [id, title, description, status, wip_limit, docs_folder, done, total, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        status: { enum: [active, on_hold, done, archived] }
+        wip_limit: { type: [integer, "null"] }
+        docs_folder: { type: string, example: "1-Projects/axon" }
+        done: { type: integer, description: Cards whose task is done. }
+        total: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ProjectFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        description: { type: string, maxLength: 20000 }
+        status: { enum: [active, on_hold, done, archived] }
+        wip_limit: { type: [integer, "null"], minimum: 1, maximum: 50 }
+        docs_folder: { type: string, maxLength: 300 }
+    Card:
+      type: object
+      required: [task_id, title, status, due_on, column, kind, parent_id, children_done, children]
+      properties:
+        task_id: { type: string, format: uuid }
+        title: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        due_on: { type: [string, "null"], format: date }
+        column: { enum: [backlog, todo, doing, done] }
+        kind: { enum: [epic, issue, subtask] }
+        parent_id: { type: [string, "null"], format: uuid }
+        children_done: { type: integer }
+        children: { type: integer }
+    CardFields:
+      type: object
+      properties:
+        column: { enum: [backlog, todo, doing, done] }
+        kind: { enum: [epic, issue, subtask] }
+        parent_id: { type: [string, "null"], format: uuid, description: "Issues belong to epics; sub-tasks to issues or epics." }
+        before: { type: string, format: uuid, description: Place before this card; omit for the end of the column. }
+        over_limit: { type: boolean, description: The person confirmed going over the WIP limit. }

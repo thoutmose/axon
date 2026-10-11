@@ -323,7 +323,7 @@ This table is the target layout. Until measurements justify splitting, Axon runs
 ## Quick start
 
 > [!IMPORTANT]
-> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, Notes with vault sync, Goals, Habits, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
+> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, Notes with vault sync, Goals, Projects with Kanban boards, Habits, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
 
 ### Prerequisites
 
@@ -426,7 +426,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, and EP-22–EP-25 done; EP-10 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-13, EP-19, and EP-22–EP-25 done; EP-26 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

@@ -101,7 +101,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/today',
 		'/calendar',
 		'/agents',
-		'/habits'
+		'/habits',
+		'/projects'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -349,6 +350,49 @@ test('connect a task to a note by keyboard alone, and see it from both ends', as
 	await expect(
 		page.getByRole('region', { name: 'Connections' }).getByRole('link', { name: 'Buy stamps' })
 	).toBeVisible();
+});
+
+test('run a project on a Kanban board by keyboard, with a WIP limit that asks first', async () => {
+	await page.goto('/projects');
+	await page.getByLabel('New project').fill('Garden shed');
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('heading', { level: 1, name: 'Garden shed' })).toBeVisible();
+	await page.getByLabel('WIP limit for Doing').fill('1');
+	await page.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(page.getByTitle('WIP limit')).toHaveText('0 of 1');
+
+	await page.getByLabel('Add a card to To do').fill('Buy timber');
+	await page.keyboard.press('Enter');
+	await page.getByLabel('Add a card to To do').fill('Pour the base');
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('link', { name: 'Pour the base' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	// Keyboard: Shift+→ moves a card into Doing; Shift+↑ reorders.
+	await page.getByRole('link', { name: 'Buy timber' }).focus();
+	await page.keyboard.press('Shift+ArrowRight');
+	await expect(
+		page.getByRole('status').filter({ hasText: 'Buy timber is in Doing' })
+	).toBeAttached();
+	await expect(page.getByTitle('WIP limit')).toHaveText('1 of 1');
+	await expect(page.getByRole('link', { name: 'Buy timber' })).toBeFocused();
+
+	// Past the limit, Axon asks; accepting moves the card anyway.
+	page.once('dialog', (d) => d.accept());
+	await page.getByLabel('Move Pour the base to').selectOption('doing');
+	await expect(page.getByTitle('WIP limit')).toHaveText('2 of 1');
+
+	// Done on the board completes the task.
+	await page.getByRole('link', { name: 'Buy timber' }).focus();
+	await page.keyboard.press('Shift+ArrowRight');
+	await expect(page.getByRole('region', { name: 'Done' })).toContainText('Buy timber');
+
+	// A project doc is a note in the project's folder.
+	page.once('dialog', (d) => d.accept('Shed plan'));
+	await page.getByRole('button', { name: 'New doc' }).click();
+	await expect(page.getByText('1-Projects/garden-shed/shed-plan.md')).toBeVisible();
+	await page.goBack();
+	await expect(page.getByRole('region', { name: 'Docs' })).toContainText('Shed plan');
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
