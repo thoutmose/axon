@@ -392,3 +392,33 @@ func TestSignInIsRateLimited(t *testing.T) {
 		t.Fatal("15 rapid sign-in attempts were all accepted")
 	}
 }
+
+// Five wrong authenticator codes with a valid recovery code pause recovery
+// sign-in for the account, even with the right code next, and are audited.
+func TestRecoveryLocksAfterFiveWrongAuthenticatorCodes(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	codes := alice.register("Alice")
+	var setup struct {
+		Secret string `json:"secret"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/me/totp/begin", nil), &setup)
+	now, _ := totp.GenerateCode(setup.Secret, time.Now())
+	alice.mustDo(204, "POST", "/v1/me/totp/confirm", []byte(`{"code":"`+now+`"}`))
+
+	for range 5 {
+		e.client().mustDo(401, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[2]+`","totp":"000000"}`))
+	}
+	next, _ := totp.GenerateCode(setup.Secret, time.Now().Add(30*time.Second))
+	e.client().mustDo(429, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[2]+`","totp":"`+next+`"}`))
+
+	var failures int
+	if err := pool.QueryRow(context.Background(), `SELECT count(*) FROM audit_events WHERE action = 'signin.recovery_failed'`).Scan(&failures); err != nil || failures != 5 {
+		t.Fatalf("audited failures = %d, %v", failures, err)
+	}
+	// After the pause, the right code works and the count starts again.
+	if _, err := pool.Exec(context.Background(), `UPDATE users SET recovery_locked_until = now() - interval '1 second'`); err != nil {
+		t.Fatal(err)
+	}
+	e.client().mustDo(200, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[2]+`","totp":"`+next+`"}`))
+}
