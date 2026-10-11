@@ -63,9 +63,9 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Projects with Kanban boards (keyboard-accessible, WIP limits), epics, issues, sub-tasks, and project docs; tasks open on a GTD board, with a Kanban board one click away; the calendar opens on a month grid.
 - ✅ Areas, Resources, and Archive pages (PARA), and templates for every kind of note, project, area, resource, goal, milestone, and habit, kept as files in your vault.
 - ✅ Today dashboard with defined KPIs, a calendar, and iCal feeds.
-- ✅ A command dashboard on Today: KPIs compared with the previous period, daily activity and 12-month charts, tables of what needs attention, and a network of your hard and soft skills linked to goals, projects, and notes.
-- ✅ Pomodoro focus sessions (25/5 × 3 with a 15-minute long break by default, all adjustable, any number of sessions) linked to the task, project, skill, or note you work on, with focus time on the dashboard, a daily streak, focus sounds generated in the browser (noise, rain), and your own music links per activity.
-- ✅ Personal finance in the spirit of Firefly III: asset and liability accounts with balances, income, expenses, and transfers (never counted as spending), categories with monthly budgets, tags, recurring transactions, rules that categorise, CSV import from bank exports without duplicates, and reports (monthly flows, spending by category, savings rate, net worth). Amounts are exact integer cents; finance data stays out of search and agents, and is in your export.
+- ✅ A command dashboard on Today: KPIs compared with the previous period, daily activity and 12-month charts, tables of what needs attention, and a network of your hard and soft skills with their prerequisites (skills only; books and courses stay under each skill).
+- ✅ Pomodoro focus sessions (25/5 × 4 with a 15-minute long break by default, all adjustable, any number of sessions) linked to the task, project, skill, or note you work on, with focus time on the dashboard, a daily streak, focus sounds generated in the browser (noise, rain), and your own music links per activity.
+- ✅ Personal finance in the spirit of Firefly III: asset and liability accounts with balances, income, expenses, and transfers (never counted as spending), categories with monthly budgets, tags, recurring transactions, rules that categorise, CSV import from bank exports without duplicates, reports (monthly flows, spending by category, savings rate, net worth), and savings pots (a *tirelire*) for something to buy later, with a target, an optional date, and how much to put in each month. Amounts are exact integer cents; finance data stays out of search and agents, and is in your export.
 
 ### 🌱 Habits, goals, and roadmaps
 - ✅ Habits designed with James Clear's Atomic Habits: build good habits (obvious, attractive, easy, satisfying) or break bad ones (invisible, unattractive, difficult, unsatisfying), habit stacking ("After I…, I will…"), implementation intentions ("I will… at… in…"), an identity that every check-in votes for, habit contracts, the habits scorecard, two-minute versions, and gentle recovery prompts.
@@ -450,7 +450,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, and EP-18 done; EP-45 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, and EP-45 done; EP-46 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

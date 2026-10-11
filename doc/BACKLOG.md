@@ -93,7 +93,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Done |
 | EP-18 | Health logging | Food and training logs behind an explicit health-data consent, with Open Food Facts and USDA lookups. Coaching split to EP-44. | COULD | 44 pts | EP-04, EP-06, EP-07 | Done |
 | EP-44 | Coach agents | Personal Trainer and Nutritionist agents with a separate consent to share health data with the AI provider, and a safety eval suite. Split from EP-18. | COULD | 42 pts | EP-18, EP-19 | Planned |
-| EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Planned |
+| EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Done |
 | EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
@@ -1283,7 +1283,12 @@ Cross-cutting matrix:
 - The dashboard network shows hard and soft skills only (no resources).
 - Savings pots ("tirelire"): money set aside for a later purchase, with a target, a target date, contributions, and progress.
 
-**Candidate issues.** Pomodoro default (1) · Today header (1) · Skills-only network (3) · Savings pots (8).
+**Issues**
+
+- [x] **EP-45/IS-45.01 — Pomodoro default** · 1 pt · MUST — 4 rounds by default (100 minutes of focus, the long break after the fourth); saved preferences keep their own value.
+- [x] **EP-45/IS-45.02 — Today header** · 1 pt · MUST — the full-height scenery under the header is gone; the greeting, date, and check-in share one line, and the KPIs start right under the navigation.
+- [x] **EP-45/IS-45.03 — Skills-only network** · 3 pts · MUST — the dashboard network has hard and soft skills and their prerequisites only (no goals, projects, notes, or resources); skills from roadmaps imported before ADR 0020 (one skill per book or course) are shown as the competency they teach, merged into one node, without changing stored data.
+- [x] **EP-45/IS-45.04 — Savings pots** · 8 pts · MUST — `/v1/budget/pots`: a target, an optional date, money put in or taken out (never below zero), what to save each month (rounded up so the date is met), archive, history, in the export; a Savings pots tab in Budget; a demo pot.
 
 ### EP-46 — Advanced note NLP
 
@@ -1472,6 +1477,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-45 delivered: Pomodoro 4 rounds, compact Today header, skills-only dashboard network, savings pots. |
 | 2026-10-11 | EP-18 split at start: health logging (EP-18, delivered) and coach agents (EP-44). Owner requests added as EP-45 (Pomodoro 4 sessions, Today header, skills-only network, savings pots) and EP-46 (advanced note NLP); R3 order is now EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20. |
 | 2026-10-11 | EP-17 delivered: media trackers with Open Library and TMDB (terms checked), explained recommendations, and a Media agent. |
 | 2026-10-11 | EP-40 delivered: instance export and import with a checksummed manifest, closing R2.5. Next: R3 (EP-17). |
