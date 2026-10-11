@@ -55,7 +55,8 @@ export function href(e: { id: string; type: string }): string | null {
 		project: '/projects/',
 		roadmap: '/roadmaps/',
 		area: '/areas/',
-		resource: '/resources/'
+		resource: '/resources/',
+		media: '/media?open='
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;
 }
@@ -70,5 +71,6 @@ export const typeNames: Record<string, string> = {
 	roadmap: 'Roadmap',
 	skill: 'Skill',
 	area: 'Area',
-	resource: 'Resource'
+	resource: 'Resource',
+	media: 'Media'
 };

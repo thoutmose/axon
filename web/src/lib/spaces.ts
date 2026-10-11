@@ -16,6 +16,7 @@ const byPath: [string, Space][] = [
 	['/resources', 'library'],
 	['/learn', 'library'],
 	['/cards', 'library'],
+	['/media', 'library'],
 	['/projects', 'blueprint'],
 	['/habits', 'garden'],
 	['/goals', 'summit'],
