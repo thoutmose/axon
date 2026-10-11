@@ -821,6 +821,43 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes/explore': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Filter notes by PARA, type, tag, text, and date, with statistics for charts and each note's keywords */
+		get: operations['exploreNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * A knowledge graph of the filtered notes, from links and local NLP, where every edge says why
+		 * @description Edges are wikilinks and connections (always kept), then the strongest NLP reason per pair: a shared named entity, shared TF-IDF keywords, thesaurus synonyms, or similar wording (cosine similarity). At most six NLP edges per note. No AI provider is involved.
+		 */
+		get: operations['noteKnowledgeGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/notes/sync/version': {
 		parameters: {
 			query?: never;
@@ -2681,6 +2718,63 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
+		};
+		NoteExploration: {
+			/** @description More notes matched than were analysed. */
+			truncated: boolean;
+			notes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				path: string;
+				para: components['schemas']['NotePara'];
+				kind: string;
+				tags: string[];
+				words: number;
+				/** @description Connections in and out. */
+				links: number;
+				keywords: string[];
+				/** Format: date-time */
+				created_at: string;
+				/** Format: date-time */
+				updated_at: string;
+			}[];
+			stats: {
+				total: number;
+				orphans: number;
+				words: number;
+				by_month: components['schemas']['LabelCounts'];
+				by_para: components['schemas']['LabelCounts'];
+				by_kind: components['schemas']['LabelCounts'];
+				tags: components['schemas']['LabelCounts'];
+				keywords: components['schemas']['LabelCounts'];
+			};
+		};
+		LabelCounts: {
+			label: string;
+			count: number;
+		}[];
+		KnowledgeGraph: {
+			truncated: boolean;
+			nodes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				para: components['schemas']['NotePara'];
+				kind: string;
+				keywords: string[];
+			}[];
+			edges: {
+				/** Format: uuid */
+				from: string;
+				/** Format: uuid */
+				to: string;
+				/** @enum {unknown} */
+				kind: 'link' | 'entity' | 'keyword' | 'synonym' | 'similar';
+				/** @example Shared keywords: memory, repetition */
+				why: string;
+				weight: number;
+			}[];
 		};
 		/**
 		 * @description PARA category, from the top folder (0-Inbox, 1-Projects…); notes at the root are inbox.
@@ -5090,6 +5184,76 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			413: components['responses']['Problem'];
+		};
+	};
+	exploreNotes: {
+		parameters: {
+			query?: {
+				para?: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+				/** @description Zettelkasten type from front matter (fleeting, literature, permanent…). */
+				kind?: string;
+				tag?: string;
+				/** @description Text in the title or body. */
+				q?: string;
+				/** @description Created on or after. */
+				from?: string;
+				/** @description Created on or before. */
+				to?: string;
+				/** @description Only notes with no connection. */
+				orphans?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 1,500 notes, newest first, and their statistics. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteExploration'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	noteKnowledgeGraph: {
+		parameters: {
+			query?: {
+				para?: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+				/** @description Zettelkasten type from front matter (fleeting, literature, permanent…). */
+				kind?: string;
+				tag?: string;
+				/** @description Text in the title or body. */
+				q?: string;
+				/** @description Created on or after. */
+				from?: string;
+				/** @description Created on or before. */
+				to?: string;
+				/** @description Only notes with no connection. */
+				orphans?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Nodes and edges (up to 600 notes). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['KnowledgeGraph'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	getNotesSyncVersion: {
