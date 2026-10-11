@@ -29,6 +29,7 @@ var Purposes = []Purpose{
 	{"ai_agents", "Send selected data to the configured AI provider so agents can draft suggestions."},
 	{"external_metadata", "Look up films, series, and books with TMDB and Open Library."},
 	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data."},
+	{"health_ai", "Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you."},
 	{"food_lookups", "Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them."},
 }
 

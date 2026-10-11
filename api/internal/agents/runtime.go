@@ -165,6 +165,15 @@ func (r *Runner) begin(ctx context.Context, userID uuid.UUID, skill Skill, instr
 			return uuid.Nil, ErrNoBudget
 		}
 	}
+	for _, c := range skill.Consents {
+		ok, err := privacy.Granted(ctx, r.db, userID, c)
+		if err != nil {
+			return uuid.Nil, err
+		}
+		if !ok {
+			return uuid.Nil, NeedsConsent{c}
+		}
+	}
 	res, err := r.resolve(ctx, r.db, userID, skill)
 	if err != nil {
 		return uuid.Nil, ErrUnavailable
@@ -266,6 +275,12 @@ func (r *Runner) system(ctx context.Context, userID uuid.UUID, skill Skill) (str
 }
 
 func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *resolved, instruction string, history []anthropic.BetaMessageParam, rn *run) error {
+	if skill.Safety == "health" && RedFlag(instruction) {
+		// A professional's topic: answered here, nothing reaches the model.
+		rn.reply, rn.status = Referral, "completed"
+		rn.tools = append(rn.tools, "referral")
+		return nil
+	}
 	system, err := r.system(ctx, userID, skill)
 	if err != nil {
 		return err
@@ -333,6 +348,10 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *r
 		}
 		if resp.StopReason != anthropic.BetaStopReasonToolUse || len(results) == 0 {
 			rn.reply = strings.TrimSpace(strings.Join(text, "\n\n"))
+			if skill.Safety == "health" && Unsafe(rn.reply) {
+				rn.reply = UnsafeReply
+				rn.tools = append(rn.tools, "unsafe_reply_replaced")
+			}
 			rn.messages = params.Messages
 			rn.status = "completed"
 			return nil
@@ -350,6 +369,10 @@ func (r *Runner) call(ctx context.Context, userID uuid.UUID, skill Skill, rn *ru
 	if !known || !slices.Contains(skill.Tools, name) {
 		rn.tools = append(rn.tools, "denied:"+truncate(name, 40))
 		return fmt.Sprintf("Tool %q is not available to you.", name), true, nil
+	}
+	if t.Write && skill.Safety == "health" && Unsafe(string(input)) {
+		rn.tools = append(rn.tools, name+":unsafe")
+		return unsafeToolError().Error(), true, nil
 	}
 	if !t.Write {
 		out, err := t.Read(ctx, r.db, userID, input)

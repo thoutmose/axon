@@ -52,6 +52,10 @@ func (r *Runner) fail(w http.ResponseWriter, err error) {
 		httpx.Problem(w, http.StatusNotFound, "No such agent.")
 	case errors.Is(err, ErrUnavailable):
 		httpx.Problem(w, http.StatusServiceUnavailable, "Agents are not set up on this server. Everything else works without them.")
+	case errors.As(err, new(NeedsConsent)):
+		var nc NeedsConsent
+		errors.As(err, &nc)
+		httpx.Problem(w, http.StatusForbidden, "This agent needs your “"+nc.Purpose+"” consent. Turn it on under Account → Privacy, where it says what is shared.")
 	case errors.Is(err, ErrNoConsent):
 		httpx.Problem(w, http.StatusForbidden, "Agents are off. Turn on “AI agents” under Account → Privacy to use them.")
 	case errors.Is(err, ErrNoBudget):
