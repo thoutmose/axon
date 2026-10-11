@@ -246,7 +246,7 @@
 		max-width: var(--wide-width);
 		width: 100%;
 		margin: 0 auto;
-		padding: var(--space-8) var(--space-4) var(--space-12);
+		padding: var(--space-8) var(--gutter) var(--space-12);
 		display: flex;
 		align-items: flex-end;
 		justify-content: space-between;
@@ -269,7 +269,7 @@
 		position: relative;
 		max-width: var(--wide-width);
 		margin: var(--space-8) auto 0;
-		padding: 0 var(--space-4);
+		padding: 0 var(--gutter);
 	}
 	.columns {
 		display: grid;
