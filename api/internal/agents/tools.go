@@ -107,7 +107,7 @@ var (
 	date    = map[string]any{"type": "string", "format": "date", "description": "YYYY-MM-DD. Only when the person gave this date."}
 	idField = map[string]any{"type": "string", "description": "An id returned by a list or get tool."}
 	reason  = map[string]any{"type": "string", "description": "One sentence the person can check at a glance."}
-	status  = map[string]any{"type": "string", "enum": []string{"inbox", "next", "waiting", "someday", "done"}}
+	status  = map[string]any{"type": "string", "enum": []string{"inbox", "next", "doing", "waiting", "someday", "done"}}
 )
 
 type taskRow struct {
@@ -167,7 +167,7 @@ var registry = map[string]Tool{
 		Name:        "list_tasks",
 		Description: "List the person's open tasks (up to 50), soonest date first. Optionally filter by status.",
 		Properties: map[string]any{
-			"status": map[string]any{"type": "string", "enum": []string{"inbox", "next", "waiting", "someday"}},
+			"status": map[string]any{"type": "string", "enum": []string{"inbox", "next", "doing", "waiting", "someday"}},
 			"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 50},
 		},
 		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {

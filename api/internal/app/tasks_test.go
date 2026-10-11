@@ -68,6 +68,7 @@ func TestTaskCaptureClarifyAndViews(t *testing.T) {
 	alice.createTask(`{"title":"Friday review","status":"next","scheduled_on":"` + day(4) + `"}`)
 	alice.createTask(`{"title":"Plan trip","status":"next","due_on":"` + day(20) + `"}`)
 	alice.createTask(`{"title":"Learn the cello","status":"someday","scheduled_on":"` + day(0) + `"}`)
+	alice.createTask(`{"title":"Write the report","status":"doing"}`)
 	alice.mustDo(422, "POST", "/v1/tasks", []byte(`{"title":"  "}`))
 	alice.mustDo(422, "POST", "/v1/tasks", []byte(`{"title":"x","context":"@not ok!"}`))
 	alice.mustDo(422, "POST", "/v1/tasks", []byte(`{"title":"x","bogus":1}`))
@@ -84,6 +85,7 @@ func TestTaskCaptureClarifyAndViews(t *testing.T) {
 	check("week", "Today's run", "Friday review")
 	check("month", "Today's run", "Friday review", "Plan trip")
 	check("someday", "Learn the cello")
+	check("doing", "Write the report")
 	if got := titles(alice.view("context=@home")); fmt.Sprint(got) != "[Today's run]" {
 		t.Errorf("context filter = %v", got)
 	}

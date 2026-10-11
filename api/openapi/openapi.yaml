@@ -787,7 +787,7 @@ paths:
         - name: view
           in: query
           description: today and week/month include overdue and upcoming dated work in the user's time zone; overdue is open work due before today; done is newest first.
-          schema: { type: string, enum: [all, inbox, next, waiting, someday, today, overdue, week, month, done], default: all }
+          schema: { type: string, enum: [all, inbox, next, doing, waiting, someday, today, overdue, week, month, done], default: all }
         - name: context
           in: query
           schema: { type: string, example: "@home" }
@@ -3797,7 +3797,7 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     TaskStatus:
-      enum: [inbox, next, waiting, someday, done, cancelled]
+      enum: [inbox, next, doing, waiting, someday, done, cancelled]
     TaskFields:
       type: object
       additionalProperties: false

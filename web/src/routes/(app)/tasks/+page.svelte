@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
 	import { capturing } from '$lib/capture.svelte';
+	import TaskBoard, { type BoardColumn } from '$lib/TaskBoard.svelte';
 	import TaskEditor from '$lib/TaskEditor.svelte';
 	import { capture, overdue, relativeDay, type Task } from '$lib/tasks';
 	import Button from '$lib/ui/Button.svelte';
@@ -10,12 +11,15 @@
 	import { toast } from '$lib/ui/toast.svelte';
 
 	const views = [
+		{ id: 'gtd', label: 'GTD board' },
+		{ id: 'kanban', label: 'Kanban' },
 		{ id: 'today', label: 'Today' },
 		{ id: 'overdue', label: 'Overdue' },
 		{ id: 'week', label: 'Week' },
 		{ id: 'month', label: 'Month' },
 		{ id: 'inbox', label: 'Inbox' },
 		{ id: 'next', label: 'Next' },
+		{ id: 'doing', label: 'In progress' },
 		{ id: 'waiting', label: 'Waiting' },
 		{ id: 'someday', label: 'Someday' },
 		{ id: 'done', label: 'Done' }
@@ -27,12 +31,36 @@
 		month: 'Nothing planned in the next 30 days.',
 		inbox: 'Inbox zero. Press n anywhere to capture something.',
 		next: 'No next actions. Clarify your inbox to find some.',
+		doing: 'Nothing in progress.',
 		waiting: 'Not waiting on anyone.',
 		someday: 'No someday/maybe ideas yet.',
 		done: 'Nothing completed yet.'
 	};
 
-	const view = $derived(page.url.searchParams.get('view') ?? 'today');
+	// Boards show several statuses side by side; each column is one status.
+	const boards: Record<string, Omit<BoardColumn, 'tasks'>[]> = {
+		gtd: [
+			{ status: 'inbox', label: 'Inbox', hint: 'Captured, not yet clarified.' },
+			{
+				status: 'next',
+				label: 'Next actions',
+				hint: 'The very next physical step, by context.',
+				byContext: true
+			},
+			{ status: 'waiting', label: 'Waiting for', hint: 'Delegated or blocked on someone.' },
+			{ status: 'someday', label: 'Someday / maybe', hint: 'Not now; review weekly.' }
+		],
+		kanban: [
+			{ status: 'next', label: 'To do', hint: 'Ready to start.' },
+			{ status: 'doing', label: 'In progress', hint: 'Keep this short.' },
+			{ status: 'waiting', label: 'Blocked', hint: 'Waiting on someone or something.' },
+			{ status: 'done', label: 'Done', hint: 'The most recent 20.' }
+		]
+	};
+
+	const view = $derived(page.url.searchParams.get('view') ?? 'gtd');
+	const board = $derived(boards[view]);
+	let columns = $state<BoardColumn[] | null>(null);
 	const context = $derived(page.url.searchParams.get('context'));
 	let tasks = $state<Task[] | null>(null);
 	let today = $state('');
@@ -49,6 +77,27 @@
 		if (context) params.set('context', context);
 		if (more && cursor) params.set('after', cursor);
 		try {
+			if (board) {
+				const cols = board;
+				const lists = await Promise.all(
+					cols.map((c) => {
+						const p = new URLSearchParams({
+							view: c.status,
+							limit: c.status === 'done' ? '20' : '100'
+						});
+						if (context) p.set('context', context);
+						return api<{ items: Task[]; today: string }>(`/v1/tasks?${p}`);
+					})
+				);
+				columns = cols.map((c, i) => ({ ...c, tasks: lists[i].items }));
+				today = lists[0]?.today ?? today;
+				tasks = lists.flatMap((l) => l.items);
+				cursor = null;
+				contexts = (await api<{ items: { context: string; open: number }[] }>('/v1/contexts'))
+					.items;
+				return;
+			}
+			columns = null;
 			const res = await api<{ items: Task[]; today: string; next_cursor: string | null }>(
 				`/v1/tasks?${params}`
 			);
@@ -72,6 +121,7 @@
 		void context;
 		void capturing.count;
 		tasks = null;
+		columns = null;
 		load();
 	});
 
@@ -79,9 +129,9 @@
 		e.preventDefault();
 		try {
 			const status =
-				view === 'inbox' || view === 'done'
+				view === 'inbox' || view === 'done' || view === 'gtd'
 					? 'inbox'
-					: ['week', 'month', 'today', 'overdue'].includes(view)
+					: ['kanban', 'week', 'month', 'today', 'overdue'].includes(view)
 						? 'next'
 						: view;
 			await capture(quick, {
@@ -106,6 +156,23 @@
 				body: { status: done ? 'done' : 'next' }
 			});
 			toast(done ? (t.recurrence ? 'Done. The next one is scheduled.' : 'Done.') : 'Reopened.');
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	async function move(t: Task, status: Task['status']) {
+		if (t.status === status) return;
+		try {
+			const { etag } = await apiResponse<Task>(`/v1/tasks/${t.id}`);
+			await api(`/v1/tasks/${t.id}`, {
+				method: 'PATCH',
+				headers: { 'If-Match': etag },
+				body: { status }
+			});
+			const to = board?.find((c) => c.status === status)?.label ?? status;
+			toast(`Moved “${t.title}” to ${to}.`);
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -176,6 +243,19 @@
 
 {#if error}
 	<Status kind="error" message={error} retry={() => load()} />
+{:else if board}
+	{#if columns}
+		<TaskBoard
+			label={view === 'gtd' ? 'GTD board' : 'Kanban board'}
+			{columns}
+			{today}
+			onmove={move}
+			onopen={(id) => (editing = id)}
+			ontoggle={toggle}
+		/>
+	{:else}
+		<Status kind="loading" message="Loading tasks…" />
+	{/if}
 {:else if !tasks}
 	<Status kind="loading" message="Loading tasks…" />
 {:else if tasks.length === 0}

@@ -27,7 +27,7 @@ func init() {
 }
 
 // Statuses follow GTD: capture to the inbox, then clarify.
-var statuses = []string{"inbox", "next", "waiting", "someday", "done", "cancelled"}
+var statuses = []string{"inbox", "next", "doing", "waiting", "someday", "done", "cancelled"}
 
 // Date is a calendar day, serialized as "YYYY-MM-DD".
 type Date struct{ time.Time }
@@ -125,7 +125,7 @@ func (f *Fields) validate() error {
 		return ValidationError{"Notes are limited to 20,000 characters."}
 	}
 	if f.Status != nil && !contains(statuses, *f.Status) {
-		return ValidationError{"Status must be one of inbox, next, waiting, someday, done, cancelled."}
+		return ValidationError{"Status must be one of inbox, next, doing, waiting, someday, done, cancelled."}
 	}
 	if f.Context != nil {
 		c := strings.ToLower(strings.TrimSpace(*f.Context))
