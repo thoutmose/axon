@@ -44,6 +44,8 @@ tags:
     description: Habits with a cue, stack, two-minute version, and reward; check-ins on local calendar days; recovery prompts after a miss.
   - name: projects
     description: Projects on a Kanban board built on tasks (epics, issues, sub-tasks), with a WIP limit and docs from a notes folder.
+  - name: roadmaps
+    description: Learning roadmaps of skills with prerequisites, built by hand or imported from openly licensed curricula (OSSU, MIT).
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -2391,6 +2393,215 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/roadmaps:
+    get:
+      tags: [roadmaps]
+      operationId: listRoadmaps
+      summary: Roadmaps with progress, newest first
+      responses:
+        "200":
+          description: Up to 100 roadmaps (without skills).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Roadmap" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [roadmaps]
+      operationId: createRoadmap
+      summary: Create a roadmap by hand
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 500 }
+                description: { type: string, maxLength: 20000 }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Roadmap" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/sources:
+    get:
+      tags: [roadmaps]
+      operationId: listRoadmapSources
+      summary: Curricula that can be imported, with licence and attribution
+      responses:
+        "200":
+          description: Sources.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, description, attribution, license_url]
+                      properties:
+                        id: { type: string }
+                        title: { type: string }
+                        description: { type: string }
+                        attribution: { type: string }
+                        license_url: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/import:
+    post:
+      tags: [roadmaps]
+      operationId: importRoadmap
+      summary: Import a bundled curriculum (ossu); roadmap.sh content may not be redistributed
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              additionalProperties: false
+              properties:
+                source: { type: string, example: ossu }
+      responses:
+        "201":
+          description: The new roadmap with its skills and prerequisites.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Roadmap" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [roadmaps]
+      operationId: getRoadmap
+      summary: A roadmap with its skills and prerequisite edges
+      responses:
+        "200":
+          description: The roadmap.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Roadmap" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [roadmaps]
+      operationId: updateRoadmap
+      summary: Change a roadmap's title or description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 500 }
+                description: { type: string, maxLength: 20000 }
+      responses:
+        "200":
+          description: The roadmap.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Roadmap" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [roadmaps]
+      operationId: deleteRoadmap
+      summary: Delete a roadmap, its skills, and their links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/{id}/skills:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [roadmaps]
+      operationId: addSkill
+      summary: Add a skill, optionally with prerequisites on the same roadmap
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/SkillFields"
+                - type: object
+                  required: [title]
+                  properties:
+                    requires: { type: array, items: { type: string, format: uuid } }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Skill" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/skills/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [roadmaps]
+      operationId: updateSkill
+      summary: Change a skill (prerequisites are links with relation requires)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SkillFields" }
+      responses:
+        "200":
+          description: The skill.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Skill" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [roadmaps]
+      operationId: deleteSkill
+      summary: Delete a skill and its links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -2929,3 +3140,48 @@ components:
         allow_comments: { type: boolean, description: "false (default): the agents only read." }
         project_id: { type: [string, "null"], format: uuid }
         created_at: { type: string, format: date-time }
+    Roadmap:
+      type: object
+      required: [id, title, description, source, attribution, license_url, done, total, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        source: { enum: [manual, ossu] }
+        attribution: { type: string, description: Shown with imported content. }
+        license_url: { type: [string, "null"] }
+        done: { type: integer }
+        total: { type: integer, description: Skills not skipped. }
+        skills: { type: array, items: { $ref: "#/components/schemas/Skill" } }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [link_id, from, to]
+            properties:
+              link_id: { type: string, format: uuid }
+              from: { type: string, format: uuid, description: The skill that needs the other. }
+              to: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Skill:
+      type: object
+      required: [id, title, description, url, section, status, position, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        url: { type: [string, "null"] }
+        section: { type: string }
+        status: { enum: [todo, learning, done, skipped] }
+        position: { type: integer }
+        updated_at: { type: string, format: date-time }
+    SkillFields:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        description: { type: string, maxLength: 5000 }
+        url: { type: string, maxLength: 1000 }
+        section: { type: string, maxLength: 200 }
+        status: { enum: [todo, learning, done, skipped] }
+        position: { type: integer }

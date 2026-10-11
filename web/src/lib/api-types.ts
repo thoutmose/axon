@@ -1495,6 +1495,118 @@ export interface paths {
 		patch: operations['updateRepo'];
 		trace?: never;
 	};
+	'/v1/roadmaps': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Roadmaps with progress, newest first */
+		get: operations['listRoadmaps'];
+		put?: never;
+		/** Create a roadmap by hand */
+		post: operations['createRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Curricula that can be imported, with licence and attribution */
+		get: operations['listRoadmapSources'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import a bundled curriculum (ossu); roadmap.sh content may not be redistributed */
+		post: operations['importRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A roadmap with its skills and prerequisite edges */
+		get: operations['getRoadmap'];
+		put?: never;
+		post?: never;
+		/** Delete a roadmap, its skills, and their links */
+		delete: operations['deleteRoadmap'];
+		options?: never;
+		head?: never;
+		/** Change a roadmap's title or description */
+		patch: operations['updateRoadmap'];
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}/skills': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add a skill, optionally with prerequisites on the same roadmap */
+		post: operations['addSkill'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/skills/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a skill and its links */
+		delete: operations['deleteSkill'];
+		options?: never;
+		head?: never;
+		/** Change a skill (prerequisites are links with relation requires) */
+		patch: operations['updateSkill'];
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1981,6 +2093,58 @@ export interface components {
 			project_id: string | null;
 			/** Format: date-time */
 			created_at: string;
+		};
+		Roadmap: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			/** @enum {unknown} */
+			source: 'manual' | 'ossu';
+			/** @description Shown with imported content. */
+			attribution: string;
+			license_url: string | null;
+			done: number;
+			/** @description Skills not skipped. */
+			total: number;
+			skills?: components['schemas']['Skill'][];
+			edges?: {
+				/** Format: uuid */
+				link_id: string;
+				/**
+				 * Format: uuid
+				 * @description The skill that needs the other.
+				 */
+				from: string;
+				/** Format: uuid */
+				to: string;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		Skill: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			url: string | null;
+			section: string;
+			/** @enum {unknown} */
+			status: 'todo' | 'learning' | 'done' | 'skipped';
+			position: number;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		SkillFields: {
+			title?: string;
+			description?: string;
+			url?: string;
+			section?: string;
+			/** @enum {unknown} */
+			status?: 'todo' | 'learning' | 'done' | 'skipped';
+			position?: number;
 		};
 	};
 	responses: {
@@ -5169,6 +5333,300 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['RepoConnection'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listRoadmaps: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 roadmaps (without skills). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Roadmap'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createRoadmap: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title: string;
+					description?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listRoadmapSources: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sources. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							id: string;
+							title: string;
+							description: string;
+							attribution: string;
+							license_url: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	importRoadmap: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example ossu */
+					source: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The new roadmap with its skills and prerequisites. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title?: string;
+					description?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	addSkill: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SkillFields'] & {
+					requires?: string[];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Skill'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSkill: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateSkill: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SkillFields'];
+			};
+		};
+		responses: {
+			/** @description The skill. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Skill'];
 				};
 			};
 			400: components['responses']['Problem'];

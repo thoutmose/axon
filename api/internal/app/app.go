@@ -22,6 +22,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/repos"
+	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
@@ -41,6 +42,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	goalsAPI := goals.NewHandlers(pool, log)
 	habitsAPI := habits.NewHandlers(pool, log)
 	projectsAPI := projects.NewHandlers(pool, log)
+	roadmapsAPI := roadmaps.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
@@ -82,6 +84,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				goalsAPI.Routes(r)
 				habitsAPI.Routes(r)
 				projectsAPI.Routes(r)
+				roadmapsAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})

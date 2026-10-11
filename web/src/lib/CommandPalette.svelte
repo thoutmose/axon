@@ -33,6 +33,7 @@
 			['Notes', '/notes'],
 			['Goals', '/goals'],
 			['Projects', '/projects'],
+			['Roadmaps', '/roadmaps'],
 			['Habits', '/habits'],
 			['Calendar', '/calendar'],
 			['Agents', '/agents'],

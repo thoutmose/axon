@@ -11,7 +11,9 @@
 	const wide = $derived(page.url.pathname === '/' || page.url.pathname === '/today');
 	// The notes workspace and project boards need the wide column.
 	const workspace = $derived(
-		page.url.pathname.startsWith('/notes') || page.url.pathname.startsWith('/projects/')
+		page.url.pathname.startsWith('/notes') ||
+			page.url.pathname.startsWith('/projects/') ||
+			page.url.pathname.startsWith('/roadmaps/')
 	);
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
@@ -66,6 +68,7 @@
 			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>Notes</a>
 			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>Goals</a>
 			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}>Projects</a>
+			<a href="/roadmaps" aria-current={current('/roadmaps') ? 'page' : undefined}>Learn</a>
 			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>Habits</a>
 			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}>Calendar</a>
 			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>Agents</a>

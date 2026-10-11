@@ -85,7 +85,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-11 | Notes, Zettelkasten, PARA & Markdown sync | Knowledge capture with wikilinks and safe sync with `~/SecondBrain`. | MUST | 55 pts | EP-05, EP-06, EP-07 | Done |
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Done |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
-| EP-14 | Roadmaps, Tutor agent & skill graph | Import or generate learning roadmaps and visualize progress. | SHOULD | 89 pts | EP-11, EP-13, EP-19 | Planned |
+| EP-14 | Roadmaps & skill graph | Manual roadmaps, OSSU import, and a skill graph view. | SHOULD | 42 pts | EP-11, EP-13 | Done |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, reviewed cards, and Anki sync. | SHOULD | 89 pts | EP-11, EP-14, EP-19 | Planned |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
@@ -98,6 +98,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Done |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Done |
+| EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Planned |
 
 ## Delivery order
 
@@ -107,7 +108,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 |---|---|---|
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
-| R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-16 → EP-15 | Human-approved agents, habits, projects, roadmaps, retrieval, Anki |
+| R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 → EP-16 → EP-15 | Human-approved agents, habits, projects, roadmaps, retrieval, Anki |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -593,19 +594,35 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 - [x] **EP-10/IS-10.04 — Project screens** · 5 pts · MUST
   - [x] Projects by status with progress; project page with board, docs, connections, settings, and delete (tasks and docs stay).
 
-### EP-14 — Roadmaps, Tutor agent & skill graph
+### EP-14 — Roadmaps & skill graph
 
 **Goal.** Build learning and career roadmaps by hand, by import, or with the Tutor agent, and see progress as a skill graph.
 
-**In scope.** Manual roadmaps linked to goals, notes, and learning items; import from roadmap.sh and OSSU; Tutor agent interview and cited draft roadmaps; skill graph view.
+**In scope.** Manual roadmaps linked to goals, notes, and learning items; import from openly licensed curricula; skill graph view. The Tutor and Resource agents moved to EP-27.
+
+**Issues** (design in [ADR 0013](adr/0013-roadmaps-licences-and-graph.md))
+
+- [x] **EP-14/IS-14.01 — Licence review** · 2 pts · MUST
+  - [x] OSSU: MIT, imported with attribution shown before and after import. roadmap.sh: personal use only, no redistribution, so not imported (link only).
+- [x] **EP-14/IS-14.02 — Roadmap model and API** · 8 pts · MUST
+  - [x] Roadmaps and skills as graph entities; prerequisites as `requires` links; progress that leaves out skipped skills; a 500-skill roadmap loads in under 300 ms (integration test).
+- [x] **EP-14/IS-14.03 — Manual editor** · 13 pts · MUST
+  - [x] Create roadmaps, add skills with sections, links, and prerequisites; set status from the list or the skill panel; connect skills and roadmaps to goals and notes.
+- [x] **EP-14/IS-14.04 — OSSU import** · 8 pts · SHOULD
+  - [x] Bundled snapshot: 63 courses, sections, links, effort, 24 prerequisite edges.
+- [x] **EP-14/IS-14.05 — Skill graph view** · 13 pts · SHOULD
+  - [x] Layered SVG graph with zoom and status colours; named links for screen readers; the list view is the accessible alternative; the layout is unit-tested at 500 nodes (e2e and axe on both views).
+
+### EP-27 — Tutor & Resource agents
+
+**Goal.** Build roadmaps with the Tutor agent (interview, cited draft roadmaps) and find learning resources with the Resource agent. Split from EP-14.
 
 **Acceptance criteria**
 
-- Licenses of roadmap.sh and OSSU content are checked before import is built; attribution is shown.
 - Every Tutor suggestion cites its sources and stays a draft until approved.
-- The skill graph stays responsive with 500 nodes and has an accessible list alternative.
+- Resources respect robots, licences, and quotas, with attribution.
 
-**Candidate issues.** Roadmap model and API (8) · Manual editor (13) · OSSU import (8) · roadmap.sh import, license permitting (8) · Tutor agent (21) · Skill graph view (13) · Resource agent (13). **Split before start.**
+**Candidate issues.** Tutor agent (21) · Resource agent (13).
 
 ### EP-16 — Learning engine, Teacher agent & Anki
 
@@ -843,6 +860,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Initial authored backlog for Axon; all Epics are Planned pending human refinement. |
 | 2026-10-10 | Refinement (EP-00/IS-00.05): replaced templated Epic text with specific goals, scope, and acceptance criteria; detailed EP-00–EP-06 into issues. Fixed dependencies so each points to an earlier Epic: EP-08 now follows EP-09/11/13; Task Manager and Goals agents moved into EP-19, so EP-09 and EP-13 no longer depend on it; EP-21 depends on MUST Epics instead of EP-20. EP-01 reduced to one host per ADR 0003 (55 → 34 pts); EP-09 55 → 34 and EP-13 34 → 21 after moving their agents. Added delivery order and a walking skeleton to EP-00. |
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
+| 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 
 ## Standard issue evidence template
 

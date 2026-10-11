@@ -30,6 +30,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Habits (design, schedule, status) and habit check-ins (day, status, note) | `habits`, `habit_checkins` | Personal | Building habits | Until deleted or erasure |
 | Projects (title, outcome, status, WIP limit, docs folder) and board cards (column, order, kind, parent) | `projects`, `project_cards` | Personal | Running projects | Until deleted or erasure |
 | Repository connections (owner/name, token sealed with `AXON_ENCRYPTION_KEY`, comment switch, project) | `repo_connections` | Secret (token), personal | Let delivery agents read repositories | Until disconnected or erasure; the token is never exported |
+| Roadmaps and skills (titles, sections, links, status) | `roadmaps`, `skills` | Personal | Planning what to learn | Until deleted or erasure |
 | Paths of deleted notes | `note_tombstones` | Personal | Let a sync client delete the file too | 30 days, or erasure |
 | Sync state (path → content hash; no content) | `.axon-sync-<vault>.json` next to the vault, on the vault host | Personal | Detect changes on both sides | Until the file is deleted |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |

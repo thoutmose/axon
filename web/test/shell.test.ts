@@ -102,7 +102,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/calendar',
 		'/agents',
 		'/habits',
-		'/projects'
+		'/projects',
+		'/roadmaps'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -393,6 +394,31 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 	await expect(page.getByText('1-Projects/garden-shed/shed-plan.md')).toBeVisible();
 	await page.goBack();
 	await expect(page.getByRole('region', { name: 'Docs' })).toContainText('Shed plan');
+});
+
+test('import an open curriculum with attribution, track skills, and use the graph or the list', async () => {
+	await page.goto('/roadmaps');
+	await expect(page.getByText('MIT License')).toBeVisible(); // attribution before import
+	await page.getByRole('button', { name: 'Import' }).click();
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'OSSU Computer Science' })
+	).toBeVisible();
+	await expect(page.getByText('Open Source Society University (OSSU)')).toBeVisible();
+	await page.getByLabel('Status of Systematic Program Design').selectOption('done');
+	await expect(page.getByText('1 of 63 skills done')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('link', { name: 'Skill graph' }).click();
+	const graph = page.getByRole('group', { name: /Skill graph: 63 skills, 1 done/ });
+	await expect(graph).toBeVisible();
+	await graph.getByRole('link', { name: 'Class-based Program Design, todo' }).click();
+	const detail = page.getByRole('complementary', { name: 'Class-based Program Design' });
+	await expect(detail).toContainText('Needs first: Systematic Program Design');
+	await detail.getByRole('button', { name: 'Learning' }).click();
+	await expect(
+		graph.getByRole('link', { name: 'Class-based Program Design, learning' })
+	).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {

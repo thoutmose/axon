@@ -51,7 +51,8 @@ export function href(e: { id: string; type: string }): string | null {
 		goal: '/goals/',
 		habit: '/habits/',
 		task: '/tasks/',
-		project: '/projects/'
+		project: '/projects/',
+		roadmap: '/roadmaps/'
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;
 }
@@ -62,5 +63,7 @@ export const typeNames: Record<string, string> = {
 	goal: 'Goal',
 	milestone: 'Milestone',
 	habit: 'Habit',
-	project: 'Project'
+	project: 'Project',
+	roadmap: 'Roadmap',
+	skill: 'Skill'
 };
