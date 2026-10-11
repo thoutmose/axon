@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { monthLabel, shiftMonth } from '$lib/calendar';
+	import { parseTags } from '$lib/finance';
 	import { centsText, formatCents, toCents } from '$lib/money';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
@@ -12,12 +13,15 @@
 	type Category = Schemas['BudgetCategory'];
 	type Transaction = Schemas['BudgetTransaction'];
 	type Kind = 'income' | 'expense';
+	type Account = Schemas['BudgetAccount'];
 
 	const today = new Date().toLocaleDateString('sv');
 	const month = $derived(page.url.searchParams.get('month') ?? today.slice(0, 7));
 	let summary = $state<Month | null>(null);
 	let categories = $state<Category[]>([]);
 	let transactions = $state<Transaction[]>([]);
+	let accounts = $state<Account[]>([]);
+	const accountName = (id: string | null) => accounts.find((a) => a.id === id)?.name ?? '';
 	let error = $state('');
 	let busy = $state(false);
 
@@ -31,14 +35,16 @@
 	async function load() {
 		error = '';
 		try {
-			const [m, c, t] = await Promise.all([
+			const [m, c, t, a] = await Promise.all([
 				api<Month>(`/v1/budget?month=${month}`),
 				api<{ items: Category[] }>('/v1/budget/categories'),
-				api<{ items: Transaction[] }>(`/v1/budget/transactions?month=${month}`)
+				api<{ items: Transaction[] }>(`/v1/budget/transactions?month=${month}`),
+				api<{ items: Account[] }>('/v1/budget/accounts')
 			]);
 			summary = m;
 			categories = c.items;
 			transactions = t.items;
+			accounts = a.items;
 		} catch (err) {
 			error = message(err);
 		}
@@ -50,13 +56,17 @@
 
 	// --- Transactions ---
 	let form = $state({
-		kind: 'expense' as Kind,
+		kind: 'expense' as Kind | 'transfer',
 		occurred_on: today,
 		amount: '',
 		category_id: '',
+		account_id: '',
+		to_account_id: '',
+		tags: '',
 		payee: '',
 		note: ''
 	});
+	const openAccounts = $derived(accounts.filter((a) => !a.archived));
 	const formCategories = $derived(categories.filter((c) => c.kind === form.kind && !c.archived));
 
 	async function addTransaction(e: SubmitEvent) {
@@ -74,12 +84,15 @@
 					kind: form.kind,
 					occurred_on: form.occurred_on,
 					amount_cents: cents,
-					category_id: form.category_id || null,
+					category_id: form.kind === 'transfer' ? null : form.category_id || null,
+					account_id: form.account_id || null,
+					to_account_id: form.kind === 'transfer' ? form.to_account_id || null : null,
+					tags: parseTags(form.tags),
 					payee: form.payee,
 					note: form.note
 				}
 			});
-			form = { ...form, amount: '', payee: '', note: '' };
+			form = { ...form, amount: '', payee: '', note: '', tags: '' };
 			toast('Recorded.');
 			await load();
 		} catch (err) {
@@ -388,24 +401,68 @@
 						<legend class="visually-hidden">Kind</legend>
 						<label><input type="radio" value="expense" bind:group={form.kind} /> Expense</label>
 						<label><input type="radio" value="income" bind:group={form.kind} /> Income</label>
+						<label><input type="radio" value="transfer" bind:group={form.kind} /> Transfer</label>
 					</fieldset>
-					<label
-						>Amount<input
+					<div class="field">
+						<label for="tx-amount">Amount</label>
+						<input
+							id="tx-amount"
 							inputmode="decimal"
 							placeholder="12.50"
 							bind:value={form.amount}
 							required
-						/></label
-					>
-					<label>Date<input type="date" bind:value={form.occurred_on} required /></label>
-					<label
-						>Category<select bind:value={form.category_id}>
-							<option value="">Uncategorised</option>
-							{#each formCategories as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
-						</select></label
-					>
-					<label>Payee<input bind:value={form.payee} maxlength="200" /></label>
-					<label class="wide">Note<input bind:value={form.note} maxlength="2000" /></label>
+						/>
+					</div>
+					<div class="field">
+						<label for="tx-date">Date</label>
+						<input id="tx-date" type="date" bind:value={form.occurred_on} required />
+					</div>
+					{#if openAccounts.length || form.kind === 'transfer'}
+						<div class="field">
+							<label for="tx-account"
+								>{form.kind === 'income' ? 'Into account' : 'From account'}</label
+							>
+							<select
+								id="tx-account"
+								bind:value={form.account_id}
+								required={form.kind === 'transfer'}
+							>
+								<option value="">{form.kind === 'transfer' ? 'Choose…' : 'No account'}</option>
+								{#each openAccounts as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
+							</select>
+						</div>
+					{/if}
+					{#if form.kind === 'transfer'}
+						<div class="field">
+							<label for="tx-to-account">To account</label>
+							<select id="tx-to-account" bind:value={form.to_account_id} required>
+								<option value="">Choose…</option>
+								{#each openAccounts.filter((a) => a.id !== form.account_id) as a (a.id)}<option
+										value={a.id}>{a.name}</option
+									>{/each}
+							</select>
+						</div>
+					{:else}
+						<div class="field">
+							<label for="tx-category">Category</label>
+							<select id="tx-category" bind:value={form.category_id}>
+								<option value="">Uncategorised (or by your rules)</option>
+								{#each formCategories as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
+							</select>
+						</div>
+					{/if}
+					<div class="field">
+						<label for="tx-tags">Tags</label>
+						<input id="tx-tags" bind:value={form.tags} placeholder="#holiday #work" />
+					</div>
+					<div class="field">
+						<label for="tx-payee">Payee</label>
+						<input id="tx-payee" bind:value={form.payee} maxlength="200" />
+					</div>
+					<div class="field wide">
+						<label for="tx-note">Note</label>
+						<input id="tx-note" bind:value={form.note} maxlength="2000" />
+					</div>
 					<div class="wide"><Button type="submit" {busy}>Record</Button></div>
 				</form>
 			</section>
@@ -433,9 +490,17 @@
 												· {t.note}</span
 											>{/if}</td
 									>
-									<td>{nameOf(t.category_id)}</td>
+									<td
+										>{t.kind === 'transfer'
+											? `${accountName(t.account_id)} → ${accountName(t.to_account_id)}`
+											: nameOf(t.category_id)}{#if t.tags.length}<span class="muted small">
+												{t.tags.map((x) => `#${x}`).join(' ')}</span
+											>{/if}</td
+									>
 									<td class="num" class:ok={t.kind === 'income'}
-										>{t.kind === 'income' ? '+' : '−'}{money(t.amount_cents)}</td
+										>{t.kind === 'income' ? '+' : t.kind === 'transfer' ? '⇄' : '−'}{money(
+											t.amount_cents
+										)}</td
 									>
 									<td
 										><button
@@ -457,14 +522,15 @@
 
 <Dialog bind:open={editOpen} title="Edit category">
 	<form class="grid" onsubmit={submitEdit}>
-		<label class="wide">Name<input bind:value={edit.name} maxlength="100" required /></label>
+		<div class="field wide">
+			<label for="edit-cat-name">Name</label>
+			<input id="edit-cat-name" bind:value={edit.name} maxlength="100" required />
+		</div>
 		{#if editing?.kind === 'expense'}
-			<label class="wide"
-				>Monthly budget (empty for none)<input
-					inputmode="decimal"
-					bind:value={edit.budget}
-				/></label
-			>
+			<div class="field wide">
+				<label for="edit-cat-budget">Monthly budget (empty for none)</label>
+				<input id="edit-cat-budget" inputmode="decimal" bind:value={edit.budget} />
+			</div>
 		{/if}
 		<div class="wide row">
 			<Button type="submit">Save</Button>
@@ -618,6 +684,14 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
 		gap: var(--space-3);
+	}
+	.field {
+		display: grid;
+		gap: var(--space-1);
+	}
+	.field label {
+		font-weight: 600;
+		font-size: var(--text-sm);
 	}
 	form.grid label {
 		display: grid;

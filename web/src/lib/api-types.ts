@@ -1061,6 +1061,188 @@ export interface paths {
 		patch: operations['updateBudgetTransaction'];
 		trace?: never;
 	};
+	'/v1/budget/accounts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your accounts */
+		get: operations['listBudgetAccounts'];
+		put?: never;
+		/** Create a account */
+		post: operations['createBudgetAccount'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/accounts/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a account that no transaction uses (archive it otherwise) */
+		delete: operations['deleteBudgetAccount'];
+		options?: never;
+		head?: never;
+		/** Change a account */
+		patch: operations['updateBudgetAccount'];
+		trace?: never;
+	};
+	'/v1/budget/recurring': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your recurring transactions */
+		get: operations['listBudgetRecurrings'];
+		put?: never;
+		/** Create a recurring transaction */
+		post: operations['createBudgetRecurring'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/recurring/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a recurring transaction; its recorded transactions stay */
+		delete: operations['deleteBudgetRecurring'];
+		options?: never;
+		head?: never;
+		/** Change a recurring transaction */
+		patch: operations['updateBudgetRecurring'];
+		trace?: never;
+	};
+	'/v1/budget/recurring/run': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record every due occurrence up to today (also done when the budget is opened); running it twice records nothing twice */
+		post: operations['runBudgetRecurring'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/rules': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your rules */
+		get: operations['listBudgetRules'];
+		put?: never;
+		/** Create a rule */
+		post: operations['createBudgetRule'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/rules/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a rule; transactions it changed stay */
+		delete: operations['deleteBudgetRule'];
+		options?: never;
+		head?: never;
+		/** Change a rule */
+		patch: operations['updateBudgetRule'];
+		trace?: never;
+	};
+	'/v1/budget/rules/apply': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Run the rules over uncategorised transactions; running it twice changes nothing */
+		post: operations['applyBudgetRules'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import a bank's CSV export; rows already imported are skipped, and rules categorise new ones */
+		post: operations['importBudgetCSV'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/report': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Income and expenses per month and per category, account balances, and net worth */
+		get: operations['getBudgetReport'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/goals': {
 		parameters: {
 			query?: never;
@@ -3035,6 +3217,158 @@ export interface components {
 			day: string;
 			value: number;
 		};
+		BudgetAccount: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			type: 'asset' | 'liability';
+			/** @enum {unknown} */
+			role: 'checking' | 'savings' | 'cash' | 'credit_card' | 'loan' | 'investment' | 'other';
+			/**
+			 * Format: int64
+			 * @description Negative for money owed.
+			 */
+			opening_cents: number;
+			/**
+			 * Format: int64
+			 * @description Opening plus income, minus expenses, plus or minus transfers.
+			 */
+			balance_cents: number;
+			archived: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetAccountFields: {
+			name?: string;
+			/**
+			 * @description On create only.
+			 * @enum {unknown}
+			 */
+			type?: 'asset' | 'liability';
+			/** @enum {unknown} */
+			role?: 'checking' | 'savings' | 'cash' | 'credit_card' | 'loan' | 'investment' | 'other';
+			/** Format: int64 */
+			opening_cents?: number;
+			archived?: boolean;
+		};
+		BudgetRecurring: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents: number;
+			/** Format: uuid */
+			account_id: string | null;
+			/** Format: uuid */
+			to_account_id: string | null;
+			/** Format: uuid */
+			category_id: string | null;
+			payee: string;
+			note: string;
+			tags: string[];
+			/** @example FREQ=MONTHLY;BYMONTHDAY=1 */
+			rule: string;
+			/**
+			 * Format: date
+			 * @description Null once the series ended.
+			 */
+			next_on: string | null;
+			active: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetRecurringFields: {
+			name?: string;
+			/** @enum {unknown} */
+			kind?: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents?: number;
+			/** Format: uuid */
+			account_id?: string | null;
+			/** Format: uuid */
+			to_account_id?: string | null;
+			/** Format: uuid */
+			category_id?: string | null;
+			payee?: string;
+			note?: string;
+			tags?: string[];
+			/** @description RFC 5545 RRULE with FREQ DAILY, WEEKLY, MONTHLY, or YEARLY. */
+			rule?: string;
+			/**
+			 * Format: date
+			 * @description The next occurrence; setting it again restarts the series there.
+			 */
+			start_on?: string;
+			active?: boolean;
+		};
+		BudgetRule: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			field: 'payee' | 'note';
+			/** @enum {unknown} */
+			operator: 'contains' | 'equals' | 'starts_with';
+			value: string;
+			/** Format: uuid */
+			category_id: string | null;
+			tag: string;
+			position: number;
+			active: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetRuleFields: {
+			name?: string;
+			/** @enum {unknown} */
+			field?: 'payee' | 'note';
+			/** @enum {unknown} */
+			operator?: 'contains' | 'equals' | 'starts_with';
+			value?: string;
+			/** Format: uuid */
+			category_id?: string | null;
+			tag?: string;
+			position?: number;
+			active?: boolean;
+		};
+		BudgetReport: {
+			currency: string;
+			/** Format: date */
+			from: string;
+			/** Format: date */
+			to: string;
+			months: {
+				month: string;
+				/** Format: int64 */
+				income_cents: number;
+				/** Format: int64 */
+				expense_cents: number;
+			}[];
+			categories: {
+				/** Format: uuid */
+				category_id: string | null;
+				name: string;
+				/** @enum {unknown} */
+				kind: 'income' | 'expense';
+				/** Format: int64 */
+				cents: number;
+			}[];
+			accounts: components['schemas']['BudgetAccount'][];
+			/**
+			 * Format: int64
+			 * @description The sum of every account balance.
+			 */
+			net_worth_cents: number;
+		};
 		BudgetCategory: {
 			/** Format: uuid */
 			id: string;
@@ -3069,13 +3403,29 @@ export interface components {
 			/** Format: date */
 			occurred_on: string;
 			/** @enum {unknown} */
-			kind: 'income' | 'expense';
+			kind: 'income' | 'expense' | 'transfer';
 			/** Format: int64 */
 			amount_cents: number;
 			/** Format: uuid */
 			category_id: string | null;
+			/**
+			 * Format: uuid
+			 * @description Paid from (expense, transfer) or into (income).
+			 */
+			account_id: string | null;
+			/**
+			 * Format: uuid
+			 * @description Transfers only.
+			 */
+			to_account_id: string | null;
+			tags: string[];
 			payee: string;
 			note: string;
+			/**
+			 * Format: uuid
+			 * @description The recurring series that recorded it.
+			 */
+			recurring_id: string | null;
 			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
@@ -3085,11 +3435,19 @@ export interface components {
 			/** Format: date */
 			occurred_on?: string;
 			/** @enum {unknown} */
-			kind?: 'income' | 'expense';
+			kind?: 'income' | 'expense' | 'transfer';
 			/** Format: int64 */
 			amount_cents?: number;
-			/** Format: uuid */
+			/**
+			 * Format: uuid
+			 * @description Without one, your rules may choose it.
+			 */
 			category_id?: string | null;
+			/** Format: uuid */
+			account_id?: string | null;
+			/** Format: uuid */
+			to_account_id?: string | null;
+			tags?: string[];
 			payee?: string;
 			note?: string;
 		};
@@ -5321,6 +5679,8 @@ export interface operations {
 			query?: {
 				month?: string;
 				category?: string;
+				account?: string;
+				tag?: string;
 			};
 			header?: never;
 			path?: never;
@@ -5428,6 +5788,455 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetAccounts: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The accounts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetAccount'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetAccountFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetAccount'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetAccountFields'];
+			};
+		};
+		responses: {
+			/** @description The account. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetAccount'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetRecurrings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The recurring transactions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetRecurring'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRecurringFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRecurring'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRecurringFields'];
+			};
+		};
+		responses: {
+			/** @description The recurring transaction. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRecurring'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	runBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many transactions were recorded. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	listBudgetRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The rules. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetRule'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRuleFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRule'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRuleFields'];
+			};
+		};
+		responses: {
+			/** @description The rule. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRule'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	applyBudgetRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many transactions changed. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						changed: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	importBudgetCSV: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					csv: string;
+					/** Format: uuid */
+					account_id?: string | null;
+					/** @example ; */
+					delimiter?: string;
+					/** @enum {unknown} */
+					date_format?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'DD.MM.YYYY';
+					has_header?: boolean;
+					date_column: number;
+					/** @description Negative amounts are expenses, positive ones income. */
+					amount_column: number;
+					payee_column?: number | null;
+					note_column?: number | null;
+				};
+			};
+		};
+		responses: {
+			/** @description What the import did. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: number;
+						/** @description Rows imported before. */
+						skipped: number;
+						problems: string[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getBudgetReport: {
+		parameters: {
+			query?: {
+				months?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The report. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetReport'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	listGoals: {

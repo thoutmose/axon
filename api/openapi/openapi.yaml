@@ -1603,6 +1603,12 @@ paths:
         - name: category
           in: query
           schema: { type: string, format: uuid }
+        - name: account
+          in: query
+          schema: { type: string, format: uuid }
+        - name: tag
+          in: query
+          schema: { type: string }
       responses:
         "200":
           description: Up to 1,000 transactions.
@@ -1672,6 +1678,315 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/budget/accounts:
+    get:
+      tags: [budget]
+      operationId: listBudgetAccounts
+      summary: Your accounts
+      responses:
+        "200":
+          description: The accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/BudgetAccount" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createBudgetAccount
+      summary: Create a account
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BudgetAccountFields"
+                - required: [name, type]
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetAccount" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/accounts/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateBudgetAccount
+      summary: Change a account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetAccountFields" }
+      responses:
+        "200":
+          description: The account.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetAccount" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteBudgetAccount
+      summary: Delete a account that no transaction uses (archive it otherwise)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/recurring:
+    get:
+      tags: [budget]
+      operationId: listBudgetRecurrings
+      summary: Your recurring transactions
+      responses:
+        "200":
+          description: The recurring transactions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/BudgetRecurring" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createBudgetRecurring
+      summary: Create a recurring transaction
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BudgetRecurringFields"
+                - required: [name, kind, amount_cents, rule, start_on]
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetRecurring" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/recurring/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateBudgetRecurring
+      summary: Change a recurring transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetRecurringFields" }
+      responses:
+        "200":
+          description: The recurring transaction.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetRecurring" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteBudgetRecurring
+      summary: Delete a recurring transaction; its recorded transactions stay
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/recurring/run:
+    post:
+      tags: [budget]
+      operationId: runBudgetRecurring
+      summary: Record every due occurrence up to today (also done when the budget is opened); running it twice records nothing twice
+      responses:
+        "200":
+          description: How many transactions were recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [created]
+                properties:
+                  created: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/budget/rules:
+    get:
+      tags: [budget]
+      operationId: listBudgetRules
+      summary: Your rules
+      responses:
+        "200":
+          description: The rules.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/BudgetRule" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createBudgetRule
+      summary: Create a rule
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BudgetRuleFields"
+                - required: [name, value]
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetRule" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/rules/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateBudgetRule
+      summary: Change a rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetRuleFields" }
+      responses:
+        "200":
+          description: The rule.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetRule" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteBudgetRule
+      summary: Delete a rule; transactions it changed stay
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/rules/apply:
+    post:
+      tags: [budget]
+      operationId: applyBudgetRules
+      summary: Run the rules over uncategorised transactions; running it twice changes nothing
+      responses:
+        "200":
+          description: How many transactions changed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [changed]
+                properties:
+                  changed: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/budget/import:
+    post:
+      tags: [budget]
+      operationId: importBudgetCSV
+      summary: Import a bank's CSV export; rows already imported are skipped, and rules categorise new ones
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [csv, date_column, amount_column]
+              properties:
+                csv: { type: string, maxLength: 4000000 }
+                account_id: { type: [string, "null"], format: uuid }
+                delimiter: { type: string, maxLength: 1, example: ";" }
+                date_format: { enum: [YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, DD.MM.YYYY] }
+                has_header: { type: boolean }
+                date_column: { type: integer, minimum: 0 }
+                amount_column: { type: integer, minimum: 0, description: "Negative amounts are expenses, positive ones income." }
+                payee_column: { type: [integer, "null"], minimum: 0 }
+                note_column: { type: [integer, "null"], minimum: 0 }
+      responses:
+        "200":
+          description: What the import did.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [created, skipped, problems]
+                properties:
+                  created: { type: integer }
+                  skipped: { type: integer, description: Rows imported before. }
+                  problems: { type: array, items: { type: string } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/report:
+    get:
+      tags: [budget]
+      operationId: getBudgetReport
+      summary: Income and expenses per month and per category, account balances, and net worth
+      parameters:
+        - name: months
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 60, default: 12 }
+      responses:
+        "200":
+          description: The report.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetReport" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/goals:
     get:
       tags: [goals]
@@ -4741,6 +5056,118 @@ components:
       properties:
         day: { type: string, format: date }
         value: { type: integer }
+    BudgetAccount:
+      type: object
+      required: [id, name, type, role, opening_cents, balance_cents, archived, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { enum: [asset, liability] }
+        role: { enum: [checking, savings, cash, credit_card, loan, investment, other] }
+        opening_cents: { type: integer, format: int64, description: "Negative for money owed." }
+        balance_cents: { type: integer, format: int64, description: "Opening plus income, minus expenses, plus or minus transfers." }
+        archived: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BudgetAccountFields:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        type: { enum: [asset, liability], description: On create only. }
+        role: { enum: [checking, savings, cash, credit_card, loan, investment, other] }
+        opening_cents: { type: integer, format: int64, minimum: -100000000000, maximum: 100000000000 }
+        archived: { type: boolean }
+    BudgetRecurring:
+      type: object
+      required: [id, name, kind, amount_cents, account_id, to_account_id, category_id, payee, note, tags, rule, next_on, active, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind: { enum: [income, expense, transfer] }
+        amount_cents: { type: integer, format: int64 }
+        account_id: { type: [string, "null"], format: uuid }
+        to_account_id: { type: [string, "null"], format: uuid }
+        category_id: { type: [string, "null"], format: uuid }
+        payee: { type: string }
+        note: { type: string }
+        tags: { type: array, items: { type: string } }
+        rule: { type: string, example: "FREQ=MONTHLY;BYMONTHDAY=1" }
+        next_on: { type: [string, "null"], format: date, description: Null once the series ended. }
+        active: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BudgetRecurringFields:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        kind: { enum: [income, expense, transfer] }
+        amount_cents: { type: integer, format: int64, minimum: 1, maximum: 100000000000 }
+        account_id: { type: [string, "null"], format: uuid }
+        to_account_id: { type: [string, "null"], format: uuid }
+        category_id: { type: [string, "null"], format: uuid }
+        payee: { type: string, maxLength: 200 }
+        note: { type: string, maxLength: 2000 }
+        tags: { type: array, maxItems: 20, items: { type: string } }
+        rule: { type: string, maxLength: 200, description: "RFC 5545 RRULE with FREQ DAILY, WEEKLY, MONTHLY, or YEARLY." }
+        start_on: { type: string, format: date, description: "The next occurrence; setting it again restarts the series there." }
+        active: { type: boolean }
+    BudgetRule:
+      type: object
+      required: [id, name, field, operator, value, category_id, tag, position, active, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        field: { enum: [payee, note] }
+        operator: { enum: [contains, equals, starts_with] }
+        value: { type: string }
+        category_id: { type: [string, "null"], format: uuid }
+        tag: { type: string }
+        position: { type: integer }
+        active: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BudgetRuleFields:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        field: { enum: [payee, note] }
+        operator: { enum: [contains, equals, starts_with] }
+        value: { type: string, minLength: 1, maxLength: 200 }
+        category_id: { type: [string, "null"], format: uuid }
+        tag: { type: string, maxLength: 41 }
+        position: { type: integer }
+        active: { type: boolean }
+    BudgetReport:
+      type: object
+      required: [currency, from, to, months, categories, accounts, net_worth_cents]
+      properties:
+        currency: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        months:
+          type: array
+          items:
+            type: object
+            required: [month, income_cents, expense_cents]
+            properties:
+              month: { type: string }
+              income_cents: { type: integer, format: int64 }
+              expense_cents: { type: integer, format: int64 }
+        categories:
+          type: array
+          items:
+            type: object
+            required: [category_id, name, kind, cents]
+            properties:
+              category_id: { type: [string, "null"], format: uuid }
+              name: { type: string }
+              kind: { enum: [income, expense] }
+              cents: { type: integer, format: int64 }
+        accounts: { type: array, items: { $ref: "#/components/schemas/BudgetAccount" } }
+        net_worth_cents: { type: integer, format: int64, description: The sum of every account balance. }
     BudgetCategory:
       type: object
       required: [id, name, kind, monthly_cents, archived, created_at, updated_at]
@@ -4762,15 +5189,19 @@ components:
         archived: { type: boolean }
     BudgetTransaction:
       type: object
-      required: [id, occurred_on, kind, amount_cents, category_id, payee, note, created_at, updated_at]
+      required: [id, occurred_on, kind, amount_cents, category_id, account_id, to_account_id, tags, payee, note, recurring_id, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         occurred_on: { type: string, format: date }
-        kind: { enum: [income, expense] }
+        kind: { enum: [income, expense, transfer] }
         amount_cents: { type: integer, format: int64, minimum: 1 }
         category_id: { type: [string, "null"], format: uuid }
+        account_id: { type: [string, "null"], format: uuid, description: "Paid from (expense, transfer) or into (income)." }
+        to_account_id: { type: [string, "null"], format: uuid, description: Transfers only. }
+        tags: { type: array, items: { type: string } }
         payee: { type: string }
         note: { type: string }
+        recurring_id: { type: [string, "null"], format: uuid, description: The recurring series that recorded it. }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     BudgetTransactionFields:
@@ -4778,9 +5209,12 @@ components:
       additionalProperties: false
       properties:
         occurred_on: { type: string, format: date }
-        kind: { enum: [income, expense] }
+        kind: { enum: [income, expense, transfer] }
         amount_cents: { type: integer, format: int64, minimum: 1, maximum: 100000000000 }
-        category_id: { type: [string, "null"], format: uuid }
+        category_id: { type: [string, "null"], format: uuid, description: "Without one, your rules may choose it." }
+        account_id: { type: [string, "null"], format: uuid }
+        to_account_id: { type: [string, "null"], format: uuid }
+        tags: { type: array, maxItems: 20, items: { type: string, pattern: "^#?[A-Za-z0-9_-]{1,40}$" } }
         payee: { type: string, maxLength: 200 }
         note: { type: string, maxLength: 2000 }
     BudgetMonth:
