@@ -57,6 +57,7 @@
 			<input id="note-search" type="search" placeholder="Search notes…" bind:value={query} />
 		</form>
 		<a class="explore" href="/notes/explore">🕸 Explore and knowledge graph</a>
+		<a class="explore" href="/notes/analysis">🔬 Analysis: topics and concepts</a>
 		<nav aria-label="Folders">
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}

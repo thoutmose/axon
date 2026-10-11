@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NoteAnalysis from '$lib/NoteAnalysis.svelte';
 	import { page } from '$app/state';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
@@ -321,6 +322,7 @@
 		</section>
 	{/if}
 
+	<NoteAnalysis id={note.id} />
 	<Connections id={note.id} type="note" />
 {/if}
 

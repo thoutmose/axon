@@ -120,7 +120,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/notes/explore',
 		'/media',
 		'/health',
-		'/budget/pots'
+		'/budget/pots',
+		'/notes/analysis'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -773,6 +774,50 @@ test('savings pots: put money aside for a later purchase', async () => {
 	await page.getByLabel('Amount for New bike').fill('500');
 	await page.getByRole('button', { name: 'Take money out of New bike' }).click();
 	await expect(page.getByText('There is not that much in the pot.')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('analyse literature and permanent notes: topics, concepts, and a note panel', async () => {
+	await page.goto('/notes');
+	const first: string = await page.evaluate(async () => {
+		let id = '';
+		for (const [path, kind, body] of [
+			[
+				'Zettel/permanent/interleaving.md',
+				'permanent',
+				'Interleaving practice mixes problem types. Interleaving practice beats blocked practice.'
+			],
+			[
+				'Zettel/literature/peak.md',
+				'literature',
+				'Deliberate practice and interleaving practice build skill faster than blocked practice.'
+			]
+		]) {
+			const res = await fetch('/api/v1/notes', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					path,
+					content: `---\ntype: ${kind}\n---\n# ${kind} note\n\n${body}\n`
+				})
+			});
+			if (!res.ok) throw new Error(`create note: ${res.status}`);
+			id ||= (await res.json()).id;
+		}
+		return id;
+	});
+	await page.goto('/notes/analysis');
+	await expect(
+		page.getByRole('heading', { level: 1, name: /Analysis of your literature/ })
+	).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Summary' })).toContainText('notes');
+	await expect(page.getByRole('heading', { name: 'Concept graph' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.goto(`/notes/${first}`);
+	await page.getByText('Analysis', { exact: true }).click();
+	await expect(page.getByRole('list', { name: 'Key phrases' })).toContainText(
+		'interleaving practice'
+	);
 	await noSeriousA11yViolations(page);
 });
 
