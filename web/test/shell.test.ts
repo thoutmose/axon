@@ -116,7 +116,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/areas',
 		'/resources',
 		'/archive',
-		'/budget'
+		'/budget',
+		'/notes/explore'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -695,6 +696,19 @@ test('themed spaces keep AA contrast in light and dark, and can be turned off', 
 	await page.goto('/account/preferences');
 	await page.getByLabel('Themed spaces').selectOption('on');
 	await page.getByRole('button', { name: 'Save preferences' }).click();
+});
+
+test('explore notes with filters, charts, and a knowledge graph that says why', async () => {
+	await page.goto('/notes/explore');
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Explore your knowledge' })
+	).toBeVisible();
+	const graph = page.getByRole('group', { name: /Knowledge graph: \d+ notes/ });
+	await expect(graph).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByLabel('PARA', { exact: true }).selectOption('other');
+	await expect(page).toHaveURL(/para=other/);
+	await expect(page.getByRole('region', { name: 'Summary' })).toBeVisible();
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
