@@ -662,6 +662,7 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 });
 
 test('themed spaces keep AA contrast in light and dark, and can be turned off', async () => {
+	test.slow(); // 24 pages, each checked by axe
 	for (const scheme of ['light', 'dark'] as const) {
 		await page.emulateMedia({ colorScheme: scheme });
 		for (const [path, space] of [
