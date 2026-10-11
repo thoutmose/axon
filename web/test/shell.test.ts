@@ -9,12 +9,18 @@ test.describe.configure({ mode: 'serial' });
 let page: Page;
 
 async function noSeriousA11yViolations(p: Page) {
+	// Check final colours, not a button caught halfway through a transition.
+	await p.emulateMedia({ reducedMotion: 'reduce' });
 	const result = await new AxeBuilder({ page: p }).analyze();
+	await p.emulateMedia({ reducedMotion: 'no-preference' });
 	const serious = result.violations.filter(
 		(v) => v.impact === 'serious' || v.impact === 'critical'
 	);
 	expect(
-		serious.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`)
+		serious.map(
+			(v) =>
+				`${v.id}: ${v.help} (${v.nodes.map((n) => `${n.target.join(' ')}: ${n.failureSummary}`).join(', ')})`
+		)
 	).toEqual([]);
 }
 
@@ -511,4 +517,17 @@ test('try the shared demo without a passkey, with sample data in every area', as
 
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+});
+
+test('the API reference renders the live OpenAPI document without a CDN', async () => {
+	const external: string[] = [];
+	page.on('request', (r) => {
+		if (!r.url().startsWith('http://localhost')) external.push(r.url());
+	});
+	await page.goto('/api-docs/index.html#/tasks/listTasks'); // a deep link opens the operation
+	await expect(page.getByRole('heading', { name: /Axon API/ })).toBeVisible();
+	await expect(page.locator('#operations-tasks-listTasks .opblock-body')).toContainText(
+		'Parameters'
+	);
+	expect(external).toEqual([]);
 });

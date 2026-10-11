@@ -100,7 +100,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Done |
 | EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps, a curated library of the best resources per domain, and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Done |
 | EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Done |
-| EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Planned |
+| EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Done |
 | EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Planned |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
@@ -688,14 +688,17 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Goal.** README in English and French with a switch at the top of each, an interactive API reference, and one name everywhere: Axon.
 
-**In scope.** `README.fr.md` kept in step with `README.md` (a CI check compares their section lists); Swagger UI served at `/api/docs` from the bundled OpenAPI document; a repository sweep for leftover names.
+**Issues**
 
-**Acceptance criteria**
+- [x] **EP-29/IS-29.01 — French README and parity check** · 3 pts · MUST
+  - [x] `README.md` brought up to date (✅ for what works today, "Planned" for the rest, agents with a status column, demo, API reference, why Go and not Rust); `README.fr.md` translates it; each links to the other.
+  - [x] `make check-docs` (part of `make check` and CI) fails when the French README's headings, code blocks, or tables drift from the English one.
+- [x] **EP-29/IS-29.02 — Swagger UI** · 3 pts · MUST
+  - [x] `/api-docs/index.html` renders the live `/api/v1/openapi.yaml` with Swagger UI 5 (Apache-2.0), copied from `node_modules` at build time and served as static files by Axon: no CDN. Linked from Access tokens. (`/api/*` belongs to the API, so the page lives at `/api-docs`.)
+- [x] **EP-29/IS-29.03 — Naming sweep** · 2 pts · MUST
+  - [x] Repository, Go module, images, Compose project, UI, and docs all say Axon; the glossary no longer calls it a working name; the OpenAPI summary covers today's API.
 
-- Both READMEs describe the current state and link to each other.
-- `/api/docs` renders the live OpenAPI document without loading anything from a CDN.
-
-**Candidate issues.** French README and section check (3) · Swagger UI (3) · Naming sweep (2).
+**Exit evidence.** `make check` (including check-docs) and the Playwright suite pass, with a new scenario that opens the API reference and expands an operation. Cross-cutting matrix: identity, authorization, privacy, reliability, performance, and AI safety are n/a (static documentation; the page sends requests only as the signed-in browser when the reader uses "Try it out"); accessibility is checked by the page landmark and labelled header, but Swagger UI's own markup is third-party and excluded from axe; observability is n/a; documentation is both READMEs; supply chain adds `swagger-ui-dist` 5.33.1, pinned, Apache-2.0, a dev dependency used only at build time.
 
 ### EP-30 — Command dashboard
 
@@ -1031,7 +1034,7 @@ LaTeX, diagrams, and embedded media are not rendered yet (ADR 0011).
 
 | Term | Meaning |
 |---|---|
-| Axon | Working name for this self-hosted life OS. |
+| Axon | The name of this self-hosted life OS, used everywhere: repository, module, images, UI, and docs. |
 | PARA | Projects, Areas, Resources, Archives organization method. |
 | CODE | Capture, Organize, Distill, Express. |
 | Zettelkasten | Linked note practice using fleeting, literature, and permanent notes. |

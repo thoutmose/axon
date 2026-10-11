@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Axon API
   version: "1"
-  summary: Self-hosted life OS — accounts, privacy, and the universal graph.
+  summary: Self-hosted life OS — notes, tasks, projects, goals, habits, roadmaps, approval-gated agents, and the universal graph that links them.
   description: |
     Conventions (EP-06):
 

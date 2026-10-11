@@ -74,6 +74,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Lint the OpenAPI document
         run: docker run --rm -v "$PWD/api/openapi:/spec" -w /spec redocly/cli:2.6.0 lint openapi.yaml
+      - name: The French README keeps the English one's structure
+        run: sh scripts/check-readme.sh
 
   e2e:
     runs-on: ubuntu-24.04

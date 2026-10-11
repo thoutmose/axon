@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/status-planning-blue" alt="Planning">
+  <img src="https://img.shields.io/badge/status-active%20development-blue" alt="Active development">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-purple" alt="AGPL-3.0">
   <img src="https://img.shields.io/badge/API-OpenAPI%203.1-6BA539" alt="OpenAPI 3.1">
 </p>
@@ -8,8 +8,10 @@
 
 <p align="center"><strong>Your self-hosted life, connected.</strong><br>Notes, action, learning, health, projects, and reflection in one humane graph.</p>
 
+<p align="center"><strong>English</strong> · <a href="README.fr.md">Français</a></p>
+
 > [!NOTE]
-> Axon is a working-name project and this README describes the intended architecture. It is not a medical device, a therapist, or a promise of production readiness.
+> Axon is in active development. Features marked ✅ work today; the others are planned, in the order given in the [roadmap](#roadmap). Axon is not a medical device, a therapist, or a promise of production readiness.
 
 ## Table of contents
 
@@ -49,33 +51,36 @@ Axon brings together the things that are usually scattered across note apps, tas
 ## Features
 
 ### 🧠 Second Brain and Zettelkasten
-- Fleeting, literature, and permanent notes with backlinks and graph navigation.
-- PARA and CODE workflows, progressive summarization, Markdown-first export.
-- Bidirectional Git and file-watcher sync with `~/SecondBrain` on `srv-second-brain`.
+- ✅ A notes workspace: folder tree, live Markdown editor with preview, `[[wikilinks]]` with suggestions, backlinks and mentions, tags, callouts, tables, daily notes, templates, and a command center (Ctrl+K).
+- ✅ PARA folders and Zettelkasten notes, Markdown import and export.
+- ✅ Two-way sync with the `~/SecondBrain` vault (Git), keeping both versions on conflict.
+- Planned: live sync within seconds, a knowledge explorer with filters and charts, an NLP knowledge graph, and Vim keybindings.
 
 ### ✅ Action and execution
-- Daily, weekly, and monthly tasks with check-ins that update dashboard KPIs.
-- GTD contexts, recurring tasks, Kanban, Jira-like epics/issues/sub-tasks, and Confluence-like docs.
-- Calendar filters for tasks, projects, goals, milestones, learning, and habits.
+- ✅ Tasks with Today, week, and GTD views (inbox, next, waiting, someday), contexts, recurrence, one-key capture, and daily check-ins.
+- ✅ Projects with Kanban boards (keyboard-accessible, WIP limits), epics, issues, sub-tasks, and project docs.
+- ✅ Today dashboard with defined KPIs, a calendar, and iCal feeds.
+- Planned: a detailed command dashboard (KPIs, charts, tables, skills network), Pomodoro focus sessions, and personal finance.
 
 ### 🌱 Habits, goals, and roadmaps
-- Atomic Habits cues, cravings, responses, rewards, stacking, two-minute starts, and recovery.
-- Goals and milestones connected to tasks, notes, habits, projects, and learning.
-- Roadmaps you build by hand, import from OSSU, or start from Axon's curated library: 24 domains of the most recommended books, papers, university lectures, courses, and channels, from computer science and maths to Kubernetes, MLOps, and security. Each one is shown as a list or a layered skill graph.
-- A Tutor agent that interviews you and drafts a roadmap where every skill cites its source, and a Resources agent that finds material for what you are learning. Both wait for your approval.
+- ✅ Habits with cues, stacking, two-minute versions, check-ins, and gentle recovery prompts; planned: James Clear's full Atomic Habits method (four laws, implementation intentions, identity).
+- ✅ Goals and milestones connected to tasks, notes, habits, projects, and roadmaps, with explained progress and a weekly review.
+- ✅ Roadmaps you build by hand, import from OSSU, or start from Axon's curated library: 24 domains of the most recommended books, papers, university lectures, courses, and channels, from computer science and maths to Kubernetes, MLOps, and security. Each one is shown as a list or a layered skill graph.
+- ✅ A Tutor agent that interviews you and drafts a roadmap where every skill cites its source, and a Resources agent that finds material for what you are learning. Both wait for your approval.
+- ✅ Connect any element to any other, from wherever it is shown.
 
 ### 📚 Learning and media
-- Retrieval practice, interleaving, elaboration, concrete examples, dual coding, and spaced practice.
-- FSRS/SM-2 scheduling, reviewed tests, illustrated flashcards, and Anki export.
-- Movie, TV, and book tracking backed by TMDB and Open Library adapters.
+- Planned: retrieval practice, interleaving, elaboration, concrete examples, dual coding, and spaced practice.
+- Planned: FSRS scheduling, reviewed tests, illustrated flashcards you can edit, and Anki sync to `anki-sync-server`.
+- Planned: movie, TV, and book tracking backed by TMDB and Open Library.
 
 ### 🥗 Health and sport
-- Food logging through Open Food Facts and USDA FoodData Central adapters.
-- Workouts plus Personal Trainer and Nutritionist agents with conservative, educational outputs.
+- Planned: food logging through Open Food Facts and USDA FoodData Central.
+- Planned: workouts plus Personal Trainer and Nutritionist agents with conservative, educational outputs.
 
 ### ✨ Humane progress
-- XP, levels, badges, variable rewards, and streaks with purchasable earned-point freezes.
-- Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
+- Planned: XP, levels, badges, and streaks across every area, with freezes bought only with earned points.
+- ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
 
 ## Screenshots
 
@@ -297,13 +302,15 @@ erDiagram
 | Data | PostgreSQL 16 + pgvector | Durable relational core, full text, vectors, constraints, extensions. |
 | Jobs | Redis/Valkey + database-backed idempotency | Practical queues without hiding source of truth. |
 | Graph view | D3 or Sigma.js | Scalable interactive skill and relationship visualization. |
-| Auth | Authentik or built-in WebAuthn + TOTP | Passkeys, MFA, self-hosted control. |
+| Auth | Built-in WebAuthn + TOTP | Passkeys, MFA, self-hosted control. |
 | Edge | Caddy or Traefik | Automatic TLS and clear routing. |
 | Ops | Prometheus, Grafana, Loki, OpenTelemetry | Metrics, dashboards, logs, traces. |
 | Delivery | GitOps or Compose + Ansible/OpenTofu | Reproducible promotion suited to small clusters. |
 | Security | SOPS/age, Trivy, SBOM, Renovate, SLSA practices | Reduce supply-chain and secret risk. |
 
 Where the table offers a choice, [ADR 0002](doc/adr/0002-initial-technology-stack.md) proposes one: built-in WebAuthn + TOTP, Caddy, and Compose + Ansible.
+
+**Why Go and not Rust?** Rust would give stronger compile-time guarantees and somewhat lower memory use. Axon's work, though, is I/O-bound (PostgreSQL, HTTP, AI providers), where Go is as fast in practice. Go also compiles in seconds, has first-party SDKs for the services Axon uses, and keeps the codebase easy for one maintainer and AI agents to read. Rewriting the existing API would stop feature work for months without a user-visible gain. The choice is recorded in ADR 0002, and the [change log](doc/BACKLOG.md#change-log) notes that a rewrite was considered and not scheduled.
 
 ## Hardware requirements
 
@@ -324,12 +331,12 @@ This table is the target layout. Until measurements justify splitting, Axon runs
 ## Quick start
 
 > [!IMPORTANT]
-> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, Notes with vault sync, Goals, Projects with Kanban boards, learning roadmaps, Habits, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
+> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, a notes workspace with vault sync, Goals, Projects with Kanban boards, learning roadmaps with a curated library, Habits, a demo account, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
 
 ### Prerequisites
 
 - Docker Engine and Compose v2; Git; GNU Make for the checks.
-- An Anthropic API credential only if enabling agents (later releases).
+- Only if you use agents: a key for Anthropic, OpenAI, Mistral, Google Gemini, or DeepSeek, or a local model server (Ollama, LM Studio, vLLM). Each person can choose their own in the app.
 - Optional: TMDB, Open Library, USDA, and Open Food Facts credentials or public endpoints according to their terms.
 
 ```bash
@@ -340,14 +347,16 @@ docker compose up -d --build --wait
 docker compose exec api axon migrate up
 ```
 
-Then open <http://localhost:3000>. The API is served under `/api` (for example `/api/healthz` and `/api/readyz`). The stack listens on `127.0.0.1` only.
+Then open <http://localhost:3000>. The API is served under `/api` (for example `/api/healthz` and `/api/readyz`). The stack listens on `127.0.0.1` only. To try it with sample data, set `AXON_DEMO=1` in `.env`, restart, run `docker compose exec api axon demo reset`, and press **Try the demo**.
+
+**API reference.** The OpenAPI 3.1 document is at `/api/v1/openapi.yaml` ([source](api/openapi/openapi.yaml)), and an interactive Swagger UI is at `/api-docs/index.html`, served by Axon itself.
 
 ### Checks
 
 | Command | What it runs |
 |---|---|
-| `make check` | `gofmt`, `go vet`, Go unit tests; `svelte-check`, Prettier, Vitest (Node 24 in a container) |
-| `make test-integration` | Migrations up/down/up against PostgreSQL 16 + pgvector |
+| `make check` | `gofmt`, golangci-lint, Go unit tests; `svelte-check`, Prettier, Vitest (Node 24 in a container); README language parity |
+| `make test-integration` | API, OpenAPI contract, agent eval, and migration tests against PostgreSQL 16 + pgvector |
 | `make up` / `make down` | Build and start, or stop, the local stack |
 
 ## Configuration
@@ -360,6 +369,7 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `REDIS_URL` | Yes | `redis://...` | Queue/cache connection. |
 | `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
 | `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register; `open` allows anyone who can reach Axon. |
+| `AXON_DEMO` | No | `1` | Offer a shared demo account with sample data, reset every night. |
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
 | `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
@@ -381,19 +391,19 @@ Privacy controls include consent records, purpose limitation, retention policies
 
 ## AI agents
 
-| Agent | Responsibility | Guardrail |
-|---|---|---|
-| Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. |
-| Goals/Milestones | Break outcomes into measurable steps. | No silent commitments or dates. |
-| Habits | Suggest cues, stacks, recovery, and reviews. | No shame or manipulative pressure. |
-| Side-Projects | Analyze repos into epics, issues, and tasks. | Read-only by default; human mutation approval. |
-| Code Review | Review diffs, tests, security, and maintainability. | Cannot approve its own author’s change. |
-| Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. |
-| Task Manager | Triage and schedule work. | Preview before changing due dates. |
-| Teacher | Generate reviewed retrieval practice. | Reads only literature/permanent notes. |
-| Media | Normalize metadata and recommend. | Explain sources; user controls profile. |
-| Personal Trainer | Suggest training plans. | Conservative, non-medical, injury-aware. |
-| Nutritionist | Help log food and patterns. | Educational; no diagnosis or unsafe restriction. |
+| Agent | Responsibility | Guardrail | Status |
+|---|---|---|---|
+| Task Manager | Triage and schedule work. | Preview before changing due dates. | ✅ |
+| Goals/Milestones | Break outcomes into measurable steps. | No silent commitments or dates. | ✅ |
+| Habits | Suggest cues, stacks, recovery, and reviews. | No shame or manipulative pressure. | ✅ |
+| Side-Projects | Analyze repos into epics, issues, and tasks. | Read-only; issues are proposals. | ✅ |
+| Code Review | Review diffs, tests, security, and maintainability. | Can comment after approval; can never approve or merge. | ✅ |
+| Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. | ✅ |
+| Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. | ✅ |
+| Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | Planned |
+| Media | Normalize metadata and recommend. | Explain sources; user controls profile. | Planned |
+| Personal Trainer | Suggest training plans. | Conservative, non-medical, injury-aware. | Planned |
+| Nutritionist | Help log food and patterns. | Educational; no diagnosis or unsafe restriction. | Planned |
 
 All agents share a constitution: simple, explicit, small diffs, read before write, think in data, test everything, do not be clever. Skills are versioned `SKILL.md` files. Each task ends with reflection, lessons learned, evaluation evidence, and—when needed—human-in-the-loop approval.
 
@@ -428,7 +438,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-28 done; EP-29 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-29 done; EP-30 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 
