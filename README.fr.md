@@ -343,7 +343,7 @@ Ce tableau décrit la cible. Tant que les mesures ne justifient pas de séparer,
 ## Démarrage rapide
 
 > [!IMPORTANT]
-> Axon est jeune : comptes à clé d’accès, contrôles de confidentialité, API de graphe, tableau de bord quotidien et calendrier, tâches, espace de notes avec synchronisation du coffre, objectifs, projets avec tableaux Kanban, parcours d’apprentissage avec bibliothèque, habitudes, compte de démonstration et agents IA soumis à approbation sur le fournisseur de votre choix fonctionnent aujourd’hui. Le reste arrive Epic après Epic.
+> Axon 1.0 est une version candidate : chaque domaine décrit ici fonctionne aujourd’hui. Pour l’utiliser pour de vrai, suivez le **[guide d’installation](doc/install.md)** ; puis lisez le **[guide d’utilisation](doc/user-guide.md)**, comment **[mettre à jour](doc/upgrading.md)** et la **[politique de support](doc/support.md)** (en anglais). Notes de version : [CHANGELOG.md](CHANGELOG.md).
 
 ### Prérequis
 
@@ -452,7 +452,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44 et EP-20 terminés ; EP-21 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20 et EP-21 terminés ; la 1.0 attend la revue de sécurité externe et une installation observée.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

@@ -199,6 +199,16 @@ Each person must still grant the `ai_agents` consent, and their monthly budget (
 
 Run outcomes are logged as `agent run finished` with status, tool count, tokens, and cost; prompts and replies are never logged. A run stuck as `running` after a restart is marked `failed` (`interrupted`) when the same person next starts one.
 
+## Load testing (EP-21)
+
+`api/cmd/axon-load` sends a mix of reads and writes (today, tasks, notes, search, dashboard overview, insights, habits, and 10 % task creation) with a write-scoped personal access token, and prints throughput and p50/p95/p99 per endpoint. It creates tasks, so run it only against a local stack or a throwaway instance:
+
+```bash
+cd api && AXON_TOKEN=axon_… go run ./cmd/axon-load -url http://localhost:3000/api -c 20 -d 60s
+```
+
+Measured on 2026-10-11 (4 vCPU, 7 GB; the demo account plus 5,000 tasks): 10 clients reach 481 requests/s at p95 79 ms, and 50 clients reach 713 requests/s at p95 197 ms, with no errors. The dashboard overview is the slowest endpoint. [ADR 0021](adr/0021-single-host-measured.md) keeps the single-host design on these numbers.
+
 ## Service level objectives
 
 Measured only while the host is powered on (`srv-staging` and `srv-prod` are on-demand VMs in the fleet).

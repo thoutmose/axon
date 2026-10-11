@@ -97,7 +97,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
-| EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
+| EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
 | EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
 | EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
@@ -1440,7 +1440,19 @@ LaTeX, diagrams, and embedded media are not rendered yet (ADR 0011).
 - The recovery drill meets the documented RPO and RTO.
 - The external security review finds no open high-severity issues.
 
-**Candidate issues.** User docs (8) · Operator docs (8) · Upgrade testing (8) · Load tests (8) · Recovery drill (5) · Security review fixes (13) · Support policy (5).
+**Issues**
+
+- [x] **EP-21/IS-21.01 — User docs** · 8 pts · MUST — [user-guide.md](user-guide.md): a tour of every area, privacy, and agents.
+- [x] **EP-21/IS-21.02 — Operator docs** · 8 pts · MUST — [install.md](install.md): requirements, configuration with generated secrets, start, HTTPS (Tailscale or Caddy), first account, nightly instance archives, restore, upgrade, troubleshooting. A run from a fresh clone following it literally reached a ready instance in 75 s after the documented build-network fix, and its backup and restore steps were run too. **Still open:** an install by someone new, observed (acceptance criterion).
+- [x] **EP-21/IS-21.03 — Upgrade testing** · 8 pts · MUST — `TestUpgradeFromThePreviousReleaseKeepsData` (schema 5 → 35 with every row, integrity, and the old token reading old tasks through the new API) in CI, plus a drill with the real v0.1.0 images ([upgrading.md](upgrading.md)).
+- [x] **EP-21/IS-21.04 — Load tests** · 8 pts · MUST — `api/cmd/axon-load`; measurements and the single-host decision revisited in [ADR 0021](adr/0021-single-host-measured.md).
+- [x] **EP-21/IS-21.05 — Recovery drill** · 5 pts · MUST — instance archive restore 42 s and database dump restore 4 s, within RPO ≤ 24 h and RTO ≤ 4 h; repeated in the install-guide run.
+- [x] **EP-21/IS-21.06 — Security review fixes** · 13 pts · MUST — internal review ([security/review-2026-10.md](security/review-2026-10.md)): recovery sign-in locks after five wrong authenticator codes per account (medium, fixed), `Permissions-Policy`, govulncheck in CI, Go toolchain pinned to 1.26.9. **Still open:** the external review (acceptance criterion).
+- [x] **EP-21/IS-21.07 — Support policy** · 5 pts · MUST — [support.md](support.md): SemVer, supported releases and backports, `/v1` stability and deprecation (six months, `Deprecation` header), private security reports with response times; [CHANGELOG.md](../CHANGELOG.md).
+
+**Notes**
+
+- Tagging `v1.0.0` waits for the two open acceptance criteria and for the owner to merge the stacked pull requests into `main`.
 
 ## Glossary
 
@@ -1501,6 +1513,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-21 delivered as a 1.0 release candidate: install, user, upgrade, and support docs, upgrade test and drill, load tests (ADR 0021), recovery drill, internal security review with fixes. External review and observed install remain. |
 | 2026-10-11 | EP-20 delivered: explainable weekly metrics, trends, weekly review, CSV export. R3 complete; next EP-21. |
 | 2026-10-11 | EP-44 delivered: Personal Trainer and Nutritionist with a health_ai consent and deterministic safety guards. |
 | 2026-10-11 | EP-46 delivered: local NLP analysis of literature and permanent notes (Snowball, TextRank, Open English WordNet, topics, NPMI concept graph). |
