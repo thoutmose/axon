@@ -91,6 +91,9 @@ remote '
   docker compose run --rm --no-deps api migrate up
   docker compose run --rm --no-deps api integrity
   docker compose up -d --wait --remove-orphans
+  # rsync replaces the Caddyfile with a new file, and a single-file bind mount
+  # keeps the old one: recreate Caddy so header and route changes apply.
+  docker compose up -d --wait --no-deps --force-recreate caddy
   # Keep only the running and previous versions for rollback.
   keep="$(grep "^AXON_VERSION=" .env | cut -d= -f2)|$(cat previous-version 2>/dev/null || echo none)"
   docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup):" \
