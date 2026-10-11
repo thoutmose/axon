@@ -163,6 +163,13 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 - Without a key, or when a catalogue is down, people add items by hand.
 - Searches are cached for a week. Covers are copied into `media_covers` once and served by Axon. A daily job drops TMDB covers and descriptions older than six months, as TMDB's terms require.
 
+## Food catalogues and health data (EP-18)
+
+- Health logs need each person's `health_data` consent. Withdrawing it deletes their food entries and workouts at once; an operator cannot turn this off.
+- Open Food Facts needs no key; Axon identifies itself with `AXON_CONTACT`. The server stays under Open Food Facts' 10 searches and 15 product reads a minute (beyond that, people see "busy" for a few seconds).
+- `USDA_API_KEY` (free from data.gov, 1,000 requests an hour) turns USDA FoodData Central search on. Keep it in the encrypted env file.
+- Foods are cached for 30 days in `foods`. They are shared and hold no personal data.
+
 ## Anki packages
 
 `GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. 

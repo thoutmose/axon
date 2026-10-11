@@ -91,7 +91,10 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-43 | Daily-use fixes | Full window width, GTD and Kanban task boards by default, a month calendar by default, skill graphs made of skills (resources under each), Areas, Resources, and Archive pages, and templates for every kind of note, project, area, resource, goal, milestone, and habit. Merged from the parallel branch `claude/axon-ui-features-9ryyt4`. | MUST | 21 pts | EP-36 | Done |
 | EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Done |
-| EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
+| EP-18 | Health logging | Food and training logs behind an explicit health-data consent, with Open Food Facts and USDA lookups. Coaching split to EP-44. | COULD | 44 pts | EP-04, EP-06, EP-07 | Done |
+| EP-44 | Coach agents | Personal Trainer and Nutritionist agents with a separate consent to share health data with the AI provider, and a safety eval suite. Split from EP-18. | COULD | 42 pts | EP-18, EP-19 | Planned |
+| EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Planned |
+| EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
@@ -126,7 +129,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
 | R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 | Human-approved agents, habits, projects, roadmaps |
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
-| R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
+| R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
@@ -1230,20 +1233,65 @@ Cross-cutting matrix:
 - Covers are copied to Axon (at most 2 MB, type checked from the bytes) so the CSP stays same-origin and readers' IP addresses never reach the providers.
 - Catalogue text is never sent to the AI provider, which keeps TMDB content out of models.
 
-### EP-18 — Health, nutrition, sport & coach agents
+### EP-18 — Health logging
 
-**Goal.** Log food and training privately, with conservative, educational coaching that the user explicitly opts into.
+**Goal.** Log food and training privately, only with explicit consent.
 
-**In scope.** Food logging via Open Food Facts and USDA FoodData Central; workout logging; Personal Trainer and Nutritionist agents.
+**In scope.** The health-data consent, food logging (Open Food Facts and USDA FoodData Central lookups, or numbers typed in), and workout logging. The coach agents moved to EP-44 when the Epic was split at start (2026-10-11).
 
 **Acceptance criteria**
 
 - Health data requires explicit consent (GDPR Art. 9) before any is stored.
-- Health data is never sent to a model provider without separate consent for that purpose.
-- Coach agents never diagnose, never propose unsafe restriction, and direct red-flag topics to professionals (eval suite).
+- Health data is never sent to a model provider (no agent tool reads it in this Epic).
 - Logging works with all external providers unavailable.
 
-**Candidate issues.** Consent flow for health data (5) · Food model and adapters (13) · Food logging UI (13) · Workout model and UI (13) · Personal Trainer agent (21) · Nutritionist agent (21). **Split before start.**
+**Terms checked at Epic start (2026-10-11).** Open Food Facts: data under the ODbL (contents under the Database Contents License, images CC BY-SA); identify with `AppName/Version (contact)`; 10 searches and 15 product reads a minute per IP, with bans beyond. USDA FoodData Central: public domain (CC0), credit appreciated; a data.gov key, 1,000 requests an hour.
+
+**Issues**
+
+- [x] **EP-18/IS-18.01 — Consent flow for health data** · 5 pts · COULD — every health endpoint answers 403 without `health_data`; withdrawing it deletes every food entry and workout in the same transaction (a new privacy hook); a separate `food_lookups` consent covers sending food names or barcodes to the catalogues; "Delete all my health data" on the page.
+- [x] **EP-18/IS-18.02 — Food model and adapters** · 13 pts · COULD — food entries keep their nutrients for the amount eaten; Open Food Facts search (Search-a-licious) and barcode, USDA search with `USDA_API_KEY`; foods cached for 30 days, the server paced under Open Food Facts' limits (a search waits at most 3 s, then "busy"), 10 lookups a minute per person, no redirects followed.
+- [x] **EP-18/IS-18.03 — Food logging UI** · 13 pts · COULD — `/health` with a day view by meal, totals, a seven-day energy chart without targets, search and choose with grams (one serving by default), or numbers typed in.
+- [x] **EP-18/IS-18.04 — Workout model and UI** · 13 pts · COULD — workouts with kind, minutes, effort (RPE), notes, and sets (reps and weight, or distance and time); the last 30 days and this week's sessions, minutes, and active days.
+
+**Notes**
+
+- Health data lives outside the graph: it is never in search, links, the dashboard, or agent tools. It is in the account export and the instance archive.
+- No calorie targets or restriction framing; the page says Axon gives no medical or dietary advice.
+- The demo account has no health data: consent is personal, and the demo is shared.
+
+### EP-44 — Coach agents
+
+**Goal.** Conservative, educational coaching on food and training that the person explicitly opts into.
+
+**In scope.** A separate consent to send health data to the AI provider; Personal Trainer and Nutritionist skills with read tools over the health logs and proposal-only writes (a planned workout).
+
+**Acceptance criteria**
+
+- Health data reaches a model provider only with its own consent, on top of `ai_agents` and `health_data`.
+- Coach agents never diagnose, never propose unsafe restriction, and direct red-flag topics to professionals (scripted eval suite in CI, live-model evals when a key is configured).
+
+**Candidate issues.** Health-to-AI consent (3) · Personal Trainer agent (13) · Nutritionist agent (13) · Safety eval suite (13).
+
+### EP-45 — Daily-use fixes 2
+
+**Goal.** The owner's corrections after using staging (2026-10-11).
+
+**In scope.**
+- Pomodoro defaults to 4 work sessions (25/5 × 4, with the long break after the fourth).
+- Today drops the "Today · Axon" line under the header.
+- The dashboard network shows hard and soft skills only (no resources).
+- Savings pots ("tirelire"): money set aside for a later purchase, with a target, a target date, contributions, and progress.
+
+**Candidate issues.** Pomodoro default (1) · Today header (1) · Skills-only network (3) · Savings pots (8).
+
+### EP-46 — Advanced note NLP
+
+**Goal.** A professional analysis of literature and permanent notes.
+
+**In scope.** Lemmatisation for English and French, key-phrase extraction, topic clusters, a larger open thesaurus (for example Open English WordNet and WOLF for French, if their licences fit), concept co-occurrence graphs, and per-note "related ideas" with reasons; all local, no AI provider.
+
+**Candidate issues.** Lemmatiser and key phrases (5) · Thesaurus import (5) · Topics and concept graph (8) · Explorer views (3).
 
 ### EP-20 — Analytics & insights
 
@@ -1424,6 +1472,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-18 split at start: health logging (EP-18, delivered) and coach agents (EP-44). Owner requests added as EP-45 (Pomodoro 4 sessions, Today header, skills-only network, savings pots) and EP-46 (advanced note NLP); R3 order is now EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20. |
 | 2026-10-11 | EP-17 delivered: media trackers with Open Library and TMDB (terms checked), explained recommendations, and a Media agent. |
 | 2026-10-11 | EP-40 delivered: instance export and import with a checksummed manifest, closing R2.5. Next: R3 (EP-17). |
 | 2026-10-11 | EP-37 delivered from the parallel branch: notes explorer, charts, and a local NLP knowledge graph. Embeddings (IS-37.04) stay open. |
