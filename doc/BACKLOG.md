@@ -96,7 +96,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
 | EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
-| EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Planned |
+| EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Done |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Planned |
 
 ## Delivery order
@@ -733,11 +733,24 @@ Consumer chat subscriptions (Claude Pro/Max, ChatGPT Plus) are out of scope: pro
 
 **In scope.** Sidebar folder tree with PARA groups; split editor with live preview and formatting shortcuts; autosave; quick switcher; full-text search; Zettelkasten IDs and note types (fleeting, literature, permanent); daily notes; templates; tags; unlinked mentions; capture to inbox from anywhere.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0011](adr/0011-notes-workspace.md))
 
-- Notes stay plain Markdown: export, import, and vault sync still round-trip byte for byte.
-- Every action works by keyboard, and the editor never loses typed text (autosave with conflict detection).
-- Search finds a note by any word in its title or body.
+- [x] **EP-25/IS-25.01 — Workspace and tree** · 5 pts · MUST
+  - [x] Sidebar with PARA groups and nested folders, counts, current note, tags; new note and today's note; collapses on small screens.
+- [x] **EP-25/IS-25.02 — Editor** · 8 pts · MUST
+  - [x] Split editor with live preview, toolbar and shortcuts, list continuation, `[[` suggestions (keyboard), word count; autosave with conflict detection that never overwrites; explicit move/rename (e2e).
+- [x] **EP-25/IS-25.03 — Rich Markdown** · 3 pts · MUST
+  - [x] Tables with alignment, callouts, highlight, strikethrough, tags, heading anchors, wikilinks shown by title; escape-first and unit-tested.
+- [x] **EP-25/IS-25.04 — Zettelkasten, PARA, and daily notes** · 5 pts · MUST
+  - [x] Templates for fleeting, literature, permanent (with id), project, area, resource, meeting, and blank notes; daily note linked to yesterday (unit and e2e tests).
+- [x] **EP-25/IS-25.05 — Tags and search** · 5 pts · MUST
+  - [x] Tags from front matter and `#tags`, filter and counts; full-text note search with highlighted excerpts (integration and e2e tests).
+- [x] **EP-25/IS-25.06 — Command center and capture** · 5 pts · MUST
+  - [x] Ctrl/Cmd+K searches everything and runs commands; the capture dialog (`n`) can save a fleeting note (e2e).
+- [x] **EP-25/IS-25.07 — Unlinked mentions** · 3 pts · SHOULD
+  - [x] Notes that name the current note without linking are listed, with a one-click link.
+
+LaTeX, diagrams, and embedded media are not rendered yet (ADR 0011).
 
 ### EP-26 — Delivery agents
 

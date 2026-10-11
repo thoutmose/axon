@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { beforeNavigate, goto } from '$app/navigation';
-	import { ApiError, api, apiResponse, message, type Schemas } from '$lib/api';
+	import { onDestroy } from 'svelte';
+	import { ApiError, api, apiResponse, message } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
+	import MarkdownEditor from '$lib/MarkdownEditor.svelte';
+	import { noteIndex, refreshNotes } from '$lib/noteIndex.svelte';
 	import { createNote, render, stem, wikilinks, type Note } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Link = Schemas['Link'];
+	type Mention = { id: string; title: string; path: string };
 
 	const id = $derived(page.params.id ?? '');
 	const editing = $derived(page.url.searchParams.get('edit') === '1');
@@ -18,52 +21,47 @@
 	let error = $state('');
 	let path = $state('');
 	let content = $state('');
-	let busy = $state(false);
+	let saving = $state(false);
+	let conflict = $state(false);
 	let confirmDelete = $state(false);
-	let outgoing = $state<Link[]>([]);
-	let backlinks = $state<Link[]>([]);
-	// lower-cased stem or title → note id, for the notes this one links to
-	let names = $state(new Map<string, string>());
+	let mentions = $state<Mention[]>([]);
+	let timer: ReturnType<typeof setTimeout> | undefined;
 
-	const dirty = $derived(!!note && (path !== note.path || content !== (note.content ?? '')));
-	const html = $derived(render(editing ? content : (note?.content ?? ''), (t) => names.get(t)));
+	// Every note by lower-cased stem and title (the stem wins, as on the
+	// server), so links resolve as you type.
+	const names = $derived.by(() => {
+		const m = new Map<string, string>();
+		for (const n of noteIndex.notes) m.set(n.title.toLowerCase(), n.id);
+		for (const n of noteIndex.notes) m.set(stem(n.path).toLowerCase(), n.id);
+		return m;
+	});
+	const unsaved = $derived(!!note && content !== (note.content ?? ''));
+	const moved = $derived(!!note && path !== note.path);
+	const html = $derived(
+		render(
+			editing ? content : (note?.content ?? ''),
+			(t) => names.get(t),
+			(id) => noteIndex.notes.find((n) => n.id === id)?.title
+		)
+	);
 	const missing = $derived(
 		wikilinks(editing ? content : (note?.content ?? '')).filter((t) => !names.has(t.toLowerCase()))
 	);
+	const words = $derived((content.match(/\S+/g) ?? []).length);
 
 	async function load() {
 		error = '';
+		conflict = false;
 		try {
 			const res = await apiResponse<Note>(`/v1/notes/${id}`);
 			note = res.data;
 			etag = res.etag;
 			path = note.path;
 			content = note.content ?? '';
-			await loadLinks();
+			mentions = (await api<{ items: Mention[] }>(`/v1/notes/${id}/mentions`)).items;
 		} catch (err) {
 			error = message(err);
 		}
-	}
-
-	async function loadLinks() {
-		const [out, back] = await Promise.all([
-			api<{ items: Link[] }>(`/v1/entities/${id}/links?limit=100`),
-			api<{ items: Link[] }>(`/v1/entities/${id}/links?direction=incoming&limit=100`)
-		]);
-		outgoing = out.items;
-		backlinks = back.items;
-		const linked = await Promise.all(
-			out.items
-				.filter((l) => l.entity.type === 'note')
-				.map((l) => api<Note>(`/v1/notes/${l.entity.id}`).catch(() => null))
-		);
-		const m = new Map<string, string>();
-		for (const n of linked) {
-			if (!n) continue;
-			m.set(n.title.toLowerCase(), n.id);
-			m.set(stem(n.path).toLowerCase(), n.id); // the stem wins, as on the server
-		}
-		names = m;
 	}
 
 	$effect(() => {
@@ -72,8 +70,16 @@
 		load();
 	});
 
+	// Autosave the text a moment after typing stops; moving the file is explicit.
+	$effect(() => {
+		void content;
+		clearTimeout(timer);
+		if (editing && unsaved && !conflict) timer = setTimeout(() => save(false), 1200);
+	});
+	onDestroy(() => clearTimeout(timer));
+
 	beforeNavigate((nav) => {
-		if (dirty && !confirm('Leave without saving your changes?')) nav.cancel();
+		if ((unsaved || moved) && !confirm('Leave without saving your changes?')) nav.cancel();
 	});
 
 	function setEditing(on: boolean) {
@@ -83,35 +89,51 @@
 		goto(u, { keepFocus: true, noScroll: true, replaceState: true });
 	}
 
-	async function save(e?: SubmitEvent) {
-		e?.preventDefault();
-		busy = true;
+	async function save(withPath: boolean, version = etag) {
+		if (!note || saving) return;
+		saving = true;
+		const sent = content;
 		try {
 			const res = await apiResponse<Note>(`/v1/notes/${id}`, {
 				method: 'PUT',
-				headers: { 'If-Match': etag },
-				body: { path, content }
+				headers: { 'If-Match': version },
+				body: { path: withPath ? path : note.path, content: sent }
 			});
 			note = res.data;
 			etag = res.etag;
-			toast('Saved.');
-			await loadLinks();
+			if (withPath) {
+				toast('Moved.');
+				await refreshNotes();
+			} else if (note.title !== noteIndex.notes.find((n) => n.id === id)?.title) {
+				await refreshNotes();
+			}
 		} catch (err) {
-			toast(
-				err instanceof ApiError && err.status === 412
-					? 'This note changed elsewhere since you opened it. Copy your edit, reload, and merge.'
-					: message(err),
-				'error'
-			);
+			if (err instanceof ApiError && err.status === 412) conflict = true;
+			else toast(message(err), 'error');
 		} finally {
-			busy = false;
+			saving = false;
 		}
+	}
+
+	/** After a conflict: keep this version, replacing the one saved elsewhere. */
+	async function keepMine() {
+		const { etag: latest } = await apiResponse<Note>(`/v1/notes/${id}`);
+		conflict = false;
+		await save(false, latest);
+	}
+
+	/** After a conflict: take the saved version; this edit is copied first. */
+	async function takeTheirs() {
+		await navigator.clipboard?.writeText(content).catch(() => {});
+		toast('Your version was copied to the clipboard.');
+		await load();
 	}
 
 	function onkeydown(e: KeyboardEvent) {
 		if (editing && (e.ctrlKey || e.metaKey) && e.key === 's') {
 			e.preventDefault();
-			if (!busy) save();
+			clearTimeout(timer);
+			save(moved);
 		}
 	}
 
@@ -119,35 +141,48 @@
 		try {
 			await createNote(`# ${target}\n\n`);
 			toast(`Created “${target}”.`);
-			await loadLinks();
+			await refreshNotes();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	/** Turns the first plain mention of this note's title into a [[wikilink]]. */
+	async function linkMention(m: Mention) {
+		if (!note) return;
+		try {
+			const res = await apiResponse<Note>(`/v1/notes/${m.id}`);
+			const text = res.data.content ?? '';
+			const title = note.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const re = new RegExp(`(?<!\\[\\[[^\\]]*)\\b(${title})\\b`, 'i');
+			if (!re.test(text)) return;
+			await api(`/v1/notes/${m.id}`, {
+				method: 'PUT',
+				headers: { 'If-Match': res.etag },
+				body: { path: res.data.path, content: text.replace(re, '[[$1]]') }
+			});
+			toast(`Linked from “${m.title}”.`);
+			mentions = mentions.filter((x) => x.id !== m.id);
 		} catch (err) {
 			toast(message(err), 'error');
 		}
 	}
 
 	async function remove() {
-		busy = true;
 		try {
 			await api(`/v1/notes/${id}`, { method: 'DELETE' });
 			note = null; // nothing left to lose
 			toast('Deleted.');
+			await refreshNotes();
 			await goto('/notes');
 		} catch (err) {
 			toast(message(err), 'error');
-		} finally {
-			busy = false;
 		}
-	}
-
-	function href(l: Link): string | null {
-		return l.entity.type === 'note' ? `/notes/${l.entity.id}` : null;
 	}
 </script>
 
 <svelte:head><title>{note?.title ?? 'Note'} · Axon</title></svelte:head>
 <svelte:window {onkeydown} />
-
-<p class="crumbs"><a href="/notes">← Notes</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
@@ -155,7 +190,18 @@
 	<Status kind="loading" message="Loading note…" />
 {:else}
 	<div class="head">
-		<h1>{note.title}</h1>
+		<div>
+			<p class="muted path">
+				{note.path}{#if note.kind !== 'note'}
+					· <span class="kind">{note.kind}</span>{/if}
+			</p>
+			<h1>{note.title}</h1>
+			{#if note.tags.length}
+				<p class="tags">
+					{#each note.tags as t (t)}<a href="/notes?tag={encodeURIComponent(t)}">#{t}</a>{/each}
+				</p>
+			{/if}
+		</div>
 		<div class="actions">
 			{#if editing}
 				<Button variant="secondary" onclick={() => setEditing(false)}>Read</Button>
@@ -165,49 +211,87 @@
 			<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
 		</div>
 	</div>
-	<p class="muted path">
-		{note.path}{#if note.kind !== 'note'}
-			· {note.kind}{/if}
-	</p>
 
-	{#if editing}
-		<form class="editor" onsubmit={save}>
-			<label for="note-path">File</label>
-			<input
-				id="note-path"
-				bind:value={path}
-				required
-				maxlength="500"
-				autocomplete="off"
-				spellcheck="false"
-				aria-describedby="note-path-hint"
-			/>
-			<p class="muted small" id="note-path-hint">
-				Moving or renaming the file updates <code>[[links]]</code> to it in your other notes.
+	{#if conflict}
+		<div class="conflict" role="alert">
+			<p>
+				<strong>This note was changed somewhere else</strong> (another tab, device, or your vault sync).
+				Nothing has been overwritten.
 			</p>
-			<label for="note-content">Markdown</label>
-			<textarea id="note-content" bind:value={content} rows="18" spellcheck="true"></textarea>
-			<div class="save">
-				<Button type="submit" {busy} disabled={!dirty}>Save</Button>
-				<span class="muted small"
-					>{dirty ? 'Unsaved changes · Ctrl+S saves' : 'All changes saved'}</span
-				>
+			<div class="actions">
+				<Button onclick={keepMine}>Keep my version</Button>
+				<Button variant="secondary" onclick={takeTheirs}>Use the saved version</Button>
 			</div>
-		</form>
-		<h2 class="preview-title">Preview</h2>
+		</div>
 	{/if}
 
-	<!-- render() escapes the note, so it cannot inject markup. -->
-	<article class="markdown">{@html html}</article>
+	{#if editing}
+		<div class="split">
+			<div class="pane">
+				<MarkdownEditor id="note-content" bind:value={content} />
+				<p class="status muted small" aria-live="polite">
+					{saving
+						? 'Saving…'
+						: conflict
+							? 'Not saved: see above'
+							: unsaved
+								? 'Unsaved changes'
+								: 'All changes saved'}
+					· {words} words · Ctrl+S saves · type [[ to link a note
+				</p>
+				<details class="move">
+					<summary>Rename or move the file</summary>
+					<label for="note-path">File path</label>
+					<div class="row">
+						<input
+							id="note-path"
+							bind:value={path}
+							required
+							maxlength="500"
+							autocomplete="off"
+							spellcheck="false"
+						/>
+						<Button variant="secondary" disabled={!moved} onclick={() => save(true)}>Move</Button>
+					</div>
+					<p class="muted small">Links to this note in your other notes are updated.</p>
+				</details>
+			</div>
+			<div class="pane">
+				<h2 class="visually-hidden">Preview</h2>
+				<!-- render() escapes the note, so it cannot inject markup. -->
+				<article class="markdown glass">{@html html}</article>
+			</div>
+		</div>
+	{:else}
+		<!-- render() escapes the note, so it cannot inject markup. -->
+		<article class="markdown glass reading">{@html html}</article>
+	{/if}
 
 	{#if missing.length}
-		<section class="links" aria-labelledby="missing-title">
+		<section class="card" aria-labelledby="missing-title">
 			<h2 id="missing-title">Linked, but not written yet</h2>
-			<ul>
+			<ul class="rows">
 				{#each missing as t (t)}
 					<li>
 						<span>{t}</span>
 						<Button variant="ghost" onclick={() => create(t)}>Create note</Button>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
+	{#if mentions.length}
+		<section class="card" aria-labelledby="mentions-title">
+			<h2 id="mentions-title">Unlinked mentions</h2>
+			<p class="muted small">These notes name “{note.title}” without linking to it.</p>
+			<ul class="rows">
+				{#each mentions as m (m.id)}
+					<li>
+						<a href="/notes/{m.id}">{m.title}</a>
+						<Button variant="ghost" onclick={() => linkMention(m)} aria-label="Link from {m.title}"
+							>Link</Button
+						>
 					</li>
 				{/each}
 			</ul>
@@ -224,30 +308,26 @@
 	</p>
 	<div class="dialog-actions">
 		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove} {busy}>Delete</Button>
+		<Button variant="danger" onclick={remove}>Delete</Button>
 	</div>
 </Dialog>
 
 <style>
-	.crumbs {
-		margin: 0 0 var(--space-2);
-	}
-	.crumbs a {
-		color: var(--muted);
-		text-decoration: none;
-	}
 	.head {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
 		gap: var(--space-4);
 		flex-wrap: wrap;
+		margin-bottom: var(--space-4);
 	}
 	h1 {
 		overflow-wrap: anywhere;
+		margin-bottom: var(--space-2);
 	}
 	.actions,
-	.dialog-actions {
+	.dialog-actions,
+	.row {
 		display: flex;
 		gap: var(--space-2);
 		flex-wrap: wrap;
@@ -259,48 +339,77 @@
 		font-family: var(--font-mono);
 		font-size: var(--text-sm);
 		overflow-wrap: anywhere;
+		margin: 0 0 var(--space-1);
+	}
+	.kind {
+		text-transform: capitalize;
+	}
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		margin: 0;
+	}
+	.tags a {
+		font-size: var(--text-sm);
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--accent-soft);
+		color: var(--fg);
+		text-decoration: none;
 	}
 	.small {
 		font-size: var(--text-sm);
 	}
-	.editor {
+	.conflict {
+		border: 1px solid var(--warn);
+		background: var(--surface-solid);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+	.split {
 		display: grid;
-		gap: var(--space-2);
-		margin: var(--space-4) 0;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+		gap: var(--space-4);
+		align-items: start;
+		margin-bottom: var(--space-6);
 	}
-	.editor label {
+	.pane {
+		min-width: 0;
+	}
+	.split .markdown {
+		position: sticky;
+		top: 4.5rem;
+		max-height: calc(100vh - 6rem);
+		overflow-y: auto;
+		margin: 0;
+	}
+	.status {
+		margin: var(--space-2) 0;
+	}
+	.move summary {
+		cursor: pointer;
+		color: var(--accent);
+		font-size: var(--text-sm);
+	}
+	.move label {
+		display: block;
 		font-weight: 600;
+		margin: var(--space-2) 0 var(--space-1);
 	}
-	.editor p {
-		margin: 0 0 var(--space-2);
-	}
-	.editor input,
-	.editor textarea {
+	.move input {
+		flex: 1;
+		min-width: 0;
 		font: inherit;
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		min-height: 2.75rem;
 		padding: var(--space-2) var(--space-3);
 		border-radius: var(--radius);
 		border: 1px solid var(--border);
 		background: var(--surface);
 		color: var(--fg);
-		min-height: 2.75rem;
-		width: 100%;
-	}
-	.editor textarea {
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		line-height: 1.6;
-		resize: vertical;
-	}
-	.save {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		flex-wrap: wrap;
-	}
-	.preview-title {
-		font-size: var(--text-base);
-		color: var(--muted);
-		margin-top: var(--space-6);
 	}
 	.markdown {
 		background: var(--surface);
@@ -309,6 +418,10 @@
 		padding: var(--space-6);
 		margin-bottom: var(--space-6);
 		overflow-wrap: anywhere;
+		line-height: 1.7;
+	}
+	.reading {
+		font-size: 1.0625rem;
 	}
 	.markdown :global(:first-child) {
 		margin-top: 0;
@@ -341,6 +454,56 @@
 		border-left: 3px solid var(--border);
 		color: var(--muted);
 	}
+	.markdown :global(.callout) {
+		margin: var(--space-4) 0;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius);
+		border-left: 4px solid var(--accent);
+		background: var(--accent-soft);
+	}
+	.markdown :global(.callout p) {
+		margin: 0 0 var(--space-1);
+	}
+	.markdown :global(.callout-title) {
+		font-weight: 650;
+	}
+	.markdown :global(.callout.warning),
+	.markdown :global(.callout.caution),
+	.markdown :global(.callout.danger) {
+		border-left-color: var(--warn);
+	}
+	.markdown :global(.callout.tip),
+	.markdown :global(.callout.success) {
+		border-left-color: var(--ok);
+	}
+	.markdown :global(.table) {
+		overflow-x: auto;
+		margin: var(--space-4) 0;
+	}
+	.markdown :global(table) {
+		border-collapse: collapse;
+		width: 100%;
+		font-size: var(--text-sm);
+	}
+	.markdown :global(th),
+	.markdown :global(td) {
+		border: 1px solid var(--border);
+		padding: var(--space-2) var(--space-3);
+		text-align: left;
+	}
+	.markdown :global(th) {
+		background: var(--accent-soft);
+	}
+	.markdown :global(mark) {
+		background: rgb(255 214 10 / 0.45);
+		color: inherit;
+		border-radius: 3px;
+		padding: 0 2px;
+	}
+	.markdown :global(.tag) {
+		color: var(--accent);
+		text-decoration: none;
+	}
 	.markdown :global(.wikilink) {
 		color: var(--accent);
 	}
@@ -348,18 +511,22 @@
 		color: var(--muted);
 		text-decoration: underline dotted;
 	}
-	.links {
+	.card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4) var(--space-6) var(--space-6);
 		margin-bottom: var(--space-6);
 	}
-	.links h2 {
+	.card h2 {
 		font-size: var(--text-lg);
 	}
-	.links ul {
+	.rows {
 		list-style: none;
 		padding: 0;
 		margin: 0;
 	}
-	.links li {
+	.rows li {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;

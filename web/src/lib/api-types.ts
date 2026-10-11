@@ -748,6 +748,42 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes/tags': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Tags in use (front matter and */
+		get: operations['listNoteTags'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/mentions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Notes that name this note in plain text but do not link to it yet */
+		get: operations['listNoteMentions'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/notes/import': {
 		parameters: {
 			query?: never;
@@ -1446,6 +1482,8 @@ export interface components {
 		};
 		SearchHit: components['schemas']['Entity'] & {
 			rank: number;
+			/** @description A short excerpt; matched words are wrapped in U+0002 … U+0003. */
+			snippet: string;
 		};
 		Note: {
 			/** Format: uuid */
@@ -1457,6 +1495,8 @@ export interface components {
 			/** @description Front-matter type (fleeting, literature, permanent…), or "note". */
 			kind: string;
 			para: components['schemas']['NotePara'];
+			/** @description From front matter tags: and #tags in the body, lower-cased. */
+			tags: string[];
 			/** @description SHA-256 of the content, hex. */
 			hash: string;
 			/** @description The Markdown exactly as written; omitted from lists. */
@@ -2687,6 +2727,8 @@ export interface operations {
 				/** @description Web-style query ("quoted phrase", -exclude, or). */
 				q: string;
 				offset?: number;
+				/** @description Only entities of this type, e.g. note. */
+				type?: string;
 				limit?: components['parameters']['Limit'];
 			};
 			header?: never;
@@ -2965,6 +3007,10 @@ export interface operations {
 		parameters: {
 			query?: {
 				para?: components['schemas']['NotePara'];
+				/** @description Only notes with this tag. */
+				tag?: string;
+				/** @description Only the note at exactly this path (e.g. a daily note). */
+				path?: string;
 				/** @description next_cursor from the previous page (the last path). */
 				after?: string;
 				limit?: components['parameters']['Limit'];
@@ -3115,6 +3161,63 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listNoteTags: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 tags. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							tag: string;
+							count: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listNoteMentions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 20 notes, most recently changed first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 		};
 	};

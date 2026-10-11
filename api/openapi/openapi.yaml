@@ -735,6 +735,10 @@ paths:
         - name: offset
           in: query
           schema: { type: integer, minimum: 0, maximum: 1000, default: 0 }
+        - name: type
+          in: query
+          description: Only entities of this type, e.g. note.
+          schema: { type: string, maxLength: 40 }
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
@@ -944,6 +948,14 @@ paths:
         - name: para
           in: query
           schema: { $ref: "#/components/schemas/NotePara" }
+        - name: tag
+          in: query
+          description: Only notes with this tag.
+          schema: { type: string }
+        - name: path
+          in: query
+          description: Only the note at exactly this path (e.g. a daily note).
+          schema: { type: string }
         - name: after
           in: query
           description: next_cursor from the previous page (the last path).
@@ -1051,6 +1063,55 @@ paths:
         "204": { description: Deleted. }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/notes/tags:
+    get:
+      tags: [notes]
+      operationId: listNoteTags
+      summary: Tags in use (front matter and #tags), most used first
+      responses:
+        "200":
+          description: Up to 200 tags.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [tag, count]
+                      properties:
+                        tag: { type: string }
+                        count: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}/mentions:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [notes]
+      operationId: listNoteMentions
+      summary: Notes that name this note in plain text but do not link to it yet
+      responses:
+        "200":
+          description: Up to 20 notes, most recently changed first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, path]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        path: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
   /v1/notes/import:
     post:
@@ -2278,18 +2339,20 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
         - type: object
-          required: [rank]
+          required: [rank, snippet]
           properties:
             rank: { type: number }
+            snippet: { type: string, description: "A short excerpt; matched words are wrapped in U+0002 … U+0003." }
     Note:
       type: object
-      required: [id, path, title, kind, para, hash, created_at, updated_at]
+      required: [id, path, title, kind, para, tags, hash, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         path: { type: string, example: "Zettel/permanent/proofs.md" }
         title: { type: string, description: "Front-matter title, else the first heading, else the file name." }
         kind: { type: string, description: 'Front-matter type (fleeting, literature, permanent…), or "note".' }
         para: { $ref: "#/components/schemas/NotePara" }
+        tags: { type: array, items: { type: string }, description: "From front matter tags: and #tags in the body, lower-cased." }
         hash: { type: string, description: "SHA-256 of the content, hex." }
         content: { type: string, description: "The Markdown exactly as written; omitted from lists." }
         created_at: { type: string, format: date-time }

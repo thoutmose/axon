@@ -27,6 +27,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
 )
@@ -158,7 +159,21 @@ func migrate(direction string) error {
 	if err != nil {
 		return err
 	}
-	return db.Migrate(context.Background(), dsn, direction, os.Stdout)
+	ctx := context.Background()
+	if err := db.Migrate(ctx, dsn, direction, os.Stdout); err != nil || direction != "up" {
+		return err
+	}
+	// Data that needs Go to compute, for rows written before it existed.
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	n, err := notes.BackfillTags(ctx, pool)
+	if n > 0 {
+		fmt.Printf("parsed tags for %d notes\n", n)
+	}
+	return err
 }
 
 // provider returns the server's default agent provider, or nil: people can

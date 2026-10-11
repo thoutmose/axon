@@ -157,15 +157,14 @@ test('capture with the n shortcut, plan, and complete tasks', async () => {
 
 test('write notes, link them with wikilinks, and follow backlinks', async () => {
 	await page.goto('/notes');
-	await expect(page.getByText('No notes yet.')).toBeVisible();
+	await expect(page.getByText('No notes yet.').first()).toBeVisible();
 	await page.getByLabel('New note title').fill('Spaced repetition');
 	await page.keyboard.press('Enter');
 	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
 	await page
 		.getByLabel('Markdown')
 		.fill('# Spaced repetition\n\nReview just before forgetting. See [[Forgetting curve]].');
-	await page.getByRole('button', { name: 'Save' }).click();
-	await expect(page.getByText('Saved.')).toBeVisible();
+	await expect(page.getByText('All changes saved')).toBeVisible(); // autosaved
 	await noSeriousA11yViolations(page);
 
 	await page.getByRole('button', { name: 'Create note' }).click();
@@ -178,8 +177,53 @@ test('write notes, link them with wikilinks, and follow backlinks', async () => 
 	await noSeriousA11yViolations(page);
 
 	await page.goto('/notes?para=inbox');
-	await expect(page.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
-	await expect(page.getByRole('link', { name: 'Forgetting curve' })).toBeVisible();
+	const sidebar = page.getByRole('navigation', { name: 'Folders' });
+	await expect(sidebar.getByRole('link', { name: 'Spaced repetition' })).toBeVisible();
+	await expect(sidebar.getByRole('link', { name: 'Forgetting curve' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('notes workspace: command center, daily note with [[ suggestions, templates, and search', async () => {
+	await page.goto('/today');
+	await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+	await page.keyboard.press('Control+k');
+	await page.getByLabel('Search or type a command').fill('Forgetting');
+	await expect(page.getByRole('option', { name: /^Forgetting curve/ })).toBeVisible();
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('heading', { level: 1, name: 'Forgetting curve' })).toBeVisible();
+
+	// Today's daily note, linked to another note through the [[ suggestions.
+	await page.getByRole('button', { name: "Today's note" }).click();
+	await expect(page).toHaveURL(/edit=1/);
+	const editor = page.getByLabel('Markdown');
+	await editor.press('Control+End');
+	await editor.pressSequentially('Studied [[Spaced');
+	await expect(page.getByRole('option', { name: /Spaced repetition/ })).toBeVisible();
+	await page.keyboard.press('Enter');
+	await expect(editor).toHaveValue(/Studied \[\[spaced-repetition\]\]/);
+	await expect(page.getByText('All changes saved')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Read' }).click();
+	await expect(
+		page.getByRole('article').getByRole('link', { name: 'Spaced repetition' })
+	).toBeVisible();
+
+	// A permanent Zettelkasten note from its template.
+	await page.getByRole('button', { name: '＋ New note' }).click();
+	await page
+		.getByRole('dialog', { name: 'New note' })
+		.getByRole('textbox', { name: 'Title' })
+		.fill('Atomic notes');
+	await page.getByRole('radio', { name: /Permanent note/ }).check();
+	await page.getByRole('button', { name: 'Create', exact: true }).click();
+	await expect(page.getByText(/Zettel\/permanent\/\d{12}-atomic-notes\.md/)).toBeVisible();
+	await expect(page.getByRole('heading', { level: 1, name: 'Atomic notes' })).toBeVisible();
+
+	// Full-text search with highlighted excerpts.
+	await page.getByLabel('Search notes').fill('forgetting');
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('heading', { level: 1, name: 'Search' })).toBeVisible();
+	await expect(page.locator('mark').first()).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 

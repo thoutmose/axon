@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, stem, wikilinks } from './notes';
+import { highlight, render, stem, wikilinks } from './notes';
 
 const ids: Record<string, string> = { proofs: 'p-1', 'mit 6.042j': 'm-1' };
 const resolve = (t: string) => ids[t];
@@ -33,7 +33,7 @@ describe('render', () => {
 		);
 		expect(html).toContain('<dt>type</dt><dd>literature</dd>');
 		expect(html).toContain('<dd><a class="wikilink" href="/notes/p-1">proofs</a></dd>');
-		expect(html).toContain('<h2>Title</h2>');
+		expect(html).toContain('<h2 id="h-title">Title</h2>');
 		expect(html).toContain('<ul>\n<li>one</li>\n<li>☑ two</li>\n</ul>');
 		expect(html).toContain('<ol>\n<li>first</li>\n</ol>');
 		expect(html).toContain('<blockquote>quote</blockquote>');
@@ -47,6 +47,47 @@ describe('render', () => {
 		);
 		expect(render('[a](/tasks)', resolve)).toContain('<a href="/tasks">a</a>');
 		expect(render('[a](data:text/html,x)', resolve)).not.toContain('<a');
+	});
+});
+
+describe('render extensions', () => {
+	it('renders tables with alignment, escaping cells', () => {
+		const html = render('| Name | Score |\n| :-- | --: |\n| <b>Ada</b> | 10 |', resolve);
+		expect(html).toContain('<th>Name</th><th style="text-align:right">Score</th>');
+		expect(html).toContain('<td>&lt;b&gt;Ada&lt;/b&gt;</td><td style="text-align:right">10</td>');
+	});
+	it('renders callouts, merged quotes, highlights, strikes, tags, and heading anchors', () => {
+		const html = render(
+			'> [!WARNING] Careful\n> Hot surface\n\n> line one\n> line two\n\n==key== ~~old~~ #maths not a#b\n## Big Idea!',
+			resolve
+		);
+		expect(html).toContain(
+			'<aside class="callout warning"><p class="callout-title">Careful</p><p>Hot surface</p></aside>'
+		);
+		expect(html).toContain('<blockquote>line one<br>line two</blockquote>');
+		expect(html).toContain(
+			'<mark>key</mark> <del>old</del> <a class="tag" href="/notes?tag=maths">#maths</a> not a#b'
+		);
+		expect(html).toContain('<h3 id="h-big-idea">Big Idea!</h3>');
+	});
+	it('ignores unknown callout kinds and escaped entities', () => {
+		expect(render('> [!SCRIPT] x', resolve)).toContain('<blockquote>');
+		expect(render("it's", resolve)).not.toContain('class="tag"');
+	});
+});
+
+describe('titles for wikilinks', () => {
+	it('shows the linked note title unless an alias is given', () => {
+		const titleOf = (id: string) => ({ 'p-1': 'Proofs & <b>' })[id];
+		const html = render('[[proofs]] and [[proofs|see here]]', resolve, titleOf);
+		expect(html).toContain('href="/notes/p-1">Proofs &amp; &lt;b&gt;</a>');
+		expect(html).toContain('href="/notes/p-1">see here</a>');
+	});
+});
+
+describe('highlight', () => {
+	it('escapes before marking matches', () => {
+		expect(highlight('a \u0002<b>x</b>\u0003 c')).toBe('a <mark>&lt;b&gt;x&lt;/b&gt;</mark> c');
 	});
 });
 

@@ -11,6 +11,7 @@ type Meta struct {
 	Title string
 	Kind  string // front matter "type", or "note"
 	Para  string
+	Tags  []string
 }
 
 // frontMatter returns the YAML block between the opening and closing "---"
@@ -77,8 +78,66 @@ func Parse(p, content string) Meta {
 	if m.Kind == "" || len(m.Kind) > 40 {
 		m.Kind = "note"
 	}
+	m.Tags = tags(fm, body)
 	return m
 }
+
+// inlineTag is "#tag" after a space or the start of a line: letters,
+// digits, _, -, / (nested tags), with at least one letter.
+var inlineTag = regexp.MustCompile(`(?:^|[\s(])#([\p{L}\p{N}_/-]*\p{L}[\p{L}\p{N}_/-]*)`)
+
+// tags reads front matter "tags: [a, b]" or a "- a" list, and #tags in the
+// body outside code. They are lower-cased, de-duplicated, and capped.
+func tags(fm, body string) []string {
+	seen := map[string]bool{}
+	out := []string{}
+	add := func(t string) {
+		t = strings.ToLower(strings.Trim(strings.TrimSpace(t), `"'#`))
+		if t != "" && len(t) <= 60 && !seen[t] && len(out) < 50 {
+			seen[t] = true
+			out = append(out, t)
+		}
+	}
+	lines := strings.Split(fm, "\n")
+	for i, line := range lines {
+		k, v, ok := strings.Cut(strings.TrimRight(line, "\r"), ":")
+		if !ok || (k != "tags" && k != "tag") {
+			continue
+		}
+		v = strings.TrimSpace(v)
+		if v != "" {
+			for _, t := range strings.Split(strings.Trim(v, "[]"), ",") {
+				add(t)
+			}
+			continue
+		}
+		for _, item := range lines[i+1:] {
+			item = strings.TrimSpace(strings.TrimRight(item, "\r"))
+			t, isItem := strings.CutPrefix(item, "- ")
+			if !isItem {
+				break
+			}
+			add(t)
+		}
+	}
+	fenced := false
+	for _, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			fenced = !fenced
+			continue
+		}
+		if fenced {
+			continue
+		}
+		line = inlineCode.ReplaceAllString(line, "")
+		for _, m := range inlineTag.FindAllStringSubmatch(line, -1) {
+			add(m[1])
+		}
+	}
+	return out
+}
+
+var inlineCode = regexp.MustCompile("`[^`]*`")
 
 // Stem is the file name without folder or extension: what [[wikilinks]] name.
 func Stem(p string) string { return strings.TrimSuffix(path.Base(p), ".md") }

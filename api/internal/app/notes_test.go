@@ -342,6 +342,33 @@ func TestNoteEndpoints(t *testing.T) {
 	alice.mustDo(404, "GET", "/v1/notes/"+n.ID, nil)
 	alice.mustDo(204, "POST", "/v1/notes/sync/delete", []byte(`{"path":"0-Inbox/gone.md","base_hash":"x"}`))
 
+	// Workspace: tags, exact paths, plain-text mentions, and note search.
+	alice.mustDo(201, "POST", "/v1/notes", []byte(`{"path":"Zettel/spaced.md","content":"---\ntags: [learning]\n---\n# Spaced repetition\nReview cards. #memory"}`))
+	alice.mustDo(201, "POST", "/v1/notes", []byte(`{"path":"Daily/2026-10-10.md","content":"# 2026-10-10\nRead about spaced repetition today."}`))
+	if b := alice.mustDo(200, "GET", "/v1/notes?tag=memory", nil); !bytes.Contains(b, []byte("Zettel/spaced.md")) || bytes.Contains(b, []byte("Daily/")) {
+		t.Fatalf("tag filter = %s", b)
+	}
+	if b := alice.mustDo(200, "GET", "/v1/notes/tags", nil); !bytes.Contains(b, []byte(`{"tag":"learning","count":1}`)) {
+		t.Fatalf("tags = %s", b)
+	}
+	var daily struct {
+		Items []noteJSON `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/notes?path=Daily/2026-10-10.md", nil), &daily)
+	if len(daily.Items) != 1 {
+		t.Fatalf("path lookup = %+v", daily)
+	}
+	var spaced struct {
+		Items []noteJSON `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/notes?path=Zettel/spaced.md", nil), &spaced)
+	if b := alice.mustDo(200, "GET", "/v1/notes/"+spaced.Items[0].ID+"/mentions", nil); !bytes.Contains(b, []byte(daily.Items[0].ID)) {
+		t.Fatalf("mentions = %s", b)
+	}
+	if b := alice.mustDo(200, "GET", "/v1/search?q=cards&type=note", nil); !bytes.Contains(b, []byte(`\u0002cards\u0003`)) {
+		t.Fatalf("note search snippet = %s", b)
+	}
+
 	// Sync writes only land on the version the client last saw.
 	alice.mustDo(200, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"one","base_hash":""}`))
 	alice.mustDo(409, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"two","base_hash":"not-the-current-hash"}`))

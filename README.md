@@ -82,6 +82,10 @@ Axon brings together the things that are usually scattered across note apps, tas
 |---|---|---|
 | ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view with a scenic hero, task counts, and cards](doc/screenshots/today.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
 
+| Notes workspace | Command center |
+|---|---|
+| ![Notes workspace with a folder tree, Markdown editor, and live preview](doc/screenshots/notes-edit.png) | ![Command center searching notes](doc/screenshots/command-center.png) |
+
 Captured from a test account with sample data.
 
 <details><summary>Design direction</summary>
@@ -422,7 +426,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, and EP-22–EP-24 done; EP-25 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-09, EP-11–EP-13, EP-19, and EP-22–EP-25 done; EP-10 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

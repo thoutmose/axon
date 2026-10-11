@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
@@ -44,6 +45,7 @@ type Note struct {
 	Title     string    `json:"title"`
 	Kind      string    `json:"kind"`
 	Para      string    `json:"para"`
+	Tags      []string  `json:"tags"`
 	Hash      string    `json:"hash"` // SHA-256 of content, for sync
 	Content   *string   `json:"content,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
@@ -56,12 +58,12 @@ func Hash(content string) string {
 	return hex.EncodeToString(h[:])
 }
 
-const columns = `n.id, n.path, e.title, n.kind, n.para, n.content, e.created_at, n.updated_at`
+const columns = `n.id, n.path, e.title, n.kind, n.para, coalesce(n.tags, '{}'), n.content, e.created_at, n.updated_at`
 
 func scan(row pgx.Row, withContent bool) (Note, error) {
 	var n Note
 	var content string
-	err := row.Scan(&n.ID, &n.Path, &n.Title, &n.Kind, &n.Para, &content, &n.CreatedAt, &n.UpdatedAt)
+	err := row.Scan(&n.ID, &n.Path, &n.Title, &n.Kind, &n.Para, &n.Tags, &content, &n.CreatedAt, &n.UpdatedAt)
 	n.Hash = Hash(content)
 	if withContent {
 		n.Content = &content
@@ -103,8 +105,8 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err != nil {
 		return Note{}, err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO notes (id, user_id, path, content, kind, para) VALUES ($1, $2, $3, $4, $5, $6)`,
-		id, userID, p, content, m.Kind, m.Para)
+	_, err = tx.Exec(ctx, `INSERT INTO notes (id, user_id, path, content, kind, para, tags) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		id, userID, p, content, m.Kind, m.Para, m.Tags)
 	if isUnique(err) {
 		return Note{}, ErrPathTaken
 	}
@@ -162,8 +164,8 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	if err := graph.UpdateEntity(ctx, tx, userID, id, actor, m.Title, content, fields); err != nil {
 		return Note{}, err
 	}
-	_, err = tx.Exec(ctx, `UPDATE notes SET path = $2, content = $3, kind = $4, para = $5, updated_at = clock_timestamp() WHERE id = $1`,
-		id, p, content, m.Kind, m.Para)
+	_, err = tx.Exec(ctx, `UPDATE notes SET path = $2, content = $3, kind = $4, para = $5, tags = $6, updated_at = clock_timestamp() WHERE id = $1`,
+		id, p, content, m.Kind, m.Para, m.Tags)
 	if isUnique(err) {
 		return Note{}, ErrPathTaken
 	}
@@ -368,4 +370,30 @@ func Files(ctx context.Context, q db.Querier, userID uuid.UUID) (map[string][]by
 		out[p] = []byte(c)
 	}
 	return out, rows.Err()
+}
+
+// BackfillTags parses tags for notes stored before tags existed. It runs
+// after migrations ("axon migrate up") and is safe to repeat.
+func BackfillTags(ctx context.Context, pool *pgxpool.Pool) (int, error) {
+	total := 0
+	for {
+		rows, err := pool.Query(ctx, `SELECT id, path, content FROM notes WHERE tags IS NULL LIMIT 200`)
+		if err != nil {
+			return total, err
+		}
+		type row struct {
+			ID            uuid.UUID
+			Path, Content string
+		}
+		batch, err := pgx.CollectRows(rows, pgx.RowToStructByPos[row])
+		if err != nil || len(batch) == 0 {
+			return total, err
+		}
+		for _, r := range batch {
+			if _, err := pool.Exec(ctx, `UPDATE notes SET tags = $2 WHERE id = $1`, r.ID, Parse(r.Path, r.Content).Tags); err != nil {
+				return total, err
+			}
+		}
+		total += len(batch)
+	}
 }

@@ -2,6 +2,7 @@ package notes
 
 import (
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -70,5 +71,19 @@ func TestSlug(t *testing.T) {
 		if got := Slug(in); got != want {
 			t.Errorf("Slug(%q) = %q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestTags(t *testing.T) {
+	got := Parse("Zettel/x.md", "---\ntags: [Maths, \"proofs\"]\ntype: permanent\n---\n# X\nAbout #induction and #maths, not #123 or a#b.\n`#code` stays out.\n```\n#fenced\n```\n- see (#nested/tag)\n").Tags
+	want := []string{"maths", "proofs", "induction", "nested/tag"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("tags = %v, want %v", got, want)
+	}
+	if got := Parse("a.md", "---\ntags:\n  - reading\n  - Books\ntitle: A\n---\nbody").Tags; strings.Join(got, ",") != "reading,books" {
+		t.Fatalf("list tags = %v", got)
+	}
+	if got := Parse("a.md", "# Heading only").Tags; len(got) != 0 {
+		t.Fatalf("heading read as tag: %v", got)
 	}
 }

@@ -45,12 +45,61 @@ export function wikilinks(md: string): string[] {
 	return [...seen.values()];
 }
 
+/** Escapes a search snippet, then marks the matched words (U+0002 … U+0003). */
+export function highlight(snippet: string): string {
+	return escape(snippet)
+		.replace(/\u0002/g, '<mark>')
+		.replace(/\u0003/g, '</mark>');
+}
+
+/** #tag after a space or the start of a line, with at least one letter (as the API parses it). */
+const tagPattern = /(^|[\s(])#([\p{L}\p{N}_/-]*\p{L}[\p{L}\p{N}_/-]*)/gu;
+
+const calloutKinds = new Set([
+	'note',
+	'tip',
+	'info',
+	'important',
+	'warning',
+	'caution',
+	'danger',
+	'quote',
+	'example',
+	'question',
+	'todo',
+	'success'
+]);
+
+/** Heading anchor: letters, digits, and dashes only. */
+function anchor(text: string): string {
+	return (
+		'h-' +
+		text
+			.toLowerCase()
+			.replace(/[^\p{L}\p{N}]+/gu, '-')
+			.replace(/^-|-$/g, '')
+			.slice(0, 60)
+	);
+}
+
+function cells(row: string): string[] {
+	return row
+		.trim()
+		.replace(/^\||\|$/g, '')
+		.split('|')
+		.map((c) => c.trim());
+}
+
 /** Maps a lower-cased link target to a note id; unresolved targets are absent. */
 export type Resolver = (target: string) => string | undefined;
 
 // Inline Markdown on already-escaped text. Code spans are cut out first so
 // their content is never interpreted.
-function inline(text: string, resolve: Resolver): string {
+function inline(
+	text: string,
+	resolve: Resolver,
+	titleOf?: (id: string) => string | undefined
+): string {
 	return text
 		.split(/(`[^`]+`)/)
 		.map((part) => {
@@ -59,8 +108,10 @@ function inline(text: string, resolve: Resolver): string {
 			}
 			let s = escape(part);
 			s = s.replace(wikilink, (_, target: string, heading = '', alias = '') => {
-				const label = alias ? alias.slice(1) : target + heading;
 				const id = resolve(target.trim().toLowerCase());
+				// A plain [[file-name]] reads as the note's title; an alias wins.
+				const named = id && titleOf ? titleOf(id) : undefined;
+				const label = alias ? alias.slice(1) : named ? escape(named) + heading : target + heading;
 				return id
 					? `<a class="wikilink" href="/notes/${encodeURIComponent(id)}">${label}</a>`
 					: `<span class="wikilink unresolved" title="No note named ${target} yet">${label}</span>`;
@@ -71,6 +122,11 @@ function inline(text: string, resolve: Resolver): string {
 			});
 			s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 			s = s.replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+			s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+			s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+			s = s.replace(tagPattern, (_, pre: string, tag: string) => {
+				return `${pre}<a class="tag" href="/notes?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`;
+			});
 			return s;
 		})
 		.join('');
@@ -81,7 +137,11 @@ function inline(text: string, resolve: Resolver): string {
  * headings, lists, quotes, code, links, emphasis) and escapes everything
  * else, so a note can never inject markup.
  */
-export function render(md: string, resolve: Resolver): string {
+export function render(
+	md: string,
+	resolve: Resolver,
+	titleOf?: (id: string) => string | undefined
+): string {
 	const out: string[] = [];
 	const lines = md.replace(/\r\n?/g, '\n').split('\n');
 	let i = 0;
@@ -96,9 +156,10 @@ export function render(md: string, resolve: Resolver): string {
 								.join(':')
 								.trim()
 								.replace(/^"(.*)"$/, '$1'),
-							resolve
+							resolve,
+							titleOf
 						)}</dd>`
-					: `<dd>${inline(l, resolve)}</dd>`;
+					: `<dd>${inline(l, resolve, titleOf)}</dd>`;
 			});
 			out.push(`<dl class="props">${props.join('')}</dl>`);
 			i = end + 1;
@@ -107,7 +168,8 @@ export function render(md: string, resolve: Resolver): string {
 	let list: 'ul' | 'ol' | null = null;
 	let para: string[] = [];
 	const flush = () => {
-		if (para.length) out.push(`<p>${para.map((l) => inline(l, resolve)).join('<br>')}</p>`);
+		if (para.length)
+			out.push(`<p>${para.map((l) => inline(l, resolve, titleOf)).join('<br>')}</p>`);
 		para = [];
 		if (list) out.push(`</${list}>`);
 		list = null;
@@ -129,7 +191,9 @@ export function render(md: string, resolve: Resolver): string {
 			flush();
 			// The page title is the h1, so note headings start at h2.
 			const level = Math.min(heading[1].length + 1, 6);
-			out.push(`<h${level}>${inline(heading[2], resolve)}</h${level}>`);
+			out.push(
+				`<h${level} id="${anchor(heading[2])}">${inline(heading[2], resolve, titleOf)}</h${level}>`
+			);
 		} else if (item) {
 			const kind = item[1] ? 'ul' : 'ol';
 			if (para.length || list !== kind) flush();
@@ -138,12 +202,45 @@ export function render(md: string, resolve: Resolver): string {
 			const task = item[3].match(/^\[([ xX])\]\s+(.*)$/);
 			out.push(
 				task
-					? `<li>${task[1] === ' ' ? '☐' : '☑'} ${inline(task[2], resolve)}</li>`
-					: `<li>${inline(item[3], resolve)}</li>`
+					? `<li>${task[1] === ' ' ? '☐' : '☑'} ${inline(task[2], resolve, titleOf)}</li>`
+					: `<li>${inline(item[3], resolve, titleOf)}</li>`
 			);
 		} else if (quote) {
 			flush();
-			out.push(`<blockquote>${inline(quote[1], resolve)}</blockquote>`);
+			const body: string[] = [];
+			for (; i < lines.length && /^>/.test(lines[i]); i++) body.push(lines[i].replace(/^>\s?/, ''));
+			i--;
+			const callout = body[0].match(/^\[!(\w+)\][+-]?\s*(.*)$/);
+			if (callout && calloutKinds.has(callout[1].toLowerCase())) {
+				const kind = callout[1].toLowerCase();
+				const title = callout[2] || kind[0].toUpperCase() + kind.slice(1);
+				const rest = body.slice(1).filter((l) => l.trim() !== '');
+				out.push(
+					`<aside class="callout ${kind}"><p class="callout-title">${inline(title, resolve, titleOf)}</p>${rest
+						.map((l) => `<p>${inline(l, resolve, titleOf)}</p>`)
+						.join('')}</aside>`
+				);
+			} else {
+				out.push(
+					`<blockquote>${body.map((l) => inline(l, resolve, titleOf)).join('<br>')}</blockquote>`
+				);
+			}
+		} else if (/^\s*\|/.test(line) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] ?? '')) {
+			flush();
+			const head = cells(line);
+			const align = cells(lines[i + 1]).map((c) =>
+				c.startsWith(':') && c.endsWith(':') ? 'center' : c.endsWith(':') ? 'right' : ''
+			);
+			const rows: string[][] = [];
+			for (i += 2; i < lines.length && /^\s*\|/.test(lines[i]); i++) rows.push(cells(lines[i]));
+			i--;
+			const td = (tag: string, c: string, k: number) =>
+				`<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c, resolve, titleOf)}</${tag}>`;
+			out.push(
+				`<div class="table"><table><thead><tr>${head.map((c, k) => td('th', c, k)).join('')}</tr></thead><tbody>${rows
+					.map((r) => `<tr>${r.map((c, k) => td('td', c, k)).join('')}</tr>`)
+					.join('')}</tbody></table></div>`
+			);
 		} else if (/^\s*(---|\*\*\*)\s*$/.test(line)) {
 			flush();
 			out.push('<hr>');

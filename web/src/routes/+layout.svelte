@@ -9,6 +9,8 @@
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
 	const wide = $derived(page.url.pathname === '/' || page.url.pathname === '/today');
+	// The notes workspace has a sidebar, so it gets the wide column.
+	const workspace = $derived(page.url.pathname.startsWith('/notes'));
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
@@ -102,7 +104,7 @@
 	</p>
 {/if}
 
-<main id="main" class:wide>
+<main id="main" class:wide class:workspace>
 	{@render children()}
 </main>
 <Toaster />
@@ -186,6 +188,9 @@
 		max-width: var(--content-width);
 		margin: 0 auto;
 		padding: var(--space-8) var(--space-4) var(--space-16);
+	}
+	main.workspace {
+		max-width: var(--wide-width);
 	}
 	main.wide {
 		max-width: none;

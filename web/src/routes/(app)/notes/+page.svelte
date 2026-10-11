@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import { createNote, paraViews, type Note } from '$lib/notes';
+	import { refreshNotes } from '$lib/noteIndex.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -15,6 +16,7 @@
 	};
 
 	const para = $derived(page.url.searchParams.get('para') ?? 'all');
+	const tag = $derived(page.url.searchParams.get('tag'));
 	let notes = $state<Note[] | null>(null);
 	let cursor = $state<string | null>(null);
 	let error = $state('');
@@ -26,6 +28,7 @@
 		error = '';
 		const params = new URLSearchParams({ limit: '100' });
 		if (para !== 'all') params.set('para', para);
+		if (tag) params.set('tag', tag);
 		if (more && cursor) params.set('after', cursor);
 		try {
 			const res = await api<{ items: Note[]; next_cursor: string | null }>(`/v1/notes?${params}`);
@@ -38,6 +41,7 @@
 
 	$effect(() => {
 		void para;
+		void tag;
 		notes = null;
 		load();
 	});
@@ -47,6 +51,7 @@
 		try {
 			const n = await createNote(`# ${quick.trim()}\n\n`);
 			quick = '';
+			await refreshNotes();
 			await goto(`/notes/${n.id}?edit=1`);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -64,7 +69,7 @@
 				body: file,
 				headers: { 'Content-Type': 'application/zip' }
 			});
-			await load();
+			await Promise.all([load(), refreshNotes()]);
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
@@ -82,7 +87,7 @@
 <svelte:head><title>Notes · Axon</title></svelte:head>
 
 <div class="head">
-	<h1>Notes</h1>
+	<h1>{tag ? `#${tag}` : 'Notes'}</h1>
 	<label class="upload" aria-busy={importing}>
 		<input type="file" accept=".zip,application/zip" onchange={importZip} disabled={importing} />
 		{importing ? 'Importing…' : 'Import ZIP'}

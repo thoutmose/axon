@@ -328,12 +328,24 @@ func Timeline(ctx context.Context, q db.Querier, userID, entityID uuid.UUID, bef
 type Hit struct {
 	Entity
 	Rank float32 `json:"rank"`
+	// Snippet is a short excerpt; matched words are wrapped in \x02 … \x03
+	// so clients can highlight them after escaping the text.
+	Snippet string `json:"snippet"`
+}
+
+// SearchOptions narrows a search.
+type SearchOptions struct {
+	Type string // one entity type, or "" for all
 }
 
 // Search finds the user's entities matching a web-style query ("quoted
 // phrases", -exclusions, or). Offset pagination is capped: search is for
 // finding, not for paging through everything.
-func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, offset, limit int) ([]Hit, error) {
+func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, offset, limit int, opts ...SearchOptions) ([]Hit, error) {
+	var typ *string
+	if len(opts) > 0 && opts[0].Type != "" {
+		typ = &opts[0].Type
+	}
 	if offset < 0 || offset > 1000 {
 		offset = 0
 	}
@@ -347,16 +359,20 @@ func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, o
 		like = &l
 	}
 	rows, err := q.Query(ctx, `
-		SELECT id, type, title, created_at, updated_at, ts_rank(search, query) + CASE WHEN $5::text IS NOT NULL AND title ILIKE $5 THEN 0.01 ELSE 0 END AS rank
-		FROM entities, websearch_to_tsquery('simple', $2) AS query
-		WHERE user_id = $1 AND (search @@ query OR ($5::text IS NOT NULL AND title ILIKE $5))
-		ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4`, userID, query, offset, Page{Limit: limit}.limit(), like)
+		SELECT id, type, title, created_at, updated_at, rank,
+			ts_headline('simple', left(search_text, 20000), query, 'MaxWords=24, MinWords=8, MaxFragments=1, StartSel=' || chr(2) || ', StopSel=' || chr(3))
+		FROM (
+			SELECT e.*, query, ts_rank(search, query) + CASE WHEN $5::text IS NOT NULL AND title ILIKE $5 THEN 0.01 ELSE 0 END AS rank
+			FROM entities e, websearch_to_tsquery('simple', $2) AS query
+			WHERE user_id = $1 AND ($6::text IS NULL OR type = $6) AND (search @@ query OR ($5::text IS NOT NULL AND title ILIKE $5))
+			ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4
+		) hits ORDER BY rank DESC, id DESC`, userID, query, offset, Page{Limit: limit}.limit(), like, typ)
 	if err != nil {
 		return nil, err
 	}
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (Hit, error) {
 		var h Hit
-		err := row.Scan(&h.ID, &h.Type, &h.Title, &h.CreatedAt, &h.UpdatedAt, &h.Rank)
+		err := row.Scan(&h.ID, &h.Type, &h.Title, &h.CreatedAt, &h.UpdatedAt, &h.Rank, &h.Snippet)
 		return h, err
 	})
 }

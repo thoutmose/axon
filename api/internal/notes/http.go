@@ -42,10 +42,12 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 // not cap bodies below maxImportBody.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/notes", h.list)
+	r.Get("/v1/notes/tags", h.tags)
 	r.Post("/v1/notes", h.create)
 	r.Get("/v1/notes/{id}", h.get)
 	r.Put("/v1/notes/{id}", h.update)
 	r.Delete("/v1/notes/{id}", h.delete)
+	r.Get("/v1/notes/{id}/mentions", h.mentions)
 	r.Post("/v1/notes/import", h.importZip)
 	r.Get("/v1/notes/sync", h.changes)
 	r.Post("/v1/notes/sync", h.push)
@@ -78,16 +80,24 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusBadRequest, "?limit= must be between 1 and 100.")
 		return
 	}
-	var para, after *string
+	var para, after, tag, exact *string
 	if v := q.Get("para"); v != "" {
 		para = &v
+	}
+	if v := q.Get("tag"); v != "" {
+		v = strings.ToLower(v)
+		tag = &v
+	}
+	if v := q.Get("path"); v != "" {
+		exact = &v
 	}
 	if v := q.Get("after"); v != "" {
 		after = &v // the last path of the previous page
 	}
 	rows, err := h.db.Query(r.Context(), `SELECT `+columns+` FROM notes n JOIN entities e ON e.id = n.id
 		WHERE n.user_id = $1 AND ($2::text IS NULL OR n.para = $2) AND ($3::text IS NULL OR n.path > $3)
-		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit)
+		AND ($5::text IS NULL OR n.tags @> ARRAY[$5::text]) AND ($6::text IS NULL OR n.path = $6)
+		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit, tag, exact)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -446,4 +456,68 @@ func (h *Handlers) pushDelete(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusNoContent)
 	}
+}
+
+// tags lists the tags in use with how many notes carry each.
+func (h *Handlers) tags(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	rows, err := h.db.Query(r.Context(), `SELECT t, count(*) FROM notes, unnest(coalesce(tags, '{}')) AS t
+		WHERE user_id = $1 GROUP BY t ORDER BY count(*) DESC, t LIMIT 200`, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	type tagCount struct {
+		Tag   string `json:"tag"`
+		Count int    `json:"count"`
+	}
+	items, err := pgx.CollectRows(rows, pgx.RowToStructByPos[tagCount])
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	if items == nil {
+		items = []tagCount{}
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+// mentions finds notes that name this note in plain text but do not link
+// to it yet: candidates for a [[wikilink]].
+func (h *Handlers) mentions(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, ok := noteID(w, r)
+	if !ok {
+		return
+	}
+	n, err := Get(r.Context(), h.db, who.UserID, id)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	type mention struct {
+		ID    uuid.UUID `json:"id"`
+		Title string    `json:"title"`
+		Path  string    `json:"path"`
+	}
+	items := []mention{}
+	if len([]rune(n.Title)) >= 3 {
+		like := "%" + escapeLike(n.Title) + "%"
+		rows, err := h.db.Query(r.Context(), `SELECT n.id, e.title, n.path FROM notes n JOIN entities e ON e.id = n.id
+			WHERE n.user_id = $1 AND n.id <> $2 AND n.content ILIKE $3
+			AND NOT EXISTS (SELECT 1 FROM links l WHERE l.source_id = n.id AND l.target_id = $2)
+			ORDER BY n.updated_at DESC LIMIT 20`, who.UserID, id, like)
+		if err != nil {
+			h.fail(w, err)
+			return
+		}
+		if items, err = pgx.CollectRows(rows, pgx.RowToStructByPos[mention]); err != nil {
+			h.fail(w, err)
+			return
+		}
+		if items == nil {
+			items = []mention{}
+		}
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
 }

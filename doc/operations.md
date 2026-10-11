@@ -100,6 +100,10 @@ To rehearse without touching a server, restore into a throwaway `pgvector/pgvect
 
 Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
 
+## Data backfills
+
+`axon migrate up` (run by `deploy/deploy.sh`) also fills data that needs Go to compute for rows written before it existed, such as note tags. It is safe to repeat.
+
 ## AI agents
 
 Each person can choose their own provider under **Agents → AI provider**: Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local server such as Ollama (`http://<host>:11434/v1`). Keys they enter are sealed with `AXON_ENCRYPTION_KEY`, so that variable must be set to store keys.

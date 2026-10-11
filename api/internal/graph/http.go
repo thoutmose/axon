@@ -244,7 +244,12 @@ func (h *Handlers) search(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	hits, err := Search(r.Context(), h.db, who.UserID, q, offset, n)
+	typ := r.URL.Query().Get("type")
+	if len(typ) > 40 {
+		httpx.Problem(w, http.StatusBadRequest, "?type= is an entity type such as note or task.")
+		return
+	}
+	hits, err := Search(r.Context(), h.db, who.UserID, q, offset, n, SearchOptions{Type: typ})
 	if err != nil {
 		h.fail(w, err)
 		return
