@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
+	import { habitTemplates } from '$lib/entityTemplates';
 	import { chains, laws, plan, scheduleLabel, weekdays, type Habit } from '$lib/habits';
+	import TemplateChips from '$lib/TemplateChips.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
@@ -204,6 +206,17 @@
 			ones invisible, unattractive, difficult, and unsatisfying. Start small, and build the
 			identity, not only the result.
 		</p>
+		<TemplateChips
+			label="Start from a template"
+			items={habitTemplates.map((t) => ({
+				title: t.kind === 'break' ? `Stop: ${t.title}` : t.title,
+				hint: t.identity
+			}))}
+			onpick={(i) => {
+				form = { ...blank(), ...habitTemplates[i] };
+				toast('Filled in. Adjust it to your life, then create it.');
+			}}
+		/>
 		<form onsubmit={create}>
 			<fieldset class="kind">
 				<legend>I want to</legend>
