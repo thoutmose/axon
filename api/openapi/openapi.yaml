@@ -48,6 +48,8 @@ tags:
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
   - name: progress
     description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
+  - name: insights
+    description: Explainable weekly metrics, trends, weekly reviews, and CSV export, computed on the server (EP-20).
   - name: wellbeing
     description: "Food and training logs: special-category data behind the health_data consent (EP-18)."
   - name: media
@@ -3727,6 +3729,80 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/insights:
+    get:
+      tags: [insights]
+      operationId: getInsights
+      summary: Every metric week by week, with its formula, source, and trend
+      parameters:
+        - { name: weeks, in: query, schema: { type: integer, minimum: 4, maximum: 104, default: 12 } }
+      responses:
+        "200":
+          description: Weekly series, oldest week first, ending with the current week.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [weeks, time_zone, metrics]
+                properties:
+                  weeks: { type: integer }
+                  time_zone: { type: string }
+                  metrics: { type: array, items: { $ref: "#/components/schemas/InsightSeries" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/insights/review:
+    get:
+      tags: [insights]
+      operationId: getWeeklyReview
+      summary: "The weekly review: each metric against the week before, highlights, what was done, and open tasks to carry over"
+      parameters:
+        - { name: week, in: query, schema: { type: string, pattern: "^[0-9]{4}-W[0-9]{2}$" }, description: "An ISO week; the current week by default." }
+      responses:
+        "200":
+          description: The review.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WeeklyReview" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/insights/metrics/{id}/items:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [insights]
+      operationId: getInsightItems
+      summary: The items behind a metric's number for one week (up to 200)
+      parameters:
+        - { name: week, in: query, schema: { type: string, pattern: "^[0-9]{4}-W[0-9]{2}$" } }
+      responses:
+        "200":
+          description: The metric and its items.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [metric, week, items]
+                properties:
+                  metric: { $ref: "#/components/schemas/InsightMetric" }
+                  week: { type: string }
+                  items: { type: array, items: { $ref: "#/components/schemas/InsightItem" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/insights/export.csv:
+    get:
+      tags: [insights]
+      operationId: exportInsightsCSV
+      summary: Every metric week by week as CSV (52 weeks by default)
+      parameters:
+        - { name: weeks, in: query, schema: { type: integer, minimum: 4, maximum: 104, default: 52 } }
+      responses:
+        "200":
+          description: "One row per week: week, monday, then one column per metric id."
+          content:
+            text/csv: { schema: { type: string } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/progress:
     get:
       tags: [progress]
@@ -5644,6 +5720,81 @@ components:
         effort: { type: [integer, "null"] }
         notes: { type: string }
         sets: { type: array, items: { $ref: "#/components/schemas/WorkoutSet" } }
+    InsightMetric:
+      type: object
+      required: [id, title, unit, formula, source]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        unit: { type: string, enum: [count, minutes, percent] }
+        formula: { type: string }
+        source: { type: string }
+    InsightItem:
+      type: object
+      required: [id, type, title, when]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string }
+        title: { type: string }
+        when: { type: string, format: date-time }
+    InsightSeries:
+      allOf:
+        - $ref: "#/components/schemas/InsightMetric"
+        - type: object
+          required: [points, total, trend]
+          properties:
+            points:
+              type: array
+              items:
+                type: object
+                required: [week, monday, value]
+                properties:
+                  week: { type: string }
+                  monday: { type: string, format: date }
+                  value: { type: number }
+            total: { type: number }
+            trend:
+              type: object
+              required: [direction, change, recent, before, sentence]
+              properties:
+                direction: { type: string, enum: [up, down, flat, new] }
+                change: { type: number }
+                recent: { type: number }
+                before: { type: number }
+                sentence: { type: string }
+    WeeklyReview:
+      type: object
+      required: [week, from, to, previous, next, metrics, highlights, sections, carry_over]
+      properties:
+        week: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        previous: { type: string }
+        next: { type: [string, "null"] }
+        metrics:
+          type: array
+          items:
+            type: object
+            required: [id, title, unit, formula, value, previous]
+            properties:
+              id: { type: string }
+              title: { type: string }
+              unit: { type: string }
+              formula: { type: string }
+              value: { type: number }
+              previous: { type: number }
+        highlights: { type: array, items: { type: string } }
+        sections:
+          type: array
+          items:
+            type: object
+            required: [metric, title, items, more]
+            properties:
+              metric: { type: string }
+              title: { type: string }
+              items: { type: array, items: { $ref: "#/components/schemas/InsightItem" } }
+              more: { type: integer }
+        carry_over: { type: array, items: { $ref: "#/components/schemas/InsightItem" } }
     HabitScorecard:
       type: object
       required: [items]

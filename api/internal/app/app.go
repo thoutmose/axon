@@ -25,6 +25,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/health"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
+	"github.com/thoutmose/axon/api/internal/insights"
 	"github.com/thoutmose/axon/api/internal/knowledge"
 	"github.com/thoutmose/axon/api/internal/media"
 	"github.com/thoutmose/axon/api/internal/notes"
@@ -59,6 +60,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	budgetAPI := budget.NewHandlers(pool, log)
 	knowledgeAPI := knowledge.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
+	insightsAPI := insights.NewHandlers(pool, log)
 	contact := os.Getenv("AXON_CONTACT")
 	if contact == "" {
 		contact = cfg.BaseURL
@@ -139,6 +141,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				healthAPI.Routes(r)
 				knowledgeAPI.Routes(r)
 				dashboardAPI.Routes(r)
+				insightsAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})
 		})
