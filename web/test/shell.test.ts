@@ -112,7 +112,11 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/agents',
 		'/habits',
 		'/projects',
-		'/roadmaps'
+		'/roadmaps',
+		'/areas',
+		'/resources',
+		'/archive',
+		'/budget'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -451,26 +455,27 @@ test('import an open curriculum with attribution, track skills, and use the grap
 		page.getByRole('heading', { level: 1, name: 'OSSU Computer Science' })
 	).toBeVisible();
 	await expect(page.getByText('Open Source Society University (OSSU)')).toBeVisible();
-	await page.getByLabel('Status of Systematic Program Design').selectOption('done');
-	await expect(page.getByText('1 of 63 skills done')).toBeVisible();
+	await page.getByLabel('Status of Systematic program design').selectOption('done');
+	await expect(page.getByText('1 of 42 skills done')).toBeVisible();
 	await noSeriousA11yViolations(page);
 
 	await page.getByRole('link', { name: 'Skill graph' }).click();
-	const graph = page.getByRole('group', { name: /Skill graph: 63 skills, 1 done/ });
+	const graph = page.getByRole('group', { name: /Skill graph: 42 skills, 1 done/ });
 	await expect(graph).toBeVisible();
-	await graph.getByRole('link', { name: 'Class-based Program Design, todo' }).click();
-	const detail = page.getByRole('complementary', { name: 'Class-based Program Design' });
-	await expect(detail).toContainText('Needs first: Systematic Program Design');
+	await graph.getByRole('link', { name: 'Programming language concepts, todo' }).click();
+	const detail = page.getByRole('complementary', { name: 'Programming language concepts' });
+	await expect(detail).toContainText('Needs first: Systematic program design');
+	await expect(detail.getByRole('link', { name: /Programming Languages/ })).toBeVisible(); // the course teaching it
 	await detail.getByRole('button', { name: 'Learning' }).click();
 	await expect(
-		graph.getByRole('link', { name: 'Class-based Program Design, learning' })
+		graph.getByRole('link', { name: 'Programming language concepts, learning' })
 	).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 
 test('import a library roadmap of the best resources, then rename and edit it', async () => {
 	await page.goto('/roadmaps');
-	await page.getByLabel('Filter domains').fill('kubernetes');
+	await page.getByLabel('Filter domains').fill('podman');
 	await expect(page.getByRole('button', { name: /^Import / })).toHaveCount(1);
 	await page.getByRole('button', { name: 'Import Docker, Podman, and Kubernetes' }).click();
 	await expect(
@@ -484,8 +489,9 @@ test('import a library roadmap of the best resources, then rename and edit it', 
 	await edit.getByRole('button', { name: 'Save' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'My container path' })).toBeVisible();
 
-	await page.getByRole('link', { name: 'Docker: Get started' }).click();
-	const detail = page.getByRole('complementary', { name: 'Docker: Get started' });
+	await page.getByRole('link', { name: 'Containers', exact: true }).click();
+	const detail = page.getByRole('complementary', { name: 'Containers' });
+	await expect(detail.getByRole('link', { name: /Docker: Get started/ })).toBeVisible();
 	await detail.getByRole('button', { name: 'Edit' }).click();
 	const dialog = page.getByRole('dialog', { name: 'Edit skill' });
 	await dialog.getByLabel('Skill', { exact: true }).fill('Docker basics');
@@ -517,6 +523,120 @@ test('take the skills assessment, then start a roadmap at your level', async () 
 	await expect(page.getByRole('heading', { level: 1, name: 'Python' })).toBeVisible();
 	await expect(page.getByText(/Placed by your skills assessment/)).toBeVisible();
 	await expect(page.getByText(/^\d+ of \d+ skills done/)).not.toHaveText(/^0 of/);
+});
+
+test('tasks open on a GTD board, and a Kanban board moves work along', async () => {
+	await page.goto('/tasks');
+	const gtd = page.getByRole('group', { name: 'GTD board' });
+	await expect(gtd.getByRole('heading', { name: /Next actions/ })).toBeVisible();
+	await page.getByLabel('Add a task').fill('Plan the garden');
+	await page.keyboard.press('Enter');
+	const card = gtd.getByRole('listitem').filter({ hasText: 'Plan the garden' });
+	await expect(card).toBeVisible(); // captured to the inbox column
+	await card.getByLabel('Move Plan the garden to').selectOption('next');
+	await expect(page.getByText('Moved “Plan the garden” to Next actions.')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('link', { name: 'Kanban' }).click();
+	const kanban = page.getByRole('group', { name: 'Kanban board' });
+	await kanban.getByRole('button', { name: 'Plan the garden' }).focus();
+	await page.keyboard.press('Shift+ArrowRight');
+	await expect(
+		kanban
+			.getByRole('region', { name: /In progress/ })
+			.getByRole('button', { name: 'Plan the garden' })
+	).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('the calendar opens on a month grid, with the agenda one click away', async () => {
+	await page.goto('/calendar');
+	await expect(page.getByRole('table')).toBeVisible();
+	await expect(page.getByRole('columnheader')).toHaveCount(7);
+	await noSeriousA11yViolations(page);
+	await page.getByRole('link', { name: 'Agenda' }).click();
+	await expect(page).toHaveURL(/layout=agenda/);
+	await expect(page.getByRole('table')).toHaveCount(0);
+});
+
+test('areas and resources: start from a template, archive, and restore', async () => {
+	await page.goto('/areas');
+	await page.getByRole('button', { name: '＋ Health' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Health' })).toBeVisible();
+	await expect(page.getByLabel('Standard to keep')).toHaveValue(/sleep 7–8 h/);
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Archive' }).click();
+	await expect(page.getByText('Archived. Find it in the Archive.')).toBeVisible();
+	await page.goto('/archive');
+	await page.getByRole('link', { name: 'Health' }).click();
+	await page.getByRole('button', { name: 'Restore' }).click();
+	await expect(page.getByText('Restored.')).toBeVisible();
+
+	await page.goto('/resources');
+	await page.getByLabel('New resource').fill('Rust');
+	await page.keyboard.press('Enter');
+	await expect(page.getByRole('heading', { level: 1, name: 'Rust' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('goals, habits, and projects start from templates', async () => {
+	await page.goto('/goals');
+	await page.getByRole('button', { name: '＋ Read 12 books this year' }).click();
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Read 12 books this year' })
+	).toBeVisible();
+	await expect(page.getByText('12 books', { exact: true })).toBeVisible(); // a dated milestone
+	await page.getByRole('button', { name: '＋ Plan, build, review' }).click();
+	await expect(page.getByText('Plan written')).toBeVisible();
+
+	await page.goto('/habits');
+	await page.getByRole('button', { name: '＋ Meditate' }).click();
+	await expect(page.getByRole('textbox', { name: 'Two-minute version' })).toHaveValue(
+		'One mindful breath'
+	);
+
+	await page.goto('/projects');
+	await page.getByRole('button', { name: '＋ Writing project' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Writing project' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'First draft' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('note templates live in the vault and fill their placeholders', async () => {
+	await page.goto('/notes');
+	await page.getByRole('button', { name: /New note/ }).click();
+	const dialog = page.getByRole('dialog', { name: 'New note' });
+	await dialog.getByRole('button', { name: 'copy these built-in ones there' }).click();
+	await expect(page.getByText(/The templates are in Templates\//)).toBeVisible();
+	await dialog.getByLabel('Title').fill('Raft consensus');
+	await dialog
+		.getByRole('radio', { name: /Literature note Templates\/Literature note\.md/ })
+		.check();
+	await dialog.getByRole('button', { name: 'Create' }).click();
+	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
+	await expect(page.getByRole('textbox', { name: /Markdown/ })).toHaveValue(
+		/title: Raft consensus/
+	);
+});
+
+test('budget: categories, a monthly budget, and exact totals', async () => {
+	await page.goto('/budget');
+	await page.getByRole('button', { name: 'Start with common categories' }).click();
+	await page.getByRole('button', { name: 'Edit Groceries' }).click();
+	const edit = page.getByRole('dialog', { name: 'Edit category' });
+	await edit.getByLabel(/Monthly budget/).fill('400');
+	await edit.getByRole('button', { name: 'Save' }).click();
+	await page.getByLabel('Amount', { exact: true }).fill('0,29');
+	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
+	await page.getByLabel('Payee', { exact: true }).fill('Bakery');
+	await page.getByRole('button', { name: 'Record' }).click();
+	await page.getByLabel('Amount', { exact: true }).fill('12.71');
+	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
+	await page.getByRole('button', { name: 'Record' }).click();
+	const spent = page.getByRole('region', { name: 'This month' });
+	await expect(spent).toContainText(/13[.,]00/); // 0.29 + 12.71, with no float drift
+	await expect(page.getByRole('progressbar', { name: /Groceries: 3 % of budget/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
