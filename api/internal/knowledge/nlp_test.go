@@ -7,7 +7,7 @@ import (
 
 func TestTokensStemAndDropStopwords(t *testing.T) {
 	got := Tokens("The notes on Learning: l'idée des révisions, and studying!")
-	want := []string{"note", "learn", "idée", "révision", "study"}
+	want := []string{"note", "learn", "idé", "révision", "studi"} // English text: the English Snowball stemmer
 	if !slices.Equal(got, want) {
 		t.Fatalf("Tokens = %v, want %v", got, want)
 	}
@@ -15,7 +15,7 @@ func TestTokensStemAndDropStopwords(t *testing.T) {
 
 func TestCleanStripsMarkdown(t *testing.T) {
 	got := Tokens(Clean("---\ntags: [x]\n---\n# Title\n\n```go\nfunc main()\n```\nSee https://example.org and `code` **bold**"))
-	if !slices.Equal(got, []string{"title", "bold"}) {
+	if !slices.Equal(got, []string{"titl", "bold"}) {
 		t.Fatalf("Clean = %v", got)
 	}
 }
@@ -58,5 +58,26 @@ func TestWordsShowTheWrittenForm(t *testing.T) {
 	w.Add(TokensWithWords("spaced repetition, spaced practice"))
 	if got := w.Of(Stem("spaced")); got != "spaced" {
 		t.Fatalf("Of = %q", got)
+	}
+}
+
+func TestLanguageAndFrenchStemming(t *testing.T) {
+	fr := "Les étudiants apprennent mieux quand ils révisent leurs notes et les cartes."
+	if Language(fr) != "fr" || Language("The students learn better when they review their notes.") != "en" {
+		t.Fatal("language detection")
+	}
+	got := Tokens(fr)
+	if !slices.Contains(got, "étudi") || !slices.Contains(got, "cart") {
+		t.Fatalf("French tokens = %v", got)
+	}
+}
+
+func TestWordNetSynonyms(t *testing.T) {
+	// From Open English WordNet: each word's most common sense.
+	if !Synonyms(Stem("remark"), Stem("note")) {
+		t.Error("remark and note should be synonyms")
+	}
+	if Synonyms(Stem("note"), Stem("bill")) {
+		t.Error("a rare sense linked note to bill")
 	}
 }
