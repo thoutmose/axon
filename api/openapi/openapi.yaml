@@ -34,6 +34,8 @@ tags:
     description: Entities shared by every domain type, the links between them, their timelines, and search.
   - name: tasks
     description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
+  - name: para
+    description: PARA areas (responsibilities kept to a standard) and resources (topics of ongoing interest). File anything under an area with the in_area relation; archived items are listed with ?status=archived.
   - name: goals
     description: Goals with an optional measure, milestones, and progress that explains exactly what it was computed from. Link tasks and notes to a goal or milestone with the supports relation.
   - name: dashboard
@@ -1271,6 +1273,204 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/SyncConflict" }
 
+  /v1/areas:
+    get:
+      tags: [para]
+      operationId: listAreas
+      summary: Areas with a status (default active), by title
+      parameters:
+        - name: status
+          in: query
+          schema: { enum: [active, archived], default: active }
+      responses:
+        "200":
+          description: Up to 500 areas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ParaItem" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [para]
+      operationId: createArea
+      summary: Create an area
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ParaFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/areas/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [para]
+      operationId: getArea
+      summary: One area
+      responses:
+        "200":
+          description: The area.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [para]
+      operationId: updateArea
+      summary: Change an area; archiving keeps its links
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParaFields" }
+      responses:
+        "200":
+          description: The updated area.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [para]
+      operationId: deleteArea
+      summary: Delete an area and its links (what was filed under it stays)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/resources:
+    get:
+      tags: [para]
+      operationId: listResources
+      summary: Resources with a status (default active), by title
+      parameters:
+        - name: status
+          in: query
+          schema: { enum: [active, archived], default: active }
+      responses:
+        "200":
+          description: Up to 500 resources.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ParaItem" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [para]
+      operationId: createResource
+      summary: Create a resource
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ParaFields"
+                - required: [title]
+      responses:
+        "201":
+          description: Created.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/resources/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [para]
+      operationId: getResource
+      summary: One resource
+      responses:
+        "200":
+          description: The resource.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [para]
+      operationId: updateResource
+      summary: Change a resource; archiving keeps its links
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParaFields" }
+      responses:
+        "200":
+          description: The updated resource.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "412": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "428": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [para]
+      operationId: deleteResource
+      summary: Delete a resource and its links (what was filed under it stays)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/goals:
     get:
       tags: [goals]
@@ -4340,6 +4540,26 @@ components:
       properties:
         day: { type: string, format: date }
         value: { type: integer }
+    ParaItem:
+      type: object
+      required: [id, title, description, url, status, linked, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        url: { type: [string, "null"] }
+        status: { enum: [active, archived] }
+        linked: { type: integer, description: Connections to and from it. }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ParaFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        description: { type: string, maxLength: 20000 }
+        url: { type: string, maxLength: 1000, description: "http(s) link, or empty to clear." }
+        status: { enum: [active, archived] }
     Skill:
       type: object
       required: [id, title, description, url, section, status, kind, position, resources, updated_at]

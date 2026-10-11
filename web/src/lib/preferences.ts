@@ -42,7 +42,9 @@ const icons: Record<string, [string, string]> = {
 	project: ['🗂️', '▦'],
 	habit: ['🌱', '↻'],
 	roadmap: ['🧭', '⌖'],
-	skill: ['🎓', '◆']
+	skill: ['🎓', '◆'],
+	area: ['🧱', '▣'],
+	resource: ['📚', '❏']
 };
 
 /** The icon for an entity type in the chosen icon theme ("" for none). */
