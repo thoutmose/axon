@@ -873,6 +873,84 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/areas': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Areas with a status (default active), by title */
+		get: operations['listAreas'];
+		put?: never;
+		/** Create an area */
+		post: operations['createArea'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/areas/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One area */
+		get: operations['getArea'];
+		put?: never;
+		post?: never;
+		/** Delete an area and its links (what was filed under it stays) */
+		delete: operations['deleteArea'];
+		options?: never;
+		head?: never;
+		/** Change an area; archiving keeps its links */
+		patch: operations['updateArea'];
+		trace?: never;
+	};
+	'/v1/resources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Resources with a status (default active), by title */
+		get: operations['listResources'];
+		put?: never;
+		/** Create a resource */
+		post: operations['createResource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/resources/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One resource */
+		get: operations['getResource'];
+		put?: never;
+		post?: never;
+		/** Delete a resource and its links (what was filed under it stays) */
+		delete: operations['deleteResource'];
+		options?: never;
+		head?: never;
+		/** Change a resource; archiving keeps its links */
+		patch: operations['updateResource'];
+		trace?: never;
+	};
 	'/v1/goals': {
 		parameters: {
 			query?: never;
@@ -2847,6 +2925,29 @@ export interface components {
 			day: string;
 			value: number;
 		};
+		ParaItem: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			url: string | null;
+			/** @enum {unknown} */
+			status: 'active' | 'archived';
+			/** @description Connections to and from it. */
+			linked: number;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		ParaFields: {
+			title?: string;
+			description?: string;
+			/** @description http(s) link, or empty to clear. */
+			url?: string;
+			/** @enum {unknown} */
+			status?: 'active' | 'archived';
+		};
 		Skill: {
 			/** Format: uuid */
 			id: string;
@@ -4563,6 +4664,294 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			409: components['responses']['SyncConflict'];
+		};
+	};
+	listAreas: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 areas. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['ParaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createArea: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getArea: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The area. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteArea: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateArea: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'];
+			};
+		};
+		responses: {
+			/** @description The updated area. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	listResources: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 resources. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['ParaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createResource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getResource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The resource. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteResource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateResource: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'];
+			};
+		};
+		responses: {
+			/** @description The updated resource. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
 		};
 	};
 	listGoals: {

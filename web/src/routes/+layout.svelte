@@ -74,6 +74,11 @@
 			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}
 				>{t('Projects')}</a
 			>
+			<a href="/areas" aria-current={current('/areas') ? 'page' : undefined}>{t('Areas')}</a>
+			<a href="/resources" aria-current={current('/resources') ? 'page' : undefined}
+				>{t('Resources')}</a
+			>
+			<a href="/archive" aria-current={current('/archive') ? 'page' : undefined}>{t('Archive')}</a>
 			<a
 				href="/roadmaps"
 				aria-current={current('/roadmaps') || current('/cards') ? 'page' : undefined}

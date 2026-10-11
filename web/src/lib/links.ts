@@ -9,7 +9,8 @@ const wording: Record<string, { forward: string; reverse: string }> = {
 	relates_to: { forward: 'Related to', reverse: 'Related to' },
 	supports: { forward: 'Supports', reverse: 'Supported by' },
 	blocks: { forward: 'Blocks', reverse: 'Blocked by' },
-	references: { forward: 'Mentions', reverse: 'Mentioned in' }
+	references: { forward: 'Mentions', reverse: 'Mentioned in' },
+	in_area: { forward: 'In area', reverse: 'Includes' }
 };
 
 /** Relations made automatically (wikilinks) are shown but not offered. */
@@ -52,7 +53,9 @@ export function href(e: { id: string; type: string }): string | null {
 		habit: '/habits/',
 		task: '/tasks/',
 		project: '/projects/',
-		roadmap: '/roadmaps/'
+		roadmap: '/roadmaps/',
+		area: '/areas/',
+		resource: '/resources/'
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;
 }
@@ -65,5 +68,7 @@ export const typeNames: Record<string, string> = {
 	habit: 'Habit',
 	project: 'Project',
 	roadmap: 'Roadmap',
-	skill: 'Skill'
+	skill: 'Skill',
+	area: 'Area',
+	resource: 'Resource'
 };

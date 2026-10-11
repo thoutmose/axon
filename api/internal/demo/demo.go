@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/settings"
@@ -154,6 +155,25 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		{career.ID, "Finish the Python roadmap", false}, {career.ID, "Read Designing Data-Intensive Applications", false}} {
 		if s.err == nil {
 			_, s.err = goals.AddMilestone(ctx, tx, user, ms.goal, graph.UserActor, goals.MilestoneFields{Title: ptr(ms.title), Done: ptr(ms.done), DueOn: s.day(20 * (i%3 + 1))})
+		}
+	}
+
+	// PARA areas and resources, with the goals filed under their areas.
+	for _, a := range []struct {
+		title, standard string
+		goal            uuid.UUID
+	}{{"Health", "Sleep 7–8 h, move every day, eat mostly plants.", health.ID}, {"Career", "Learn every week and ship work I am proud of.", career.ID}} {
+		var area para.Item
+		if s.err == nil {
+			area, s.err = para.Areas.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(a.title), Description: ptr(a.standard)})
+		}
+		if s.err == nil {
+			_, s.err = graph.CreateLink(ctx, tx, user, graph.UserActor, a.goal, para.InArea, area.ID)
+		}
+	}
+	for _, r := range [][2]string{{"Recipes", ""}, {"Running", "https://www.runnersworld.com/"}} {
+		if s.err == nil {
+			_, s.err = para.Resources.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(r[0]), URL: ptr(r[1])})
 		}
 	}
 

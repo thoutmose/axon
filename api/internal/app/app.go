@@ -24,6 +24,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
@@ -50,6 +51,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	habitsAPI := habits.NewHandlers(pool, log)
 	projectsAPI := projects.NewHandlers(pool, log)
 	roadmapsAPI := roadmaps.NewHandlers(pool, log)
+	paraAPI := para.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
@@ -117,6 +119,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				focusAPI.Routes(r)
 				cardsAPI.Routes(r)
 				progressAPI.Routes(r)
+				paraAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})
