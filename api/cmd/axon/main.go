@@ -30,6 +30,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/demo"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/instance"
+	"github.com/thoutmose/axon/api/internal/media"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -115,6 +116,7 @@ func serve() error {
 	if demoEnabled() {
 		go keepDemo(ctx, pool, log)
 	}
+	go pruneMedia(ctx, pool, log)
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
@@ -143,6 +145,20 @@ func demoEnabled() bool { return os.Getenv("AXON_DEMO") == "1" }
 
 // keepDemo creates the demo account once the database is migrated, then
 // resets it every night after 03:00 UTC, so visitors' changes never pile up.
+// pruneMedia drops expired catalogue data once a day (TMDB allows six months).
+func pruneMedia(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
+	for {
+		if err := media.Prune(ctx, pool); err != nil && ctx.Err() == nil {
+			log.Error("media prune failed", "err", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(24 * time.Hour):
+		}
+	}
+}
+
 func keepDemo(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 	last := time.Now().UTC()
 	for {

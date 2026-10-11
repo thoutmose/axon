@@ -25,6 +25,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/knowledge"
+	"github.com/thoutmose/axon/api/internal/media"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/privacy"
@@ -57,6 +58,11 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	budgetAPI := budget.NewHandlers(pool, log)
 	knowledgeAPI := knowledge.NewHandlers(pool, log)
 	dashboardAPI := dashboard.NewHandlers(pool, log)
+	contact := os.Getenv("AXON_CONTACT")
+	if contact == "" {
+		contact = cfg.BaseURL
+	}
+	mediaAPI := media.NewHandlers(pool, log, media.NewCatalogs(pool, version, contact, os.Getenv("TMDB_API_KEY")))
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
 		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
@@ -126,6 +132,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)
+				mediaAPI.Routes(r)
 				knowledgeAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)

@@ -1885,6 +1885,127 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/media': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Films, series, and books, most recently changed first */
+		get: operations['listMedia'];
+		put?: never;
+		/**
+		 * Add a film, series, or book, by hand or from a catalogue entry
+		 * @description With catalog, the entry's details and cover are fetched and copied to Axon; fields you send win over the catalogue's.
+		 */
+		post: operations['createMedia'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/catalogs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Which catalogues this server can search */
+		get: operations['getMediaCatalogs'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Search Open Library (books) or TMDB (films and series)
+		 * @description Results are cached for a week. Each person has 30 lookups a minute.
+		 */
+		get: operations['searchMediaCatalog'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/recommendations': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * What to watch or read next from your own list, each with its reasons
+		 * @description No AI and no catalogue: reasons come from what you rated 8 or more and what you started.
+		 */
+		get: operations['getMediaRecommendations'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/covers/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A cover copied from a catalogue, served by Axon */
+		get: operations['getMediaCover'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One film, series, or book */
+		get: operations['getMedia'];
+		put?: never;
+		post?: never;
+		/** Delete an item and its links */
+		delete: operations['deleteMedia'];
+		options?: never;
+		head?: never;
+		/**
+		 * Change status, rating, progress, review, or details
+		 * @description Moving to doing or done fills in empty start and finish dates; done sets progress to the total.
+		 */
+		patch: operations['updateMedia'];
+		trace?: never;
+	};
 	'/v1/progress': {
 		parameters: {
 			query?: never;
@@ -2990,6 +3111,78 @@ export interface components {
 				type: string;
 				title: string;
 			} | null;
+		};
+		MediaItem: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** @enum {unknown} */
+			kind: 'film' | 'series' | 'book';
+			/** @enum {unknown} */
+			status: 'want' | 'doing' | 'done' | 'dropped';
+			year: number | null;
+			/** @description Authors, directors, or creators, comma-separated. */
+			creators: string;
+			genres: string[];
+			rating: number | null;
+			/** @description Pages, episodes, or minutes, whichever total counts. */
+			progress: number;
+			total: number | null;
+			/** Format: date */
+			started_on: string | null;
+			/** Format: date */
+			finished_on: string | null;
+			review: string;
+			/** @enum {unknown} */
+			source: 'manual' | 'tmdb' | 'openlibrary';
+			source_id: string;
+			/** @description From the catalogue; TMDB text is dropped after six months. */
+			overview: string;
+			/**
+			 * Format: uuid
+			 * @description Fetch it from /v1/media/covers/{id}.
+			 */
+			cover_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		/** @description Unknown fields are refused by the server. */
+		MediaFields: {
+			title?: string;
+			/** @enum {unknown} */
+			kind?: 'film' | 'series' | 'book';
+			/** @enum {unknown} */
+			status?: 'want' | 'doing' | 'done' | 'dropped';
+			/** @description 0 clears it. */
+			year?: number;
+			creators?: string;
+			genres?: string[];
+			/** @description 0 clears it. */
+			rating?: number;
+			progress?: number;
+			/** @description 0 clears it. */
+			total?: number;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			started_on?: string;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			finished_on?: string;
+			review?: string;
+		};
+		MediaCandidate: {
+			/** @enum {unknown} */
+			source: 'tmdb' | 'openlibrary';
+			source_id: string;
+			/** @enum {unknown} */
+			kind: 'film' | 'series' | 'book';
+			title: string;
+			year: number | null;
+			creators: string;
+			genres: string[];
+			overview: string;
+			total: number | null;
+			has_cover: boolean;
 		};
 		HabitScorecard: {
 			items: {
@@ -7878,6 +8071,259 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listMedia: {
+		parameters: {
+			query?: {
+				kind?: 'film' | 'series' | 'book';
+				status?: 'want' | 'doing' | 'done' | 'dropped';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The items. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['MediaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createMedia: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MediaFields'] & {
+					catalog?: {
+						/** @enum {unknown} */
+						source: 'tmdb' | 'openlibrary';
+						source_id: string;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description The new item. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getMediaCatalogs: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Books come from Open Library; films and series need a TMDB key on the server. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						books: boolean;
+						films_and_series: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	searchMediaCatalog: {
+		parameters: {
+			query: {
+				kind: 'film' | 'series' | 'book';
+				q: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Catalogue entries. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['MediaCandidate'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getMediaRecommendations: {
+		parameters: {
+			query?: {
+				kind?: 'film' | 'series' | 'book';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 10 recommendations, best first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							item: components['schemas']['MediaItem'];
+							score: number;
+							reasons: string[];
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getMediaCover: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The image. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/jpeg': string;
+					'image/png': string;
+					'image/webp': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The item. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MediaFields'];
+			};
+		};
+		responses: {
+			/** @description The item. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
 				};
 			};
 			400: components['responses']['Problem'];

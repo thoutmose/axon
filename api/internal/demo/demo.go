@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/media"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/projects"
@@ -176,6 +177,32 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		if s.err == nil {
 			_, s.err = para.Resources.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(r[0]), URL: ptr(r[1])})
 		}
+	}
+
+	// Films, series, and books: finished favourites make the recommendations explain themselves.
+	for _, m := range []struct {
+		title, kind, status, creators string
+		genres                        []string
+		rating, progress, total       int
+	}{
+		{"Arrival", "film", "done", "Denis Villeneuve", []string{"Science fiction"}, 9, 0, 0},
+		{"Dune: Part One", "film", "want", "Denis Villeneuve", []string{"Science fiction"}, 0, 0, 0},
+		{"Severance", "series", "doing", "Dan Erickson", []string{"Drama", "Mystery"}, 0, 4, 19},
+		{"The Left Hand of Darkness", "book", "done", "Ursula K. Le Guin", []string{"Science fiction"}, 10, 0, 0},
+		{"The Dispossessed", "book", "want", "Ursula K. Le Guin", []string{"Science fiction"}, 0, 0, 0},
+		{"Designing Data-Intensive Applications", "book", "doing", "Martin Kleppmann", []string{"Software"}, 0, 210, 611},
+	} {
+		if s.err != nil {
+			break
+		}
+		f := media.Fields{Title: ptr(m.title), Kind: ptr(m.kind), Status: ptr(m.status), Creators: ptr(m.creators), Genres: &m.genres, Progress: ptr(m.progress)}
+		if m.rating > 0 {
+			f.Rating = ptr(m.rating)
+		}
+		if m.total > 0 {
+			f.Total = ptr(m.total)
+		}
+		_, s.err = media.Create(ctx, tx, user, graph.UserActor, f, nil, s.today)
 	}
 
 	// A month of budget: categories with budgets, income, and spending.
