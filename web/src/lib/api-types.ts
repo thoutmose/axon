@@ -2006,6 +2006,154 @@ export interface paths {
 		patch: operations['updateMedia'];
 		trace?: never;
 	};
+	'/v1/health/status': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Whether health logging and food lookups are allowed, and which catalogues exist */
+		get: operations['getHealthStatus'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/data': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete every food entry and workout (withdrawing the consent does this too) */
+		delete: operations['deleteHealthData'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/food': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** One day of food: entries, totals, and the seven days ending on it */
+		get: operations['getFoodDay'];
+		put?: never;
+		/** Log something eaten, from a catalogue food and grams or with the numbers typed in */
+		post: operations['addFoodEntry'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/food/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a food entry */
+		delete: operations['deleteFoodEntry'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/foods/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Search Open Food Facts (default) or USDA FoodData Central
+		 * @description Needs the food_lookups consent. Cached for 30 days; 10 lookups a minute per person, and Open Food Facts' own limit of 10 searches a minute for the server.
+		 */
+		get: operations['searchFoods'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/foods/barcode/{code}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				code: string;
+			};
+			cookie?: never;
+		};
+		/** Look a packaged food up in Open Food Facts by barcode */
+		get: operations['getFoodByBarcode'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/workouts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Workouts in a date range (the last 30 days by default) and this week's totals */
+		get: operations['listWorkouts'];
+		put?: never;
+		/** Log a workout with its sets */
+		post: operations['createWorkout'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/workouts/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Replace a workout and its sets */
+		put: operations['replaceWorkout'];
+		post?: never;
+		/** Delete a workout */
+		delete: operations['deleteWorkout'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/progress': {
 		parameters: {
 			query?: never;
@@ -3183,6 +3331,76 @@ export interface components {
 			overview: string;
 			total: number | null;
 			has_cover: boolean;
+		};
+		Nutrients: {
+			kcal: number;
+			protein_g: number;
+			carbs_g: number;
+			fat_g: number;
+		};
+		FoodEntry: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			eaten_on: string;
+			/** @enum {string} */
+			meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+			name: string;
+			grams: number | null;
+			kcal: number | null;
+			protein_g: number | null;
+			carbs_g: number | null;
+			fat_g: number | null;
+			/** Format: uuid */
+			food_id: string | null;
+		};
+		/** @description Per 100 g. Open Food Facts data is under the ODbL; USDA FoodData Central is public domain. */
+		Food: {
+			/** Format: uuid */
+			id: string;
+			/** @enum {string} */
+			source: 'off' | 'usda';
+			source_id: string;
+			name: string;
+			brand: string;
+			kcal: number | null;
+			protein_g: number | null;
+			carbs_g: number | null;
+			fat_g: number | null;
+			fiber_g: number | null;
+			serving_g: number | null;
+		};
+		WorkoutSet: {
+			exercise: string;
+			reps?: number | null;
+			weight_kg?: number | null;
+			distance_km?: number | null;
+			seconds?: number | null;
+		};
+		WorkoutInput: {
+			/** Format: date */
+			done_on: string;
+			/** @enum {string} */
+			kind: 'strength' | 'cardio' | 'mobility' | 'sport' | 'other';
+			title: string;
+			minutes?: number | null;
+			/** @description How hard it felt (RPE), 1 to 10. */
+			effort?: number | null;
+			notes?: string;
+			sets?: components['schemas']['WorkoutSet'][];
+		};
+		Workout: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			done_on: string;
+			/** @enum {string} */
+			kind: 'strength' | 'cardio' | 'mobility' | 'sport' | 'other';
+			title: string;
+			minutes: number | null;
+			effort: number | null;
+			notes: string;
+			sets: components['schemas']['WorkoutSet'][];
 		};
 		HabitScorecard: {
 			items: {
@@ -8334,6 +8552,337 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getHealthStatus: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Consents and catalogues. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description Consent health_data: needed to store or read any log. */
+						consented: boolean;
+						/** @description Consent food_lookups: needed to search the catalogues. */
+						lookups_consented: boolean;
+						/** @description Whether USDA FoodData Central is set up on this server. */
+						usda: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	deleteHealthData: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	getFoodDay: {
+		parameters: {
+			query?: {
+				/** @description Defaults to today in your time zone. */
+				date?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The day. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						date: string;
+						entries: components['schemas']['FoodEntry'][];
+						totals: components['schemas']['Nutrients'];
+						week: (components['schemas']['Nutrients'] & {
+							/** Format: date */
+							date: string;
+						})[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	addFoodEntry: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** Format: date */
+					eaten_on: string;
+					/** @enum {string} */
+					meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+					/** @description Defaults to the food's name. */
+					name?: string;
+					/** @description With food_id; defaults to one serving. */
+					grams?: number;
+					kcal?: number;
+					protein_g?: number;
+					carbs_g?: number;
+					fat_g?: number;
+					/**
+					 * Format: uuid
+					 * @description Nutrients are then worked out from the food and grams.
+					 */
+					food_id?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The entry. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FoodEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteFoodEntry: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	searchFoods: {
+		parameters: {
+			query: {
+				q: string;
+				source?: 'off' | 'usda';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Foods, per 100 g. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Food'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getFoodByBarcode: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				code: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The food. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Food'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	listWorkouts: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Workouts, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Workout'][];
+						week: {
+							sessions: number;
+							minutes: number;
+							days: number;
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createWorkout: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkoutInput'];
+			};
+		};
+		responses: {
+			/** @description The workout. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Workout'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	replaceWorkout: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkoutInput'];
+			};
+		};
+		responses: {
+			/** @description The workout. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Workout'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWorkout: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	getProgress: {
