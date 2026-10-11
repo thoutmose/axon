@@ -36,6 +36,8 @@ tags:
     description: Tasks with GTD statuses and contexts, date-based recurrence, and check-ins.
   - name: para
     description: PARA areas (responsibilities kept to a standard) and resources (topics of ongoing interest). File anything under an area with the in_area relation; archived items are listed with ?status=archived.
+  - name: budget
+    description: Income, expenses, and monthly budgets per category. Amounts are integer cents in one currency per person, never floats. Finance data is not part of the entity graph, so search and agents never read it; it is in the account export and erased with the account.
   - name: goals
     description: Goals with an optional measure, milestones, and progress that explains exactly what it was computed from. Link tasks and notes to a goal or milestone with the supports relation.
   - name: dashboard
@@ -1466,6 +1468,205 @@ paths:
       tags: [para]
       operationId: deleteResource
       summary: Delete a resource and its links (what was filed under it stays)
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/budget:
+    get:
+      tags: [budget]
+      operationId: getBudgetMonth
+      summary: One month of the budget, with income, expenses, and actual against budget per category
+      parameters:
+        - name: month
+          in: query
+          description: YYYY-MM; the current month (UTC) by default.
+          schema: { type: string, pattern: "^\\d{4}-(0[1-9]|1[0-2])$", example: "2026-10" }
+      responses:
+        "200":
+          description: The month. All amounts are integer cents in the person's currency.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetMonth" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/currency:
+    put:
+      tags: [budget]
+      operationId: setBudgetCurrency
+      summary: Choose the currency amounts are shown in (amounts are not converted)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currency]
+              properties:
+                currency: { type: string, example: EUR, description: ISO 4217 code. }
+      responses:
+        "200":
+          description: The currency.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [currency]
+                properties:
+                  currency: { type: string }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/categories:
+    get:
+      tags: [budget]
+      operationId: listBudgetCategories
+      summary: Income and expense categories, archived ones last
+      responses:
+        "200":
+          description: Up to 500 categories.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/BudgetCategory" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createBudgetCategory
+      summary: Create a category, optionally with a monthly budget
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BudgetCategoryFields"
+                - required: [name, kind]
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetCategory" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/categories/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateBudgetCategory
+      summary: Rename, rebudget, or archive a category (its kind is fixed)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetCategoryFields" }
+      responses:
+        "200":
+          description: The category.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetCategory" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteBudgetCategory
+      summary: Delete a category; its transactions become uncategorised
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/budget/transactions:
+    get:
+      tags: [budget]
+      operationId: listBudgetTransactions
+      summary: A month's transactions, newest first
+      parameters:
+        - name: month
+          in: query
+          schema: { type: string, example: "2026-10" }
+        - name: category
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Up to 1,000 transactions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/BudgetTransaction" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createBudgetTransaction
+      summary: Record income or an expense
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BudgetTransactionFields"
+                - required: [occurred_on, kind, amount_cents]
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetTransaction" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/transactions/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateBudgetTransaction
+      summary: Change a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetTransactionFields" }
+      responses:
+        "200":
+          description: The transaction.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetTransaction" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteBudgetTransaction
+      summary: Delete a transaction
       responses:
         "204": { description: Deleted. }
         "401": { $ref: "#/components/responses/Problem" }
@@ -4540,6 +4741,69 @@ components:
       properties:
         day: { type: string, format: date }
         value: { type: integer }
+    BudgetCategory:
+      type: object
+      required: [id, name, kind, monthly_cents, archived, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind: { enum: [income, expense] }
+        monthly_cents: { type: [integer, "null"], format: int64, description: "Monthly budget in cents (expense categories), or null." }
+        archived: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BudgetCategoryFields:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        kind: { enum: [income, expense], description: "On create only." }
+        monthly_cents: { type: [integer, "null"], format: int64, minimum: 0, maximum: 100000000000 }
+        archived: { type: boolean }
+    BudgetTransaction:
+      type: object
+      required: [id, occurred_on, kind, amount_cents, category_id, payee, note, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        occurred_on: { type: string, format: date }
+        kind: { enum: [income, expense] }
+        amount_cents: { type: integer, format: int64, minimum: 1 }
+        category_id: { type: [string, "null"], format: uuid }
+        payee: { type: string }
+        note: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BudgetTransactionFields:
+      type: object
+      additionalProperties: false
+      properties:
+        occurred_on: { type: string, format: date }
+        kind: { enum: [income, expense] }
+        amount_cents: { type: integer, format: int64, minimum: 1, maximum: 100000000000 }
+        category_id: { type: [string, "null"], format: uuid }
+        payee: { type: string, maxLength: 200 }
+        note: { type: string, maxLength: 2000 }
+    BudgetMonth:
+      type: object
+      required: [month, currency, income_cents, expense_cents, budgeted_cents, uncategorised_income_cents, uncategorised_expense_cents, lines]
+      properties:
+        month: { type: string, example: "2026-10" }
+        currency: { type: string, example: EUR }
+        income_cents: { type: integer, format: int64 }
+        expense_cents: { type: integer, format: int64 }
+        budgeted_cents: { type: integer, format: int64, description: Sum of active expense budgets. }
+        uncategorised_income_cents: { type: integer, format: int64 }
+        uncategorised_expense_cents: { type: integer, format: int64 }
+        lines:
+          type: array
+          description: Categories with their actual amount this month; the lines plus the uncategorised amounts add up to the totals.
+          items:
+            allOf:
+              - $ref: "#/components/schemas/BudgetCategory"
+              - type: object
+                required: [actual_cents]
+                properties:
+                  actual_cents: { type: integer, format: int64 }
     ParaItem:
       type: object
       required: [id, title, description, url, status, linked, created_at, updated_at]

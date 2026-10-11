@@ -314,6 +314,8 @@ func TestExportIsCompleteAndErasureLeavesNothing(t *testing.T) {
 	alice := e.client()
 	alice.register("Alice")
 	alice.mustDo(204, "PUT", "/v1/me/consents/ai_agents", []byte(`{"granted":true}`))
+	alice.mustDo(200, "PUT", "/v1/budget/currency", []byte(`{"currency":"EUR"}`))
+	alice.mustDo(201, "POST", "/v1/budget/transactions", []byte(`{"occurred_on":"2026-10-01","kind":"expense","amount_cents":1250}`))
 
 	archive := alice.mustDo(200, "GET", "/v1/me/export", nil)
 	zr, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
@@ -327,7 +329,7 @@ func TestExportIsCompleteAndErasureLeavesNothing(t *testing.T) {
 			_ = json.NewDecoder(r).Decode(&data)
 		}
 	}
-	for _, section := range []string{"account", "passkeys", "sessions", "consents", "audit_events", "agents"} {
+	for _, section := range []string{"account", "passkeys", "sessions", "consents", "audit_events", "agents", "budget"} {
 		if len(data[section]) == 0 {
 			t.Fatalf("export lacks %q", section)
 		}
