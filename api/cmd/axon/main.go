@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -28,6 +29,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/demo"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/instance"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -65,11 +67,13 @@ func run(args []string) error {
 			return errors.New("usage: axon demo reset")
 		}
 		return demoReset()
+	case "instance":
+		return instanceCmd(args[1:])
 	case "version":
 		fmt.Println(version)
 		return nil
 	default:
-		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, notes-sync, demo, or version)", cmd)
+		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, notes-sync, demo, instance, or version)", cmd)
 	}
 }
 
@@ -366,4 +370,72 @@ func databaseURL() (string, error) {
 		return "", errors.New("DATABASE_URL is not set")
 	}
 	return dsn, nil
+}
+
+// instanceCmd moves a whole installation: "export [FILE]" writes the archive
+// (to stdout without FILE), "import [FILE]" loads one into a fresh
+// installation (from stdin without FILE) and then applies newer migrations.
+func instanceCmd(args []string) error {
+	if len(args) < 1 || len(args) > 2 || (args[0] != "export" && args[0] != "import") {
+		return errors.New("usage: axon instance export|import [FILE]")
+	}
+	dsn, err := databaseURL()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	key := os.Getenv("AXON_ENCRYPTION_KEY")
+	path := ""
+	if len(args) == 2 && args[1] != "-" {
+		path = args[1]
+	}
+
+	if args[0] == "export" {
+		out := io.Writer(os.Stdout)
+		if path != "" {
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600) //nolint:gosec // an operator-chosen path
+			if err != nil {
+				return err
+			}
+			defer func() { _ = f.Close() }()
+			out = f
+		}
+		m, err := instance.Export(ctx, pool, out, version, key)
+		if err != nil {
+			return err
+		}
+		var rows int64
+		for _, t := range m.Tables {
+			rows += t.Rows
+		}
+		fmt.Fprintf(os.Stderr, "exported %d tables, %d rows, schema %d\n", len(m.Tables), rows, m.SchemaVersion)
+		return nil
+	}
+
+	in := io.Reader(os.Stdin)
+	if path != "" {
+		f, err := os.Open(path) //nolint:gosec // an operator-chosen path
+		if err != nil {
+			return err
+		}
+		defer func() { _ = f.Close() }()
+		in = f
+	}
+	latest, err := db.Latest()
+	if err != nil {
+		return err
+	}
+	m, err := instance.Import(ctx, pool, in, key, latest, func(ctx context.Context, v int64) error {
+		return db.MigrateTo(ctx, dsn, v, os.Stderr)
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "imported %d tables from Axon %s (schema %d)\n", len(m.Tables), m.AxonVersion, m.SchemaVersion)
+	return migrate("up")
 }
