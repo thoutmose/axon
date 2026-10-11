@@ -597,6 +597,68 @@ test('note templates live in the vault and fill their placeholders', async () =>
 	);
 });
 
+test('budget: categories, a monthly budget, and exact totals', async () => {
+	await page.goto('/budget');
+	await page.getByRole('button', { name: 'Start with common categories' }).click();
+	await page.getByRole('button', { name: 'Edit Groceries' }).click();
+	const edit = page.getByRole('dialog', { name: 'Edit category' });
+	await edit.getByLabel(/Monthly budget/).fill('400');
+	await edit.getByRole('button', { name: 'Save' }).click();
+	await page.getByLabel('Amount', { exact: true }).fill('0,29');
+	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
+	await page.getByLabel('Payee', { exact: true }).fill('Bakery');
+	await page.getByRole('button', { name: 'Record' }).click();
+	await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('');
+	await page.getByLabel('Amount', { exact: true }).fill('12.71');
+	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
+	await page.getByRole('button', { name: 'Record' }).click();
+	await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('');
+	const spent = page.getByRole('region', { name: 'This month' });
+	await expect(spent).toContainText(/13[.,]00/); // 0.29 + 12.71, with no float drift
+	await expect(page.getByRole('progressbar', { name: /Groceries: 3 % of budget/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('finance: accounts, a transfer that is not spending, and net worth in reports', async () => {
+	await page.goto('/budget/accounts');
+	for (const [name, opening] of [
+		['Main account', '1000'],
+		['Savings', '0']
+	]) {
+		await page.getByLabel('Name', { exact: true }).fill(name);
+		await page.getByLabel('Balance today').fill(opening);
+		await page.getByRole('button', { name: 'Add account' }).click();
+		await expect(page.getByRole('cell', { name, exact: true })).toBeVisible();
+	}
+	await page
+		.getByRole('navigation', { name: 'Finance' })
+		.getByRole('link', { name: 'Overview' })
+		.click();
+	await page.getByRole('radio', { name: 'Transfer' }).check();
+	await page.getByLabel('Amount', { exact: true }).fill('250');
+	await page.getByLabel('From account').selectOption({ label: 'Main account' });
+	await page.getByLabel('To account').selectOption({ label: 'Savings' });
+	await page.getByRole('button', { name: 'Record' }).click();
+	await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('');
+	await expect(page.getByText('⇄')).toBeVisible();
+	await page
+		.getByRole('navigation', { name: 'Finance' })
+		.getByRole('link', { name: 'Accounts' })
+		.click();
+	await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
+	const savings = page.getByRole('row', { name: /^Savings/ });
+	await expect(savings).toContainText(/250[.,]00/);
+	await expect(page.getByRole('heading', { name: /Net worth/ })).toContainText(
+		/1[\s,. ]?000[.,]00/
+	);
+	await page
+		.getByRole('navigation', { name: 'Finance' })
+		.getByRole('link', { name: 'Reports' })
+		.click();
+	await expect(page.getByText('Net worth today')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();
