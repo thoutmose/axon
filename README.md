@@ -343,7 +343,7 @@ This table is the target layout. Until measurements justify splitting, Axon runs
 ## Quick start
 
 > [!IMPORTANT]
-> Axon is early: passkey accounts, privacy controls, the graph API, a daily dashboard and calendar, Tasks, a notes workspace with vault sync, Goals, Projects with Kanban boards, learning roadmaps with a curated library, Habits, a demo account, and approval-gated AI agents on the provider of your choice work today. Further features arrive Epic by Epic.
+> Axon 1.0 is a release candidate: every area in this README works today. To run it for real, follow the **[install guide](doc/install.md)**; then read the **[user guide](doc/user-guide.md)**, how to **[upgrade](doc/upgrading.md)**, and the **[support policy](doc/support.md)**. Release notes: [CHANGELOG.md](CHANGELOG.md).
 
 ### Prerequisites
 
@@ -452,7 +452,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, and EP-20 done; EP-21 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, and EP-21 done; 1.0 awaits the external security review and an observed install.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 
