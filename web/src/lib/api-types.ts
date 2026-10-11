@@ -1336,6 +1336,25 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/avatar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your profile picture (PNG), or the generated default (SVG with your initials) */
+		get: operations['getAvatar'];
+		/** Upload a PNG or JPEG (up to 5 MB); it is cropped square, resized to 256×256, and re-encoded without metadata */
+		put: operations['putAvatar'];
+		post?: never;
+		/** Go back to the generated default picture */
+		delete: operations['deleteAvatar'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/me/settings': {
 		parameters: {
 			query?: never;
@@ -1780,6 +1799,11 @@ export interface components {
 			recovery_codes_remaining: number;
 			/** @description The shared demo account. */
 			demo: boolean;
+			/**
+			 * Format: date-time
+			 * @description When the picture last changed; add it to the avatar URL to refresh caches.
+			 */
+			avatar_updated_at: string | null;
 		};
 		Session: {
 			/** Format: uuid */
@@ -5196,6 +5220,78 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The picture. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+					'image/svg+xml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/png': string;
+				'image/jpeg': string;
+			};
+		};
+		responses: {
+			/** @description Saved. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			415: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 		};
 	};
 	getSettings: {

@@ -7,6 +7,8 @@
 	import { applyTheme, storedTheme, type Theme } from '$lib/theme';
 	import { setLocale, storedLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, storedAppearance } from '$lib/preferences';
+	import { api, type AuthStatus } from '$lib/api';
+	import { avatar, avatarSrc } from '$lib/avatar.svelte';
 
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
@@ -27,6 +29,9 @@
 		theme = storedTheme();
 		applyTheme(theme);
 		setLocale(storedLocale());
+		api<AuthStatus>('/v1/auth/status')
+			.then((s) => (avatar.signedIn = s.signed_in))
+			.catch(() => {});
 		return watchConnection();
 	});
 
@@ -81,7 +86,14 @@
 				>{t('Calendar')}</a
 			>
 			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>{t('Agents')}</a>
-			<a href="/account" aria-current={current('/account') ? 'page' : undefined}>{t('Account')}</a>
+			<a href="/account" class="account" aria-current={current('/account') ? 'page' : undefined}
+				>{#if avatar.signedIn}<img
+						src={avatarSrc(avatar.version)}
+						alt=""
+						width="22"
+						height="22"
+					/>{/if}{t('Account')}</a
+			>
 			<button
 				class="theme"
 				onclick={cycleTheme}
@@ -232,5 +244,13 @@
 		z-index: 20;
 		background: var(--surface-solid);
 		padding: var(--space-2) var(--space-3);
+	}
+	.account {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+	.account img {
+		border-radius: 50%;
 	}
 </style>

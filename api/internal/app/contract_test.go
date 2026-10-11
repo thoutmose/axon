@@ -34,6 +34,9 @@ func loadSpec(t *testing.T) {
 		openapi3filter.RegisterBodyDecoder("application/zip", openapi3filter.FileBodyDecoder)
 		openapi3filter.RegisterBodyDecoder("application/yaml", openapi3filter.FileBodyDecoder)
 		openapi3filter.RegisterBodyDecoder("text/calendar", openapi3filter.FileBodyDecoder)
+		for _, ct := range []string{"image/png", "image/jpeg", "image/svg+xml"} {
+			openapi3filter.RegisterBodyDecoder(ct, openapi3filter.FileBodyDecoder)
+		}
 		doc, err := openapi3.NewLoader().LoadFromData(openapi.Spec)
 		if err != nil {
 			panic(fmt.Sprintf("openapi.yaml does not parse: %v", err))

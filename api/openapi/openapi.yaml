@@ -2144,6 +2144,48 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
 
+  /v1/me/avatar:
+    get:
+      tags: [account]
+      operationId: getAvatar
+      summary: Your profile picture (PNG), or the generated default (SVG with your initials)
+      responses:
+        "200":
+          description: The picture.
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+            image/svg+xml:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [account]
+      operationId: putAvatar
+      summary: Upload a PNG or JPEG (up to 5 MB); it is cropped square, resized to 256×256, and re-encoded without metadata
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema: { type: string, format: binary }
+          image/jpeg:
+            schema: { type: string, format: binary }
+      responses:
+        "204": { description: Saved. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "415": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [account]
+      operationId: deleteAvatar
+      summary: Go back to the generated default picture
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
   /v1/me/settings:
     get:
       tags: [account]
@@ -3044,7 +3086,7 @@ components:
       items: { type: string, pattern: "^[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}$" }
     Me:
       type: object
-      required: [id, display_name, timezone, created_at, totp_enabled, passkeys, recovery_codes_remaining, demo]
+      required: [id, display_name, timezone, created_at, totp_enabled, passkeys, recovery_codes_remaining, demo, avatar_updated_at]
       properties:
         id: { type: string, format: uuid }
         display_name: { type: string }
@@ -3054,6 +3096,7 @@ components:
         passkeys: { type: integer }
         recovery_codes_remaining: { type: integer }
         demo: { type: boolean, description: The shared demo account. }
+        avatar_updated_at: { type: [string, "null"], format: date-time, description: "When the picture last changed; add it to the avatar URL to refresh caches." }
     Session:
       type: object
       required: [id, user_agent, created_at, last_seen_at, current]

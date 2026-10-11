@@ -12,6 +12,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/avatars"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
@@ -60,6 +61,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("agents", agents.Export)
 	priv.Register("settings", settings.Export)
 	settingsAPI := settings.NewHandlers(pool, log, agentsAPI)
+	avatarsAPI := avatars.NewHandlers(pool, log)
+	priv.RegisterFiles("account", avatars.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -79,6 +82,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				dashboardAPI.FeedRoutes(r)
 				agentsAPI.SessionRoutes(r)
 				settingsAPI.Routes(r)
+				avatarsAPI.Routes(r)
 				reposAPI.Routes(r)
 			})
 			r.Group(func(r chi.Router) {

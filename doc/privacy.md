@@ -9,6 +9,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Account (name, creation time) | `users` | Personal | Identify the account owner | Until account erasure |
 | Skills assessments (role, experience, goals, hours per week, preferred formats, self-ratings, check results, levels) | `assessments` | Personal | Place the person on roadmaps; read by the Tutor and Resources agents with `ai_agents` consent | Until deleted or erasure |
 | Preferences (language, appearance, note/project/resource templates) | `user_settings` | Personal | Apply the person's choices on every device | Until changed or erasure; included in exports |
+| Profile picture (256×256 PNG, re-encoded without metadata) | `users.avatar` | Personal | Show who is signed in | Until replaced, removed, or erasure; included in exports as `account/avatar.png` |
 | Demo account and its sample data (no personal data; whatever visitors type is visible to other visitors) | `users` with `demo = true`, and the rows it owns | Sample, shared | Let people try Axon (ADR 0015) | Reset every night |
 | Passkey public keys, names, last use | `passkeys` | Personal, security | Sign-in | Until removed or erasure |
 | Sessions (token hash, user agent, times) | `sessions` | Personal, security | Keep the user signed in | 7 days idle, 30 days absolute, or sign-out |

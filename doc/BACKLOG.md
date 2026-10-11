@@ -105,7 +105,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Done |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Done (French for the remaining pages: IS-31.06) |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Done |
-| EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
+| EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Done |
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Planned |
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Planned |
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Planned |
@@ -859,12 +859,23 @@ Cross-cutting matrix:
 
 **In scope.** Upload (PNG, JPEG, WebP; resized and stripped of metadata on the server), a deterministic generated avatar by default, shown in the header and on shared items.
 
-**Acceptance criteria**
+**Issues**
 
-- Uploaded images are re-encoded (no EXIF location survives) and limited in size.
-- Export includes the picture; erasure removes it.
+- [x] **EP-33/IS-33.01 — Upload and processing** · 3 pts · SHOULD
+  - [x] `PUT /v1/me/avatar` takes PNG or JPEG up to 5 MB and 40 megapixels (decompression bombs are refused before decoding). The picture is cropped to a centred square, box-filtered to 256×256, and re-encoded as PNG, so metadata is dropped (unit-tested with a GPS text chunk).
+  - [x] Stored in `users.avatar`: exported as `account/avatar.png` and erased with the account. `DELETE` returns to the default, and the demo cannot change its picture.
+- [x] **EP-33/IS-33.02 — Default avatar and display** · 2 pts · SHOULD
+  - [x] The default is initials on a gradient whose colours come from the account id: stable and distinct, HTML-escaped, and served inert under a `default-src 'none'` CSP.
+  - [x] Shown in the header next to Account, and on the Account page with upload and "Use the default picture"; `avatar_updated_at` refreshes caches.
 
-**Candidate issues.** Upload and processing (3) · Default avatar and display (2).
+**Exit evidence.** Unit tests cover metadata stripping, cropping and resizing, JPEG input, rejection of non-images and tiny images, and a stable, escaped default. The integration test covers the default SVG, a 422 for garbage, a 415 for GIF, a 256×256 PNG after upload, the version on `/v1/me`, deletion, and the demo's 403. Playwright uploads a picture, sees it in the header, and returns to the default, with axe.
+
+Cross-cutting matrix:
+- privacy: register row, export and erasure;
+- security: re-encoding, size limits, inert SVG;
+- accessibility: alt text is the person's name, and the header image is decorative;
+- supply chain: standard library only;
+- the remaining rows are covered by the existing account rules.
 
 ### EP-34 — Atomic Habits
 

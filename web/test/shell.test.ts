@@ -584,6 +584,32 @@ test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async (
 	await expect(page.getByText('Preferences saved.')).toBeVisible();
 });
 
+test('upload a profile picture, see it in the header, and go back to the default', async () => {
+	await page.goto('/account');
+	const pic = page.getByRole('img', { name: 'E2E Owner' });
+	await expect(pic).toHaveJSProperty('complete', true);
+	// A tiny valid PNG, 32×32, made on the fly.
+	const png = await page.evaluate(async () => {
+		const c = document.createElement('canvas');
+		c.width = c.height = 32;
+		const g = c.getContext('2d')!;
+		g.fillStyle = '#3366cc';
+		g.fillRect(0, 0, 32, 32);
+		const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), 'image/png'));
+		return Array.from(new Uint8Array(await blob.arrayBuffer()));
+	});
+	await page.getByLabel('Upload a picture').setInputFiles({
+		name: 'me.png',
+		mimeType: 'image/png',
+		buffer: Buffer.from(png)
+	});
+	await expect(page.getByText('Picture updated.')).toBeVisible();
+	await expect(page.locator('a.account img')).toHaveAttribute('src', /\?v=/);
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Use the default picture' }).click();
+	await expect(page.getByText('Back to your default picture.')).toBeVisible();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
