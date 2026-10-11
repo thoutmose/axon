@@ -245,7 +245,7 @@ test('notes workspace: command center, daily note with [[ suggestions, templates
 		.getByRole('textbox', { name: 'Title' })
 		.fill('Weekly sync');
 	await page
-		.getByRole('radio', { name: /Meeting.*From your vault: Templates\/Meeting\.md/ })
+		.getByRole('radio', { name: /Meeting.*Templates\/Meeting\.md/ })
 		.check();
 	await page.getByRole('button', { name: 'Create', exact: true }).click();
 	await expect(page.getByLabel('Markdown')).toHaveValue(
