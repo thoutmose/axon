@@ -2305,6 +2305,13 @@ export interface components {
 					kind: 'hard' | 'soft';
 				};
 			};
+			/** @description Left out on update, it keeps its current defaults. */
+			keyboard?: {
+				/** @description Single-key and g-chord shortcuts; turn off if they get in the way (WCAG 2.1.4). */
+				shortcuts: boolean;
+				/** @description Vim keybindings in the note editor. */
+				vim: boolean;
+			};
 		};
 		Settings: components['schemas']['SettingsDoc'] & {
 			ai?: {

@@ -3514,6 +3514,14 @@ components:
               properties:
                 section: { type: string, maxLength: 200 }
                 kind: { enum: [hard, soft] }
+        keyboard:
+          type: object
+          required: [shortcuts, vim]
+          additionalProperties: false
+          description: Left out on update, it keeps its current defaults.
+          properties:
+            shortcuts: { type: boolean, description: "Single-key and g-chord shortcuts; turn off if they get in the way (WCAG 2.1.4)." }
+            vim: { type: boolean, description: Vim keybindings in the note editor. }
     Settings:
       allOf:
         - $ref: "#/components/schemas/SettingsDoc"

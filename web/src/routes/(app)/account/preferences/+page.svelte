@@ -8,7 +8,7 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Settings = Schemas['Settings'];
+	type Settings = Schemas['Settings'] & { keyboard: { shortcuts: boolean; vim: boolean } };
 	let s = $state<Settings | null>(null);
 	let error = $state('');
 	let saving = $state(false);
@@ -17,7 +17,8 @@
 
 	async function load() {
 		try {
-			s = await api<Settings>('/v1/me/settings');
+			const loaded = await api<Schemas['Settings']>('/v1/me/settings');
+			s = { ...loaded, keyboard: loaded.keyboard ?? { shortcuts: true, vim: false } };
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
 		} catch (err) {
@@ -26,8 +27,8 @@
 	}
 	load();
 
-	function apply(saved: Settings) {
-		s = saved;
+	function apply(saved: Schemas['Settings']) {
+		s = { ...saved, keyboard: saved.keyboard ?? { shortcuts: true, vim: false } };
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
 	}
@@ -38,11 +39,11 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates } = s;
+			const { language, appearance, templates, keyboard } = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
-					body: { language, appearance, templates }
+					body: { language, appearance, templates, keyboard }
 				})
 			);
 			await api('/v1/me/agent-settings', {
@@ -109,6 +110,20 @@
 					</div>
 				{/each}
 			</div>
+		</Section>
+
+		<Section id="keyboard" title={t('Keyboard')}>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.keyboard.shortcuts} />
+				{t('Single-key shortcuts (n, /, ?, g then a letter)')}</label
+			>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.keyboard.vim} />
+				{t('Vim keybindings in the note editor')}</label
+			>
+			<p class="muted small">
+				{t('Turn single-key shortcuts off, or Vim mode on, in Preferences.')}
+			</p>
 		</Section>
 
 		<Section id="templates" title={t('Templates')}>
@@ -229,6 +244,13 @@
 	.small {
 		font-size: var(--text-sm);
 		font-weight: 400;
+	}
+	.check {
+		display: flex;
+		gap: var(--space-2);
+		align-items: baseline;
+		font-weight: 400;
+		margin-bottom: var(--space-2);
 	}
 	.actions {
 		margin: var(--space-4) 0 var(--space-6);

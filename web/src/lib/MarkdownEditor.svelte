@@ -2,13 +2,43 @@
 	import { tick } from 'svelte';
 	import { noteIndex } from './noteIndex.svelte';
 	import { stem } from './notes';
+	import { handle, newVim, type Mode } from './vim';
 
 	let {
 		value = $bindable(''),
 		id,
 		label = 'Markdown',
-		rows = 20
-	}: { value: string; id: string; label?: string; rows?: number } = $props();
+		rows = 20,
+		vim = false,
+		onsave
+	}: {
+		value: string;
+		id: string;
+		label?: string;
+		rows?: number;
+		vim?: boolean;
+		onsave?: () => void;
+	} = $props();
+
+	const vimState = newVim();
+	let mode = $state<Mode>('normal');
+	let command = $state('');
+
+	/** Vim keybindings: the engine decides, the textarea shows the result. */
+	function vimKey(e: KeyboardEvent): boolean {
+		if (e.altKey || ((e.ctrlKey || e.metaKey) && !(e.ctrlKey && e.key === 'r'))) return false;
+		const key = e.ctrlKey && e.key === 'r' ? 'C-r' : e.key;
+		const r = handle(vimState, key, value, area.selectionStart);
+		mode = vimState.mode;
+		command = vimState.pending.startsWith(':') ? vimState.pending : '';
+		if (!r.handled) return false;
+		e.preventDefault();
+		value = r.text;
+		const [s, end] = r.selection ?? [r.cursor, mode === 'insert' ? r.cursor : r.cursor + 1];
+		tick().then(() => area.setSelectionRange(s, end));
+		if (r.save) onsave?.();
+		return true;
+	}
 
 	let area: HTMLTextAreaElement;
 	let query = $state<string | null>(null); // text typed after "[["
@@ -93,6 +123,8 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
+		if (vim && !(query !== null && suggestions.length && mode === 'insert') && vimKey(e)) return;
+		if (vim && mode !== 'insert') return;
 		if (query !== null && suggestions.length) {
 			if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
 				e.preventDefault();
@@ -178,7 +210,15 @@
 		oninput={detect}
 		onclick={detect}
 		{onkeydown}
+		class:vim-normal={vim && mode !== 'insert'}
+		aria-describedby={vim ? `${id}-vim` : undefined}
 	></textarea>
+	{#if vim}
+		<p class="vim-status" id="{id}-vim" aria-live="polite">
+			{command || `-- ${mode === 'visual-line' ? 'VISUAL LINE' : mode.toUpperCase()} --`}
+			<span class="muted">Vim mode · Esc for normal, i to type, :w to save</span>
+		</p>
+	{/if}
 	{#if suggestions.length}
 		<ul class="suggestions" id="{id}-suggestions" role="listbox" aria-label="Notes to link">
 			{#each suggestions as n, i (n.id)}
@@ -267,5 +307,16 @@
 	}
 	.suggestions li[aria-selected='true'] {
 		background: var(--accent-soft);
+	}
+	.vim-normal {
+		caret-color: transparent;
+	}
+	.vim-status {
+		margin: var(--space-1) 0 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		display: flex;
+		gap: var(--space-3);
+		flex-wrap: wrap;
 	}
 </style>

@@ -54,7 +54,8 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Un espace de notes : arborescence de dossiers, éditeur Markdown avec aperçu en direct, `[[liens wiki]]` avec suggestions, rétroliens et mentions, étiquettes, encadrés, tableaux, notes quotidiennes, modèles et centre de commandes (Ctrl+K).
 - ✅ Dossiers PARA et notes Zettelkasten, import et export Markdown.
 - ✅ Synchronisation bidirectionnelle avec le coffre `~/SecondBrain` (Git), qui garde les deux versions en cas de conflit.
-- Prévu : synchronisation en direct en quelques secondes, un explorateur de connaissances avec filtres et graphiques, un graphe de connaissances par TAL et les raccourcis Vim.
+- ✅ Raccourcis Vim dans l’éditeur de notes (en option), et raccourcis clavier partout : `?` pour la liste, `g` puis une lettre pour aller à une page.
+- Prévu : synchronisation en direct en quelques secondes, un explorateur de connaissances avec filtres et graphiques, et un graphe de connaissances par TAL.
 
 ### ✅ Action et exécution
 - ✅ Des tâches avec les vues Aujourd’hui, semaine et GTD (boîte de réception, prochaines actions, en attente, un jour peut-être), contextes, récurrence, capture en une touche et bilans quotidiens.
@@ -441,7 +442,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-31 et EP-41 terminés ; EP-32 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-32 et EP-41 terminés ; EP-33 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

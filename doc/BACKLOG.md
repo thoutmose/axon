@@ -104,7 +104,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Done |
 | EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Done |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Done (French for the remaining pages: IS-31.06) |
-| EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
+| EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Done |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Planned |
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Planned |
@@ -828,12 +828,30 @@ Cross-cutting matrix:
 
 **In scope.** A shortcut registry with a `?` help overlay; go-to chords (`g t` Today, `g n` Notes, …); per-page actions; optional Vim mode in the Markdown editor (normal, insert, visual; motions, operators, `:w`), turned on in settings.
 
-**Acceptance criteria**
+**Issues**
 
-- Shortcuts never fire while typing in a field (except editor mode keys) and can be turned off (WCAG 2.1.4).
-- Vim mode is covered by unit tests for its motions and operators.
+- [x] **EP-32/IS-32.01 — Shortcut registry and overlay** · 5 pts · SHOULD
+  - [x] `?` opens the overlay. `g` plus a letter goes to a page (h Today, t Tasks, n Notes, o Goals, p Projects, l Learn, b Habits, c Calendar, a Agents, s Preferences). `/` searches, `n` captures, and Ctrl+K opens the command center.
+  - [x] Shortcuts never fire while typing, and can be turned off in Preferences → Keyboard (`keyboard.shortcuts`, also in YAML) for WCAG 2.1.4.
+- [x] **EP-32/IS-32.02 — Vim mode** · 8 pts · SHOULD
+  - [x] A pure engine (`web/src/lib/vim.ts`) supports:
+    - normal, insert, visual, and visual-line modes;
+    - counts; h j k l w b e 0 ^ $ gg G;
+    - i a I A o O; x X D C J p P u Ctrl-R;
+    - d, c, and y with motions, plus dd cc yy;
+    - `:w` to save.
+  - [x] 7 unit tests cover motions and operators. A mode line shows NORMAL, INSERT, or VISUAL; it is turned on in Preferences (`keyboard.vim`).
 
-**Candidate issues.** Shortcut registry and overlay (5) · Vim mode (8).
+**Exit evidence.** Vitest covers the Vim engine (motions, operators, insert, undo and redo, visual, `:w`, passthrough) and the chords. The integration test covers keyboard defaults and saving. Playwright opens the overlay with axe, navigates with `g t`, then turns on Vim, edits with `G o … Esc k dd :w`, saves, and checks the note after a reload.
+
+Two test fixes along the way:
+- the axe helper now waits out transitions that were already running, which fixes the colour-contrast flake seen earlier;
+- the Preferences page now sends the keyboard section.
+
+Cross-cutting matrix:
+- accessibility: WCAG 2.1.4 opt-out, focusable scroll region, a live mode line;
+- documentation: overlay, README, and BACKLOG;
+- the remaining rows are n/a: client-side only, apart from one settings field.
 
 ### EP-33 — Profile & avatars
 

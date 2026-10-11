@@ -46,11 +46,18 @@ type Templates struct {
 	Resource ResourceTemplate `json:"resource" yaml:"resource"`
 }
 
+// Keyboard controls shortcuts and the editor's Vim mode (EP-32).
+type Keyboard struct {
+	Shortcuts bool `json:"shortcuts" yaml:"shortcuts"` // single-key and g-chord shortcuts (WCAG 2.1.4: they can be turned off)
+	Vim       bool `json:"vim" yaml:"vim"`             // Vim keybindings in the note editor
+}
+
 // Doc is the stored part of the settings.
 type Doc struct {
 	Language   string     `json:"language" yaml:"language"` // en or fr
 	Appearance Appearance `json:"appearance" yaml:"appearance"`
 	Templates  Templates  `json:"templates" yaml:"templates"`
+	Keyboard   Keyboard   `json:"keyboard" yaml:"keyboard"`
 }
 
 // Defaults are what a new account starts with.
@@ -63,6 +70,7 @@ func Defaults() Doc {
 			Project:  ProjectTemplate{DocsFolder: "1-Projects/{slug}"},
 			Resource: ResourceTemplate{Kind: "hard"},
 		},
+		Keyboard: Keyboard{Shortcuts: true},
 	}
 }
 

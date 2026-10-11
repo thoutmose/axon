@@ -74,7 +74,7 @@ func (h *Handlers) get(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	out := map[string]any{"language": d.Language, "appearance": d.Appearance, "templates": d.Templates}
+	out := map[string]any{"language": d.Language, "appearance": d.Appearance, "templates": d.Templates, "keyboard": d.Keyboard}
 	if h.runner != nil {
 		ai, err := h.runner.GetAIConfig(r.Context(), h.db, who.UserID)
 		if err != nil {
@@ -88,7 +88,7 @@ func (h *Handlers) get(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) put(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
-	var d Doc
+	d := Defaults() // sections left out keep their defaults
 	if err := httpx.Decode(r, &d); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return

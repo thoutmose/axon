@@ -134,5 +134,29 @@ export const fr: Record<string, string> = {
 	'Upload a settings file': 'Charger un fichier de réglages',
 	'Settings file applied.': 'Fichier de réglages appliqué.',
 	English: 'Anglais',
+	'Keyboard shortcuts': 'Raccourcis clavier',
+	'Go to': 'Aller à',
+	Actions: 'Actions',
+	'Vim mode in the note editor': 'Mode Vim dans l’éditeur de notes',
+	'Capture a task': 'Capturer une tâche',
+	'Search everything': 'Tout rechercher',
+	'Command center (works while typing)': 'Centre de commandes (fonctionne pendant la saisie)',
+	'Show these shortcuts': 'Afficher ces raccourcis',
+	'Move a focused card on a board': 'Déplacer la carte sélectionnée sur un tableau',
+	'Bold, italic, code, link in the editor': 'Gras, italique, code, lien dans l’éditeur',
+	'Normal mode · insert before, after, new line':
+		'Mode normal · insérer avant, après, nouvelle ligne',
+	Move: 'Se déplacer',
+	'Delete, change, yank': 'Supprimer, changer, copier',
+	'Delete a character, paste, undo, redo': 'Supprimer un caractère, coller, annuler, rétablir',
+	'Visual and visual line': 'Visuel et visuel ligne',
+	'Save the note': 'Enregistrer la note',
+	'Turn single-key shortcuts off, or Vim mode on, in Preferences.':
+		'Désactivez les raccourcis à une touche, ou activez le mode Vim, dans les Préférences.',
+	Keyboard: 'Clavier',
+	'Single-key shortcuts (n, /, ?, g then a letter)':
+		'Raccourcis à une touche (n, /, ?, g puis une lettre)',
+	'Vim keybindings in the note editor': 'Raccourcis Vim dans l’éditeur de notes',
+	'See all shortcuts': 'Voir tous les raccourcis',
 	French: 'Français'
 };

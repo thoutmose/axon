@@ -18,12 +18,18 @@ func TestSettingsInTheAppAndAsYAML(t *testing.T) {
 	alice.register("Alice")
 
 	def := alice.mustDo(200, "GET", "/v1/me/settings", nil)
+	if !bytes.Contains(def, []byte(`"keyboard":{"shortcuts":true,"vim":false}`)) {
+		t.Fatalf("keyboard defaults = %s", def)
+	}
 	if !bytes.Contains(def, []byte(`"language":"en"`)) || !bytes.Contains(def, []byte(`"theme":"system"`)) || !bytes.Contains(def, []byte(`"monthly_budget_cents":200`)) {
 		t.Fatalf("defaults = %s", def)
 	}
 	doc := `{"language":"fr","appearance":{"theme":"dark","font":"serif","font_size":"large","icons":"symbols","motion":"reduced"},
 		"templates":{"note":"# {title}\n\n## Sources\n","project":{"description":"Why, what, done when.","wip_limit":3,"docs_folder":"1-Projects/{slug}"},"resource":{"section":"To read","kind":"soft"}}}`
 	alice.mustDo(200, "PUT", "/v1/me/settings", []byte(doc))
+	if out := alice.mustDo(200, "PUT", "/v1/me/settings", []byte(strings.Replace(doc, `"templates":`, `"keyboard":{"shortcuts":false,"vim":true},"templates":`, 1))); !bytes.Contains(out, []byte(`"vim":true`)) {
+		t.Fatalf("keyboard not saved: %s", out)
+	}
 	if code, out := alice.do("PUT", "/v1/me/settings", []byte(strings.Replace(doc, `"dark"`, `"neon"`, 1))); code != 422 || !bytes.Contains(out, []byte("appearance.theme")) {
 		t.Fatalf("bad theme = %d %s", code, out)
 	}

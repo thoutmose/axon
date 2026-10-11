@@ -11,6 +11,7 @@ let page: Page;
 async function noSeriousA11yViolations(p: Page) {
 	// Check final colours, not a button caught halfway through a transition.
 	await p.emulateMedia({ reducedMotion: 'reduce' });
+	await p.waitForTimeout(250); // a transition started before this keeps running; let it end
 	const result = await new AxeBuilder({ page: p }).analyze();
 	await p.emulateMedia({ reducedMotion: 'no-preference' });
 	const serious = result.violations.filter(
@@ -537,6 +538,50 @@ test('preferences switch the language, theme, and text size, and export as YAML'
 	await page.getByLabel('Taille du texte').selectOption('normal');
 	await page.getByRole('button', { name: 'Enregistrer les préférences' }).click();
 	await expect(page.getByRole('link', { name: 'Today' })).toBeVisible();
+});
+
+test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async () => {
+	await page.goto('/today');
+	await page.keyboard.press('?');
+	const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+	await expect(help).toContainText('g t');
+	await noSeriousA11yViolations(page);
+	await page.keyboard.press('Escape');
+	await expect(help).toBeHidden();
+	await page.keyboard.press('g');
+	await page.keyboard.press('t');
+	await expect(page).toHaveURL(/\/tasks/);
+
+	// Vim mode, turned on in Preferences.
+	await page.goto('/account/preferences');
+	await page.getByLabel('Vim keybindings in the note editor').check();
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
+	const res = await page.request.post('/api/v1/notes', {
+		headers: { Origin: 'http://localhost:3000' },
+		data: { path: '0-Inbox/vim-test.md', content: '# Vim test\n\nfirst line' }
+	});
+	const note = await res.json();
+	await page.goto(`/notes/${note.id}?edit=1`);
+	const editor = page.getByLabel('Markdown');
+	await editor.click();
+	await expect(page.getByText('-- NORMAL --')).toBeVisible();
+	for (const k of ['G', 'o']) await page.keyboard.press(k);
+	await expect(page.getByText('-- INSERT --')).toBeVisible();
+	await page.keyboard.type('typed in vim');
+	await page.keyboard.press('Escape');
+	await page.keyboard.press('k');
+	await page.keyboard.press('d');
+	await page.keyboard.press('d');
+	for (const k of [':', 'w', 'Enter']) await page.keyboard.press(k);
+	await expect(editor).toHaveValue('# Vim test\n\ntyped in vim');
+	await page.reload();
+	await expect(page.getByLabel('Markdown')).toHaveValue('# Vim test\n\ntyped in vim');
+
+	await page.goto('/account/preferences');
+	await page.getByLabel('Vim keybindings in the note editor').uncheck();
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
 });
 
 test('sign out, then sign back in with the passkey', async () => {

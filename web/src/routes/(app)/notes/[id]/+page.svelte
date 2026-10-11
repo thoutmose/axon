@@ -89,6 +89,12 @@
 		goto(u, { keepFocus: true, noScroll: true, replaceState: true });
 	}
 
+	// Vim mode comes from Preferences → Keyboard.
+	let keyboard = $state({ vim: false });
+	api<{ keyboard: { vim: boolean } }>('/v1/me/settings')
+		.then((s) => (keyboard = s.keyboard))
+		.catch(() => {});
+
 	async function save(withPath: boolean, version = etag) {
 		if (!note || saving) return;
 		saving = true;
@@ -228,7 +234,12 @@
 	{#if editing}
 		<div class="split">
 			<div class="pane">
-				<MarkdownEditor id="note-content" bind:value={content} />
+				<MarkdownEditor
+					id="note-content"
+					bind:value={content}
+					vim={keyboard.vim}
+					onsave={() => save(false)}
+				/>
 				<p class="status muted small" aria-live="polite">
 					{saving
 						? 'Saving…'
