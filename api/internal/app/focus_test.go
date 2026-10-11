@@ -74,7 +74,7 @@ func TestFocusSessionsLinkToWhatTheyWereFor(t *testing.T) {
 
 	// Pomodoro settings: defaults and validation.
 	set := alice.mustDo(200, "GET", "/v1/me/settings", nil)
-	if !bytes.Contains(set, []byte(`"work_minutes":25,"short_break_minutes":5,"long_break_minutes":15,"rounds":3,"sessions":1`)) {
+	if !bytes.Contains(set, []byte(`"work_minutes":25,"short_break_minutes":5,"long_break_minutes":15,"rounds":4,"sessions":1`)) {
 		t.Fatalf("focus defaults = %s", set)
 	}
 	if code, out := alice.putYAML("version: 1\nfocus:\n  work_minutes: 500\n"); code != 422 || !bytes.Contains(out, []byte("line 3: focus.work_minutes")) {

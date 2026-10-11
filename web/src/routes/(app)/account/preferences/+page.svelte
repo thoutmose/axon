@@ -27,7 +27,7 @@
 		work_minutes: 25,
 		short_break_minutes: 5,
 		long_break_minutes: 15,
-		rounds: 3,
+		rounds: 4,
 		sessions: 1,
 		sound: 'none',
 		volume: 40,

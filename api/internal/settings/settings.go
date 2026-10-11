@@ -61,8 +61,8 @@ type MusicLink struct {
 	URL      string `json:"url" yaml:"url"`
 }
 
-// Focus configures Pomodoro sessions (EP-35). The default is three rounds:
-// 25 min work + 5 min break, twice, then 25 min work + a 15 min long break.
+// Focus configures Pomodoro sessions (EP-35). The default is four rounds:
+// 25 min work + 5 min break, three times, then 25 min work + a 15 min long break.
 type Focus struct {
 	WorkMinutes int         `json:"work_minutes" yaml:"work_minutes"`
 	ShortBreak  int         `json:"short_break_minutes" yaml:"short_break_minutes"`
@@ -100,7 +100,7 @@ func Defaults() Doc {
 			Resource: ResourceTemplate{Kind: "hard"},
 		},
 		Keyboard: Keyboard{Shortcuts: true},
-		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 3, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
+		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
 
