@@ -18,8 +18,10 @@ import {
 const min = 60_000;
 
 describe('phases', () => {
-	it('defaults to 25/5/25/5/25/15, one session', () => {
+	it('defaults to four rounds, 25/5/25/5/25/5/25/15, one session', () => {
 		expect(phases(defaults).map((p) => `${p.kind}${p.minutes}`)).toEqual([
+			'work25',
+			'short5',
 			'work25',
 			'short5',
 			'work25',
@@ -27,15 +29,15 @@ describe('phases', () => {
 			'work25',
 			'long15'
 		]);
-		expect(totalWorkMinutes(phases(defaults))).toBe(75);
+		expect(totalWorkMinutes(phases(defaults))).toBe(100);
 	});
 	it('repeats for more sessions and other lengths', () => {
 		const p = phases({ ...defaults, sessions: 2, work_minutes: 50, short_break_minutes: 10 });
-		expect(p.length).toBe(12);
+		expect(p.length).toBe(16);
 		expect(p[0]).toEqual({ kind: 'work', minutes: 50 });
 		expect(p[1]).toEqual({ kind: 'short', minutes: 10 });
-		expect(p[5].kind).toBe('long');
-		expect(p[11].kind).toBe('long');
+		expect(p[7].kind).toBe('long');
+		expect(p[15].kind).toBe('long');
 	});
 });
 
@@ -72,8 +74,8 @@ describe('timer', () => {
 		expect(workedMinutes(t, 11 * min)).toBe(10);
 		advance(t, 200 * min);
 		expect(finished(t)).toBe(true);
-		expect(workedMinutes(t, 200 * min)).toBe(60);
-		expect(rounds(t)).toBe(3);
+		expect(workedMinutes(t, 200 * min)).toBe(85);
+		expect(rounds(t)).toBe(4);
 		expect(remaining(t, 200 * min)).toBe(0);
 	});
 
