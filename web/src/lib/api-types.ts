@@ -1274,6 +1274,136 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/decks': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your flashcard decks with totals, due, and new counts */
+		get: operations['listDecks'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your cards, newest first (up to 1,000), optionally in one deck */
+		get: operations['listCards'];
+		put?: never;
+		/** Add a flashcard, due now, optionally linked to the note or skill it comes from */
+		post: operations['createCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/due': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Cards due now, oldest first, each with when it would next be due for every rating */
+		get: operations['listDueCards'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/export.apkg': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Download cards as an Anki package (all decks, or one with ?deck=), pictures included; cards arrive in Anki as new */
+		get: operations['exportCardsAPKG'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One card */
+		get: operations['getCard'];
+		put?: never;
+		post?: never;
+		/** Delete a card and its review history */
+		delete: operations['deleteCard'];
+		options?: never;
+		head?: never;
+		/** Change a card's question, answer, deck, or suspension (its schedule is kept) */
+		patch: operations['updateCard'];
+		trace?: never;
+	};
+	'/v1/flashcards/{id}/review': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record a review (1 again, 2 hard, 3 good, 4 easy) and reschedule with FSRS-5 */
+		post: operations['reviewCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/{id}/image': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A card's picture (PNG) */
+		get: operations['getCardImage'];
+		/** Illustrate a card with a PNG or JPEG (up to 10 MB); it is scaled to fit 1200 px and re-encoded without metadata */
+		put: operations['putCardImage'];
+		post?: never;
+		/** Remove a card's picture */
+		delete: operations['deleteCardImage'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/focus-sessions': {
 		parameters: {
 			query?: never;
@@ -2207,6 +2337,32 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			decided_at: string | null;
+		};
+		Flashcard: {
+			/** Format: uuid */
+			id: string;
+			deck: string;
+			front: string;
+			back: string;
+			has_image: boolean;
+			/**
+			 * @description 1 learning, 2 review, 3 relearning (FSRS).
+			 * @enum {integer}
+			 */
+			state: 1 | 2 | 3;
+			/** Format: date-time */
+			due: string;
+			/** Format: date-time */
+			last_review: string | null;
+			/** @description Days until recall drops to 90%. */
+			stability: number | null;
+			/** @description 1 (easy) to 10 (hard). */
+			difficulty: number | null;
+			reps: number;
+			lapses: number;
+			suspended: boolean;
+			/** Format: date-time */
+			updated_at: string;
 		};
 		FocusSession: {
 			/** Format: uuid */
@@ -5203,6 +5359,357 @@ export interface operations {
 			403: components['responses']['Problem'];
 			409: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listDecks: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Decks. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							name: string;
+							total: number;
+							due: number;
+							/** @description Never reviewed. */
+							new: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listCards: {
+		parameters: {
+			query?: {
+				deck?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Cards. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Flashcard'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createCard: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					front: string;
+					back?: string;
+					/** @default Default */
+					deck?: string;
+					suspended?: boolean;
+					/** Format: uuid */
+					source_id?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The card. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listDueCards: {
+		parameters: {
+			query?: {
+				deck?: string;
+				limit?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Due cards. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						due_total: number;
+						items: (components['schemas']['Flashcard'] & {
+							next: {
+								/** Format: date-time */
+								again: string;
+								/** Format: date-time */
+								hard: string;
+								/** Format: date-time */
+								good: string;
+								/** Format: date-time */
+								easy: string;
+							};
+						})[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	exportCardsAPKG: {
+		parameters: {
+			query?: {
+				deck?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The .apkg file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/zip': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					front?: string;
+					back?: string;
+					deck?: string;
+					suspended?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	reviewCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					rating: number;
+					duration_ms?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The rescheduled card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The picture. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	putCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/png': string;
+				'image/jpeg': string;
+			};
+		};
+		responses: {
+			/** @description Saved. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			415: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	listFocusSessions: {

@@ -40,6 +40,8 @@ tags:
     description: The daily view with defined KPIs, the calendar, and read-only iCal feeds.
   - name: agents
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
+  - name: cards
+    description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
   - name: focus
     description: Pomodoro focus sessions linked to what they were for (EP-35).
   - name: habits
@@ -2032,6 +2034,250 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/decks:
+    get:
+      tags: [cards]
+      operationId: listDecks
+      summary: Your flashcard decks with totals, due, and new counts
+      responses:
+        "200":
+          description: Decks.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, total, due, new]
+                      properties:
+                        name: { type: string }
+                        total: { type: integer }
+                        due: { type: integer }
+                        new: { type: integer, description: Never reviewed. }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards:
+    get:
+      tags: [cards]
+      operationId: listCards
+      summary: Your cards, newest first (up to 1,000), optionally in one deck
+      parameters:
+        - { name: deck, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Cards.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Flashcard" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [cards]
+      operationId: createCard
+      summary: Add a flashcard, due now, optionally linked to the note or skill it comes from
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [front]
+              additionalProperties: false
+              properties:
+                front: { type: string, minLength: 1, maxLength: 10000 }
+                back: { type: string, maxLength: 10000 }
+                deck: { type: string, minLength: 1, maxLength: 200, default: Default }
+                suspended: { type: boolean }
+                source_id: { type: string, format: uuid }
+      responses:
+        "201":
+          description: The card.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flashcard" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/due:
+    get:
+      tags: [cards]
+      operationId: listDueCards
+      summary: Cards due now, oldest first, each with when it would next be due for every rating
+      parameters:
+        - { name: deck, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 50 } }
+      responses:
+        "200":
+          description: Due cards.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, due_total]
+                properties:
+                  due_total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Flashcard"
+                        - type: object
+                          required: [next]
+                          properties:
+                            next:
+                              type: object
+                              required: [again, hard, good, easy]
+                              properties:
+                                again: { type: string, format: date-time }
+                                hard: { type: string, format: date-time }
+                                good: { type: string, format: date-time }
+                                easy: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/export.apkg:
+    get:
+      tags: [cards]
+      operationId: exportCardsAPKG
+      summary: Download cards as an Anki package (all decks, or one with ?deck=), pictures included; cards arrive in Anki as new
+      parameters:
+        - { name: deck, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: The .apkg file.
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [cards]
+      operationId: getCard
+      summary: One card
+      responses:
+        "200":
+          description: The card.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flashcard" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [cards]
+      operationId: updateCard
+      summary: Change a card's question, answer, deck, or suspension (its schedule is kept)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                front: { type: string, minLength: 1, maxLength: 10000 }
+                back: { type: string, maxLength: 10000 }
+                deck: { type: string, minLength: 1, maxLength: 200 }
+                suspended: { type: boolean }
+      responses:
+        "200":
+          description: The card.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flashcard" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [cards]
+      operationId: deleteCard
+      summary: Delete a card and its review history
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/{id}/review:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [cards]
+      operationId: reviewCard
+      summary: Record a review (1 again, 2 hard, 3 good, 4 easy) and reschedule with FSRS-5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              additionalProperties: false
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 4 }
+                duration_ms: { type: integer, minimum: 0, maximum: 3600000 }
+      responses:
+        "200":
+          description: The rescheduled card.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Flashcard" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/{id}/image:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [cards]
+      operationId: getCardImage
+      summary: A card's picture (PNG)
+      responses:
+        "200":
+          description: The picture.
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [cards]
+      operationId: putCardImage
+      summary: Illustrate a card with a PNG or JPEG (up to 10 MB); it is scaled to fit 1200 px and re-encoded without metadata
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema: { type: string, format: binary }
+          image/jpeg:
+            schema: { type: string, format: binary }
+      responses:
+        "204": { description: Saved. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "415": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [cards]
+      operationId: deleteCardImage
+      summary: Remove a card's picture
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/focus-sessions:
     get:
       tags: [focus]
@@ -3513,6 +3759,24 @@ components:
         status: { enum: [pending, approved, rejected, failed] }
         created_at: { type: string, format: date-time }
         decided_at: { type: [string, "null"], format: date-time }
+    Flashcard:
+      type: object
+      required: [id, deck, front, back, has_image, state, due, last_review, stability, difficulty, reps, lapses, suspended, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        deck: { type: string }
+        front: { type: string }
+        back: { type: string }
+        has_image: { type: boolean }
+        state: { type: integer, enum: [1, 2, 3], description: "1 learning, 2 review, 3 relearning (FSRS)." }
+        due: { type: string, format: date-time }
+        last_review: { type: [string, "null"], format: date-time }
+        stability: { type: [number, "null"], description: Days until recall drops to 90%. }
+        difficulty: { type: [number, "null"], description: 1 (easy) to 10 (hard). }
+        reps: { type: integer }
+        lapses: { type: integer }
+        suspended: { type: boolean }
+        updated_at: { type: string, format: date-time }
     FocusSession:
       type: object
       required: [id, title, started_at, ended_at, planned_minutes, worked_minutes, rounds, status, target]

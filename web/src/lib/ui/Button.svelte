@@ -20,7 +20,14 @@
 </script>
 
 {#if href}
-	<a class="btn {variant}" {href}>{@render children()}</a>
+	<!-- A link styled as a button keeps its label; when disabled it is not a link at all. -->
+	{#if disabled}
+		<span class="btn {variant} disabled" aria-disabled="true" aria-label={rest['aria-label']}
+			>{@render children()}</span
+		>
+	{:else}
+		<a class="btn {variant}" {href} aria-label={rest['aria-label']}>{@render children()}</a>
+	{/if}
 {:else}
 	<button class="btn {variant}" {type} disabled={disabled || busy} aria-busy={busy} {...rest}>
 		{@render children()}
@@ -81,5 +88,9 @@
 	}
 	.btn[aria-busy='true'] {
 		cursor: progress;
+	}
+	.btn.disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
 </style>

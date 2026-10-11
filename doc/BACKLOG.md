@@ -87,7 +87,8 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
 | EP-14 | Roadmaps & skill graph | Manual roadmaps, OSSU import, and a skill graph view. | SHOULD | 42 pts | EP-11, EP-13 | Done |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
-| EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, reviewed cards, and Anki sync. | SHOULD | 89 pts | EP-11, EP-14, EP-19 | Planned |
+| EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, illustrated cards, practice tests, a Teacher agent, and Anki packages. | SHOULD | 76 pts | EP-11, EP-14, EP-19 | Done |
+| EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Planned |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
 | EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -123,7 +124,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
 | R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 | Human-approved agents, habits, projects, roadmaps |
-| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
+| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -1027,7 +1028,54 @@ Effects are subtle (parallax, grain, light) and respect reduced motion and reduc
 - The Teacher agent cannot read fleeting notes (tested).
 - Exported decks import into Anki desktop without errors.
 
-**Candidate issues.** Card and review model with images (8) · FSRS scheduler (8) · Review session and test UI (13) · Flashcard editor (8) · Teacher agent (21) · Card approval queue (8) · Anki export (8) · Anki sync to `srv-services` (13). **Split before start.**
+**Issues** (split at start: Anki sync moved to EP-42; design in [ADR 0017](adr/0017-flashcards-fsrs-and-anki.md))
+
+- [x] **EP-16/IS-16.01 — Card and review model with images** · 8 pts · SHOULD
+  - [x] Cards are entities with a deck, question, answer, optional picture (PNG, fitted to 1200 px, no metadata), and FSRS state. Reviews are logged; cards link to their source (`derived_from`). Everything is exported.
+- [x] **EP-16/IS-16.02 — FSRS scheduler** · 8 pts · SHOULD
+  - [x] An FSRS-5 port matches the reference implementation (py-fsrs 4.1.2) on 480 shared fixture reviews. `/v1/flashcards/due` previews the next due time for each rating.
+- [x] **EP-16/IS-16.03 — Review session and test UI** · 13 pts · SHOULD
+  - [x] Review: Space shows the answer, 1–4 rate it, the interval appears on each button, and cards rated Again come back within the session.
+  - [x] Practice test: up to ten random cards with typed answers and self-marking. It never changes the schedule.
+- [x] **EP-16/IS-16.04 — Flashcard editor** · 8 pts · SHOULD
+  - [x] Decks with due and new counts. Add cards with a picture; edit, suspend, resume, or delete them; replace or remove pictures. Learn tabs: Roadmaps · Flashcards · Skills assessment. Shortcut `g r`.
+- [x] **EP-16/IS-16.05 — Teacher agent** · 21 pts · SHOULD
+  - [x] Tools: `list_study_notes`, `read_study_note`, `list_decks`, `get_assessment`, and `propose_cards`. Only literature and permanent notes are readable (tested: a fleeting note's text never reaches the model). Cards follow retrieval, elaboration, and interleaving principles.
+- [x] **EP-16/IS-16.06 — Card approval queue** · 8 pts · SHOULD
+  - [x] Teacher cards are proposals in the existing approval queue. On approval they land in a deck named after the note (covered by the every-write-tool test).
+- [x] **EP-16/IS-16.07 — Anki export** · 8 pts · SHOULD
+  - [x] `.apkg` for all decks or one, pictures included. A CI job imports it with the official `anki` library.
+- Moved: **Anki sync to `srv-services`** (13) became EP-42.
+
+**Exit evidence.**
+- Go unit tests cover the FSRS reference match, retrievability, image fitting, and the package writer.
+- The integration test covers create, link, decks, due previews, review scheduling (Good leads to the 10-minute step), and validation; a 200 KB picture upload; and the `.apkg` opened as SQLite (notes, cards, schema 11, picture). It also covers the Teacher boundary and approval, and an avatar upload above 64 KB.
+- The CI `anki` job imports a package into real Anki.
+- Vitest covers interval labels and sampling.
+- Playwright adds an illustrated card, reviews it with the keyboard (Space, then Easy), takes a test, and checks the export link, with axe.
+
+Cross-cutting matrix:
+- privacy: register rows, Teacher scope;
+- security: re-encoded images, upload limits;
+- accessibility: keyboard review, labelled rating group, image alt text;
+- reliability: transactional reviews;
+- performance: indexed due query;
+- AI safety: read boundary and approval;
+- supply chain: `modernc.org/sqlite` promoted (already in the graph), `anki` used only in CI.
+
+### EP-42 — Anki sync to srv-services
+
+**Goal.** Cards in Axon reach the person's Anki through the existing `anki-sync-server` on `srv-services`, without downloading files.
+
+**In scope.** A small sidecar using the official `anki` library: it holds a collection per person, imports new and changed cards (pictures included), and syncs to the server with credentials kept in `deploy/env/*.env.age`. It runs by hand from the Flashcards page, or after a Teacher proposal is approved. Operations docs cover the credentials and restore.
+
+**Acceptance criteria**
+
+- An approved card appears in Anki desktop after its next sync (integration test against a disposable `anki-sync-server`).
+- Edits update the same Anki note, never duplicate it (stable GUIDs).
+- Sync never deletes the person's Anki-only cards.
+
+**Candidate issues.** Sidecar and collection (5) · Sync trigger and status (5) · Deploy and docs (3).
 
 ### EP-15 — Gamification engine
 

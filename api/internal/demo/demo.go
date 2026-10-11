@@ -12,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/fsrs"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
@@ -111,12 +113,12 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			WIPLimit: ptr(2), DocsFolder: ptr("1-Projects/personal-website"),
 		})
 	}
-	cards := []struct{ title, column string }{
+	boardCards := []struct{ title, column string }{
 		{"Pick a static site generator", "done"}, {"Write the About page", "doing"}, {"Design the home page", "doing"},
 		{"Set up deployment", "todo"}, {"Write the first blog post", "todo"}, {"Add an RSS feed", "backlog"}, {"Dark mode", "backlog"},
 	}
 	var cardIDs []uuid.UUID
-	for _, c := range cards {
+	for _, c := range boardCards {
 		if s.err != nil {
 			break
 		}
@@ -237,6 +239,24 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 	if s.err == nil && len(design.Skills) > 0 {
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
+	}
+
+	// Flashcards from the learning notes, a few already reviewed.
+	for i, qa := range [][2]string{
+		{"Why does spaced repetition work?", "Reviewing just before you would forget makes the memory last longer."},
+		{"What is retrieval practice?", "Pulling information out of memory, for example by testing yourself."},
+		{"Why test yourself instead of rereading?", "Retrieval strengthens memory more than putting it in again."},
+		{"What is the Feynman technique?", "Explain it simply; the gaps you find are what to study next."},
+		{"What does FSRS predict?", "The chance you still remember a card, to schedule the next review."},
+	} {
+		if s.err != nil {
+			break
+		}
+		var c cards.Card
+		c, s.err = cards.Create(ctx, tx, user, graph.UserActor, cards.Fields{Front: ptr(qa[0]), Back: ptr(qa[1]), Deck: ptr("Learning science")}, &spaced, now)
+		if s.err == nil && i < 2 {
+			_, s.err = cards.Review(ctx, tx, user, c.ID, fsrs.Easy, nil, now.Add(-72*time.Hour))
+		}
 	}
 
 	// A skills assessment, as taken before starting the roadmaps.

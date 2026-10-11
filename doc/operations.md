@@ -111,6 +111,10 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 - The demo cannot create tokens or passkeys, set AI providers, connect repositories, delete the account, or run agents. Real accounts never see its data.
 - To turn it off, set `AXON_DEMO=` in the settings file and deploy. The demo user stays in the database, unused, until you run `axon demo reset` again or remove it with `DELETE FROM users WHERE demo`.
 
+## Anki packages
+
+`GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. Syncing to `anki-sync-server` on `srv-services` arrives with EP-42.
+
 ## Data backfills
 
 `axon migrate up` (run by `deploy/deploy.sh`) also fills data that needs Go to compute for rows written before it existed, such as note tags. It is safe to repeat.

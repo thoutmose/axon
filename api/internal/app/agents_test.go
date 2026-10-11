@@ -238,6 +238,10 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 	repo := alice.connectRepo(`{"owner":"ada","repo":"garden","allow_comments":true,"project_id":"` + proj.ID + `"}`)
 	var rm roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Flexibility"}`)), &rm)
+	var studyNote struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/notes", []byte(`{"path":"Zettel/permanent/stretching.md","content":"---\ntype: permanent\n---\n# Stretching"}`)), &studyNote)
 
 	inputs := map[string]struct{ agent, input string }{
 		"update_task":         {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
@@ -250,6 +254,7 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		"draft_issue":         {"side-projects", `{"repo_id":"` + repo.ID + `","title":"Add tests","details":"Start with main.go.","reason":"Missing."}`},
 		"post_review_comment": {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
 		"draft_roadmap":       {"tutor", `{"title":"Yoga","skills":[{"title":"Sun salutation","url":"https://en.wikipedia.org/wiki/Sun_Salutation"}],"reason":"Asked."}`},
+		"propose_cards":       {"teacher", `{"cards":[{"front":"Stretch why?","back":"Flexibility.","note_id":"` + studyNote.ID + `"}],"reason":"Basics."}`},
 		"suggest_resources":   {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
 	}
 	var tested []string

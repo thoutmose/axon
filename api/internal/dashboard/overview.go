@@ -126,11 +126,12 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 	if measured > 0 {
 		goalAvg = goalSum / measured
 	}
-	var projectsActive, learning int
+	var projectsActive, learning, cardsDue int
 	if err := h.db.QueryRow(ctx, `SELECT
 		(SELECT count(*) FROM projects p JOIN entities e ON e.id = p.id WHERE e.user_id = $1 AND p.status = 'active'),
-		(SELECT count(*) FROM skills s JOIN entities e ON e.id = s.id WHERE e.user_id = $1 AND s.status = 'learning')`, who.UserID).
-		Scan(&projectsActive, &learning); err != nil {
+		(SELECT count(*) FROM skills s JOIN entities e ON e.id = s.id WHERE e.user_id = $1 AND s.status = 'learning'),
+		(SELECT count(*) FROM cards c JOIN entities e ON e.id = c.id WHERE e.user_id = $1 AND NOT c.suspended AND c.due <= now())`, who.UserID).
+		Scan(&projectsActive, &learning, &cardsDue); err != nil {
 		h.fail(w, err)
 		return
 	}
@@ -152,6 +153,7 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 		{"skills_done", "Skills learned", now["skills_done"], p(before["skills_done"]), "count",
 			"Roadmap skills marked done in the last " + period + ", by their last change.", "/roadmaps"},
 		{"learning", "Learning now", learning, nil, "count", "Roadmap skills with the status Learning.", "/roadmaps"},
+		{"cards_due", "Cards to review", cardsDue, nil, "count", "Flashcards due now, as scheduled by FSRS; suspended cards are left out.", "/cards"},
 		{"notes_written", "Notes written", now["notes_written"], p(before["notes_written"]), "count",
 			"Notes created in the last " + period + ".", "/notes"},
 		{"projects_active", "Active projects", projectsActive, nil, "count", "Projects with the status Active.", "/projects"},

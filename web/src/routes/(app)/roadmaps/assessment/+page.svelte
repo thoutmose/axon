@@ -3,6 +3,7 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import Button from '$lib/ui/Button.svelte';
+	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -100,6 +101,7 @@
 
 <p class="crumbs"><a href="/roadmaps">← Learn</a></p>
 <h1>Skills assessment</h1>
+<LearnTabs />
 <p class="muted hint">
 	Ten minutes before you start: where you are, where you want to go, and what you already know. Your
 	roadmaps then start at the right place, and the Tutor agent reads this instead of asking again.

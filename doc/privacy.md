@@ -12,6 +12,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Profile picture (256×256 PNG, re-encoded without metadata) | `users.avatar` | Personal | Show who is signed in | Until replaced, removed, or erasure; included in exports as `account/avatar.png` |
 | Habits scorecard (behaviours of the day with good, neutral, or bad ratings) and habit identity, intention, and contract fields | `habit_scorecards`, `habits` | Personal, possibly sensitive | Atomic Habits design (EP-34) | Until changed or erasure; included in exports; nothing is sent to an accountability partner |
 | Focus sessions (what was focused on, start, minutes worked, rounds) and Pomodoro preferences, including music links | `focus_sessions`, `user_settings` | Personal | Count focus time and show it on the dashboard and linked items | Until deleted or erasure; included in exports |
+| Flashcards (question, answer, deck, optional picture, FSRS schedule) and review history (rating, time, duration) | `cards`, `card_reviews` | Personal | Retrieval practice and scheduling | Until deleted or erasure; both exported |
 | Demo account and its sample data (no personal data; whatever visitors type is visible to other visitors) | `users` with `demo = true`, and the rows it owns | Sample, shared | Let people try Axon (ADR 0015) | Reset every night |
 | Passkey public keys, names, last use | `passkeys` | Personal, security | Sign-in | Until removed or erasure |
 | Sessions (token hash, user agent, times) | `sessions` | Personal, security | Keep the user signed in | 7 days idle, 30 days absolute, or sign-out |
@@ -67,7 +68,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |
-| The AI provider the person chose: Anthropic, OpenAI, Mistral, Google (Gemini), DeepSeek, or their own local server | The instruction, and the tasks, goals, habits, and notes an agent reads through its tools during a run | Only with `ai_agents` consent, during a run they start | Available (EP-19, EP-22) |
+| The AI provider the person chose: Anthropic, OpenAI, Mistral, Google (Gemini), DeepSeek, or their own local server | The instruction, and the tasks, goals, habits, and notes an agent reads through its tools during a run (the Teacher reads only literature and permanent notes) | Only with `ai_agents` consent, during a run they start | Available (EP-19, EP-22) |
 | TMDB, Open Library | Search terms for media | Only with `external_metadata` consent | Planned (EP-17) |
 | Open Food Facts, USDA FoodData Central | Food search terms | Only with `health_data` consent | Planned (EP-18) |
 

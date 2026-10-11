@@ -137,8 +137,12 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 // Routes mounts the endpoints; the caller wraps them in auth.RequireSession.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/me/avatar", h.get)
-	r.With(auth.NotDemo).Put("/v1/me/avatar", h.put)
 	r.With(auth.NotDemo).Delete("/v1/me/avatar", h.delete)
+}
+
+// UploadRoutes mounts the upload, which needs a larger body limit than JSON.
+func (h *Handlers) UploadRoutes(r chi.Router) {
+	r.With(auth.NotDemo).Put("/v1/me/avatar", h.put)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {

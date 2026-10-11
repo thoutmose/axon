@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
+	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
@@ -78,6 +79,7 @@
 <svelte:head><title>Roadmaps · Axon</title></svelte:head>
 
 <h1>Roadmaps</h1>
+<LearnTabs />
 <p class="muted hint">
 	Plan what to learn as skills with prerequisites, and watch the graph fill in.
 </p>

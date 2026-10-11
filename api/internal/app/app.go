@@ -13,6 +13,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/avatars"
+	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/focus"
 	"github.com/thoutmose/axon/api/internal/goals"
@@ -65,11 +66,19 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	settingsAPI := settings.NewHandlers(pool, log, agentsAPI)
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	focusAPI := focus.NewHandlers(pool, log)
+	cardsAPI := cards.NewHandlers(pool, log)
+	priv.Register("card_reviews", cards.ExportReviews)
 	priv.RegisterFiles("account", avatars.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
 			_, _ = w.Write(openapi.Spec)
+		})
+		// Picture uploads: larger bodies than JSON, re-encoded by the handlers.
+		r.Group(func(r chi.Router) {
+			r.Use(limitBody(12<<20), authn.SameOrigin)
+			r.With(authn.RequireSession).Group(avatarsAPI.UploadRoutes)
+			r.With(authn.Require).Group(cardsAPI.UploadRoutes)
 		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))
@@ -97,6 +106,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				projectsAPI.Routes(r)
 				roadmapsAPI.Routes(r)
 				focusAPI.Routes(r)
+				cardsAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})

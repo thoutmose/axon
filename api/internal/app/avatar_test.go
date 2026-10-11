@@ -54,7 +54,7 @@ func TestProfilePictureWithAGeneratedDefault(t *testing.T) {
 	if code, _ := alice.do("PUT", "/v1/me/avatar", pngOf(40, 40), "Content-Type", "image/gif"); code != 415 {
 		t.Fatalf("gif = %d", code)
 	}
-	if code, out := alice.do("PUT", "/v1/me/avatar", pngOf(400, 300), "Content-Type", "image/png"); code != 204 {
+	if code, out := alice.do("PUT", "/v1/me/avatar", noisyPNG(400, 300), "Content-Type", "image/png"); code != 204 {
 		t.Fatalf("upload = %d %s", code, out)
 	}
 	code, ct, body = alice.avatar()

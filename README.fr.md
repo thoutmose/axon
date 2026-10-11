@@ -74,8 +74,8 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Reliez n’importe quel élément à n’importe quel autre, là où il s’affiche.
 
 ### 📚 Apprentissage et médias
-- Prévu : pratique de récupération, entrelacement, élaboration, exemples concrets, double codage et répétition espacée.
-- Prévu : planification FSRS, tests relus, cartes mémoire illustrées modifiables et synchronisation avec `anki-sync-server`.
+- ✅ Des cartes mémoire illustrées à consulter, ajouter, modifier et supprimer, révisées avec FSRS-5 (le planificateur d’Anki, vérifié sur son implémentation de référence), des tests d’entraînement, et un agent Enseignant qui rédige des questions de récupération à partir de vos notes de lecture et permanentes, soumises à votre approbation.
+- ✅ Paquets Anki (.apkg) par paquet de cartes, images comprises ; prévu : synchronisation automatique avec `anki-sync-server` sur `srv-services` (EP-42).
 - Prévu : suivi des films, séries et livres avec TMDB et Open Library.
 
 ### 🥗 Santé et sport
@@ -406,7 +406,7 @@ Les contrôles de confidentialité comprennent les registres de consentement, la
 | Revue de code | Relire diffs, tests, sécurité et maintenabilité. | Peut commenter après approbation ; ne peut jamais approuver ni fusionner. | ✅ |
 | Tuteur | Interroger, rechercher et rédiger des parcours. | Chaque compétence cite une source de la bibliothèque ou d’un site autorisé ; vous approuvez. | ✅ |
 | Ressources | Trouver et classer des ressources citées. | Sites autorisés uniquement, robots.txt respecté, 15 pages par exécution, des liens et pas des copies. | ✅ |
-| Enseignant | Produire des exercices de récupération et des cartes mémoire relus. | Ne lit que les notes de lecture et permanentes. | Prévu |
+| Enseignant | Produire des exercices de récupération et des cartes mémoire relus. | Ne lit que les notes de lecture et permanentes. | ✅ |
 | Médias | Normaliser les métadonnées et recommander. | Sources expliquées ; vous contrôlez votre profil. | Prévu |
 | Coach sportif | Suggérer des plans d’entraînement. | Prudent, non médical, attentif aux blessures. | Prévu |
 | Nutritionniste | Aider à noter les repas et les tendances. | Pédagogique ; pas de diagnostic ni de restriction dangereuse. | Prévu |
@@ -440,11 +440,11 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Fondations | Déploiement sécurisé, CI, observabilité, authentification, confidentialité. | EP-00 → 01 → 02 → 03 → 04 |
 | Graphe personnel | Liens, tâches, notes, objectifs, tableau de bord, sans IA. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
 | Croissance guidée | Agents, habitudes, projets, parcours, espace de notes, agents de livraison et Tuteur. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
-| Usage quotidien | Démo, docs bilingues, tableau de bord, réglages, raccourcis, avatars, Atomic Habits, Pomodoro, apprentissage et Anki, gamification, coffre en direct, graphe de connaissances, espaces thématiques, finances, portabilité. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
+| Usage quotidien | Démo, docs bilingues, tableau de bord, réglages, raccourcis, avatars, Atomic Habits, Pomodoro, apprentissage et Anki, gamification, coffre en direct, graphe de connaissances, espaces thématiques, finances, portabilité. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 42 → 15 → 36 → 37 → 38 → 39 → 40 |
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-35 et EP-41 terminés ; EP-16 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-35, EP-16 et EP-41 terminés ; EP-42 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

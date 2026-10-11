@@ -77,6 +77,17 @@ jobs:
       - name: The French README keeps the English one's structure
         run: sh scripts/check-readme.sh
 
+  anki:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: api/go.mod
+      - name: Exported decks import into Anki (official library)
+        run: sh scripts/check-apkg.sh
+
   e2e:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

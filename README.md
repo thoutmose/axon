@@ -74,8 +74,8 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Connect any element to any other, from wherever it is shown.
 
 ### 📚 Learning and media
-- Planned: retrieval practice, interleaving, elaboration, concrete examples, dual coding, and spaced practice.
-- Planned: FSRS scheduling, reviewed tests, illustrated flashcards you can edit, and Anki sync to `anki-sync-server`.
+- ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
+- ✅ Anki packages (.apkg) per deck, pictures included; planned: automatic sync to `anki-sync-server` on `srv-services` (EP-42).
 - Planned: movie, TV, and book tracking backed by TMDB and Open Library.
 
 ### 🥗 Health and sport
@@ -406,7 +406,7 @@ Privacy controls include consent records, purpose limitation, retention policies
 | Code Review | Review diffs, tests, security, and maintainability. | Can comment after approval; can never approve or merge. | ✅ |
 | Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. | ✅ |
 | Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. | ✅ |
-| Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | Planned |
+| Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | ✅ |
 | Media | Normalize metadata and recommend. | Explain sources; user controls profile. | Planned |
 | Personal Trainer | Suggest training plans. | Conservative, non-medical, injury-aware. | Planned |
 | Nutritionist | Help log food and patterns. | Educational; no diagnosis or unsafe restriction. | Planned |
@@ -440,11 +440,11 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Foundation | Secure deployment, CI, observability, auth, privacy. | EP-00 → 01 → 02 → 03 → 04 |
 | Personal graph | Links, tasks, notes, goals, dashboard — no AI required. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
 | Guided growth | Agents, habits, projects, roadmaps, notes workspace, delivery and tutor agents. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
-| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
+| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 42 → 15 → 36 → 37 → 38 → 39 → 40 |
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-35 and EP-41 done; EP-16 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-16, EP-19, EP-22–EP-35, and EP-41 done; EP-42 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

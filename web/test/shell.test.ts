@@ -653,6 +653,47 @@ test('a Pomodoro session for a task: start, pause, skip to the break, and save',
 	await expect(page.getByRole('cell', { name: 'Buy timber' })).toBeVisible();
 });
 
+test('flashcards: add an illustrated card, review it with the keyboard, take a test, export to Anki', async () => {
+	await page.goto('/cards');
+	await expect(page.getByRole('navigation', { name: 'Learn' })).toBeVisible();
+	await page.getByLabel('Question').fill('What does FSRS schedule?');
+	await page.getByLabel('Answer').fill('The next review, just before you would forget.');
+	await page.getByLabel('Deck').fill('Memory');
+	await page.getByLabel('Picture (optional)').evaluate(async (input: HTMLInputElement) => {
+		const c = document.createElement('canvas');
+		c.width = c.height = 64;
+		c.getContext('2d')!.fillRect(0, 0, 32, 32);
+		const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), 'image/png'));
+		const files = new DataTransfer();
+		files.items.add(new File([blob], 'diagram.png', { type: 'image/png' }));
+		input.files = files.files;
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+	});
+	await page.getByRole('button', { name: 'Add card' }).click();
+	await expect(page.getByText('Card added.')).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Memory' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Export Memory to Anki' })).toHaveAttribute(
+		'href',
+		'/api/v1/flashcards/export.apkg?deck=Memory'
+	);
+	await noSeriousA11yViolations(page);
+
+	await page.getByRole('link', { name: 'Review Memory' }).click();
+	await expect(page.getByRole('heading', { name: 'What does FSRS schedule?' })).toBeVisible();
+	await page.keyboard.press('Space');
+	await expect(page.getByRole('img', { name: /Illustration for/ })).toBeVisible();
+	await expect(page.getByRole('button', { name: /Good 10 min/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.keyboard.press('4'); // Easy
+	await expect(page.getByRole('heading', { name: 'All done for now' })).toBeVisible();
+
+	await page.goto('/cards/test?deck=Memory');
+	await page.getByLabel('Your answer').fill('The next review');
+	await page.getByRole('button', { name: 'Check' }).click();
+	await page.getByRole('button', { name: 'I got it right' }).click();
+	await expect(page.getByRole('heading', { name: 'Score: 1 of 1' })).toBeVisible();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
