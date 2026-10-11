@@ -2693,6 +2693,8 @@ paths:
                         name: { type: string, example: task-manager }
                         title: { type: string }
                         version: { type: string, description: Version of the SKILL.md the agent runs. }
+                        consents: { type: array, items: { type: string }, description: "Consents this agent needs on top of ai_agents (health coaches: health_data and health_ai)." }
+                        safety: { type: string, enum: [health], description: "Health guards: red-flag referral without a model call, and no unsafe restriction in replies or proposals." }
                         description: { type: string }
                         tools:
                           type: array
