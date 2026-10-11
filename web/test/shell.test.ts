@@ -604,11 +604,13 @@ test('budget: categories, a monthly budget, and exact totals', async () => {
 	const edit = page.getByRole('dialog', { name: 'Edit category' });
 	await edit.getByLabel(/Monthly budget/).fill('400');
 	await edit.getByRole('button', { name: 'Save' }).click();
+	await expect(edit).toBeHidden();
+	await expect(page.getByRole('progressbar', { name: /Groceries: 0 % of budget/ })).toBeVisible();
 	await page.getByLabel('Amount', { exact: true }).fill('0,29');
 	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
 	await page.getByLabel('Payee', { exact: true }).fill('Bakery');
 	await page.getByRole('button', { name: 'Record' }).click();
-	await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('');
+	await expect(page.getByRole('cell', { name: 'Bakery', exact: true })).toBeVisible();
 	await page.getByLabel('Amount', { exact: true }).fill('12.71');
 	await page.getByLabel('Category', { exact: true }).selectOption({ label: 'Groceries' });
 	await page.getByRole('button', { name: 'Record' }).click();
@@ -671,7 +673,10 @@ test('themed spaces keep AA contrast in light and dark, and can be turned off', 
 			['/calendar', 'almanac'],
 			['/budget', 'ledger'],
 			['/areas', 'atlas'],
-			['/tasks', 'desk']
+			['/tasks', 'desk'],
+			['/cards', 'library'],
+			['/focus', 'desk'],
+			['/progress', 'summit']
 		]) {
 			await page.goto(path);
 			await expect(page.locator('html')).toHaveAttribute('data-space', space);
