@@ -935,6 +935,123 @@
      "answer": 1
     }
    ]
+  },
+  {
+   "id": "gitops",
+   "title": "GitOps",
+   "questions": [
+    {
+     "id": "gitops-1",
+     "question": "In GitOps, what is the source of truth for what runs in the cluster?",
+     "choices": [
+      "The cluster's current state",
+      "A Git repository of declarative configuration",
+      "The CI server's logs",
+      "A wiki page"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "gitops-2",
+     "question": "How does a GitOps agent such as Argo CD or Flux apply changes?",
+     "choices": [
+      "Engineers run kubectl by hand",
+      "It pulls the desired state from Git and reconciles the cluster",
+      "CI pushes scripts over SSH",
+      "It edits Git to match the cluster"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "gitops-3",
+     "question": "Someone edits a deployment directly in the cluster. What does a GitOps agent do?",
+     "choices": [
+      "Commits the change to Git",
+      "Nothing, forever",
+      "Detects the drift and restores what Git declares",
+      "Deletes the cluster"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "dataops",
+   "title": "DataOps",
+   "questions": [
+    {
+     "id": "dataops-1",
+     "question": "What does DataOps borrow from DevOps?",
+     "choices": [
+      "Manual approvals for every query",
+      "Versioning, automated tests, and continuous delivery for data pipelines",
+      "Storing data only in spreadsheets",
+      "Avoiding monitoring"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dataops-2",
+     "question": "Where should a check like \"order_id is never null\" live?",
+     "choices": [
+      "In a dashboard someone looks at weekly",
+      "In an automated data test that runs with the pipeline",
+      "In a comment",
+      "Nowhere; trust the source"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dataops-3",
+     "question": "What does data lineage tell you?",
+     "choices": [
+      "Who owns the database server",
+      "Where a dataset came from and what depends on it",
+      "How fast a query runs",
+      "The table's disk size"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "devsecops",
+   "title": "DevSecOps",
+   "questions": [
+    {
+     "id": "devsecops-1",
+     "question": "What does \"shift left\" mean in DevSecOps?",
+     "choices": [
+      "Move security checks earlier, into design, code, and CI",
+      "Hand security to a separate team at the end",
+      "Disable tests to ship faster",
+      "Run scans only in production"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "devsecops-2",
+     "question": "What does a signed build with provenance (SLSA, Sigstore) let you verify?",
+     "choices": [
+      "That the code has no bugs",
+      "Who built an artifact, from which source, and that it was not tampered with",
+      "The licence of every dependency",
+      "Server uptime"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "devsecops-3",
+     "question": "When is threat modelling most useful?",
+     "choices": [
+      "After an incident only",
+      "While designing a feature, before it is built",
+      "Never; scanners find everything",
+      "Once per decade"
+     ],
+     "answer": 1
+    }
+   ]
   }
  ]
 }

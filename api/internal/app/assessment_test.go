@@ -50,7 +50,7 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 	alice.register("Alice")
 
 	qs := alice.mustDo(200, "GET", "/v1/assessment/questions", nil)
-	if bytes.Contains(qs, []byte(`"answer"`)) || bytes.Count(qs, []byte(`"question"`)) != 72 {
+	if bytes.Contains(qs, []byte(`"answer"`)) || bytes.Count(qs, []byte(`"question"`)) != 81 { // three per library domain
 		t.Fatalf("questions leak answers or are incomplete: %d", bytes.Count(qs, []byte(`"question"`)))
 	}
 

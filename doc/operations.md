@@ -115,7 +115,8 @@ docker run -d --name axon-notes-sync --restart unless-stopped \
    ```sh
    axon notes-sync -dir ~/SecondBrain -url https://srv-prod.tail781d53.ts.net -token-file ~/.axon-token
    ```
-4. Once the import looks right, schedule it (systemd timer or cron, every 15 minutes). Add `-two-way -git` to write Axon's edits back and commit/push the repository.
+4. Templates come with the vault: notes under `Templates/` (or `_templates/`) are offered in Axon's New note dialog, with Obsidian and Templater placeholders filled. Check the report lists them, then open Notes → New note.
+5. Once the import looks right, schedule it (systemd timer or cron, every 15 minutes). Add `-two-way -git` to write Axon's edits back and commit/push the repository.
 
 Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
 

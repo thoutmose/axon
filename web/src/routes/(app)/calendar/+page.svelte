@@ -493,8 +493,8 @@
 		border-left-color: var(--chart-3);
 	}
 	.ev.done {
-		opacity: 0.6;
-		text-decoration: line-through;
+		text-decoration: line-through; /* no opacity: the text keeps its contrast */
+		background: transparent;
 	}
 	.legend {
 		display: flex;
