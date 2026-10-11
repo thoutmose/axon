@@ -15,14 +15,17 @@ const byPath: [string, Space][] = [
 	['/roadmaps', 'library'],
 	['/resources', 'library'],
 	['/learn', 'library'],
+	['/cards', 'library'],
 	['/projects', 'blueprint'],
 	['/habits', 'garden'],
 	['/goals', 'summit'],
+	['/progress', 'summit'],
 	['/calendar', 'almanac'],
 	['/budget', 'ledger'],
 	['/areas', 'atlas'],
 	['/archive', 'atlas'],
-	['/tasks', 'desk']
+	['/tasks', 'desk'],
+	['/focus', 'desk']
 ];
 
 /** The space for a page, or null for pages with their own scenery or none. */

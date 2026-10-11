@@ -8,6 +8,9 @@ describe('spaceFor', () => {
 		expect(spaceFor('/resources/1')).toBe('library');
 		expect(spaceFor('/projects/9')).toBe('blueprint');
 		expect(spaceFor('/budget/reports')).toBe('ledger');
+		expect(spaceFor('/cards/review')).toBe('library');
+		expect(spaceFor('/focus')).toBe('desk');
+		expect(spaceFor('/progress')).toBe('summit');
 	});
 	it('leaves pages with their own scenery alone', () => {
 		expect(spaceFor('/today')).toBeNull();
