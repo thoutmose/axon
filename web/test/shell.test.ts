@@ -121,7 +121,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/media',
 		'/health',
 		'/budget/pots',
-		'/notes/analysis'
+		'/notes/analysis',
+		'/insights'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -819,6 +820,22 @@ test('analyse literature and permanent notes: topics, concepts, and a note panel
 		'interleaving practice'
 	);
 	await noSeriousA11yViolations(page);
+});
+
+test('insights: weekly metrics that explain themselves, and the weekly review', async () => {
+	await page.goto('/insights');
+	const done = page
+		.getByRole('listitem')
+		.filter({ has: page.getByRole('heading', { name: 'Tasks completed' }) });
+	await expect(done).toBeVisible();
+	await done.getByText('How it is counted').click();
+	await expect(done).toContainText('Tasks whose completion time falls in the week.');
+	await expect(page.getByRole('heading', { name: /Weekly review · \d{4}-W\d{2}/ })).toBeVisible();
+	await expect(page.getByRole('table')).toContainText('Tasks completed');
+	await noSeriousA11yViolations(page);
+	await page.getByRole('link', { name: /^← \d{4}-W\d{2}$/ }).click();
+	await expect(page).toHaveURL(/week=\d{4}-W\d{2}/);
+	await expect(page.getByRole('link', { name: /^\d{4}-W\d{2} →$/ })).toBeVisible();
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {

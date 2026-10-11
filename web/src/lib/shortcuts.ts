@@ -16,6 +16,7 @@ export const goTo: Shortcut[] = [
 	{ keys: 'g c', label: 'Calendar', href: '/calendar' },
 	{ keys: 'g m', label: 'Media', href: '/media' },
 	{ keys: 'g w', label: 'Health', href: '/health' },
+	{ keys: 'g i', label: 'Insights', href: '/insights' },
 	{ keys: 'g a', label: 'Agents', href: '/agents' },
 	{ keys: 'g s', label: 'Preferences', href: '/account/preferences' }
 ];

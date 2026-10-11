@@ -113,6 +113,9 @@
 			<a href="/health" aria-current={current('/health') ? 'page' : undefined}>{t('Health')}</a>
 			<a href="/media" aria-current={current('/media') ? 'page' : undefined}>{t('Media')}</a>
 			<a href="/budget" aria-current={current('/budget') ? 'page' : undefined}>{t('Budget')}</a>
+			<a href="/insights" aria-current={current('/insights') ? 'page' : undefined}
+				>{t('Insights')}</a
+			>
 			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>{t('Agents')}</a>
 			<a href="/account" class="account" aria-current={current('/account') ? 'page' : undefined}
 				>{#if avatar.signedIn}<img
