@@ -16,6 +16,7 @@ const (
 	AccountCreated      = "account.created"
 	SignInPasskey       = "signin.passkey"
 	SignInRecoveryCode  = "signin.recovery_code"
+	RecoveryFailed      = "signin.recovery_failed"
 	SignOut             = "signout"
 	SessionRevoked      = "session.revoked"
 	SessionsRevokedAll  = "sessions.revoked_all"

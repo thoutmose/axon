@@ -273,6 +273,13 @@ func (s *Service) loginFinish(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Recovery throttling: five wrong authenticator codes for an account lock
+// recovery sign-in for 15 minutes, on top of the per-IP sign-in limit.
+const (
+	recoveryMaxFailures = 5
+	recoveryLock        = 15 * time.Minute
+)
+
 func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Code string `json:"code"`
@@ -283,26 +290,35 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var displayName string
+	var failedUser *uuid.UUID
 	errInvalid := errors.New("invalid recovery attempt")
+	errLocked := errors.New("recovery locked")
 	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
 		var codeID, userID uuid.UUID
 		var sealed []byte
-		var totpOn *time.Time
+		var totpOn, lockedUntil *time.Time
 		err := tx.QueryRow(r.Context(),
-			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at
+			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at, u.recovery_locked_until
 			 FROM recovery_codes c JOIN users u ON u.id = c.user_id
 			 WHERE c.code_hash = $1 AND c.used_at IS NULL FOR UPDATE`,
-			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn)
+			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn, &lockedUntil)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errInvalid
 		}
 		if err != nil {
 			return err
 		}
+		if lockedUntil != nil && lockedUntil.After(time.Now()) {
+			return errLocked
+		}
 		if totpOn != nil && !s.useTOTP(r.Context(), tx, userID, sealed, body.TOTP) {
+			failedUser = &userID
 			return errInvalid
 		}
 		if _, err := tx.Exec(r.Context(), `UPDATE recovery_codes SET used_at = now() WHERE id = $1`, codeID); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(r.Context(), `UPDATE users SET recovery_failures = 0, recovery_locked_until = NULL WHERE id = $1`, userID); err != nil {
 			return err
 		}
 		if err := audit.Record(r.Context(), tx, userID, audit.SignInRecoveryCode, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
@@ -310,7 +326,25 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		return s.startSession(r.Context(), tx, w, r, userID)
 	})
+	if failedUser != nil {
+		// Counted outside the rolled-back transaction, so failures add up; at
+		// the limit the lock starts and the count begins again.
+		if uerr := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(r.Context(), `UPDATE users SET
+				recovery_locked_until = CASE WHEN recovery_failures + 1 >= $2 THEN now() + make_interval(secs => $3) ELSE recovery_locked_until END,
+				recovery_failures = CASE WHEN recovery_failures + 1 >= $2 THEN 0 ELSE recovery_failures + 1 END
+				WHERE id = $1`, *failedUser, recoveryMaxFailures, recoveryLock.Seconds()); err != nil {
+				return err
+			}
+			return audit.Record(r.Context(), tx, *failedUser, audit.RecoveryFailed, httpx.ClientIP(r), r.UserAgent(), nil)
+		}); uerr != nil {
+			s.log.Error("recording a failed recovery attempt", "err", uerr)
+		}
+	}
 	switch {
+	case errors.Is(err, errLocked):
+		w.Header().Set("Retry-After", "900")
+		httpx.Problem(w, http.StatusTooManyRequests, "Too many wrong authenticator codes. Recovery sign-in is paused for 15 minutes.")
 	case errors.Is(err, errInvalid):
 		httpx.Problem(w, http.StatusUnauthorized, "That recovery code (or authenticator code) is not valid.")
 	case err != nil:
