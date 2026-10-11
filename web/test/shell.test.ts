@@ -117,7 +117,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/resources',
 		'/archive',
 		'/budget',
-		'/notes/explore'
+		'/notes/explore',
+		'/media'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -709,6 +710,32 @@ test('explore notes with filters, charts, and a knowledge graph that says why', 
 	await page.getByLabel('PARA', { exact: true }).selectOption('other');
 	await expect(page).toHaveURL(/para=other/);
 	await expect(page.getByRole('region', { name: 'Summary' })).toBeVisible();
+});
+
+test('track films by hand, rate them, and see recommendations that say why', async () => {
+	await page.goto('/media');
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Films, series, and books' })
+	).toBeVisible();
+	await page.getByLabel('Kind', { exact: true }).selectOption('film');
+	for (const title of ['Arrival', 'Dune: Part One']) {
+		await page.getByLabel('Title', { exact: true }).fill(title);
+		await page.getByRole('button', { name: 'Add', exact: true }).click();
+		await page.getByRole('button', { name: `Edit ${title}` }).click();
+		const dialog = page.getByRole('dialog', { name: title });
+		await dialog.getByLabel('By', { exact: true }).fill('Denis Villeneuve');
+		if (title === 'Arrival') {
+			await dialog.getByLabel('Status').selectOption('done');
+			await dialog.getByLabel('Rating').selectOption('9');
+		}
+		await dialog.getByRole('button', { name: 'Save' }).click();
+		await expect(dialog).toBeHidden();
+	}
+	await expect(page.getByRole('region', { name: 'Up next' })).toContainText(
+		'By Denis Villeneuve, like Arrival, which you rated 9/10.'
+	);
+	await expect(page.getByText('Rated 9/10', { exact: true })).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
