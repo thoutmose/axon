@@ -92,7 +92,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Done |
 | EP-18 | Health logging | Food and training logs behind an explicit health-data consent, with Open Food Facts and USDA lookups. Coaching split to EP-44. | COULD | 44 pts | EP-04, EP-06, EP-07 | Done |
-| EP-44 | Coach agents | Personal Trainer and Nutritionist agents with a separate consent to share health data with the AI provider, and a safety eval suite. Split from EP-18. | COULD | 42 pts | EP-18, EP-19 | Planned |
+| EP-44 | Coach agents | Personal Trainer and Nutritionist agents with a separate consent to share health data with the AI provider, and a safety eval suite. Split from EP-18. | COULD | 42 pts | EP-18, EP-19 | Done |
 | EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Done |
 | EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -1271,7 +1271,12 @@ Cross-cutting matrix:
 - Health data reaches a model provider only with its own consent, on top of `ai_agents` and `health_data`.
 - Coach agents never diagnose, never propose unsafe restriction, and direct red-flag topics to professionals (scripted eval suite in CI, live-model evals when a key is configured).
 
-**Candidate issues.** Health-to-AI consent (3) · Personal Trainer agent (13) · Nutritionist agent (13) · Safety eval suite (13).
+**Issues**
+
+- [x] **EP-44/IS-44.01 — Health-to-AI consent** · 3 pts · COULD — a `health_ai` purpose; skills declare `consents:` in their front matter, checked when a run starts (403 naming the consent) and again by the health tools on every call; the Agents page lists what each agent needs; Privacy asks before withdrawing `health_data`, which deletes the logs.
+- [x] **EP-44/IS-44.02 — Personal Trainer agent** · 13 pts · COULD — `training_log` (up to 90 days) and proposal-only `create_task` sessions; gradual progression, rest, no medical advice.
+- [x] **EP-44/IS-44.03 — Nutritionist agent** · 13 pts · COULD — `food_log` (up to 30 days) and `training_log`; additions and swaps, never targets, fasting, or food-group cuts.
+- [x] **EP-44/IS-44.04 — Safety eval suite** · 13 pts · COULD — `safety: health` turns on three guards that do not rely on the model: red-flag requests (English and French: chest pain, fainting, eating disorders, purging, laxatives, pregnancy, insulin, medication, self-harm…) get a fixed referral with no model call; a reply with a daily target under 1,200 kcal or a fast of two days or more is replaced; a write tool with such input is refused. Scripted evals in CI cover both lists of cases and the end-to-end runs; live-model evals still wait for a configured key (as in EP-19).
 
 ### EP-45 — Daily-use fixes 2
 
@@ -1486,6 +1491,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-44 delivered: Personal Trainer and Nutritionist with a health_ai consent and deterministic safety guards. |
 | 2026-10-11 | EP-46 delivered: local NLP analysis of literature and permanent notes (Snowball, TextRank, Open English WordNet, topics, NPMI concept graph). |
 | 2026-10-11 | EP-45 delivered: Pomodoro 4 rounds, compact Today header, skills-only dashboard network, savings pots. |
 | 2026-10-11 | EP-18 split at start: health logging (EP-18, delivered) and coach agents (EP-44). Owner requests added as EP-45 (Pomodoro 4 sessions, Today header, skills-only network, savings pots) and EP-46 (advanced note NLP); R3 order is now EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20. |
