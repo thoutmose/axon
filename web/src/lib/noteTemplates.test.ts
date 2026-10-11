@@ -31,3 +31,16 @@ describe('templates', () => {
 		expect(zettelId(new Date(2026, 0, 2, 3, 4))).toBe('202601020304');
 	});
 });
+
+import { fill } from './noteTemplates';
+
+describe('fill', () => {
+	it('fills Obsidian-style placeholders', () => {
+		const out = fill(
+			'# {{title}}\ncreated {{date}} · {title} · {date}',
+			'Raft',
+			new Date('2026-10-11T10:00:00')
+		);
+		expect(out).toBe('# Raft\ncreated 2026-10-11 · Raft · 2026-10-11');
+	});
+});

@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"fmt"
 	"archive/zip"
 	"bytes"
 	"encoding/base64"
@@ -50,6 +51,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/notes/{id}/mentions", h.mentions)
 	r.Post("/v1/notes/import", h.importZip)
 	r.Get("/v1/notes/sync", h.changes)
+	r.Get("/v1/notes/sync/version", h.syncVersion)
 	r.Post("/v1/notes/sync", h.push)
 	r.Post("/v1/notes/sync/delete", h.pushDelete)
 }
@@ -91,13 +93,19 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	if v := q.Get("path"); v != "" {
 		exact = &v
 	}
+	var folder *string
+	if v := q.Get("folder"); v != "" {
+		f := escapeLike(strings.TrimSuffix(v, "/")) + "/%"
+		folder = &f
+	}
 	if v := q.Get("after"); v != "" {
 		after = &v // the last path of the previous page
 	}
 	rows, err := h.db.Query(r.Context(), `SELECT `+columns+` FROM notes n JOIN entities e ON e.id = n.id
 		WHERE n.user_id = $1 AND ($2::text IS NULL OR n.para = $2) AND ($3::text IS NULL OR n.path > $3)
 		AND ($5::text IS NULL OR n.tags @> ARRAY[$5::text]) AND ($6::text IS NULL OR n.path = $6)
-		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit, tag, exact)
+		AND ($7::text IS NULL OR n.path LIKE $7)
+		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit, tag, exact, folder)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -299,6 +307,29 @@ type tombstone struct {
 }
 
 // changes returns notes changed and deleted since a cursor (oldest first).
+// syncVersion is a cheap fingerprint of the person's notes: it changes
+// whenever a note is created, edited, renamed, or deleted, so a watching
+// sync knows when to run (EP-36).
+func (h *Handlers) syncVersion(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	var count int
+	var lastEdit, lastDelete *time.Time
+	if err := h.db.QueryRow(r.Context(), `SELECT
+		(SELECT count(*) FROM notes WHERE user_id = $1),
+		(SELECT max(updated_at) FROM notes WHERE user_id = $1),
+		(SELECT max(deleted_at) FROM note_tombstones WHERE user_id = $1)`, who.UserID).Scan(&count, &lastEdit, &lastDelete); err != nil {
+		h.fail(w, err)
+		return
+	}
+	stamp := func(t *time.Time) string {
+		if t == nil {
+			return "-"
+		}
+		return t.UTC().Format(time.RFC3339Nano)
+	}
+	httpx.JSON(w, http.StatusOK, map[string]string{"version": fmt.Sprintf("%d|%s|%s", count, stamp(lastEdit), stamp(lastDelete))})
+}
+
 func (h *Handlers) changes(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
 	since := time.Time{}

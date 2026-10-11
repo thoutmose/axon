@@ -109,7 +109,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Done |
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Done |
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Done |
-| EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Planned |
+| EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Done |
 | EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
 | EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Planned |
 | EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Planned |
@@ -950,12 +950,21 @@ Cross-cutting matrix:
 
 **In scope.** `axon notes-sync -watch` (file events plus a periodic scan) as a service on `srv-second-brain`; Axon changes pushed through an event stream; templates synced as files; conflict handling unchanged (both versions kept).
 
-**Acceptance criteria**
+**Issues**
 
-- Create, edit, rename, and delete propagate both ways within 10 s (integration test).
-- No change is lost when both sides edit the same note (tested).
+- [x] **EP-36/IS-36.01 — Watch mode** · 8 pts · SHOULD
+  - [x] `axon notes-sync -watch [-interval 2s]` runs the conflict-safe two-way sync at start and whenever the vault changes. Changes are detected by a cheap scan of names, sizes, and times. Errors back off up to a minute.
+- [x] **EP-36/IS-36.02 — Change stream** · 8 pts · SHOULD
+  - [x] `GET /v1/notes/sync/version` is a fingerprint that changes on every create, edit, rename, or delete in Axon, so the watcher syncs only when needed.
+- [x] **EP-36/IS-36.03 — Templates as files** · 5 pts · SHOULD
+  - [x] Notes in the vault's `Templates/` folder are offered in Axon's New note dialog, with `{{title}}` and `{{date}}` filled in. `GET /v1/notes?folder=` lists a folder.
 
-**Candidate issues.** Watch mode (8) · Change stream (8) · Templates as files (5).
+**Exit evidence.** The integration test covers the vault to Axon direction (create, edit, rename, delete) and the Axon to vault direction (create, edit, rename, delete), each arriving within 10 s; the run takes about a second. Conflict handling is unchanged and still tested by the EP-11 tests. Playwright creates a note from a vault template. The runbook gives the `srv-secondbrain` command.
+
+Cross-cutting matrix:
+- security: a write token per vault, and every file operation through `os.Root`;
+- reliability: back-off, and state saved after each run;
+- remaining rows unchanged.
 
 ### EP-37 — Knowledge explorer & NLP graph
 

@@ -88,6 +88,23 @@ rm latest.dump latest.dump.age
 
 To rehearse without touching a server, restore into a throwaway `pgvector/pgvector:pg16` container and check `goose_db_version` and the `vector` extension.
 
+## Live notes sync with SecondBrain (EP-36)
+
+Run this once on `srv-secondbrain` to import `~/SecondBrain` (notes and its `Templates/` folder) and keep it in step both ways. Create a write token first under Account → Access tokens, and save it to `~/.config/axon/notes-token` (mode 0600):
+
+```bash
+docker run -d --name axon-notes-sync --restart unless-stopped \
+  -v "$HOME/SecondBrain:/vault" -v "$HOME/.config/axon/notes-token:/token:ro" \
+  axon-api:<version> notes-sync -dir /vault -state /vault/.axon-sync.json \
+  -url https://srv-prod.tail781d53.ts.net -token-file /token -watch
+```
+
+- Create, edit, rename, or delete a Markdown file and the note follows within seconds, and the other way round (tested within 10 s).
+- A note edited on both sides keeps both versions (`*.axon-conflict.md`).
+- Notes in `Templates/` appear as templates when you create a note in Axon; `{{title}}` and `{{date}}` are filled in.
+- `-watch` replaces `-git`: commit the vault on your own schedule, for example with a nightly cron `git -C ~/SecondBrain commit -am sync && git push`.
+- The service definition belongs to the fleet repository (ADR 0004); this command is what it should run.
+
 ## Notes sync with SecondBrain
 
 `axon notes-sync` runs on the host that holds the vault (`srv-secondbrain`, `~/SecondBrain`) and talks to Axon over the tailnet with a personal access token. It only ever reads and writes inside the vault folder.

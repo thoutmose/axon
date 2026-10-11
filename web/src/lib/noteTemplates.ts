@@ -107,6 +107,36 @@ export const templates: Template[] = [
 	}
 ];
 
+/**
+ * A template kept as a note in the vault's Templates/ folder (EP-36), so it
+ * syncs like any note. {{title}}, {title}, {{date}}, and {date} are filled in,
+ * as in Obsidian.
+ */
+export function vaultTemplate(
+	id: string,
+	title: string,
+	path: string,
+	load: () => Promise<string>
+): Template & { load: () => Promise<string> } {
+	return {
+		id: `vault:${id}`,
+		label: title,
+		hint: `From your vault: ${path}`,
+		path: (t) => `0-Inbox/${slug(t)}.md`,
+		content: () => '',
+		load
+	};
+}
+
+/** Fills a vault template's placeholders. */
+export function fill(body: string, title: string, now: Date): string {
+	return body
+		.replaceAll('{{title}}', title)
+		.replaceAll('{title}', title)
+		.replaceAll('{{date}}', isoDate(now))
+		.replaceAll('{date}', isoDate(now));
+}
+
 /** The person's own default template from Preferences ({title} is replaced). */
 export function customTemplate(body: string): Template {
 	return {

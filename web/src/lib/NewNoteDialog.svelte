@@ -2,7 +2,13 @@
 	import { onMount } from 'svelte';
 	import { api, message } from './api';
 	import { createFromTemplate } from './newNote';
-	import { customTemplate, templates as builtIn, type Template } from './noteTemplates';
+	import {
+		customTemplate,
+		fill,
+		templates as builtIn,
+		vaultTemplate,
+		type Template
+	} from './noteTemplates';
 	import Button from './ui/Button.svelte';
 	import Dialog from './ui/Dialog.svelte';
 	import TextField from './ui/TextField.svelte';
@@ -14,20 +20,45 @@
 	let busy = $state(false);
 	let templates = $state<Template[]>(builtIn);
 
-	onMount(() => {
-		api<{ templates: { note: string } }>('/v1/me/settings')
-			.then((s) => {
-				if (s.templates.note.trim()) templates = [customTemplate(s.templates.note), ...builtIn];
-			})
-			.catch(() => {});
+	onMount(async () => {
+		const extra: Template[] = [];
+		try {
+			const s = await api<{ templates: { note: string } }>('/v1/me/settings');
+			if (s.templates.note.trim()) extra.push(customTemplate(s.templates.note));
+		} catch {
+			// Settings are optional here.
+		}
+		try {
+			// Notes in the vault's Templates/ folder are templates too.
+			const list = await api<{ items: { id: string; title: string; path: string }[] }>(
+				'/v1/notes?folder=Templates/&limit=50'
+			);
+			for (const n of list.items) {
+				extra.push(
+					vaultTemplate(
+						n.id,
+						n.path.split('/').pop()!.replace(/\.md$/, ''),
+						n.path,
+						async () => (await api<{ content: string }>(`/v1/notes/${n.id}`)).content
+					)
+				);
+			}
+		} catch {
+			// No templates folder: the built-in ones are enough.
+		}
+		templates = [...extra, ...builtIn];
 	});
 
 	async function create(e: SubmitEvent) {
 		e.preventDefault();
-		const t = templates.find((x) => x.id === kind);
+		let t = templates.find((x) => x.id === kind);
 		if (!t) return;
 		busy = true;
 		try {
+			if ('load' in t && typeof t.load === 'function') {
+				const body = await (t.load as () => Promise<string>)();
+				t = { ...t, content: (title) => fill(body, title, new Date()) };
+			}
 			await createFromTemplate(t, title.trim());
 			open = false;
 			title = '';

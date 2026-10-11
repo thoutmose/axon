@@ -979,6 +979,10 @@ paths:
           in: query
           description: Only the note at exactly this path (e.g. a daily note).
           schema: { type: string }
+        - name: folder
+          in: query
+          description: "Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note)."
+          schema: { type: string }
         - name: after
           in: query
           description: next_cursor from the previous page (the last path).
@@ -1164,6 +1168,22 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "413": { $ref: "#/components/responses/Problem" }
+  /v1/notes/sync/version:
+    get:
+      tags: [notes]
+      operationId: getNotesSyncVersion
+      summary: "A cheap fingerprint of your notes; it changes on every create, edit, rename, or delete, so a watching sync knows when to run"
+      responses:
+        "200":
+          description: The version.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version]
+                properties:
+                  version: { type: string, example: "42|2026-10-11T12:00:00Z|-" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/notes/sync:
     get:
       tags: [notes]

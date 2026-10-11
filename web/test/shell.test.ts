@@ -230,6 +230,28 @@ test('notes workspace: command center, daily note with [[ suggestions, templates
 	await expect(page.getByText(/Zettel\/permanent\/\d{12}-atomic-notes\.md/)).toBeVisible();
 	await expect(page.getByRole('heading', { level: 1, name: 'Atomic notes' })).toBeVisible();
 
+	// A template kept in the vault's Templates/ folder is offered too.
+	await page.request.post('/api/v1/notes', {
+		headers: { Origin: 'http://localhost:3000' },
+		data: {
+			path: 'Templates/Meeting.md',
+			content: '# {{title}}\n\nDate: {{date}}\n\n## Decisions\n'
+		}
+	});
+	await page.reload();
+	await page.getByRole('button', { name: '＋ New note' }).click();
+	await page
+		.getByRole('dialog', { name: 'New note' })
+		.getByRole('textbox', { name: 'Title' })
+		.fill('Weekly sync');
+	await page
+		.getByRole('radio', { name: /Meeting.*From your vault: Templates\/Meeting\.md/ })
+		.check();
+	await page.getByRole('button', { name: 'Create', exact: true }).click();
+	await expect(page.getByLabel('Markdown')).toHaveValue(
+		/^# Weekly sync\n\nDate: \d{4}-\d{2}-\d{2}\n\n## Decisions/
+	);
+
 	// Full-text search with highlighted excerpts.
 	await page.getByLabel('Search notes').fill('forgetting');
 	await page.keyboard.press('Enter');

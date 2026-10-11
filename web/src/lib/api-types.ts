@@ -821,6 +821,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes/sync/version': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A cheap fingerprint of your notes; it changes on every create, edit, rename, or delete, so a watching sync knows when to run */
+		get: operations['getNotesSyncVersion'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/notes/sync': {
 		parameters: {
 			query?: never;
@@ -4140,6 +4157,8 @@ export interface operations {
 				tag?: string;
 				/** @description Only the note at exactly this path (e.g. a daily note). */
 				path?: string;
+				/** @description Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note). */
+				folder?: string;
 				/** @description next_cursor from the previous page (the last path). */
 				after?: string;
 				limit?: components['parameters']['Limit'];
@@ -4381,6 +4400,30 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			413: components['responses']['Problem'];
+		};
+	};
+	getNotesSyncVersion: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The version. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @example 42|2026-10-11T12:00:00Z|- */
+						version: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
 		};
 	};
 	noteChanges: {

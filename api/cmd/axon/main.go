@@ -256,11 +256,16 @@ func notesSync(args []string) error {
 	statePath := fs.String("state", "", "sync state file (default <dir>/../.axon-sync-<folder>.json)")
 	twoWay := fs.Bool("two-way", false, "also copy Axon's changes and deletions to the files (default: import only)")
 	useGit := fs.Bool("git", false, "git pull before and commit + push after")
+	watch := fs.Bool("watch", false, "keep running: sync whenever the vault or Axon changes (implies -two-way)")
+	interval := fs.Duration("interval", 2*time.Second, "with -watch: how often to check for changes")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *dir == "" || *url == "" || *tokenFile == "" {
-		return errors.New("usage: axon notes-sync -dir DIR -url URL -token-file FILE [-two-way] [-git]")
+		return errors.New("usage: axon notes-sync -dir DIR -url URL -token-file FILE [-two-way] [-git | -watch [-interval 2s]]")
+	}
+	if *watch && *useGit {
+		return errors.New("-watch keeps files in step continuously; commit them with your own schedule instead of -git")
 	}
 	token, err := os.ReadFile(*tokenFile)
 	if err != nil {
@@ -282,6 +287,22 @@ func notesSync(args []string) error {
 		if err := git("pull", "--rebase", "--autostash", "--quiet"); err != nil {
 			return fmt.Errorf("git pull: %w", err)
 		}
+	}
+	if *watch {
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+		log.Info("watching", "dir", *dir, "interval", interval.String())
+		err := notesync.Watch(ctx, notesync.Config{
+			Dir: *dir, URL: *url, Token: strings.TrimSpace(string(token)), StatePath: *statePath, TwoWay: true,
+			HTTP: &http.Client{Timeout: time.Minute},
+		}, *interval, log, func(r notesync.Report) {
+			log.Info("synced", "pushed", r.Pushed, "pulled", r.Pulled, "deleted", r.Deleted, "conflicts", len(r.Conflicts))
+		})
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
+		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
