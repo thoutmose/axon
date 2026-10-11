@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import Overview from '$lib/Overview.svelte';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
@@ -142,9 +143,9 @@
 
 		<div class="columns">
 			<section class="card" aria-labelledby="tasks-title">
-				<h2 id="tasks-title">Today's tasks</h2>
+				<h2 id="tasks-title">{t("Today's tasks")}</h2>
 				{#if d.tasks.length === 0}
-					<p class="muted">Nothing due or planned for today.</p>
+					<p class="muted">{t('Nothing due or planned for today.')}</p>
 				{:else}
 					<ul class="rows">
 						{#each d.tasks as t (t.id)}
@@ -171,7 +172,7 @@
 
 			{#if d.milestones.length}
 				<section class="card" aria-labelledby="milestones-title">
-					<h2 id="milestones-title">Coming up</h2>
+					<h2 id="milestones-title">{t('Coming up')}</h2>
 					<ul class="rows">
 						{#each d.milestones as m (m.id)}
 							<li>
@@ -184,7 +185,7 @@
 			{/if}
 
 			<section class="card" aria-labelledby="goals-title">
-				<h2 id="goals-title">Active goals</h2>
+				<h2 id="goals-title">{t('Active goals')}</h2>
 				{#if d.goals.length === 0}
 					<p class="muted">No active goals. <a href="/goals">Name one</a>.</p>
 				{:else}
@@ -200,7 +201,7 @@
 			</section>
 
 			<section class="card" aria-labelledby="notes-title">
-				<h2 id="notes-title">Recent notes</h2>
+				<h2 id="notes-title">{t('Recent notes')}</h2>
 				{#if d.notes.length === 0}
 					<p class="muted">No notes yet. <a href="/notes">Write one</a>.</p>
 				{:else}

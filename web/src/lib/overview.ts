@@ -1,3 +1,4 @@
+import { t } from './i18n.svelte';
 import type { paths } from './api-types';
 
 export type Overview =
@@ -13,7 +14,9 @@ export function trend(value: number, previous: number | null | undefined, unit: 
 	const dir = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
 	const amount = unit === 'percent' ? `${Math.abs(diff)} pts` : `${Math.abs(diff)}`;
 	const text =
-		diff === 0 ? 'same as before' : `${diff > 0 ? '+' : '−'}${amount} vs previous period`;
+		diff === 0
+			? t('same as before')
+			: `${diff > 0 ? '+' : '−'}${amount} ${t('vs previous period')}`;
 	return { dir, text };
 }
 

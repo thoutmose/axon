@@ -511,6 +511,34 @@ test('without an AI provider agents say so, and a local model can be chosen', as
 	await noSeriousA11yViolations(page);
 });
 
+test('preferences switch the language, theme, and text size, and export as YAML', async () => {
+	await page.goto('/account/preferences');
+	await page.getByLabel('Interface language').selectOption('fr');
+	await page.getByLabel('Theme', { exact: true }).selectOption('dark');
+	await page.getByLabel('Text size').selectOption('large');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByRole('link', { name: 'Aujourd’hui' })).toBeVisible();
+	await expect(page.getByRole('heading', { level: 1, name: 'Compte' })).toBeVisible();
+	await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+	await expect(page.locator('html')).toHaveAttribute('data-size', 'large');
+	await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+	await noSeriousA11yViolations(page);
+
+	const yaml = await page.request.get('/api/v1/me/settings.yaml');
+	expect(await yaml.text()).toContain('language: fr');
+
+	// The choice follows the person to another page load.
+	await page.goto('/today');
+	await expect(page.getByRole('heading', { name: 'Vos progrès' })).toBeVisible();
+
+	await page.goto('/account/preferences');
+	await page.getByLabel('Langue de l’interface').selectOption('en');
+	await page.getByLabel('Thème', { exact: true }).selectOption('system');
+	await page.getByLabel('Taille du texte').selectOption('normal');
+	await page.getByRole('button', { name: 'Enregistrer les préférences' }).click();
+	await expect(page.getByRole('link', { name: 'Today' })).toBeVisible();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();

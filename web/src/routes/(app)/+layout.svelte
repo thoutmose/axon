@@ -3,7 +3,22 @@
 	import CommandPalette from '$lib/CommandPalette.svelte';
 	import { capturing } from '$lib/capture.svelte';
 
+	import { onMount } from 'svelte';
+	import { api } from '$lib/api';
+	import { setLocale, t } from '$lib/i18n.svelte';
+	import { applyAppearance, type Appearance } from '$lib/preferences';
+
 	let { children, data } = $props();
+
+	// The person's saved settings win over this browser's cached ones.
+	onMount(() => {
+		api<{ language: 'en' | 'fr'; appearance: Appearance }>('/v1/me/settings')
+			.then((s) => {
+				setLocale(s.language);
+				applyAppearance(s.appearance);
+			})
+			.catch(() => {});
+	});
 	let palette = $state(false);
 
 	// "n" captures a task from any signed-in page, unless you are typing.
@@ -26,8 +41,9 @@
 <svelte:window {onkeydown} />
 {#if data.status.demo_session}
 	<p class="demo-banner" role="note">
-		You are in the shared demo: sample data that resets every night. Passkeys, tokens, AI providers,
-		and repositories are off, and anything you change is visible to other visitors.
+		{t(
+			'You are in the shared demo: sample data that resets every night. Passkeys, tokens, AI providers, and repositories are off, and anything you change is visible to other visitors.'
+		)}
 	</p>
 {/if}
 {@render children()}

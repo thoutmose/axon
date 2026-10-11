@@ -2144,6 +2144,70 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
 
+  /v1/me/settings:
+    get:
+      tags: [account]
+      operationId: getSettings
+      summary: Your preferences (language, appearance, templates) and AI settings; keys are never returned
+      responses:
+        "200":
+          description: Settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Settings" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [account]
+      operationId: putSettings
+      summary: Replace your preferences (AI provider and budget have their own endpoints, or use the YAML file)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SettingsDoc" }
+      responses:
+        "200":
+          description: The saved settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Settings" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/settings.yaml:
+    get:
+      tags: [account]
+      operationId: getSettingsYAML
+      summary: Your settings as a commented YAML file; ai.provider.api_key is write-only and never exported
+      responses:
+        "200":
+          description: The YAML file.
+          content:
+            application/yaml:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [account]
+      operationId: putSettingsYAML
+      summary: Apply a settings YAML file in one transaction; errors name the line
+      requestBody:
+        required: true
+        content:
+          application/yaml:
+            schema: { type: string }
+      responses:
+        "200":
+          description: The saved settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Settings" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/me/agent-provider:
     get:
       tags: [agents]
@@ -3414,6 +3478,62 @@ components:
               to: { type: string, format: uuid }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    SettingsDoc:
+      type: object
+      required: [language, appearance, templates]
+      properties:
+        language: { enum: [en, fr] }
+        appearance:
+          type: object
+          required: [theme, font, font_size, icons, motion]
+          additionalProperties: false
+          properties:
+            theme: { enum: [system, light, dark] }
+            font: { enum: [system, serif, rounded, mono] }
+            font_size: { enum: [small, normal, large] }
+            icons: { enum: [emoji, symbols, none] }
+            motion: { enum: [system, reduced, full] }
+        templates:
+          type: object
+          required: [note, project, resource]
+          additionalProperties: false
+          properties:
+            note: { type: string, maxLength: 20000, description: "Markdown for new notes; {title} is replaced." }
+            project:
+              type: object
+              required: [description, wip_limit, docs_folder]
+              additionalProperties: false
+              properties:
+                description: { type: string, maxLength: 20000 }
+                wip_limit: { type: [integer, "null"], minimum: 1, maximum: 50 }
+                docs_folder: { type: string, maxLength: 200, description: "{slug} is replaced by the project's slug." }
+            resource:
+              type: object
+              required: [section, kind]
+              additionalProperties: false
+              properties:
+                section: { type: string, maxLength: 200 }
+                kind: { enum: [hard, soft] }
+    Settings:
+      allOf:
+        - $ref: "#/components/schemas/SettingsDoc"
+        - type: object
+          properties:
+            ai:
+              type: object
+              required: [provider, monthly_budget_cents]
+              properties:
+                provider:
+                  type: [object, "null"]
+                  description: Your provider, or null for the server default. The key itself is never returned.
+                  properties:
+                    provider: { type: string }
+                    model: { type: string }
+                    base_url: { type: [string, "null"] }
+                    has_key: { type: boolean }
+                    input_price: { type: [number, "null"] }
+                    output_price: { type: [number, "null"] }
+                monthly_budget_cents: { type: integer }
     AssessmentProfile:
       type: object
       required: [role, experience, goals, hours_per_week, formats]

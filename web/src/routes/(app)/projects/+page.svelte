@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { slug } from '$lib/noteTemplates';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
@@ -30,7 +31,19 @@
 	async function create(e: SubmitEvent) {
 		e.preventDefault();
 		try {
-			const p = await api<Project>('/v1/projects', { method: 'POST', body: { title } });
+			// New projects start from the defaults in Preferences.
+			const tpl = await api<{
+				templates: {
+					project: { description: string; wip_limit: number | null; docs_folder: string };
+				};
+			}>('/v1/me/settings')
+				.then((s) => s.templates.project)
+				.catch(() => null);
+			const body: Record<string, unknown> = { title };
+			if (tpl?.description) body.description = tpl.description;
+			if (tpl?.wip_limit) body.wip_limit = tpl.wip_limit;
+			if (tpl?.docs_folder) body.docs_folder = tpl.docs_folder.replaceAll('{slug}', slug(title));
+			const p = await api<Project>('/v1/projects', { method: 'POST', body });
 			title = '';
 			await goto(`/projects/${p.id}`);
 		} catch (err) {

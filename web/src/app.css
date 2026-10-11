@@ -233,3 +233,24 @@ code {
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
 }
+
+/* Appearance preferences (EP-31), set on <html> from the person's settings. */
+:root[data-font='serif'] {
+	--font-sans: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+:root[data-font='rounded'] {
+	--font-sans: ui-rounded, 'SF Pro Rounded', 'Nunito', 'Varela Round', system-ui, sans-serif;
+}
+:root[data-font='mono'] {
+	--font-sans: var(--font-mono);
+}
+:root[data-size='small'] {
+	font-size: 93.75%;
+}
+:root[data-size='large'] {
+	font-size: 112.5%;
+}
+:root[data-motion='reduced'] {
+	--motion-fast: 0ms;
+	--motion: 0ms;
+}

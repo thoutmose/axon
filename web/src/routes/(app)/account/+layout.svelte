@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { t as tr } from '$lib/i18n.svelte';
 
 	let { children } = $props();
 	const tabs = [
@@ -7,14 +8,17 @@
 		{ href: '/account/security', label: 'Sign-in & security' },
 		{ href: '/account/tokens', label: 'Access tokens' },
 		{ href: '/account/privacy', label: 'Privacy & data' },
+		{ href: '/account/preferences', label: 'Preferences' },
 		{ href: '/account/activity', label: 'Activity' }
 	];
 </script>
 
-<h1>Account</h1>
-<nav aria-label="Account sections" class="tabs">
+<h1>{tr('Account')}</h1>
+<nav aria-label={tr('Account sections')} class="tabs">
 	{#each tabs as t (t.href)}
-		<a href={t.href} aria-current={page.url.pathname === t.href ? 'page' : undefined}>{t.label}</a>
+		<a href={t.href} aria-current={page.url.pathname === t.href ? 'page' : undefined}
+			>{tr(t.label)}</a
+		>
 	{/each}
 </nav>
 {@render children()}

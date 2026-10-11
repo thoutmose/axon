@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message, type AuthStatus } from '$lib/api';
 	import { toast } from '$lib/ui/toast.svelte';
+	import { t } from '$lib/i18n.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Scenery from '$lib/ui/Scenery.svelte';
 	import type { PageProps } from './$types';
@@ -72,23 +73,27 @@
 	<Scenery />
 	<div class="shade" aria-hidden="true"></div>
 	<div class="hero-copy">
-		<p class="eyebrow">Self-hosted life OS</p>
-		<h1 id="hero-title">Your life,<br />connected.</h1>
+		<p class="eyebrow">{t('Self-hosted life OS')}</p>
+		<h1 id="hero-title">{t('Your life,')}<br />{t('connected.')}</h1>
 		<p class="lead">
-			Notes, tasks, goals, habits, and reflection in one calm graph that runs on your own server.
+			{t(
+				'Notes, tasks, goals, habits, and reflection in one calm graph that runs on your own server.'
+			)}
 		</p>
 		{#if status && !status.signed_in}
 			<div class="actions">
-				<Button href="/signin">Sign in</Button>
+				<Button href="/signin">{t('Sign in')}</Button>
 				{#if status.registration_open}<Button href="/register" variant="secondary"
-						>Create your account</Button
+						>{t('Create your account')}</Button
 					>{/if}
 				{#if status.demo_available}<Button variant="secondary" busy={entering} onclick={tryDemo}
-						>Try the demo</Button
+						>{t('Try the demo')}</Button
 					>{/if}
 			</div>
 			{#if status.demo_available}<p class="demo-note">
-					The demo is a shared account with sample data, reset every night. No passkey needed.
+					{t(
+						'The demo is a shared account with sample data, reset every night. No passkey needed.'
+					)}
 				</p>{/if}
 		{/if}
 	</div>
@@ -98,8 +103,8 @@
 	{#each features as f, i (f.id)}
 		<section class="feature" class:flip={i % 2 === 1} aria-labelledby="f-{f.id}">
 			<div class="copy">
-				<h2 id="f-{f.id}">{f.title}</h2>
-				<p>{f.text}</p>
+				<h2 id="f-{f.id}">{t(f.title)}</h2>
+				<p>{t(f.text)}</p>
 			</div>
 			<div class="stage {f.id}" aria-hidden="true">
 				<div class="visual glass">

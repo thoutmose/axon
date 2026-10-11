@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { startAuthentication } from '@simplewebauthn/browser';
@@ -46,9 +47,9 @@
 
 <svelte:head><title>Sign in · Axon</title></svelte:head>
 
-<h1>Sign in</h1>
-<p class="muted">Use the passkey on this device or your phone.</p>
-<p><Button onclick={withPasskey} {busy}>Sign in with a passkey</Button></p>
+<h1>{t('Sign in')}</h1>
+<p class="muted">{t('Use the passkey on this device or your phone.')}</p>
+<p><Button onclick={withPasskey} {busy}>{t('Sign in with a passkey')}</Button></p>
 {#if error}<p class="error" role="alert">{error}</p>{/if}
 
 <Section
@@ -73,7 +74,7 @@
 			autocomplete="one-time-code"
 			bind:value={totp}
 		/>
-		<Button type="submit" variant="secondary" {busy}>Sign in with recovery code</Button>
+		<Button type="submit" variant="secondary" {busy}>{t('Sign in with recovery code')}</Button>
 	</form>
 </Section>
 

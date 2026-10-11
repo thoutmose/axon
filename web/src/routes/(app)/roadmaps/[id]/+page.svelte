@@ -17,7 +17,15 @@
 	const selectedId = $derived(page.url.searchParams.get('skill'));
 	let roadmap = $state<Roadmap | null>(null);
 	let error = $state('');
-	let form = $state({ title: '', section: '', url: '', requires: [] as string[] });
+	let form = $state({ title: '', section: '', url: '', kind: 'hard', requires: [] as string[] });
+
+	// New skills start from the resource defaults in Preferences.
+	api<{ templates: { resource: { section: string; kind: string } } }>('/v1/me/settings')
+		.then((s) => {
+			form.section = form.section || s.templates.resource.section;
+			form.kind = s.templates.resource.kind;
+		})
+		.catch(() => {});
 	let confirmDelete = $state(false);
 	let editing = $state(false);
 	let meta = $state({ title: '', description: '' });
@@ -27,6 +35,7 @@
 		section: string;
 		url: string;
 		description: string;
+		kind: string;
 	} | null>(null);
 	let skillOpen = $state(false);
 
@@ -85,10 +94,11 @@
 					title: form.title,
 					section: form.section,
 					...(form.url ? { url: form.url } : {}),
+					kind: form.kind,
 					requires: form.requires
 				}
 			});
-			form = { title: '', section: form.section, url: '', requires: [] };
+			form = { title: '', section: form.section, url: '', kind: form.kind, requires: [] };
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -118,7 +128,8 @@
 			title: s.title,
 			section: s.section,
 			url: s.url ?? '',
-			description: s.description
+			description: s.description,
+			kind: s.kind
 		};
 		skillOpen = true;
 	}
@@ -261,6 +272,13 @@
 							placeholder="https://…"
 							bind:value={form.url}
 						/>
+						<div class="field">
+							<label for="skill-kind">Kind</label>
+							<select id="skill-kind" bind:value={form.kind}>
+								<option value="hard">Hard skill</option>
+								<option value="soft">Soft skill</option>
+							</select>
+						</div>
 					</div>
 					<datalist id="sections"
 						>{#each sections as s (s)}<option value={s}></option>{/each}</datalist
@@ -354,6 +372,13 @@
 				placeholder="https://…"
 				bind:value={skillEdit.url}
 			/>
+			<div class="field">
+				<label for="edit-skill-kind">Kind</label>
+				<select id="edit-skill-kind" bind:value={skillEdit.kind}>
+					<option value="hard">Hard skill</option>
+					<option value="soft">Soft skill</option>
+				</select>
+			</div>
 			<div class="field wide">
 				<label for="edit-skill-description">Notes</label>
 				<textarea

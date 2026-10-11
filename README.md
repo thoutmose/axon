@@ -83,6 +83,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### ✨ Humane progress
 - Planned: XP, levels, badges, and streaks across every area, with freezes bought only with earned points.
 - ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
+- ✅ Preferences in one place: English or French, theme, font, text size, icons, motion, templates for notes, projects, and resources, and your AI provider and budget. Edit them in the app or as a YAML file (keys are write-only).
 
 ## Screenshots
 
@@ -440,7 +441,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-30 and EP-41 done; EP-31 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-31 and EP-41 done; EP-32 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

@@ -5,6 +5,7 @@
 	import { trend, type Overview } from '$lib/overview';
 	import SkillNetwork from '$lib/SkillNetwork.svelte';
 	import Status from '$lib/ui/Status.svelte';
+	import { t } from '$lib/i18n.svelte';
 
 	let days = $state(30);
 	let data = $state<Overview | null>(null);
@@ -33,14 +34,14 @@
 
 <section class="overview" aria-labelledby="overview-title">
 	<div class="head">
-		<h2 id="overview-title">Your progress</h2>
+		<h2 id="overview-title">{t('Your progress')}</h2>
 		<label>
-			<span class="visually-hidden">Period</span>
+			<span class="visually-hidden">{t('Period')}</span>
 			<select bind:value={days}>
-				<option value={7}>Last 7 days</option>
-				<option value={30}>Last 30 days</option>
-				<option value={90}>Last 90 days</option>
-				<option value={365}>Last 12 months</option>
+				<option value={7}>{t('Last 7 days')}</option>
+				<option value={30}>{t('Last 30 days')}</option>
+				<option value={90}>{t('Last 90 days')}</option>
+				<option value={365}>{t('Last 12 months')}</option>
 			</select>
 		</label>
 	</div>
@@ -48,21 +49,21 @@
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !data}
-		<Status kind="loading" message="Loading your progress…" />
+		<Status kind="loading" message={t('Loading your progress…')} />
 	{:else}
-		<ul class="kpis" aria-label="Key figures">
+		<ul class="kpis" aria-label={t('Key figures')}>
 			{#each data.kpis as k (k.id)}
-				{@const t = trend(k.value, k.previous, k.unit)}
+				{@const tr = trend(k.value, k.previous, k.unit)}
 				<li class="glass">
 					<a href={k.href}>
-						<span class="label">{k.label}</span>
+						<span class="label">{t(k.label)}</span>
 						<strong>{fmt(k.unit, k.value)}</strong>
-						{#if t}<span class="trend {t.dir}"
-								>{t.dir === 'up' ? '▲' : t.dir === 'down' ? '▼' : '■'} {t.text}</span
+						{#if tr}<span class="trend {tr.dir}"
+								>{tr.dir === 'up' ? '▲' : tr.dir === 'down' ? '▼' : '■'} {tr.text}</span
 							>{/if}
 					</a>
 					<details>
-						<summary>How is this counted?</summary>
+						<summary>{t('How is this counted?')}</summary>
 						<p>{k.definition}</p>
 					</details>
 				</li>
@@ -71,16 +72,16 @@
 
 		<div class="grid">
 			<div class="panel glass wide">
-				<LineChart title="Daily activity" series={data.series} />
+				<LineChart title={t('Daily activity')} series={data.series} />
 			</div>
 			<div class="panel glass wide">
-				<Heatmap days={data.activity} title="The last 12 months" />
+				<Heatmap days={data.activity} title={t('The last 12 months')} />
 			</div>
 			<div class="panel glass full">
 				<SkillNetwork nodes={data.skills.nodes} edges={data.skills.edges} />
 			</div>
 			<div class="panel glass">
-				<h3>Due in the next 7 days</h3>
+				<h3>{t('Due in the next 7 days')}</h3>
 				{#if data.tables.due_soon.length}
 					<table>
 						<thead><tr><th scope="col">Task</th><th scope="col">Due</th></tr></thead>
@@ -95,7 +96,7 @@
 				{/if}
 			</div>
 			<div class="panel glass">
-				<h3>Learning now</h3>
+				<h3>{t('Learning now')}</h3>
 				{#if data.tables.learning.length}
 					<table>
 						<thead><tr><th scope="col">Skill</th><th scope="col">Roadmap</th></tr></thead>
@@ -113,7 +114,7 @@
 				{/if}
 			</div>
 			<div class="panel glass">
-				<h3>Projects without activity for 14 days</h3>
+				<h3>{t('Projects without activity for 14 days')}</h3>
 				{#if data.tables.stalled_projects.length}
 					<table>
 						<thead><tr><th scope="col">Project</th><th scope="col">Last activity</th></tr></thead>

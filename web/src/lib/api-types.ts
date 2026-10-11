@@ -1336,6 +1336,42 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/settings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your preferences (language, appearance, templates) and AI settings; keys are never returned */
+		get: operations['getSettings'];
+		/** Replace your preferences (AI provider and budget have their own endpoints, or use the YAML file) */
+		put: operations['putSettings'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/settings.yaml': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your settings as a commented YAML file; ai.provider.api_key is write-only and never exported */
+		get: operations['getSettingsYAML'];
+		/** Apply a settings YAML file in one transaction; errors name the line */
+		put: operations['putSettingsYAML'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/me/agent-provider': {
 		parameters: {
 			query?: never;
@@ -2238,6 +2274,51 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
+		};
+		SettingsDoc: {
+			/** @enum {unknown} */
+			language: 'en' | 'fr';
+			appearance: {
+				/** @enum {unknown} */
+				theme: 'system' | 'light' | 'dark';
+				/** @enum {unknown} */
+				font: 'system' | 'serif' | 'rounded' | 'mono';
+				/** @enum {unknown} */
+				font_size: 'small' | 'normal' | 'large';
+				/** @enum {unknown} */
+				icons: 'emoji' | 'symbols' | 'none';
+				/** @enum {unknown} */
+				motion: 'system' | 'reduced' | 'full';
+			};
+			templates: {
+				/** @description Markdown for new notes; {title} is replaced. */
+				note: string;
+				project: {
+					description: string;
+					wip_limit: number | null;
+					/** @description {slug} is replaced by the project's slug. */
+					docs_folder: string;
+				};
+				resource: {
+					section: string;
+					/** @enum {unknown} */
+					kind: 'hard' | 'soft';
+				};
+			};
+		};
+		Settings: components['schemas']['SettingsDoc'] & {
+			ai?: {
+				/** @description Your provider, or null for the server default. The key itself is never returned. */
+				provider: {
+					provider?: string;
+					model?: string;
+					base_url?: string | null;
+					has_key?: boolean;
+					input_price?: number | null;
+					output_price?: number | null;
+				} | null;
+				monthly_budget_cents: number;
+			};
 		};
 		AssessmentProfile: {
 			/** @example Support engineer */
@@ -5107,6 +5188,106 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SettingsDoc'];
+			};
+		};
+		responses: {
+			/** @description The saved settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getSettingsYAML: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The YAML file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/yaml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putSettingsYAML: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/yaml': string;
+			};
+		};
+		responses: {
+			/** @description The saved settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 		};
 	};

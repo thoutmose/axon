@@ -5,6 +5,8 @@
 	import Toaster from '$lib/ui/Toaster.svelte';
 	import { connection, watchConnection } from '$lib/connection.svelte';
 	import { applyTheme, storedTheme, type Theme } from '$lib/theme';
+	import { setLocale, storedLocale, t } from '$lib/i18n.svelte';
+	import { applyAppearance, storedAppearance } from '$lib/preferences';
 
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
@@ -20,8 +22,11 @@
 	let theme = $state<Theme>('system');
 
 	onMount(() => {
+		const saved = storedAppearance();
+		if (saved) applyAppearance({ ...saved, theme: storedTheme() });
 		theme = storedTheme();
 		applyTheme(theme);
+		setLocale(storedLocale());
 		return watchConnection();
 	});
 
@@ -31,7 +36,7 @@
 	}
 </script>
 
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main">{t('Skip to content')}</a>
 <header>
 	<div class="bar">
 		<a href="/" class="brand"
@@ -62,18 +67,26 @@
 				/></svg
 			>Axon</a
 		>
-		<nav aria-label="Main">
-			<a href="/today" aria-current={current('/today') ? 'page' : undefined}>Today</a>
-			<a href="/tasks" aria-current={current('/tasks') ? 'page' : undefined}>Tasks</a>
-			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>Notes</a>
-			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>Goals</a>
-			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}>Projects</a>
-			<a href="/roadmaps" aria-current={current('/roadmaps') ? 'page' : undefined}>Learn</a>
-			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>Habits</a>
-			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}>Calendar</a>
-			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>Agents</a>
-			<a href="/account" aria-current={current('/account') ? 'page' : undefined}>Account</a>
-			<button class="theme" onclick={cycleTheme} aria-label="Theme: {theme}. Change theme">
+		<nav aria-label={t('Main')}>
+			<a href="/today" aria-current={current('/today') ? 'page' : undefined}>{t('Today')}</a>
+			<a href="/tasks" aria-current={current('/tasks') ? 'page' : undefined}>{t('Tasks')}</a>
+			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>{t('Notes')}</a>
+			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>{t('Goals')}</a>
+			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}
+				>{t('Projects')}</a
+			>
+			<a href="/roadmaps" aria-current={current('/roadmaps') ? 'page' : undefined}>{t('Learn')}</a>
+			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>{t('Habits')}</a>
+			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}
+				>{t('Calendar')}</a
+			>
+			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>{t('Agents')}</a>
+			<a href="/account" aria-current={current('/account') ? 'page' : undefined}>{t('Account')}</a>
+			<button
+				class="theme"
+				onclick={cycleTheme}
+				aria-label={t('Theme: {theme}. Change theme', { theme: t(theme) })}
+			>
 				<svg
 					viewBox="0 0 24 24"
 					width="18"

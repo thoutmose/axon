@@ -83,6 +83,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 ### ✨ Progrès à taille humaine
 - Prévu : XP, niveaux, badges et séries dans tous les domaines, avec des gels achetés uniquement avec des points gagnés.
 - ✅ Conception éthique : pas de dark patterns, pas de honte, pas de consentement caché, des contrôles conformes au RGPD.
+- ✅ Des préférences au même endroit : anglais ou français, thème, police, taille du texte, icônes, animations, modèles pour les notes, projets et ressources, et votre fournisseur d’IA et budget. Modifiables dans l’application ou dans un fichier YAML (les clés sont en écriture seule).
 
 ## Captures d’écran
 
@@ -440,7 +441,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-30 et EP-41 terminés ; EP-31 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-31 et EP-41 terminés ; EP-32 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

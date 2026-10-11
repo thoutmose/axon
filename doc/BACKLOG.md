@@ -103,7 +103,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Done |
 | EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Done |
 | EP-41 | Skills assessment | Before the first roadmap, a short assessment of your situation, job, goals, and current level, which places you on roadmaps and feeds the Tutor. | SHOULD | 21 pts | EP-27, EP-30 | Done |
-| EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
+| EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Done (French for the remaining pages: IS-31.06) |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Planned |
@@ -785,13 +785,42 @@ Cross-cutting matrix:
 
 **In scope.** Language (English and French UI, translated strings with a fallback), theme, font family and size, icon theme, default templates for notes, projects, and resources, AI provider keys and monthly limits; `GET/PUT /v1/me/settings` and YAML export and import of the same document, validated against a schema.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0016](adr/0016-settings-yaml-and-languages.md))
 
-- A YAML file round-trips without loss; invalid files are rejected with line-level messages.
-- Secrets in YAML are write-only: export never contains keys.
-- The whole UI is available in French (no missing-string fallbacks in e2e).
+- [x] **EP-31/IS-31.01 — Settings model and API** · 8 pts · MUST
+  - [x] `GET/PUT /v1/me/settings` returns language, appearance, templates, and AI (provider without its key, plus the budget). Routes are session-only; validation is per field.
+- [x] **EP-31/IS-31.02 — YAML import and export** · 5 pts · MUST
+  - [x] `GET/PUT /v1/me/settings.yaml`: commented, round-trips without loss (tested), unknown keys rejected, errors name the line ("line 4: appearance.theme …"), applied in one transaction.
+  - [x] `ai.provider.api_key` is write-only: never exported, kept on re-import, set on upload.
+- [x] **EP-31/IS-31.03 — i18n framework** · 5 pts · MUST
+  - [x] `t()` with an English-keyed French dictionary, placeholders, and fallback (unit-tested); `lang` follows the choice.
+- [x] **EP-31/IS-31.04 — Appearance settings** · 5 pts · MUST
+  - [x] Theme, font (system, serif, rounded, mono), text size, icon theme (emoji, symbols, none), and motion, applied through `<html>` attributes and CSS tokens; cached for the first paint.
+- [x] **EP-31/IS-31.05 — Template settings** · 3 pts · MUST
+  - [x] "My template" for new notes, project defaults (description, WIP limit, docs folder with `{slug}`), and resource defaults (section, hard or soft kind, now editable on skills).
+- [ ] **EP-31/IS-31.06 — French for every page** · 8 pts · SHOULD
+  - [x] Shell, landing, sign-in, demo banner, Today and the command dashboard, account tabs, and Preferences are in French.
+  - [ ] Tasks, notes, goals, projects, roadmaps, habits, calendar, agents, and the remaining account pages still show English. They are translated as each page is next touched, and fully before 1.0 (EP-21).
 
-**Candidate issues.** Settings model and API (8) · YAML import and export (5) · i18n framework and French strings (13) · Appearance settings (5) · Template settings (3).
+**Exit evidence.** The integration test covers:
+- defaults, a JSON update, and per-field rejection;
+- YAML without the stored key, a lossless round trip that keeps the key, and an edited file switching language, budget, provider, and key;
+- six line-level errors (theme, language, version, unknown key, broken YAML, provider);
+- tokens refused.
+
+Vitest covers translation, placeholders, and icons. Playwright covers switching to French, dark, and large text, the YAML export, persistence across pages, and switching back, with axe.
+
+Cross-cutting matrix:
+- identity: session only;
+- authorization: own settings, demo cannot set providers;
+- privacy: register row, exported, keys write-only;
+- accessibility: labelled controls, `lang`, axe;
+- reliability: one transaction;
+- performance: one row;
+- observability: errors logged without content;
+- documentation: ADR 0016, README;
+- AI safety: n/a;
+- supply chain: `go.yaml.in/yaml/v4` promoted from indirect to direct (same version).
 
 ### EP-32 — Keyboard shortcuts & Vim mode
 

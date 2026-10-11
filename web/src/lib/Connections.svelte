@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, message, type Schemas } from './api';
 	import { href, label, options, typeNames, type Link, type Option, type Relation } from './links';
+	import { iconFor, iconTheme } from './preferences';
 	import Button from './ui/Button.svelte';
 	import { toast } from './ui/toast.svelte';
 
@@ -114,7 +115,10 @@
 					{:else}
 						<span class="grow">{link.entity.title}</span>
 					{/if}
-					<span class="chip">{typeNames[link.entity.type] ?? link.entity.type}</span>
+					<span class="chip"
+						>{iconFor(link.entity.type, iconTheme())}
+						{typeNames[link.entity.type] ?? link.entity.type}</span
+					>
 					{#if link.relation !== 'references'}
 						<Button
 							variant="ghost"
@@ -143,7 +147,7 @@
 				{#each hits as h (h.id)}
 					<li>
 						<button type="button" onclick={() => pick(h)}>
-							<span class="chip">{typeNames[h.type]}</span>
+							<span class="chip">{iconFor(h.type, iconTheme())} {typeNames[h.type]}</span>
 							{h.title}
 						</button>
 					</li>

@@ -3,6 +3,7 @@
 	import { api, message, type Schemas } from './api';
 	import { capturing } from './capture.svelte';
 	import { href, typeNames } from './links';
+	import { iconFor, iconTheme } from './preferences';
 	import { openDaily } from './newNote';
 	import { highlight } from './notes';
 	import { toast } from './ui/toast.svelte';
@@ -49,7 +50,7 @@
 			.map((h) => ({
 				id: h.id,
 				label: h.title,
-				detail: typeNames[h.type] ?? h.type,
+				detail: `${iconFor(h.type, iconTheme())} ${typeNames[h.type] ?? h.type}`.trim(),
 				snippet: h.snippet,
 				run: () => goto(href(h)!)
 			}));

@@ -106,3 +106,14 @@ export const templates: Template[] = [
 		content: (t) => `# ${t}\n\n`
 	}
 ];
+
+/** The person's own default template from Preferences ({title} is replaced). */
+export function customTemplate(body: string): Template {
+	return {
+		id: 'mine',
+		label: 'My template',
+		hint: 'Your default from Preferences, in your inbox.',
+		path: (t) => `0-Inbox/${slug(t)}.md`,
+		content: (t) => body.replaceAll('{title}', t)
+	};
+}

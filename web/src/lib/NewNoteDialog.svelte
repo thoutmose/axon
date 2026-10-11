@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { message } from './api';
+	import { onMount } from 'svelte';
+	import { api, message } from './api';
 	import { createFromTemplate } from './newNote';
-	import { templates } from './noteTemplates';
+	import { customTemplate, templates as builtIn, type Template } from './noteTemplates';
 	import Button from './ui/Button.svelte';
 	import Dialog from './ui/Dialog.svelte';
 	import TextField from './ui/TextField.svelte';
@@ -11,6 +12,15 @@
 	let title = $state('');
 	let kind = $state('permanent');
 	let busy = $state(false);
+	let templates = $state<Template[]>(builtIn);
+
+	onMount(() => {
+		api<{ templates: { note: string } }>('/v1/me/settings')
+			.then((s) => {
+				if (s.templates.note.trim()) templates = [customTemplate(s.templates.note), ...builtIn];
+			})
+			.catch(() => {});
+	});
 
 	async function create(e: SubmitEvent) {
 		e.preventDefault();

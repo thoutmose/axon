@@ -24,6 +24,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/server"
+	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -57,6 +58,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	}
 	priv.RegisterFiles("notes", notes.Files)
 	priv.Register("agents", agents.Export)
+	priv.Register("settings", settings.Export)
+	settingsAPI := settings.NewHandlers(pool, log, agentsAPI)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -75,6 +78,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				priv.Routes(r)
 				dashboardAPI.FeedRoutes(r)
 				agentsAPI.SessionRoutes(r)
+				settingsAPI.Routes(r)
 				reposAPI.Routes(r)
 			})
 			r.Group(func(r chi.Router) {

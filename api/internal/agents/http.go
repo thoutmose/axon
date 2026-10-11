@@ -109,13 +109,11 @@ func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if body.MonthlyBudgetCents < 0 || body.MonthlyBudgetCents > 100000 {
-		httpx.Problem(w, http.StatusUnprocessableEntity, "The monthly budget is between $0 and $1,000.")
+	var ie InputError
+	if err := SetBudget(req.Context(), r.db, who.UserID, body.MonthlyBudgetCents); errors.As(err, &ie) {
+		httpx.Problem(w, http.StatusUnprocessableEntity, ie.Msg)
 		return
-	}
-	_, err := r.db.Exec(req.Context(), `INSERT INTO agent_settings (user_id, monthly_budget_cents) VALUES ($1, $2)
-		ON CONFLICT (user_id) DO UPDATE SET monthly_budget_cents = $2, updated_at = now()`, who.UserID, body.MonthlyBudgetCents)
-	if err != nil {
+	} else if err != nil {
 		r.fail(w, err)
 		return
 	}
@@ -492,58 +490,16 @@ func (r *Runner) getProvider(w http.ResponseWriter, req *http.Request) {
 
 func (r *Runner) putProvider(w http.ResponseWriter, req *http.Request) {
 	who, _ := auth.FromContext(req.Context())
-	var body struct {
-		Provider    string   `json:"provider"`
-		Model       string   `json:"model"`
-		BaseURL     *string  `json:"base_url"`
-		APIKey      *string  `json:"api_key"` // absent: keep the stored key; "": remove it
-		InputPrice  *float64 `json:"input_price"`
-		OutputPrice *float64 `json:"output_price"`
-	}
-	if err := httpx.Decode(req, &body); err != nil {
+	var in ProviderInput
+	if err := httpx.Decode(req, &in); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	body.Model = strings.TrimSpace(body.Model)
-	bad := func(msg string) { httpx.Problem(w, http.StatusUnprocessableEntity, msg) }
-	switch {
-	case !slices.Contains(providerNames(), body.Provider):
-		bad("Choose a provider: " + strings.Join(providerNames(), ", ") + ".")
+	var ie InputError
+	if err := r.SetProvider(req.Context(), r.db, who.UserID, in); errors.As(err, &ie) {
+		httpx.Problem(w, http.StatusUnprocessableEntity, ie.Msg)
 		return
-	case !validModel(body.Model):
-		bad("Enter the model name your provider uses, like claude-opus-5-5 or llama3.1:8b.")
-		return
-	case body.Provider == "local" && (body.BaseURL == nil || !validBaseURL(*body.BaseURL)):
-		bad("A local model needs its server address, like http://192.168.1.20:11434/v1.")
-		return
-	case body.Provider != "local" && body.BaseURL != nil:
-		bad("Only a local provider takes a server address.")
-		return
-	case body.APIKey != nil && len(*body.APIKey) > 500:
-		bad("That key is too long.")
-		return
-	case body.APIKey != nil && *body.APIKey != "" && r.sealer == nil:
-		bad("This server cannot store keys: set AXON_ENCRYPTION_KEY first.")
-		return
-	}
-	for _, p := range []*float64{body.InputPrice, body.OutputPrice} {
-		if p != nil && (*p < 0 || *p > 1000) {
-			bad("Prices are US dollars per million tokens, from 0 to 1,000.")
-			return
-		}
-	}
-	keep := body.APIKey == nil
-	var sealed []byte
-	if body.APIKey != nil && strings.TrimSpace(*body.APIKey) != "" {
-		sealed = r.sealer.Seal([]byte(strings.TrimSpace(*body.APIKey)))
-	}
-	_, err := r.db.Exec(req.Context(), `INSERT INTO agent_providers (user_id, provider, model, base_url, api_key_sealed, input_price, output_price)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (user_id) DO UPDATE SET provider = $2, model = $3, base_url = $4,
-			api_key_sealed = CASE WHEN $8 THEN agent_providers.api_key_sealed ELSE $5 END,
-			input_price = $6, output_price = $7, updated_at = now()`,
-		who.UserID, body.Provider, body.Model, body.BaseURL, sealed, body.InputPrice, body.OutputPrice, keep)
-	if err != nil {
+	} else if err != nil {
 		r.fail(w, err)
 		return
 	}
