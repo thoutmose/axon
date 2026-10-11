@@ -1,5 +1,6 @@
 /** Note templates for Zettelkasten, PARA, and a daily note. They only write
  * plain Markdown with front matter, so vault sync stays byte for byte. */
+import { stem } from './notes';
 
 export type Template = {
 	id: string;
@@ -107,36 +108,6 @@ export const templates: Template[] = [
 	}
 ];
 
-/**
- * A template kept as a note in the vault's Templates/ folder (EP-36), so it
- * syncs like any note. {{title}}, {title}, {{date}}, and {date} are filled in,
- * as in Obsidian.
- */
-export function vaultTemplate(
-	id: string,
-	title: string,
-	path: string,
-	load: () => Promise<string>
-): Template & { load: () => Promise<string> } {
-	return {
-		id: `vault:${id}`,
-		label: title,
-		hint: `From your vault: ${path}`,
-		path: (t) => `0-Inbox/${slug(t)}.md`,
-		content: () => '',
-		load
-	};
-}
-
-/** Fills a vault template's placeholders. */
-export function fill(body: string, title: string, now: Date): string {
-	return body
-		.replaceAll('{{title}}', title)
-		.replaceAll('{title}', title)
-		.replaceAll('{{date}}', isoDate(now))
-		.replaceAll('{date}', isoDate(now));
-}
-
 /** The person's own default template from Preferences ({title} is replaced). */
 export function customTemplate(body: string): Template {
 	return {
@@ -146,4 +117,67 @@ export function customTemplate(body: string): Template {
 		path: (t) => `0-Inbox/${slug(t)}.md`,
 		content: (t) => body.replaceAll('{title}', t)
 	};
+}
+
+/** Where templates live in the vault, as in Obsidian: Templates/, _templates/, 99-Templates/… */
+export const templatesFolder = 'Templates';
+
+export function isTemplatePath(path: string): boolean {
+	const top = path.split('/')[0];
+	return path.includes('/') && /^(\d+[-_ ]*)?_?templates?$/i.test(top);
+}
+
+/** Where a note made from a vault template goes, by the template's front-matter type. */
+const destinations: Record<string, (t: string, now: Date) => string> = {
+	fleeting: (t, now) => `0-Inbox/${zettelId(now)}-${slug(t)}.md`,
+	literature: (t) => `Zettel/literature/${slug(t)}.md`,
+	permanent: (t, now) => `Zettel/permanent/${zettelId(now)}-${slug(t)}.md`,
+	project: (t) => `1-Projects/${slug(t)}/${slug(t)}.md`,
+	area: (t) => `2-Areas/${slug(t)}.md`,
+	resource: (t) => `3-Resources/${slug(t)}.md`,
+	archive: (t) => `4-Archive/${slug(t)}.md`,
+	daily: (_t, now) => dailyPath(now)
+};
+
+/**
+ * Fills a template body. Understands Axon's {title}, Obsidian's core
+ * Templates plugin ({{title}}, {{date}}, {{time}}, {{date:FORMAT}} as a
+ * plain date), the common Templater calls for title and date, and {{zettel}}.
+ */
+export function fill(body: string, title: string, now: Date): string {
+	const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+	return body
+		.replace(/\{\{\s*title\s*\}\}|<%\s*tp\.file\.title\s*%>|\{title\}/g, title)
+		.replace(/\{\{\s*date(:[^}]*)?\s*\}\}|<%\s*tp\.date\.now\([^)]*\)\s*%>/g, isoDate(now))
+		.replace(/\{\{\s*time(:[^}]*)?\s*\}\}/g, time)
+		.replace(/\{\{\s*zettel\s*\}\}/g, zettelId(now));
+}
+
+/** A template that is a note in the vault's templates folder. */
+export function vaultTemplate(
+	note: { id: string; path: string; title: string; kind: string },
+	body: string
+): Template {
+	const dest = destinations[note.kind] ?? ((t: string) => `0-Inbox/${slug(t)}.md`);
+	return {
+		id: `vault:${note.id}`,
+		label: templateName(note.path),
+		hint: `Your template ${note.path}`,
+		path: dest,
+		content: (t, now) => fill(body, t, now)
+	};
+}
+
+/** A vault template is named after its file: Templates/Book note.md is "Book note". */
+export const templateName = stem;
+
+/** The built-in templates as editable files for the vault's templates folder. */
+export function builtInFiles(now: Date): { path: string; content: string }[] {
+	return templates.map((t) => ({
+		path: `${templatesFolder}/${t.label}.md`,
+		content: t
+			.content('{{title}}', now)
+			.replaceAll(zettelId(now), '{{zettel}}')
+			.replaceAll(isoDate(now), '{{date}}')
+	}));
 }

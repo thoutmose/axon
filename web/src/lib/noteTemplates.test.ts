@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { dailyContent, dailyPath, slug, templates, zettelId } from './noteTemplates';
+import {
+	builtInFiles,
+	dailyContent,
+	dailyPath,
+	fill,
+	isTemplatePath,
+	slug,
+	templateName,
+	templates,
+	vaultTemplate,
+	zettelId
+} from './noteTemplates';
 
 const now = new Date(2026, 9, 10, 15, 30); // local 10 Oct 2026 15:30
 
@@ -32,15 +43,39 @@ describe('templates', () => {
 	});
 });
 
-import { fill } from './noteTemplates';
-
-describe('fill', () => {
-	it('fills Obsidian-style placeholders', () => {
-		const out = fill(
-			'# {{title}}\ncreated {{date}} · {title} · {date}',
-			'Raft',
-			new Date('2026-10-11T10:00:00')
+describe('vault templates', () => {
+	it('recognises the usual template folders', () => {
+		expect(isTemplatePath('Templates/Book.md')).toBe(true);
+		expect(isTemplatePath('_templates/Book.md')).toBe(true);
+		expect(isTemplatePath('99-Templates/Book.md')).toBe(true);
+		expect(isTemplatePath('Templates.md')).toBe(false);
+		expect(isTemplatePath('Zettel/templates/x.md')).toBe(false);
+	});
+	it('fills Axon, Obsidian, and Templater placeholders', () => {
+		expect(
+			fill(
+				'# {{title}} {title} <% tp.file.title %>\n{{date}} {{date:YYYY-MM-DD}} {{time}} {{zettel}}',
+				'Raft',
+				now
+			)
+		).toBe('# Raft Raft Raft\n2026-10-10 2026-10-10 15:30 202610101530');
+	});
+	it('files a note by its template type', () => {
+		const t = vaultTemplate(
+			{ id: '1', path: 'Templates/Book.md', title: 'Book', kind: 'literature' },
+			'# {{title}}'
 		);
-		expect(out).toBe('# Raft\ncreated 2026-10-11 · Raft · 2026-10-11');
+		expect(t.label).toBe('Book');
+		expect(templateName('_templates/Weekly review.md')).toBe('Weekly review');
+		expect(t.path('Dune', now)).toBe('Zettel/literature/dune.md');
+		expect(t.content('Dune', now)).toBe('# Dune');
+	});
+	it('round-trips the built-ins through the templates folder', () => {
+		const files = builtInFiles(now);
+		const permanent = files.find((f) => f.path === 'Templates/Permanent note.md')!;
+		expect(permanent.content).toContain('id: {{zettel}}');
+		expect(fill(permanent.content, 'Proofs', now)).toBe(
+			templates.find((t) => t.id === 'permanent')!.content('Proofs', now)
+		);
 	});
 });

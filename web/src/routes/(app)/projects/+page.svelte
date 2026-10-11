@@ -3,7 +3,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
+	import { projectTemplates, type ProjectTemplate } from '$lib/entityTemplates';
 	import type { Project } from '$lib/projects';
+	import TemplateChips from '$lib/TemplateChips.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -28,8 +30,17 @@
 			.catch((err) => (error = message(err)));
 	});
 
-	async function create(e: SubmitEvent) {
+	let busy = $state(false);
+
+	function create(e: SubmitEvent) {
 		e.preventDefault();
+		start(title);
+	}
+
+	// A project from a template gets its description, WIP limit, and a
+	// backlog of cards; the title is the one typed above, if any.
+	async function start(name: string, t?: ProjectTemplate) {
+		busy = true;
 		try {
 			// New projects start from the defaults in Preferences.
 			const tpl = await api<{
@@ -39,15 +50,33 @@
 			}>('/v1/me/settings')
 				.then((s) => s.templates.project)
 				.catch(() => null);
-			const body: Record<string, unknown> = { title };
+			const body: Record<string, unknown> = { title: name };
 			if (tpl?.description) body.description = tpl.description;
 			if (tpl?.wip_limit) body.wip_limit = tpl.wip_limit;
-			if (tpl?.docs_folder) body.docs_folder = tpl.docs_folder.replaceAll('{slug}', slug(title));
+			if (tpl?.docs_folder) body.docs_folder = tpl.docs_folder.replaceAll('{slug}', slug(name));
+			if (t) {
+				body.description = t.description;
+				if (t.wip_limit) body.wip_limit = t.wip_limit;
+			}
 			const p = await api<Project>('/v1/projects', { method: 'POST', body });
+			for (const c of t?.cards ?? []) {
+				const card = await api<{ task_id: string }>(`/v1/projects/${p.id}/cards`, {
+					method: 'POST',
+					body: { title: c.title, kind: c.kind, column: 'backlog' }
+				});
+				for (const child of c.children ?? []) {
+					await api(`/v1/projects/${p.id}/cards`, {
+						method: 'POST',
+						body: { title: child, kind: 'issue', column: 'backlog', parent_id: card.task_id }
+					});
+				}
+			}
 			title = '';
 			await goto(`/projects/${p.id}`);
 		} catch (err) {
 			toast(message(err), 'error');
+		} finally {
+			busy = false;
 		}
 	}
 </script>
@@ -78,6 +107,11 @@
 		/>
 		<Button type="submit" variant="secondary">Create</Button>
 	</form>
+	<TemplateChips
+		items={projectTemplates.map((t) => ({ title: t.title, hint: t.description }))}
+		onpick={(i) => start(title.trim() || projectTemplates[i].title, projectTemplates[i])}
+		{busy}
+	/>
 {/if}
 
 {#if error}

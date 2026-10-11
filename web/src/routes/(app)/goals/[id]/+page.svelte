@@ -4,7 +4,9 @@
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { Goal, Milestone } from '$lib/goals';
 	import Connections from '$lib/Connections.svelte';
+	import { addDays, between, milestonePlans } from '$lib/entityTemplates';
 	import ProgressBar from '$lib/ProgressBar.svelte';
+	import TemplateChips from '$lib/TemplateChips.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -122,6 +124,28 @@
 		} catch (err) {
 			milestone = { title, due_on };
 			toast(message(err), 'error');
+		}
+	}
+
+	// Milestones from a plan, spread from today to the target date (90 days without one).
+	async function addPlan(steps: [string, number][]) {
+		if (!goal) return;
+		const today = new Date().toLocaleDateString('sv');
+		const target =
+			goal.target_date && goal.target_date > today ? goal.target_date : addDays(today, 90);
+		busy = true;
+		try {
+			for (const [title, share] of steps) {
+				await api(`/v1/goals/${id}/milestones`, {
+					method: 'POST',
+					body: { title, due_on: between(today, target, share) }
+				});
+			}
+			await refresh();
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			busy = false;
 		}
 	}
 
@@ -248,6 +272,15 @@
 			<input id="milestone-due" type="date" bind:value={milestone.due_on} />
 			<Button type="submit" variant="secondary">Add</Button>
 		</form>
+		<TemplateChips
+			label="Milestone templates"
+			items={milestonePlans.map((p) => ({
+				title: p.title,
+				hint: p.steps.map((s) => s[0]).join(' → ')
+			}))}
+			onpick={(i) => addPlan(milestonePlans[i].steps)}
+			{busy}
+		/>
 	</section>
 
 	<Connections id={goal.id} type="goal" onchange={refresh} />

@@ -3,7 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import { daysUntil, mondayOf, type Goal } from '$lib/goals';
+	import { addDays, between, goalTemplates, type GoalTemplate } from '$lib/entityTemplates';
 	import ProgressBar from '$lib/ProgressBar.svelte';
+	import TemplateChips from '$lib/TemplateChips.svelte';
 	import { relativeDay } from '$lib/tasks';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -50,6 +52,38 @@
 			await goto(`/goals/${g.id}`);
 		} catch (err) {
 			toast(message(err), 'error');
+		}
+	}
+
+	let busy = $state(false);
+
+	// A goal from a template: outcome, target date, measure, and milestones,
+	// all editable on the goal page.
+	async function fromTemplate(t: GoalTemplate) {
+		busy = true;
+		try {
+			const start = today || new Date().toLocaleDateString('sv');
+			const target = addDays(start, t.days);
+			const g = await api<Goal>('/v1/goals', {
+				method: 'POST',
+				body: {
+					title: t.title,
+					outcome: t.outcome,
+					target_date: target,
+					measure: t.measure ?? null
+				}
+			});
+			for (const [title, share] of t.milestones) {
+				await api(`/v1/goals/${g.id}/milestones`, {
+					method: 'POST',
+					body: { title, due_on: between(start, target, share) }
+				});
+			}
+			await goto(`/goals/${g.id}`);
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			busy = false;
 		}
 	}
 
@@ -103,6 +137,11 @@
 		/>
 		<Button type="submit" variant="secondary">Create</Button>
 	</form>
+	<TemplateChips
+		items={goalTemplates.map((t) => ({ title: t.title, hint: t.outcome }))}
+		onpick={(i) => fromTemplate(goalTemplates[i])}
+		{busy}
+	/>
 {/if}
 
 {#if status === 'active' && goals?.length && today && !reviewed}
