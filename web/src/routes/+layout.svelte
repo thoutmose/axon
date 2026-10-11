@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '../app.css';
+	import '$lib/spaces.css';
+	import { spaceFor } from '$lib/spaces';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Toaster from '$lib/ui/Toaster.svelte';
@@ -16,6 +18,24 @@
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
+
+	// The area's scenery, and a scroll offset for its parallax.
+	$effect(() => {
+		const space = spaceFor(page.url.pathname);
+		if (space) document.documentElement.dataset.space = space;
+		else delete document.documentElement.dataset.space;
+	});
+	onMount(() => {
+		let frame = 0;
+		const onScroll = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() =>
+				document.documentElement.style.setProperty('--scroll', String(Math.round(window.scrollY)))
+			);
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	});
 
 	onMount(() => {
 		const saved = storedAppearance();
@@ -35,6 +55,7 @@
 	}
 </script>
 
+<div class="space-art" aria-hidden="true"></div>
 <a class="skip" href="#main">{t('Skip to content')}</a>
 <header>
 	<div class="bar">

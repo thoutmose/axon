@@ -1,0 +1,348 @@
+/* Themed spaces (EP-38). Each area sets data-space on <html>; its artwork
+ * (original SVG in static/spaces, made by scripts/spaces.py) sits in a fixed
+ * layer behind the page, with tokens tuned so text keeps AA contrast. Effects
+ * are slow and small, and stop with reduced motion; reduced transparency and
+ * "Themed spaces: off" in Preferences remove the artwork. */
+.space-art {
+	position: fixed;
+	inset: -4vh 0;
+	z-index: -1;
+	pointer-events: none;
+	background: var(--space-art, none) center / cover no-repeat;
+	display: none;
+}
+:root[data-space]:not([data-spaces='off']) .space-art {
+	display: block;
+}
+:root[data-space]:not([data-spaces='off']) body::before {
+	background: var(--bg); /* the scenery replaces the colour field */
+}
+.space-art::before,
+.space-art::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+/* A soft scrim keeps headings and hints calm where they sit on the artwork. */
+.space-art::before {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg) 62%, transparent) 0,
+		color-mix(in srgb, var(--bg) 35%, transparent) 30vh,
+		transparent 55vh
+	);
+}
+
+/* Serif headings for the scholarly spaces. */
+:root:not([data-spaces='off'])[data-space='notebook'] main :is(h1, h2),
+:root:not([data-spaces='off'])[data-space='library'] main :is(h1, h2),
+:root:not([data-spaces='off'])[data-space='atlas'] main :is(h1, h2) {
+	font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+	letter-spacing: -0.01em;
+}
+:root:not([data-spaces='off'])[data-space='notebook'] main h1 {
+	font-style: italic;
+}
+
+/* Light tokens per space. */
+:root:not([data-spaces='off'])[data-space='notebook'] {
+	--bg: #efdfbd;
+	--surface: rgb(252 246 232 / 0.82);
+	--surface-solid: #fbf5e7;
+	--surface-glass: rgb(250 242 224 / 0.72);
+	--fg: #2b1d0e;
+	--muted: #5c4630;
+	--accent: #8a3b12;
+	--accent-soft: rgb(138 59 18 / 0.12);
+	--border: rgb(90 58 26 / 0.18);
+	--space-art: url('/spaces/notebook-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='library'] {
+	--bg: #ece0cd;
+	--surface: rgb(253 248 240 / 0.86);
+	--surface-solid: #fdf8f0;
+	--surface-glass: rgb(250 244 234 / 0.74);
+	--fg: #23170d;
+	--muted: #5a4634;
+	--accent: #7b2d26;
+	--accent-soft: rgb(123 45 38 / 0.12);
+	--border: rgb(90 50 20 / 0.18);
+	--space-art: url('/spaces/library-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='blueprint'] {
+	--bg: #e7eff9;
+	--surface: rgb(250 252 255 / 0.86);
+	--surface-solid: #fafcff;
+	--muted: #44566c;
+	--accent: #1554a0;
+	--space-art: url('/spaces/blueprint-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='garden'] {
+	--bg: #eaf3e4;
+	--muted: #4a5a48;
+	--accent: #2c6e3a;
+	--accent-soft: rgb(44 110 58 / 0.12);
+	--space-art: url('/spaces/garden-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='summit'] {
+	--bg: #edf1f6;
+	--space-art: url('/spaces/summit-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='almanac'] {
+	--bg: #eaecf6;
+	--accent: #34449a;
+	--space-art: url('/spaces/almanac-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='ledger'] {
+	--bg: #f3f8ef;
+	--muted: #4a5a4e;
+	--accent: #1f6b45;
+	--accent-soft: rgb(31 107 69 / 0.12);
+	--space-art: url('/spaces/ledger-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='atlas'] {
+	--bg: #f1e8d4;
+	--surface: rgb(253 249 240 / 0.84);
+	--muted: #5a4a34;
+	--accent: #7a4a12;
+	--accent-soft: rgb(122 74 18 / 0.12);
+	--space-art: url('/spaces/atlas-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='desk'] {
+	--space-art: url('/spaces/desk-light.svg');
+}
+
+/* Dark tokens per space: the same places at night. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='notebook'] {
+		--bg: #1d160e;
+		--surface: rgb(46 36 24 / 0.78);
+		--surface-solid: #2e2418;
+		--surface-glass: rgb(40 31 20 / 0.7);
+		--fg: #f3e6cc;
+		--muted: #cdb895;
+		--accent: #e9b46a;
+		--accent-soft: rgb(233 180 106 / 0.16);
+		--border: rgb(233 200 150 / 0.16);
+		--space-art: url('/spaces/notebook-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='library'] {
+		--bg: #170e08;
+		--surface: rgb(40 26 16 / 0.82);
+		--surface-solid: #281a10;
+		--surface-glass: rgb(36 23 14 / 0.74);
+		--fg: #f4e9d8;
+		--muted: #d2bfa3;
+		--accent: #f0b65c;
+		--accent-soft: rgb(240 182 92 / 0.16);
+		--border: rgb(240 200 140 / 0.16);
+		--space-art: url('/spaces/library-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='blueprint'] {
+		--bg: #0a2242;
+		--surface: rgb(14 40 74 / 0.82);
+		--surface-solid: #0e284a;
+		--surface-glass: rgb(12 36 68 / 0.72);
+		--fg: #eef5ff;
+		--muted: #b5cbe6;
+		--accent: #8cc2ff;
+		--accent-soft: rgb(140 194 255 / 0.16);
+		--border: rgb(160 200 245 / 0.2);
+		--space-art: url('/spaces/blueprint-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='garden'] {
+		--muted: #b8c9b4;
+		--accent: #86d493;
+		--accent-soft: rgb(134 212 147 / 0.16);
+		--bg: #0d160f;
+		--space-art: url('/spaces/garden-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='summit'] {
+		--bg: #0e141d;
+		--space-art: url('/spaces/summit-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='almanac'] {
+		--accent: #a9b6ff;
+		--accent-soft: rgb(169 182 255 / 0.16);
+		--bg: #0a0e20;
+		--space-art: url('/spaces/almanac-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='ledger'] {
+		--muted: #b6c8bb;
+		--accent: #74d6a0;
+		--accent-soft: rgb(116 214 160 / 0.16);
+		--bg: #0d140f;
+		--space-art: url('/spaces/ledger-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='atlas'] {
+		--accent-soft: rgb(226 178 108 / 0.16);
+		--surface: rgb(40 32 22 / 0.8);
+		--bg: #1a150e;
+		--muted: #cdb895;
+		--accent: #e2b26c;
+		--space-art: url('/spaces/atlas-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='desk'] {
+		--space-art: url('/spaces/desk-dark.svg');
+	}
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='notebook'] {
+	--bg: #1d160e;
+	--surface: rgb(46 36 24 / 0.78);
+	--surface-solid: #2e2418;
+	--surface-glass: rgb(40 31 20 / 0.7);
+	--fg: #f3e6cc;
+	--muted: #cdb895;
+	--accent: #e9b46a;
+	--accent-soft: rgb(233 180 106 / 0.16);
+	--border: rgb(233 200 150 / 0.16);
+	--space-art: url('/spaces/notebook-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='library'] {
+	--bg: #170e08;
+	--surface: rgb(40 26 16 / 0.82);
+	--surface-solid: #281a10;
+	--surface-glass: rgb(36 23 14 / 0.74);
+	--fg: #f4e9d8;
+	--muted: #d2bfa3;
+	--accent: #f0b65c;
+	--accent-soft: rgb(240 182 92 / 0.16);
+	--border: rgb(240 200 140 / 0.16);
+	--space-art: url('/spaces/library-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='blueprint'] {
+	--bg: #0a2242;
+	--surface: rgb(14 40 74 / 0.82);
+	--surface-solid: #0e284a;
+	--surface-glass: rgb(12 36 68 / 0.72);
+	--fg: #eef5ff;
+	--muted: #b5cbe6;
+	--accent: #8cc2ff;
+	--accent-soft: rgb(140 194 255 / 0.16);
+	--border: rgb(160 200 245 / 0.2);
+	--space-art: url('/spaces/blueprint-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='garden'] {
+	--muted: #b8c9b4;
+	--accent: #86d493;
+	--accent-soft: rgb(134 212 147 / 0.16);
+	--bg: #0d160f;
+	--space-art: url('/spaces/garden-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='summit'] {
+	--bg: #0e141d;
+	--space-art: url('/spaces/summit-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='almanac'] {
+	--accent: #a9b6ff;
+	--accent-soft: rgb(169 182 255 / 0.16);
+	--bg: #0a0e20;
+	--space-art: url('/spaces/almanac-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='ledger'] {
+	--muted: #b6c8bb;
+	--accent: #74d6a0;
+	--accent-soft: rgb(116 214 160 / 0.16);
+	--bg: #0d140f;
+	--space-art: url('/spaces/ledger-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='atlas'] {
+	--accent-soft: rgb(226 178 108 / 0.16);
+	--surface: rgb(40 32 22 / 0.8);
+	--bg: #1a150e;
+	--muted: #cdb895;
+	--accent: #e2b26c;
+	--space-art: url('/spaces/atlas-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='desk'] {
+	--space-art: url('/spaces/desk-dark.svg');
+}
+
+/* Reduced transparency: plain surfaces, no artwork. */
+@media (prefers-reduced-transparency: reduce) {
+	.space-art {
+		display: none !important;
+	}
+}
+
+/* Effects, only when motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+	/* Parallax: the scenery moves a little slower than the page. */
+	:root:not([data-motion='reduced']) .space-art {
+		transform: translate3d(0, calc(var(--scroll, 0) * -0.04px), 0);
+		will-change: transform;
+	}
+	/* Notebook: the page drifts like paper under a candle. */
+	:root:not([data-motion='reduced'])[data-space='notebook'] .space-art {
+		animation: space-drift 60s ease-in-out infinite alternate;
+	}
+	/* Library: the reading lamps breathe. */
+	:root:not([data-motion='reduced'])[data-space='library'] .space-art::after {
+		background:
+			radial-gradient(28vmax 22vmax at 18% 8%, rgb(255 200 110 / 0.16), transparent 70%),
+			radial-gradient(28vmax 22vmax at 82% 8%, rgb(255 200 110 / 0.16), transparent 70%);
+		animation: space-lamp 7s ease-in-out infinite alternate;
+	}
+	/* Workshop: a drafting light sweeps the blueprint. */
+	:root:not([data-motion='reduced'])[data-space='blueprint'] .space-art::after {
+		background: linear-gradient(
+			180deg,
+			transparent 0 45%,
+			rgb(120 180 255 / 0.12) 50%,
+			transparent 55%
+		);
+		background-size: 100% 300%;
+		animation: space-scan 14s linear infinite;
+	}
+	/* Garden: leaves sway. */
+	:root:not([data-motion='reduced'])[data-space='garden'] .space-art {
+		animation: space-sway 12s ease-in-out infinite alternate;
+		transform-origin: 50% 100%;
+	}
+	/* Almanac: the sky twinkles. */
+	:root:not([data-motion='reduced'])[data-space='almanac'] .space-art::after {
+		background:
+			radial-gradient(circle at 30% 40%, rgb(255 255 255 / 0.25), transparent 2px) 0 0 / 180px 140px,
+			radial-gradient(circle at 70% 60%, rgb(255 255 255 / 0.2), transparent 1.5px) 0 0 / 230px
+				170px;
+		animation: space-twinkle 5s ease-in-out infinite alternate;
+	}
+}
+@keyframes space-drift {
+	to {
+		background-position: 52% 48%;
+		transform: translate3d(0, calc(var(--scroll, 0) * -0.04px), 0) scale(1.03);
+	}
+}
+@keyframes space-lamp {
+	from {
+		opacity: 0.55;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes space-scan {
+	from {
+		background-position: 0 100%;
+	}
+	to {
+		background-position: 0 -200%;
+	}
+}
+@keyframes space-sway {
+	from {
+		transform: translate3d(0, calc(var(--scroll, 0) * -0.04px), 0) rotate(-0.4deg);
+	}
+	to {
+		transform: translate3d(0, calc(var(--scroll, 0) * -0.04px), 0) rotate(0.4deg);
+	}
+}
+@keyframes space-twinkle {
+	from {
+		opacity: 0.3;
+	}
+	to {
+		opacity: 1;
+	}
+}

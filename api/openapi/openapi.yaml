@@ -4940,6 +4940,7 @@ components:
             font_size: { enum: [small, normal, large] }
             icons: { enum: [emoji, symbols, none] }
             motion: { enum: [system, reduced, full] }
+            spaces: { enum: ["on", "off"], description: "Themed scenery for each area: a notebook for notes, a library for learning, a workshop for projects. On when absent." }
         templates:
           type: object
           required: [note, project, resource]

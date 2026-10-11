@@ -12,6 +12,10 @@ export const fr: Record<string, string> = {
 	Resources: 'Ressources',
 	Archive: 'Archives',
 	Budget: 'Budget',
+	'Themed spaces': 'Espaces thématiques',
+	'On: a notebook for notes, a library for learning…':
+		'Activés : un carnet pour les notes, une bibliothèque pour apprendre…',
+	Off: 'Désactivés',
 	Learn: 'Apprendre',
 	Habits: 'Habitudes',
 	Focus: 'Concentration',

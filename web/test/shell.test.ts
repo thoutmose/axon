@@ -659,6 +659,38 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 	await noSeriousA11yViolations(page);
 });
 
+test('themed spaces keep AA contrast in light and dark, and can be turned off', async () => {
+	for (const scheme of ['light', 'dark'] as const) {
+		await page.emulateMedia({ colorScheme: scheme });
+		for (const [path, space] of [
+			['/notes', 'notebook'],
+			['/roadmaps', 'library'],
+			['/projects', 'blueprint'],
+			['/habits', 'garden'],
+			['/goals', 'summit'],
+			['/calendar', 'almanac'],
+			['/budget', 'ledger'],
+			['/areas', 'atlas'],
+			['/tasks', 'desk']
+		]) {
+			await page.goto(path);
+			await expect(page.locator('html')).toHaveAttribute('data-space', space);
+			await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+			await noSeriousA11yViolations(page);
+		}
+	}
+	await page.emulateMedia({ colorScheme: 'light' });
+	await page.goto('/account/preferences');
+	await page.getByLabel('Themed spaces').selectOption('off');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await page.goto('/notes');
+	await expect(page.locator('html')).toHaveAttribute('data-spaces', 'off');
+	await expect(page.locator('.space-art')).toBeHidden();
+	await page.goto('/account/preferences');
+	await page.getByLabel('Themed spaces').selectOption('on');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();

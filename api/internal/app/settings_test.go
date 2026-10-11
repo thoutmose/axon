@@ -24,7 +24,7 @@ func TestSettingsInTheAppAndAsYAML(t *testing.T) {
 	if !bytes.Contains(def, []byte(`"language":"en"`)) || !bytes.Contains(def, []byte(`"theme":"system"`)) || !bytes.Contains(def, []byte(`"monthly_budget_cents":200`)) {
 		t.Fatalf("defaults = %s", def)
 	}
-	doc := `{"language":"fr","appearance":{"theme":"dark","font":"serif","font_size":"large","icons":"symbols","motion":"reduced"},
+	doc := `{"language":"fr","appearance":{"theme":"dark","font":"serif","font_size":"large","icons":"symbols","motion":"reduced","spaces":"off"},
 		"templates":{"note":"# {title}\n\n## Sources\n","project":{"description":"Why, what, done when.","wip_limit":3,"docs_folder":"1-Projects/{slug}"},"resource":{"section":"To read","kind":"soft"}}}`
 	alice.mustDo(200, "PUT", "/v1/me/settings", []byte(doc))
 	if out := alice.mustDo(200, "PUT", "/v1/me/settings", []byte(strings.Replace(doc, `"templates":`, `"keyboard":{"shortcuts":false,"vim":true},"templates":`, 1))); !bytes.Contains(out, []byte(`"vim":true`)) {
