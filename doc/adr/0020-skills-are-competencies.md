@@ -1,4 +1,4 @@
-# 0017 — Skills are competencies; resources teach them
+# 0020 — Skills are competencies; resources teach them
 
 - **Status:** Accepted
 - **Date:** 2026-10-11

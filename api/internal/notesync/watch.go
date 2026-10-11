@@ -100,4 +100,3 @@ func (c client) version(ctx context.Context) (string, error) {
 	}
 	return out.Version, nil
 }
-
