@@ -86,7 +86,8 @@ func resize(src *image.RGBA, n int) *image.RGBA {
 			if count == 0 {
 				continue
 			}
-			dst.SetRGBA(x, y, color.RGBA{uint8(r / count), uint8(g / count), uint8(b / count), uint8(a / count)})
+			// An average of 8-bit values is at most 255.
+			dst.SetRGBA(x, y, color.RGBA{uint8(r / count), uint8(g / count), uint8(b / count), uint8(a / count)}) //nolint:gosec // see above
 		}
 	}
 	return dst

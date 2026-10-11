@@ -588,20 +588,18 @@ test('upload a profile picture, see it in the header, and go back to the default
 	await page.goto('/account');
 	const pic = page.getByRole('img', { name: 'E2E Owner' });
 	await expect(pic).toHaveJSProperty('complete', true);
-	// A tiny valid PNG, 32×32, made on the fly.
-	const png = await page.evaluate(async () => {
+	// A 32×32 PNG made in the page, handed to the file input as if picked.
+	await page.getByLabel('Upload a picture').evaluate(async (input: HTMLInputElement) => {
 		const c = document.createElement('canvas');
 		c.width = c.height = 32;
 		const g = c.getContext('2d')!;
 		g.fillStyle = '#3366cc';
 		g.fillRect(0, 0, 32, 32);
 		const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), 'image/png'));
-		return Array.from(new Uint8Array(await blob.arrayBuffer()));
-	});
-	await page.getByLabel('Upload a picture').setInputFiles({
-		name: 'me.png',
-		mimeType: 'image/png',
-		buffer: Buffer.from(png)
+		const files = new DataTransfer();
+		files.items.add(new File([blob], 'me.png', { type: 'image/png' }));
+		input.files = files.files;
+		input.dispatchEvent(new Event('change', { bubbles: true }));
 	});
 	await expect(page.getByText('Picture updated.')).toBeVisible();
 	await expect(page.locator('a.account img')).toHaveAttribute('src', /\?v=/);

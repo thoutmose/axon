@@ -32,7 +32,7 @@ func withText(t *testing.T, img image.Image, text string) []byte {
 	b := buf.Bytes()
 	data := append([]byte("Comment\x00"), text...)
 	chunk := make([]byte, 0, len(data)+12)
-	chunk = binary.BigEndian.AppendUint32(chunk, uint32(len(data)))
+	chunk = binary.BigEndian.AppendUint32(chunk, uint32(len(data))) //nolint:gosec // a few bytes of test data
 	body := append([]byte("tEXt"), data...)
 	chunk = append(chunk, body...)
 	chunk = binary.BigEndian.AppendUint32(chunk, crc32.ChecksumIEEE(body))
