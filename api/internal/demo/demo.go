@@ -195,6 +195,20 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		cat, s.err = budget.CreateCategory(ctx, tx, user, f)
 		cats[c.name] = cat.ID
 	}
+	var checking, savings budget.Account
+	if s.err == nil {
+		checking, s.err = budget.CreateAccount(ctx, tx, user, budget.AccountFields{Name: ptr("Checking"), Type: ptr("asset"), OpeningCents: ptr(int64(180000))})
+	}
+	if s.err == nil {
+		savings, s.err = budget.CreateAccount(ctx, tx, user, budget.AccountFields{Name: ptr("Savings"), Type: ptr("asset"), Role: ptr("savings"), OpeningCents: ptr(int64(500000))})
+	}
+	if s.err == nil {
+		_, s.err = budget.CreateAccount(ctx, tx, user, budget.AccountFields{Name: ptr("Visa"), Type: ptr("liability"), OpeningCents: ptr(int64(-24000))})
+	}
+	if s.err == nil {
+		groceries := cats["Groceries"]
+		_, s.err = budget.CreateRule(ctx, tx, user, budget.RuleFields{Name: ptr("Supermarkets"), Value: ptr("market"), CategoryID: &groceries, Tag: ptr("food")})
+	}
 	first := time.Date(s.today.Year(), s.today.Month(), 1, 0, 0, 0, 0, time.UTC)
 	for _, t := range []struct {
 		day       int
@@ -209,7 +223,12 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 		id := cats[t.cat]
 		_, s.err = budget.CreateTransaction(ctx, tx, user, budget.TransactionFields{OccurredOn: ptr(on.Format(time.DateOnly)), Kind: ptr(t.kind),
-			AmountCents: &t.cents, CategoryID: &id, Payee: ptr(t.payee)})
+			AmountCents: &t.cents, CategoryID: &id, AccountID: &checking.ID, Payee: ptr(t.payee)})
+	}
+	if s.err == nil { // pay yourself first: a monthly transfer to savings
+		_, s.err = budget.CreateRecurring(ctx, tx, user, budget.RecurringFields{Name: ptr("Savings"), Rule: ptr("FREQ=MONTHLY;BYMONTHDAY=2"),
+			Start: ptr(first.AddDate(0, 0, 1).Format(time.DateOnly)), TransactionFields: budget.TransactionFields{Kind: ptr("transfer"),
+				AmountCents: ptr(int64(30000)), AccountID: &checking.ID, ToAccountID: &savings.ID}})
 	}
 
 	// Habits with a month of history.

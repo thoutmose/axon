@@ -40,15 +40,19 @@ type Category struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// Transaction is money in or out on a day.
+// Transaction is money in, out, or moved between accounts on a day.
 type Transaction struct {
 	ID          uuid.UUID  `json:"id"`
 	OccurredOn  string     `json:"occurred_on"`
-	Kind        string     `json:"kind"`
+	Kind        string     `json:"kind"` // income, expense, or transfer
 	AmountCents int64      `json:"amount_cents"`
 	CategoryID  *uuid.UUID `json:"category_id"`
+	AccountID   *uuid.UUID `json:"account_id"`    // paid from (expense, transfer) or into (income)
+	ToAccountID *uuid.UUID `json:"to_account_id"` // transfers only
+	Tags        []string   `json:"tags"`
 	Payee       string     `json:"payee"`
 	Note        string     `json:"note"`
+	RecurringID *uuid.UUID `json:"recurring_id"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
@@ -275,12 +279,37 @@ func Categories(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Category
 
 // TransactionFields are the editable parts; nil means "not provided".
 type TransactionFields struct {
-	OccurredOn    *string
-	Kind          *string
-	AmountCents   *int64
-	CategoryID    *uuid.UUID
-	ClearCategory bool
-	Payee, Note   *string
+	OccurredOn                         *string
+	Kind                               *string
+	AmountCents                        *int64
+	CategoryID, AccountID, ToAccountID *uuid.UUID
+	ClearCategory, ClearAccount        bool
+	ClearToAccount                     bool
+	Tags                               *[]string
+	Payee, Note                        *string
+}
+
+var tagRe = regexp.MustCompile(`^[a-z0-9_-]{1,40}$`)
+
+// cleanTags lower-cases, deduplicates, and checks tags.
+func cleanTags(in []string) ([]string, error) {
+	out := []string{}
+	seen := map[string]bool{}
+	for _, t := range in {
+		t = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(t), "#"))
+		if t == "" || seen[t] {
+			continue
+		}
+		if !tagRe.MatchString(t) {
+			return nil, ValidationError{"A tag is up to 40 letters, digits, - or _."}
+		}
+		seen[t] = true
+		out = append(out, t)
+	}
+	if len(out) > 20 {
+		return nil, ValidationError{"Up to 20 tags."}
+	}
+	return out, nil
 }
 
 func (f *TransactionFields) validate() error {
@@ -289,8 +318,8 @@ func (f *TransactionFields) validate() error {
 			return ValidationError{"A date looks like 2026-10-11."}
 		}
 	}
-	if f.Kind != nil && *f.Kind != "income" && *f.Kind != "expense" {
-		return ValidationError{"A transaction is income or expense."}
+	if f.Kind != nil && *f.Kind != "income" && *f.Kind != "expense" && *f.Kind != "transfer" {
+		return ValidationError{"A transaction is income, expense, or transfer."}
 	}
 	if f.AmountCents != nil && (*f.AmountCents <= 0 || *f.AmountCents > MaxCents) {
 		return ValidationError{"An amount is more than 0 and at most 1,000,000,000."}
@@ -301,14 +330,23 @@ func (f *TransactionFields) validate() error {
 	if f.Note != nil && len([]rune(*f.Note)) > 2000 {
 		return ValidationError{"A note is up to 2,000 characters."}
 	}
+	if f.Tags != nil {
+		tags, err := cleanTags(*f.Tags)
+		if err != nil {
+			return err
+		}
+		f.Tags = &tags
+	}
 	return nil
 }
 
-const transactionColumns = `id, occurred_on::text, kind, amount_cents, category_id, payee, note, created_at, updated_at`
+const transactionColumns = `id, occurred_on::text, kind, amount_cents, category_id, account_id, to_account_id, tags, payee, note,
+	recurring_id, created_at, updated_at`
 
 func scanTransaction(r pgx.Row) (Transaction, error) {
 	var t Transaction
-	err := r.Scan(&t.ID, &t.OccurredOn, &t.Kind, &t.AmountCents, &t.CategoryID, &t.Payee, &t.Note, &t.CreatedAt, &t.UpdatedAt)
+	err := r.Scan(&t.ID, &t.OccurredOn, &t.Kind, &t.AmountCents, &t.CategoryID, &t.AccountID, &t.ToAccountID, &t.Tags,
+		&t.Payee, &t.Note, &t.RecurringID, &t.CreatedAt, &t.UpdatedAt)
 	return t, err
 }
 
@@ -326,6 +364,9 @@ func checkCategory(ctx context.Context, q db.Querier, userID uuid.UUID, id *uuid
 	if id == nil {
 		return nil
 	}
+	if kind == "transfer" {
+		return ValidationError{"A transfer has no category."}
+	}
 	c, err := GetCategory(ctx, q, userID, *id)
 	if errors.Is(err, ErrNotFound) {
 		return ValidationError{"No such category."}
@@ -339,31 +380,77 @@ func checkCategory(ctx context.Context, q db.Querier, userID uuid.UUID, id *uuid
 	return nil
 }
 
-// CreateTransaction records money in or out.
+// checkAccounts makes sure the accounts are the user's and fit the kind.
+func checkAccounts(ctx context.Context, q db.Querier, userID uuid.UUID, t Transaction) error {
+	for _, id := range []*uuid.UUID{t.AccountID, t.ToAccountID} {
+		if id == nil {
+			continue
+		}
+		if _, err := GetAccount(ctx, q, userID, *id); errors.Is(err, ErrNotFound) {
+			return ValidationError{"No such account."}
+		} else if err != nil {
+			return err
+		}
+	}
+	if t.Kind == "transfer" {
+		if t.AccountID == nil || t.ToAccountID == nil || *t.AccountID == *t.ToAccountID {
+			return ValidationError{"A transfer moves money from one of your accounts to another."}
+		}
+	} else if t.ToAccountID != nil {
+		return ValidationError{"Only a transfer has a destination account."}
+	}
+	return nil
+}
+
+// CreateTransaction records money in, out, or between accounts. Without a
+// category, the person's rules may choose one.
 func CreateTransaction(ctx context.Context, q db.Querier, userID uuid.UUID, f TransactionFields) (Transaction, error) {
+	return createTransaction(ctx, q, userID, f, nil, nil)
+}
+
+func createTransaction(ctx context.Context, q db.Querier, userID uuid.UUID, f TransactionFields, recurringID *uuid.UUID, importHash *string) (Transaction, error) {
 	if f.OccurredOn == nil || f.Kind == nil || f.AmountCents == nil {
 		return Transaction{}, ValidationError{"A transaction needs a date, a kind, and an amount."}
 	}
 	if err := f.validate(); err != nil {
 		return Transaction{}, err
 	}
-	if err := checkCategory(ctx, q, userID, f.CategoryID, *f.Kind); err != nil {
-		return Transaction{}, err
+	t := Transaction{OccurredOn: *f.OccurredOn, Kind: *f.Kind, AmountCents: *f.AmountCents, CategoryID: f.CategoryID,
+		AccountID: f.AccountID, ToAccountID: f.ToAccountID, Tags: []string{}}
+	if f.Tags != nil {
+		t.Tags = *f.Tags
 	}
-	payee, note := "", ""
 	if f.Payee != nil {
-		payee = strings.TrimSpace(*f.Payee)
+		t.Payee = strings.TrimSpace(*f.Payee)
 	}
 	if f.Note != nil {
-		note = *f.Note
+		t.Note = *f.Note
+	}
+	if err := checkCategory(ctx, q, userID, t.CategoryID, t.Kind); err != nil {
+		return Transaction{}, err
+	}
+	if err := checkAccounts(ctx, q, userID, t); err != nil {
+		return Transaction{}, err
+	}
+	if err := applyRules(ctx, q, userID, &t); err != nil {
+		return Transaction{}, err
 	}
 	id := uuid.Must(uuid.NewV7())
-	if _, err := q.Exec(ctx, `INSERT INTO budget_transactions (id, user_id, occurred_on, kind, amount_cents, category_id, payee, note)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, id, userID, *f.OccurredOn, *f.Kind, *f.AmountCents, f.CategoryID, payee, note); err != nil {
+	tag, err := q.Exec(ctx, `INSERT INTO budget_transactions (id, user_id, occurred_on, kind, amount_cents, category_id, account_id,
+			to_account_id, tags, payee, note, recurring_id, import_hash)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT DO NOTHING`,
+		id, userID, t.OccurredOn, t.Kind, t.AmountCents, t.CategoryID, t.AccountID, t.ToAccountID, t.Tags, t.Payee, t.Note, recurringID, importHash)
+	if err != nil {
 		return Transaction{}, err
+	}
+	if tag.RowsAffected() == 0 {
+		return Transaction{}, errDuplicate
 	}
 	return GetTransaction(ctx, q, userID, id)
 }
+
+// errDuplicate means a recurring or imported transaction already exists.
+var errDuplicate = errors.New("already recorded")
 
 // UpdateTransaction changes a transaction.
 func UpdateTransaction(ctx context.Context, q db.Querier, userID, id uuid.UUID, f TransactionFields) (Transaction, error) {
@@ -386,6 +473,15 @@ func UpdateTransaction(ctx context.Context, q db.Querier, userID, id uuid.UUID, 
 	if f.CategoryID != nil || f.ClearCategory {
 		t.CategoryID = f.CategoryID
 	}
+	if f.AccountID != nil || f.ClearAccount {
+		t.AccountID = f.AccountID
+	}
+	if f.ToAccountID != nil || f.ClearToAccount {
+		t.ToAccountID = f.ToAccountID
+	}
+	if f.Tags != nil {
+		t.Tags = *f.Tags
+	}
 	if f.Payee != nil {
 		t.Payee = strings.TrimSpace(*f.Payee)
 	}
@@ -395,9 +491,12 @@ func UpdateTransaction(ctx context.Context, q db.Querier, userID, id uuid.UUID, 
 	if err := checkCategory(ctx, q, userID, t.CategoryID, t.Kind); err != nil {
 		return Transaction{}, err
 	}
+	if err := checkAccounts(ctx, q, userID, t); err != nil {
+		return Transaction{}, err
+	}
 	if _, err := q.Exec(ctx, `UPDATE budget_transactions SET occurred_on = $3, kind = $4, amount_cents = $5, category_id = $6,
-		payee = $7, note = $8, updated_at = now() WHERE id = $1 AND user_id = $2`,
-		id, userID, t.OccurredOn, t.Kind, t.AmountCents, t.CategoryID, t.Payee, t.Note); err != nil {
+		account_id = $7, to_account_id = $8, tags = $9, payee = $10, note = $11, updated_at = now() WHERE id = $1 AND user_id = $2`,
+		id, userID, t.OccurredOn, t.Kind, t.AmountCents, t.CategoryID, t.AccountID, t.ToAccountID, t.Tags, t.Payee, t.Note); err != nil {
 		return Transaction{}, err
 	}
 	return GetTransaction(ctx, q, userID, id)
@@ -412,15 +511,22 @@ func DeleteTransaction(ctx context.Context, q db.Querier, userID, id uuid.UUID) 
 	return err
 }
 
+// Filter narrows a month's transactions.
+type Filter struct {
+	Category, Account *uuid.UUID
+	Tag               string
+}
+
 // Transactions lists a month's transactions, newest first.
-func Transactions(ctx context.Context, q db.Querier, userID uuid.UUID, month string, category *uuid.UUID) ([]Transaction, error) {
+func Transactions(ctx context.Context, q db.Querier, userID uuid.UUID, month string, f Filter) ([]Transaction, error) {
 	start, end, err := MonthRange(month)
 	if err != nil {
 		return nil, err
 	}
 	rows, err := q.Query(ctx, `SELECT `+transactionColumns+` FROM budget_transactions
 		WHERE user_id = $1 AND occurred_on >= $2 AND occurred_on < $3 AND ($4::uuid IS NULL OR category_id = $4)
-		ORDER BY occurred_on DESC, id DESC LIMIT 1000`, userID, start, end, category)
+			AND ($5::uuid IS NULL OR account_id = $5 OR to_account_id = $5) AND ($6 = '' OR $6 = ANY(tags))
+		ORDER BY occurred_on DESC, id DESC LIMIT 1000`, userID, start, end, f.Category, f.Account, f.Tag)
 	if err != nil {
 		return nil, err
 	}
@@ -446,5 +552,18 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 		return nil, err
 	}
 	txs, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (Transaction, error) { return scanTransaction(r) })
-	return map[string]any{"currency": currency, "categories": cats, "transactions": txs}, err
+	if err != nil {
+		return nil, err
+	}
+	accounts, err := Accounts(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	recurring, err := ListRecurring(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	rules, err := Rules(ctx, q, userID)
+	return map[string]any{"currency": currency, "categories": cats, "accounts": accounts, "transactions": txs,
+		"recurring": recurring, "rules": rules}, err
 }

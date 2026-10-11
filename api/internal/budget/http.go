@@ -1,18 +1,22 @@
 package budget
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
 )
 
@@ -40,6 +44,22 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/budget/transactions", h.createTransaction)
 	r.Patch("/v1/budget/transactions/{id}", h.updateTransaction)
 	r.Delete("/v1/budget/transactions/{id}", h.deleteTransaction)
+	r.Get("/v1/budget/accounts", h.accounts)
+	r.Post("/v1/budget/accounts", h.createAccount)
+	r.Patch("/v1/budget/accounts/{id}", h.updateAccount)
+	r.Delete("/v1/budget/accounts/{id}", h.deleteAccount)
+	r.Get("/v1/budget/recurring", h.recurring)
+	r.Post("/v1/budget/recurring", h.createRecurring)
+	r.Patch("/v1/budget/recurring/{id}", h.updateRecurring)
+	r.Delete("/v1/budget/recurring/{id}", h.deleteRecurring)
+	r.Post("/v1/budget/recurring/run", h.runRecurring)
+	r.Get("/v1/budget/rules", h.rules)
+	r.Post("/v1/budget/rules", h.createRule)
+	r.Patch("/v1/budget/rules/{id}", h.updateRule)
+	r.Delete("/v1/budget/rules/{id}", h.deleteRule)
+	r.Post("/v1/budget/rules/apply", h.applyRules)
+	r.Post("/v1/budget/import", h.importCSV)
+	r.Get("/v1/budget/report", h.report)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
@@ -48,7 +68,7 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 	case errors.As(err, &v):
 		httpx.Problem(w, http.StatusUnprocessableEntity, v.Msg)
 	case errors.Is(err, ErrNotFound):
-		httpx.Problem(w, http.StatusNotFound, "No such category or transaction.")
+		httpx.Problem(w, http.StatusNotFound, "No such category, account, rule, or transaction.")
 	default:
 		h.log.Error("budget request failed", "err", err)
 		httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
@@ -116,8 +136,22 @@ func (h *Handlers) month(r *http.Request) string {
 	return h.now().UTC().Format("2006-01")
 }
 
+// catchUp records due recurring transactions before showing the budget.
+func (h *Handlers) catchUp(r *http.Request, userID uuid.UUID) (time.Time, error) {
+	today, err := Today(r.Context(), h.db, userID, h.now())
+	if err != nil {
+		return today, err
+	}
+	_, err = RunRecurring(r.Context(), h.db, userID, today)
+	return today, err
+}
+
 func (h *Handlers) summary(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
+	if _, err := h.catchUp(r, who.UserID); err != nil {
+		h.fail(w, err)
+		return
+	}
 	m, err := Summary(r.Context(), h.db, who.UserID, h.month(r))
 	if err != nil {
 		h.fail(w, err)
@@ -222,16 +256,19 @@ func (h *Handlers) deleteCategory(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) transactions(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
-	var category *uuid.UUID
-	if c := r.URL.Query().Get("category"); c != "" {
-		id, err := uuid.Parse(c)
-		if err != nil {
-			httpx.Problem(w, http.StatusBadRequest, "?category= must be a category id.")
-			return
+	var f Filter
+	for key, dst := range map[string]**uuid.UUID{"category": &f.Category, "account": &f.Account} {
+		if c := r.URL.Query().Get(key); c != "" {
+			id, err := uuid.Parse(c)
+			if err != nil {
+				httpx.Problem(w, http.StatusBadRequest, fmt.Sprintf("?%s= must be an id.", key))
+				return
+			}
+			*dst = &id
 		}
-		category = &id
 	}
-	items, err := Transactions(r.Context(), h.db, who.UserID, h.month(r), category)
+	f.Tag = r.URL.Query().Get("tag")
+	items, err := Transactions(r.Context(), h.db, who.UserID, h.month(r), f)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -245,15 +282,24 @@ func transactionFields(r *http.Request) (TransactionFields, error) {
 		return TransactionFields{}, err
 	}
 	var f TransactionFields
-	return f, run(
+	return f, run(append(f.steps(raw), raw.rest)...)
+}
+
+func (f *TransactionFields) steps(raw fields) []func() error {
+	return []func() error{
 		func() error { _, err := raw.take("occurred_on", &f.OccurredOn, false); return err },
 		func() error { _, err := raw.take("kind", &f.Kind, false); return err },
 		func() error { _, err := raw.take("amount_cents", &f.AmountCents, false); return err },
 		func() (err error) { f.ClearCategory, err = raw.take("category_id", &f.CategoryID, true); return err },
+		func() (err error) { f.ClearAccount, err = raw.take("account_id", &f.AccountID, true); return err },
+		func() (err error) {
+			f.ClearToAccount, err = raw.take("to_account_id", &f.ToAccountID, true)
+			return err
+		},
+		func() error { _, err := raw.take("tags", &f.Tags, false); return err },
 		func() error { _, err := raw.take("payee", &f.Payee, false); return err },
 		func() error { _, err := raw.take("note", &f.Note, false); return err },
-		raw.rest,
-	)
+	}
 }
 
 func (h *Handlers) createTransaction(w http.ResponseWriter, r *http.Request) {
@@ -302,4 +348,263 @@ func (h *Handlers) deleteTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// --- Accounts ---
+
+func (h *Handlers) accounts(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	items, err := Accounts(r.Context(), h.db, who.UserID)
+	h.list(w, items, err)
+}
+
+func (h *Handlers) list(w http.ResponseWriter, items any, err error) {
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handlers) reply(w http.ResponseWriter, code int, v any, err error) {
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, code, v)
+}
+
+func accountFields(r *http.Request) (AccountFields, error) {
+	raw, err := decode(r)
+	if err != nil {
+		return AccountFields{}, err
+	}
+	var f AccountFields
+	return f, run(
+		func() error { _, err := raw.take("name", &f.Name, false); return err },
+		func() error { _, err := raw.take("type", &f.Type, false); return err },
+		func() error { _, err := raw.take("role", &f.Role, false); return err },
+		func() error { _, err := raw.take("opening_cents", &f.OpeningCents, false); return err },
+		func() error { _, err := raw.take("archived", &f.Archived, false); return err },
+		raw.rest,
+	)
+}
+
+func (h *Handlers) createAccount(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	f, err := accountFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	a, err := CreateAccount(r.Context(), h.db, who.UserID, f)
+	h.reply(w, http.StatusCreated, a, err)
+}
+
+func (h *Handlers) updateAccount(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	f, err := accountFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	a, err := UpdateAccount(r.Context(), h.db, who.UserID, id, f)
+	h.reply(w, http.StatusOK, a, err)
+}
+
+func (h *Handlers) deleteAccount(w http.ResponseWriter, r *http.Request) {
+	h.remove(w, r, DeleteAccount)
+}
+
+func (h *Handlers) remove(w http.ResponseWriter, r *http.Request, del func(context.Context, db.Querier, uuid.UUID, uuid.UUID) error) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err == nil {
+		err = del(r.Context(), h.db, who.UserID, id)
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// --- Recurring ---
+
+func (h *Handlers) recurring(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	items, err := ListRecurring(r.Context(), h.db, who.UserID)
+	h.list(w, items, err)
+}
+
+func recurringFields(r *http.Request) (RecurringFields, error) {
+	raw, err := decode(r)
+	if err != nil {
+		return RecurringFields{}, err
+	}
+	var f RecurringFields
+	steps := append(f.steps(raw),
+		func() error { _, err := raw.take("name", &f.Name, false); return err },
+		func() error { _, err := raw.take("rule", &f.Rule, false); return err },
+		func() error { _, err := raw.take("start_on", &f.Start, false); return err },
+		func() error { _, err := raw.take("active", &f.Active, false); return err },
+		func() error {
+			if f.OccurredOn != nil {
+				return ValidationError{"Use start_on for the first occurrence."}
+			}
+			return nil
+		},
+		raw.rest)
+	return f, run(steps...)
+}
+
+func (h *Handlers) createRecurring(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	f, err := recurringFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	x, err := CreateRecurring(r.Context(), h.db, who.UserID, f)
+	h.reply(w, http.StatusCreated, x, err)
+}
+
+func (h *Handlers) updateRecurring(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	f, err := recurringFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	x, err := UpdateRecurring(r.Context(), h.db, who.UserID, id, f)
+	h.reply(w, http.StatusOK, x, err)
+}
+
+func (h *Handlers) deleteRecurring(w http.ResponseWriter, r *http.Request) {
+	h.remove(w, r, DeleteRecurring)
+}
+
+func (h *Handlers) runRecurring(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	today, err := Today(r.Context(), h.db, who.UserID, h.now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	n, err := RunRecurring(r.Context(), h.db, who.UserID, today)
+	h.reply(w, http.StatusOK, map[string]int{"created": n}, err)
+}
+
+// --- Rules ---
+
+func (h *Handlers) rules(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	items, err := Rules(r.Context(), h.db, who.UserID)
+	h.list(w, items, err)
+}
+
+func ruleFields(r *http.Request) (RuleFields, error) {
+	raw, err := decode(r)
+	if err != nil {
+		return RuleFields{}, err
+	}
+	var f RuleFields
+	return f, run(
+		func() error { _, err := raw.take("name", &f.Name, false); return err },
+		func() error { _, err := raw.take("field", &f.Field, false); return err },
+		func() error { _, err := raw.take("operator", &f.Operator, false); return err },
+		func() error { _, err := raw.take("value", &f.Value, false); return err },
+		func() (err error) { f.ClearCategory, err = raw.take("category_id", &f.CategoryID, true); return err },
+		func() error { _, err := raw.take("tag", &f.Tag, false); return err },
+		func() error { _, err := raw.take("position", &f.Position, false); return err },
+		func() error { _, err := raw.take("active", &f.Active, false); return err },
+		raw.rest,
+	)
+}
+
+func (h *Handlers) createRule(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	f, err := ruleFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	x, err := CreateRule(r.Context(), h.db, who.UserID, f)
+	h.reply(w, http.StatusCreated, x, err)
+}
+
+func (h *Handlers) updateRule(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	f, err := ruleFields(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	x, err := UpdateRule(r.Context(), h.db, who.UserID, id, f)
+	h.reply(w, http.StatusOK, x, err)
+}
+
+func (h *Handlers) deleteRule(w http.ResponseWriter, r *http.Request) {
+	h.remove(w, r, DeleteRule)
+}
+
+func (h *Handlers) applyRules(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	n, err := ApplyRules(r.Context(), h.db, who.UserID)
+	h.reply(w, http.StatusOK, map[string]int{"changed": n}, err)
+}
+
+// --- Import and report ---
+
+// maxImport bounds an import request body (the CSV travels as JSON text).
+const maxImport = 4 << 20
+
+func (h *Handlers) importCSV(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	var spec ImportSpec
+	if err := httpx.DecodeN(r, &spec, maxImport); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var res ImportResult
+	err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) (err error) {
+		res, err = Import(r.Context(), tx, who.UserID, spec)
+		return err
+	})
+	h.reply(w, http.StatusOK, res, err)
+}
+
+func (h *Handlers) report(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	months := 12
+	if m := r.URL.Query().Get("months"); m != "" {
+		n, err := strconv.Atoi(m)
+		if err != nil || n < 1 || n > 60 {
+			httpx.Problem(w, http.StatusBadRequest, "?months= must be between 1 and 60.")
+			return
+		}
+		months = n
+	}
+	today, err := h.catchUp(r, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	rep, err := BuildReport(r.Context(), h.db, who.UserID, today, months)
+	h.reply(w, http.StatusOK, rep, err)
 }
