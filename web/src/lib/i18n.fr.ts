@@ -10,6 +10,9 @@ export const fr: Record<string, string> = {
 	Projects: 'Projets',
 	Learn: 'Apprendre',
 	Habits: 'Habitudes',
+	Focus: 'Concentration',
+	'Focus time': 'Temps de concentration',
+	'Focus minutes': 'Minutes de concentration',
 	Calendar: 'Calendrier',
 	Agents: 'Agents',
 	Account: 'Compte',
@@ -158,5 +161,15 @@ export const fr: Record<string, string> = {
 		'Raccourcis à une touche (n, /, ?, g puis une lettre)',
 	'Vim keybindings in the note editor': 'Raccourcis Vim dans l’éditeur de notes',
 	'See all shortcuts': 'Voir tous les raccourcis',
+	'Short break minutes': 'Minutes de pause courte',
+	'Long break minutes': 'Minutes de pause longue',
+	'Rounds before the long break': 'Tours avant la pause longue',
+	'Sessions in a row': 'Sessions d’affilée',
+	'Focus sound': 'Son de concentration',
+	Volume: 'Volume',
+	'Music for focus': 'Musique pour se concentrer',
+	'Links to playlists or streams you like for each kind of work. They open from the Focus page; nothing plays inside Axon.':
+		'Des liens vers vos playlists ou flux préférés pour chaque type de travail. Ils s’ouvrent depuis la page Concentration ; rien n’est joué dans Axon.',
+	'Add a music link': 'Ajouter un lien de musique',
 	French: 'Français'
 };

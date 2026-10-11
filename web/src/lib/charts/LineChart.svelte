@@ -8,7 +8,7 @@
 	const W = 640;
 	const H = 200;
 	const PAD = 28;
-	const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)'];
+	const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--ok)'];
 	const days = $derived(series[0]?.points ?? []);
 	const max = $derived(Math.max(1, ...series.flatMap((s) => s.points.map((p) => p.value))));
 	const x = (i: number) => PAD + (i * (W - 2 * PAD)) / Math.max(1, days.length - 1);

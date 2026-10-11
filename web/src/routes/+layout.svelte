@@ -82,6 +82,7 @@
 			>
 			<a href="/roadmaps" aria-current={current('/roadmaps') ? 'page' : undefined}>{t('Learn')}</a>
 			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>{t('Habits')}</a>
+			<a href="/focus" aria-current={current('/focus') ? 'page' : undefined}>{t('Focus')}</a>
 			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}
 				>{t('Calendar')}</a
 			>

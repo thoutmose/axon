@@ -62,7 +62,8 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Des projets avec tableaux Kanban (utilisables au clavier, limites de travail en cours), epics, tickets, sous-tâches et documentation de projet.
 - ✅ Un tableau de bord Aujourd’hui avec des indicateurs définis, un calendrier et des flux iCal.
 - ✅ Un tableau de bord sur Aujourd’hui : indicateurs comparés à la période précédente, graphiques d’activité quotidienne et sur 12 mois, tableaux de ce qui demande votre attention, et un réseau de vos compétences techniques et humaines relié aux objectifs, projets et notes.
-- Prévu : sessions Pomodoro et gestion des finances personnelles.
+- ✅ Sessions Pomodoro (25/5 × 3 puis 15 minutes de pause longue par défaut, tout est réglable, autant de sessions que voulu) liées à la tâche, au projet, à la compétence ou à la note travaillée, avec le temps de concentration sur le tableau de bord, une série quotidienne, des sons de concentration générés dans le navigateur (bruit, pluie) et vos propres liens de musique par activité.
+- Prévu : gestion des finances personnelles.
 
 ### 🌱 Habitudes, objectifs et parcours
 - ✅ Des habitudes conçues avec *Atomic Habits* de James Clear : créer de bonnes habitudes (évidentes, attrayantes, faciles, satisfaisantes) ou en perdre de mauvaises (invisibles, repoussantes, difficiles, insatisfaisantes), enchaînement (« Après…, je… »), intentions de mise en œuvre (« Je… à… à/dans… »), une identité pour laquelle chaque bilan vote, contrats d’habitude, tableau des habitudes, versions de deux minutes et invitations bienveillantes à reprendre.
@@ -443,7 +444,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-34 et EP-41 terminés ; EP-35 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-35 et EP-41 terminés ; EP-16 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

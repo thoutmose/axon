@@ -40,6 +40,8 @@ tags:
     description: The daily view with defined KPIs, the calendar, and read-only iCal feeds.
   - name: agents
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
+  - name: focus
+    description: Pomodoro focus sessions linked to what they were for (EP-35).
   - name: habits
     description: Habits with a cue, stack, two-minute version, and reward; check-ins on local calendar days; recovery prompts after a miss.
   - name: projects
@@ -1551,7 +1553,7 @@ paths:
                         label: { type: string }
                         value: { type: integer }
                         previous: { type: [integer, "null"], description: The same KPI over the period before; null when no comparison makes sense. }
-                        unit: { enum: [count, percent] }
+                        unit: { enum: [count, percent, minutes] }
                         definition: { type: string }
                         href: { type: string, description: The page that lists the items behind the number. }
                   series:
@@ -2029,6 +2031,105 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/focus-sessions:
+    get:
+      tags: [focus]
+      operationId: listFocusSessions
+      summary: Focus sessions of the last 7 days, with today's and this week's minutes and the daily streak
+      responses:
+        "200":
+          description: Sessions and totals.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today_minutes, week_minutes, streak]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/FocusSession" } }
+                  today_minutes: { type: integer }
+                  week_minutes: { type: integer }
+                  streak: { type: integer, description: "Days in a row with focus time, up to today." }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [focus]
+      operationId: startFocusSession
+      summary: Start a focus session, optionally for a task, project, skill, note, or any other item
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planned_minutes]
+              additionalProperties: false
+              properties:
+                title: { type: string, maxLength: 500, description: Defaults to the item's title. }
+                target_id: { type: string, format: uuid }
+                planned_minutes: { type: integer, minimum: 1, maximum: 1440 }
+      responses:
+        "201":
+          description: The running session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FocusSession" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/focus-sessions/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [focus]
+      operationId: getFocusSession
+      summary: One focus session
+      responses:
+        "200":
+          description: The session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FocusSession" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [focus]
+      operationId: deleteFocusSession
+      summary: Delete a focus session
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/focus-sessions/{id}/finish:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [focus]
+      operationId: finishFocusSession
+      summary: End a running session with the minutes actually worked (breaks left out)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [worked_minutes, rounds, status]
+              additionalProperties: false
+              properties:
+                worked_minutes: { type: integer, minimum: 0, maximum: 1440 }
+                rounds: { type: integer, minimum: 0, maximum: 100 }
+                status: { enum: [completed, stopped] }
+      responses:
+        "200":
+          description: The finished session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FocusSession" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
   /v1/habits/scorecard:
     get:
@@ -3412,6 +3513,25 @@ components:
         status: { enum: [pending, approved, rejected, failed] }
         created_at: { type: string, format: date-time }
         decided_at: { type: [string, "null"], format: date-time }
+    FocusSession:
+      type: object
+      required: [id, title, started_at, ended_at, planned_minutes, worked_minutes, rounds, status, target]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, "null"], format: date-time }
+        planned_minutes: { type: integer }
+        worked_minutes: { type: integer }
+        rounds: { type: integer }
+        status: { enum: [running, completed, stopped] }
+        target:
+          type: [object, "null"]
+          required: [id, type, title]
+          properties:
+            id: { type: string, format: uuid }
+            type: { type: string }
+            title: { type: string }
     HabitScorecard:
       type: object
       required: [items]
@@ -3616,6 +3736,29 @@ components:
               properties:
                 section: { type: string, maxLength: 200 }
                 kind: { enum: [hard, soft] }
+        focus:
+          type: object
+          required: [work_minutes, short_break_minutes, long_break_minutes, rounds, sessions, sound, volume, music]
+          additionalProperties: false
+          description: "Pomodoro defaults: 25 min work and 5 min break twice, then 25 min work and a 15 min long break; one session."
+          properties:
+            work_minutes: { type: integer, minimum: 1, maximum: 180 }
+            short_break_minutes: { type: integer, minimum: 1, maximum: 60 }
+            long_break_minutes: { type: integer, minimum: 1, maximum: 120 }
+            rounds: { type: integer, minimum: 1, maximum: 12, description: Work blocks before the long break. }
+            sessions: { type: integer, minimum: 1, maximum: 12, description: How many cycles in a row. }
+            sound: { enum: [none, white, pink, brown, rain], description: Focus sound generated in the browser. }
+            volume: { type: integer, minimum: 0, maximum: 100 }
+            music:
+              type: array
+              maxItems: 20
+              items:
+                type: object
+                required: [activity, url]
+                additionalProperties: false
+                properties:
+                  activity: { type: string, maxLength: 100, example: coding }
+                  url: { type: string, maxLength: 1000, example: "https://example.org/my-focus-playlist" }
         keyboard:
           type: object
           required: [shortcuts, vim]

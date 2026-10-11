@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -52,12 +53,32 @@ type Keyboard struct {
 	Vim       bool `json:"vim" yaml:"vim"`             // Vim keybindings in the note editor
 }
 
+// MusicLink is a playlist or stream the person likes for a kind of work.
+type MusicLink struct {
+	Activity string `json:"activity" yaml:"activity"` // e.g. coding, reading, writing, learning
+	URL      string `json:"url" yaml:"url"`
+}
+
+// Focus configures Pomodoro sessions (EP-35). The default is three rounds:
+// 25 min work + 5 min break, twice, then 25 min work + a 15 min long break.
+type Focus struct {
+	WorkMinutes int         `json:"work_minutes" yaml:"work_minutes"`
+	ShortBreak  int         `json:"short_break_minutes" yaml:"short_break_minutes"`
+	LongBreak   int         `json:"long_break_minutes" yaml:"long_break_minutes"`
+	Rounds      int         `json:"rounds" yaml:"rounds"`     // work blocks before the long break
+	Sessions    int         `json:"sessions" yaml:"sessions"` // how many of those cycles in a row
+	Sound       string      `json:"sound" yaml:"sound"`       // none, white, pink, brown, rain
+	Volume      int         `json:"volume" yaml:"volume"`     // 0–100
+	Music       []MusicLink `json:"music" yaml:"music"`
+}
+
 // Doc is the stored part of the settings.
 type Doc struct {
 	Language   string     `json:"language" yaml:"language"` // en or fr
 	Appearance Appearance `json:"appearance" yaml:"appearance"`
 	Templates  Templates  `json:"templates" yaml:"templates"`
 	Keyboard   Keyboard   `json:"keyboard" yaml:"keyboard"`
+	Focus      Focus      `json:"focus" yaml:"focus"`
 }
 
 // Defaults are what a new account starts with.
@@ -71,6 +92,7 @@ func Defaults() Doc {
 			Resource: ResourceTemplate{Kind: "hard"},
 		},
 		Keyboard: Keyboard{Shortcuts: true},
+		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 3, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
 
@@ -104,6 +126,31 @@ func (d Doc) Validate() error {
 	for _, err := range checks {
 		if err != nil {
 			return err
+		}
+	}
+	f := d.Focus
+	switch {
+	case f.WorkMinutes < 1 || f.WorkMinutes > 180:
+		return FieldError{"focus.work_minutes", "is between 1 and 180"}
+	case f.ShortBreak < 1 || f.ShortBreak > 60:
+		return FieldError{"focus.short_break_minutes", "is between 1 and 60"}
+	case f.LongBreak < 1 || f.LongBreak > 120:
+		return FieldError{"focus.long_break_minutes", "is between 1 and 120"}
+	case f.Rounds < 1 || f.Rounds > 12:
+		return FieldError{"focus.rounds", "is between 1 and 12"}
+	case f.Sessions < 1 || f.Sessions > 12:
+		return FieldError{"focus.sessions", "is between 1 and 12"}
+	case f.Volume < 0 || f.Volume > 100:
+		return FieldError{"focus.volume", "is between 0 and 100"}
+	case len(f.Music) > 20:
+		return FieldError{"focus.music", "has up to 20 links"}
+	}
+	if err := oneOf("focus.sound", f.Sound, "none", "white", "pink", "brown", "rain"); err != nil {
+		return err
+	}
+	for _, m := range f.Music {
+		if u, err := url.Parse(m.URL); err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || len(m.URL) > 1000 || len([]rune(m.Activity)) > 100 {
+			return FieldError{"focus.music", "links are http(s) addresses with an activity up to 100 characters"}
 		}
 	}
 	switch {

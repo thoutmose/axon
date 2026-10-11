@@ -62,7 +62,8 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Projects with Kanban boards (keyboard-accessible, WIP limits), epics, issues, sub-tasks, and project docs.
 - ✅ Today dashboard with defined KPIs, a calendar, and iCal feeds.
 - ✅ A command dashboard on Today: KPIs compared with the previous period, daily activity and 12-month charts, tables of what needs attention, and a network of your hard and soft skills linked to goals, projects, and notes.
-- Planned: Pomodoro focus sessions and personal finance.
+- ✅ Pomodoro focus sessions (25/5 × 3 with a 15-minute long break by default, all adjustable, any number of sessions) linked to the task, project, skill, or note you work on, with focus time on the dashboard, a daily streak, focus sounds generated in the browser (noise, rain), and your own music links per activity.
+- Planned: personal finance.
 
 ### 🌱 Habits, goals, and roadmaps
 - ✅ Habits designed with James Clear's Atomic Habits: build good habits (obvious, attractive, easy, satisfying) or break bad ones (invisible, unattractive, difficult, unsatisfying), habit stacking ("After I…, I will…"), implementation intentions ("I will… at… in…"), an identity that every check-in votes for, habit contracts, the habits scorecard, two-minute versions, and gentle recovery prompts.
@@ -443,7 +444,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-34 and EP-41 done; EP-35 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-35 and EP-41 done; EP-16 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

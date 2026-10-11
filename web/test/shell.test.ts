@@ -627,6 +627,32 @@ test('upload a profile picture, see it in the header, and go back to the default
 	await expect(page.getByText('Back to your default picture.')).toBeVisible();
 });
 
+test('a Pomodoro session for a task: start, pause, skip to the break, and save', async () => {
+	await page.goto('/focus');
+	await expect(
+		page
+			.locator('p.hint')
+			.filter({ hasText: '25 min of focus and 5 min breaks, a 15 min break after 3 rounds' })
+	).toBeVisible();
+	await page.getByLabel('A task, project, skill, note, or anything else').fill('Buy timber');
+	await page.getByRole('button', { name: /Buy timber/ }).click();
+	await page.getByRole('button', { name: 'Start 75 min of focus' }).click();
+	const timer = page.getByRole('region', { name: 'Focus' });
+	await expect(timer).toContainText('Buy timber');
+	await expect(timer.getByRole('img', { name: /left in Focus/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Pause' }).click();
+	await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible();
+	await page.getByRole('button', { name: 'Skip to next' }).click();
+	await expect(page.getByRole('heading', { name: 'Short break' })).toBeVisible();
+	// A reload resumes the running session.
+	await page.reload();
+	await expect(page.getByRole('heading', { name: 'Short break' })).toBeVisible();
+	await page.getByRole('button', { name: 'Stop and save' }).click();
+	await expect(page.getByText('Session saved.')).toBeVisible();
+	await expect(page.getByRole('cell', { name: 'Buy timber' })).toBeVisible();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();

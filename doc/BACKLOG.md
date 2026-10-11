@@ -107,7 +107,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Done |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Done |
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Done |
-| EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Planned |
+| EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Done |
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Planned |
 | EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
 | EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Planned |
@@ -915,12 +915,33 @@ Cross-cutting matrix:
 
 **In scope.** A session is 25 min work, 5 min break, 25 work, 5 break, 25 work, 15 min long break by default. Durations, the number of rounds, and the number of sessions are editable (one session by default). Each session links to a task, project, skill, note, or review; minutes feed KPIs, streaks, and XP. Focus sounds generated in the browser (white, pink, brown noise, rain), plus music links the person chooses for each kind of work.
 
-**Acceptance criteria**
+**Issues**
 
-- The timer stays correct across tab sleep and reloads (tested with a fake clock).
-- No third-party audio is loaded unless the person added it.
+- [x] **EP-35/IS-35.01 — Timer and settings** · 8 pts · SHOULD
+  - [x] A timestamp-driven timer (`web/src/lib/pomodoro.ts`) that pauses, resumes, and skips, and catches up after the tab sleeps. It is saved and restored across reloads (8 fake-clock unit tests and an e2e reload).
+  - [x] Defaults: 25 work + 5 break, twice, then 25 work + 15 long break; one session. Durations, rounds, and number of sessions are set in Preferences or YAML (`focus.*`), with validation.
+- [x] **EP-35/IS-35.02 — Links and KPIs** · 5 pts · SHOULD
+  - [x] Focus sessions are entities linked to their task, project, skill, note, or anything else through `focused_on`, so they show on that item's connections. Only worked minutes count, never breaks, and they cannot exceed the time the session ran.
+  - [x] Dashboard: a "Focus time" KPI with the previous period and a focus-minutes series. The Focus page shows today, 7 days, the daily streak, and recent sessions. Nav "Focus", shortcut `g f`.
+- [x] **EP-35/IS-35.03 — Focus sounds** · 8 pts · SHOULD
+  - [x] White, pink, and brown noise and rain, generated with Web Audio (no download), playing during work phases only, at the chosen volume. A gentle chime marks phase ends, and phase changes are announced for screen readers.
+  - [x] Music links per activity (for example coding or reading) open from the Focus page; nothing third-party plays inside Axon.
 
-**Candidate issues.** Timer and settings (8) · Links and KPIs (5) · Focus sounds (8).
+**Exit evidence.** The integration test covers:
+- linking to a task (visible as an incoming link);
+- worked-time and status validation, and double-finish refusal;
+- today's minutes and the streak, and the dashboard KPI;
+- deletion, settings defaults, and a YAML line-level error.
+
+Vitest covers the timer (8 tests) and the noise generator (2). Playwright picks a task, starts a session, pauses, skips to the break, reloads (still running), and stops and saves, with axe on the timer.
+
+Cross-cutting matrix:
+- privacy: register row, exported;
+- accessibility: labelled ring, live announcements, step list with `aria-current`;
+- reliability: the timer is independent of tick timing;
+- performance: indexed by `started_at`;
+- AI safety: n/a;
+- supply chain: no dependency, no third-party audio.
 
 ### EP-36 — Live vault sync
 

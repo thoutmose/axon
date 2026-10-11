@@ -11,6 +11,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Preferences (language, appearance, note/project/resource templates) | `user_settings` | Personal | Apply the person's choices on every device | Until changed or erasure; included in exports |
 | Profile picture (256×256 PNG, re-encoded without metadata) | `users.avatar` | Personal | Show who is signed in | Until replaced, removed, or erasure; included in exports as `account/avatar.png` |
 | Habits scorecard (behaviours of the day with good, neutral, or bad ratings) and habit identity, intention, and contract fields | `habit_scorecards`, `habits` | Personal, possibly sensitive | Atomic Habits design (EP-34) | Until changed or erasure; included in exports; nothing is sent to an accountability partner |
+| Focus sessions (what was focused on, start, minutes worked, rounds) and Pomodoro preferences, including music links | `focus_sessions`, `user_settings` | Personal | Count focus time and show it on the dashboard and linked items | Until deleted or erasure; included in exports |
 | Demo account and its sample data (no personal data; whatever visitors type is visible to other visitors) | `users` with `demo = true`, and the rows it owns | Sample, shared | Let people try Axon (ADR 0015) | Reset every night |
 | Passkey public keys, names, last use | `passkeys` | Personal, security | Sign-in | Until removed or erasure |
 | Sessions (token hash, user agent, times) | `sessions` | Personal, security | Keep the user signed in | 7 days idle, 30 days absolute, or sign-out |

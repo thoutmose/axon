@@ -54,7 +54,7 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 		}
 		kpi[k.ID] = k.Value
 	}
-	for _, id := range []string{"tasks_done", "habit_consistency", "goal_progress", "skills_done", "learning", "notes_written", "projects_active"} {
+	for _, id := range []string{"tasks_done", "habit_consistency", "goal_progress", "skills_done", "learning", "notes_written", "projects_active", "focus_minutes"} {
 		if _, ok := kpi[id]; !ok {
 			t.Errorf("missing KPI %s", id)
 		}
@@ -66,7 +66,7 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 	if c := kpi["habit_consistency"]; c < 50 || c > 100 {
 		t.Errorf("habit consistency = %d", c)
 	}
-	if o.Days != 30 || len(o.Series) != 3 || len(o.Series[0].Points) != 30 || len(o.Activity) != 365 {
+	if o.Days != 30 || len(o.Series) != 4 || len(o.Series[0].Points) != 30 || len(o.Activity) != 365 {
 		t.Fatalf("series %d, points %d, activity %d", len(o.Series), len(o.Series[0].Points), len(o.Activity))
 	}
 	if len(o.Tables.DueSoon) == 0 || len(o.Tables.Learning) < 3 {

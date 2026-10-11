@@ -1274,6 +1274,63 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/focus-sessions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Focus sessions of the last 7 days, with today's and this week's minutes and the daily streak */
+		get: operations['listFocusSessions'];
+		put?: never;
+		/** Start a focus session, optionally for a task, project, skill, note, or any other item */
+		post: operations['startFocusSession'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/focus-sessions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One focus session */
+		get: operations['getFocusSession'];
+		put?: never;
+		post?: never;
+		/** Delete a focus session */
+		delete: operations['deleteFocusSession'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/focus-sessions/{id}/finish': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** End a running session with the minutes actually worked (breaks left out) */
+		post: operations['finishFocusSession'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/habits/scorecard': {
 		parameters: {
 			query?: never;
@@ -2151,6 +2208,26 @@ export interface components {
 			/** Format: date-time */
 			decided_at: string | null;
 		};
+		FocusSession: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** Format: date-time */
+			started_at: string;
+			/** Format: date-time */
+			ended_at: string | null;
+			planned_minutes: number;
+			worked_minutes: number;
+			rounds: number;
+			/** @enum {unknown} */
+			status: 'running' | 'completed' | 'stopped';
+			target: {
+				/** Format: uuid */
+				id: string;
+				type: string;
+				title: string;
+			} | null;
+		};
 		HabitScorecard: {
 			items: {
 				/** @example Check my phone */
@@ -2390,6 +2467,28 @@ export interface components {
 					/** @enum {unknown} */
 					kind: 'hard' | 'soft';
 				};
+			};
+			/** @description Pomodoro defaults: 25 min work and 5 min break twice, then 25 min work and a 15 min long break; one session. */
+			focus?: {
+				work_minutes: number;
+				short_break_minutes: number;
+				long_break_minutes: number;
+				/** @description Work blocks before the long break. */
+				rounds: number;
+				/** @description How many cycles in a row. */
+				sessions: number;
+				/**
+				 * @description Focus sound generated in the browser.
+				 * @enum {unknown}
+				 */
+				sound: 'none' | 'white' | 'pink' | 'brown' | 'rain';
+				volume: number;
+				music: {
+					/** @example coding */
+					activity: string;
+					/** @example https://example.org/my-focus-playlist */
+					url: string;
+				}[];
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -4521,7 +4620,7 @@ export interface operations {
 							/** @description The same KPI over the period before; null when no comparison makes sense. */
 							previous: number | null;
 							/** @enum {unknown} */
-							unit: 'count' | 'percent';
+							unit: 'count' | 'percent' | 'minutes';
 							definition: string;
 							/** @description The page that lists the items behind the number. */
 							href: string;
@@ -5103,6 +5202,153 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listFocusSessions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sessions and totals. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['FocusSession'][];
+						today_minutes: number;
+						week_minutes: number;
+						/** @description Days in a row with focus time, up to today. */
+						streak: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	startFocusSession: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Defaults to the item's title. */
+					title?: string;
+					/** Format: uuid */
+					target_id?: string;
+					planned_minutes: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The running session. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The session. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	finishFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					worked_minutes: number;
+					rounds: number;
+					/** @enum {unknown} */
+					status: 'completed' | 'stopped';
+				};
+			};
+		};
+		responses: {
+			/** @description The finished session. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 		};
 	};

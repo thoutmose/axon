@@ -8,7 +8,30 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Settings = Schemas['Settings'] & { keyboard: { shortcuts: boolean; vim: boolean } };
+	type Focus = {
+		work_minutes: number;
+		short_break_minutes: number;
+		long_break_minutes: number;
+		rounds: number;
+		sessions: number;
+		sound: 'none' | 'white' | 'pink' | 'brown' | 'rain';
+		volume: number;
+		music: { activity: string; url: string }[];
+	};
+	type Settings = Schemas['Settings'] & {
+		keyboard: { shortcuts: boolean; vim: boolean };
+		focus: Focus;
+	};
+	const focusDefaults: Focus = {
+		work_minutes: 25,
+		short_break_minutes: 5,
+		long_break_minutes: 15,
+		rounds: 3,
+		sessions: 1,
+		sound: 'none',
+		volume: 40,
+		music: []
+	};
 	let s = $state<Settings | null>(null);
 	let error = $state('');
 	let saving = $state(false);
@@ -18,7 +41,11 @@
 	async function load() {
 		try {
 			const loaded = await api<Schemas['Settings']>('/v1/me/settings');
-			s = { ...loaded, keyboard: loaded.keyboard ?? { shortcuts: true, vim: false } };
+			s = {
+				...loaded,
+				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
+				focus: (loaded.focus as Focus | undefined) ?? focusDefaults
+			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
 		} catch (err) {
@@ -28,7 +55,11 @@
 	load();
 
 	function apply(saved: Schemas['Settings']) {
-		s = { ...saved, keyboard: saved.keyboard ?? { shortcuts: true, vim: false } };
+		s = {
+			...saved,
+			keyboard: saved.keyboard ?? { shortcuts: true, vim: false },
+			focus: (saved.focus as Focus | undefined) ?? focusDefaults
+		};
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
 	}
@@ -39,11 +70,11 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates, keyboard } = s;
+			const { language, appearance, templates, keyboard, focus } = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
-					body: { language, appearance, templates, keyboard }
+					body: { language, appearance, templates, keyboard, focus }
 				})
 			);
 			await api('/v1/me/agent-settings', {
@@ -124,6 +155,58 @@
 			<p class="muted small">
 				{t('Turn single-key shortcuts off, or Vim mode on, in Preferences.')}
 			</p>
+		</Section>
+
+		<Section id="focus" title={t('Focus')}>
+			<div class="grid">
+				{#each [['work_minutes', 'Focus minutes', 180], ['short_break_minutes', 'Short break minutes', 60], ['long_break_minutes', 'Long break minutes', 120], ['rounds', 'Rounds before the long break', 12], ['sessions', 'Sessions in a row', 12]] as const as [key, label, max] (key)}
+					<div class="field">
+						<label for="focus-{key}">{t(label)}</label>
+						<input id="focus-{key}" type="number" min="1" {max} bind:value={s.focus[key]} />
+					</div>
+				{/each}
+				<div class="field">
+					<label for="focus-sound-pref">{t('Focus sound')}</label>
+					<select id="focus-sound-pref" bind:value={s.focus.sound}>
+						<option value="none">None</option>
+						<option value="white">White noise</option>
+						<option value="pink">Pink noise</option>
+						<option value="brown">Brown noise</option>
+						<option value="rain">Rain</option>
+					</select>
+				</div>
+				<div class="field">
+					<label for="focus-volume">{t('Volume')}</label>
+					<input id="focus-volume" type="range" min="0" max="100" bind:value={s.focus.volume} />
+				</div>
+			</div>
+			<h3>{t('Music for focus')}</h3>
+			<p class="muted small">
+				{t(
+					'Links to playlists or streams you like for each kind of work. They open from the Focus page; nothing plays inside Axon.'
+				)}
+			</p>
+			{#each s.focus.music as m, i (i)}
+				<div class="music">
+					<input
+						aria-label="Activity"
+						placeholder="coding"
+						bind:value={m.activity}
+						maxlength="100"
+					/>
+					<input aria-label="Link" type="url" placeholder="https://…" bind:value={m.url} />
+					<Button
+						variant="ghost"
+						onclick={() => s && (s.focus.music = s.focus.music.filter((_, j) => j !== i))}
+						aria-label="Remove {m.activity || 'link'}">✕</Button
+					>
+				</div>
+			{/each}
+			<Button
+				variant="secondary"
+				onclick={() => s && (s.focus.music = [...s.focus.music, { activity: '', url: '' }])}
+				>{t('Add a music link')}</Button
+			>
 		</Section>
 
 		<Section id="templates" title={t('Templates')}>
@@ -250,6 +333,12 @@
 		gap: var(--space-2);
 		align-items: baseline;
 		font-weight: 400;
+		margin-bottom: var(--space-2);
+	}
+	.music {
+		display: grid;
+		grid-template-columns: minmax(6rem, 10rem) 1fr auto;
+		gap: var(--space-2);
 		margin-bottom: var(--space-2);
 	}
 	.actions {

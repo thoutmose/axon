@@ -23,7 +23,14 @@
 		void days;
 		load();
 	});
-	const fmt = (unit: string, v: number) => (unit === 'percent' ? `${v}%` : `${v}`);
+	const fmt = (unit: string, v: number) =>
+		unit === 'percent'
+			? `${v}%`
+			: unit === 'minutes'
+				? v >= 60
+					? `${Math.floor(v / 60)} h ${String(v % 60).padStart(2, '0')}`
+					: `${v} min`
+				: `${v}`;
 	const when = (d: string) =>
 		new Date(d.length === 10 ? d + 'T00:00:00' : d).toLocaleDateString(undefined, {
 			weekday: 'short',

@@ -49,7 +49,7 @@ type window struct{ from, to time.Time }
 
 // counts returns the period KPIs for one window, in the user's time zone.
 func counts(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, w window) (map[string]int, error) {
-	var tasksDone, notes, skills, met, due int
+	var tasksDone, notes, skills, met, due, focusMin int
 	err := q.QueryRow(ctx, `
 		WITH hab AS (
 			SELECT h.id, h.days, greatest($3::date, least((e.created_at AT TIME ZONE $2)::date,
@@ -66,8 +66,10 @@ func counts(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, w wi
 			(SELECT count(*) FROM skills s JOIN entities e ON e.id = s.id
 			 WHERE e.user_id = $1 AND s.status = 'done' AND (s.updated_at AT TIME ZONE $2)::date BETWEEN $3 AND $4),
 			(SELECT count(*) FROM sched JOIN habit_checkins c ON c.habit_id = sched.id AND c.day = sched.day AND c.status IN ('done', 'two_minute')),
-			(SELECT count(*) FROM sched)`,
-		userID, tz, w.from, w.to).Scan(&tasksDone, &notes, &skills, &met, &due)
+			(SELECT count(*) FROM sched),
+			(SELECT coalesce(sum(f.worked_minutes), 0) FROM focus_sessions f JOIN entities e ON e.id = f.id
+			 WHERE e.user_id = $1 AND (f.started_at AT TIME ZONE $2)::date BETWEEN $3 AND $4)`,
+		userID, tz, w.from, w.to).Scan(&tasksDone, &notes, &skills, &met, &due, &focusMin)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +77,7 @@ func counts(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, w wi
 	if due > 0 {
 		consistency = met * 100 / due
 	}
-	return map[string]int{"tasks_done": tasksDone, "notes_written": notes, "skills_done": skills, "habit_consistency": consistency, "habit_due": due}, nil
+	return map[string]int{"tasks_done": tasksDone, "notes_written": notes, "skills_done": skills, "habit_consistency": consistency, "habit_due": due, "focus_minutes": focusMin}, nil
 }
 
 func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
@@ -141,6 +143,8 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 	kpis := []Trend{
 		{"tasks_done", "Tasks done", now["tasks_done"], p(before["tasks_done"]), "count",
 			"Tasks you completed in the last " + period + ", by completion date in your time zone.", "/tasks?view=done"},
+		{"focus_minutes", "Focus time", now["focus_minutes"], p(before["focus_minutes"]), "minutes",
+			"Minutes worked in focus sessions started in the last " + period + ", breaks left out.", "/focus"},
 		{"habit_consistency", "Habit consistency", now["habit_consistency"], consistencyPrev, "percent",
 			"Check-ins (done or two-minute) on scheduled days, out of the scheduled days of your active habits in the last " + period + ", counted from each habit's start.", "/habits"},
 		{"goal_progress", "Goal progress", goalAvg, nil, "percent",
@@ -213,6 +217,8 @@ func (h *Handlers) series(ctx context.Context, userID uuid.UUID, tz string, w wi
 		{"habit_checkins", "Habit check-ins", `SELECT c.day AS d, count(*) FROM habit_checkins c JOIN entities e ON e.id = c.habit_id
 			WHERE e.user_id = $1 AND c.status IN ('done', 'two_minute') AND c.day BETWEEN $3 AND $4
 			AND $2::text IS NOT NULL GROUP BY d`}, // check-in days are already local; $2 keeps the parameters uniform
+		{"focus_minutes", "Focus minutes", `SELECT (f.started_at AT TIME ZONE $2)::date AS d, sum(f.worked_minutes)::int FROM focus_sessions f JOIN entities e ON e.id = f.id
+			WHERE e.user_id = $1 AND (f.started_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
 		{"notes_written", "Notes written", `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM entities
 			WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
 	}
