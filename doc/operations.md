@@ -88,6 +88,33 @@ rm latest.dump latest.dump.age
 
 To rehearse without touching a server, restore into a throwaway `pgvector/pgvector:pg16` container and check `goose_db_version` and the `vector` extension.
 
+## Move an instance (EP-40)
+
+`axon instance export` writes the whole installation to one gzipped tar archive. It contains every table, uploaded pictures included (they are stored in the database), plus a `manifest.json` with the Axon version, the schema version, row counts, a SHA-256 per table, and a fingerprint of `AXON_ENCRYPTION_KEY`. The archive holds personal data and sealed secrets, so keep it like a backup: encrypt it at rest and delete it after use.
+
+`axon instance import`:
+
+- loads an archive only into a **fresh installation** (no accounts, every table empty);
+- moves the schema to the archive's version and copies every table in one transaction, checking each count and checksum;
+- then applies newer migrations, so an archive from an older Axon goes into a newer one;
+- refuses an archive from a newer Axon, a damaged archive, or a different `AXON_ENCRYPTION_KEY`, because TOTP secrets, AI provider keys, and tokens could not be opened without the same key;
+- needs the database's superuser (the compose `POSTGRES_USER` is one).
+
+The Anki bridge volume is a cache rebuilt from the sync server, so it is not part of the archive.
+
+```bash
+# On the old server (read-only, the API keeps running):
+ssh old 'cd /opt/axon && docker compose exec -T api axon instance export' > axon-instance.tar.gz
+
+# On the new server, after a normal install with the same AXON_ENCRYPTION_KEY:
+ssh new 'cd /opt/axon && docker compose exec -T api axon migrate up \
+  && docker compose stop web && docker compose exec -T api axon instance import \
+  && docker compose start web && docker compose exec -T api axon integrity' < axon-instance.tar.gz
+rm axon-instance.tar.gz
+```
+
+Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
+
 ## Live notes sync with SecondBrain (EP-36)
 
 Run this once on `srv-secondbrain` to import `~/SecondBrain` (notes and its `Templates/` folder) and keep it in step both ways. Create a write token first under Account → Access tokens, and save it to `~/.config/axon/notes-token` (mode 0600):
