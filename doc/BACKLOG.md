@@ -112,7 +112,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Done |
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Done |
 | EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
-| EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Planned |
+| EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Done |
 | EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Done |
 | EP-40 | Instance export & import | Move a whole Axon (database, files, settings) to another server or configuration. | MUST | 13 pts | EP-01, EP-31 | Planned |
 
@@ -901,7 +901,7 @@ Cross-cutting matrix:
   - [x] Habit cards show the plan, a "Breaking" badge, and "N votes for “I am…”".
   - [x] "Your habit stacks" shows chains of habits stacked after other habits; cycles are handled (unit-tested).
   - [x] The scorecard is edited in place, and the edit page covers every new field.
-  - [ ] Stacks on Today: left for the Today redesign in EP-38 (themed spaces), which reorganises that page.
+  - [ ] Stacks on Today: not done; EP-38 left Today with its own scenery, so this needs its own issue.
 
 **Exit evidence.** The integration test covers the new fields and defaults, votes counted from check-ins, a break habit, validation (kind, time format), and the scorecard round trip with its validation; the demo gains identities, intentions, a habit to break, and a scorecard. Vitest covers plan sentences, chains, and cycles. Playwright designs a habit with identity, time, and place, sees the plan preview and the stored plan, checks in and sees the vote, and rates a scorecard behaviour, with axe.
 
@@ -1017,7 +1017,17 @@ Effects are subtle (parallax, grain, light) and respect reduced motion and reduc
 - Text contrast passes WCAG AA on every themed surface (axe in e2e).
 - All artwork is original or openly licensed, with attribution in the repository.
 
-**Candidate issues.** Theme system per area (8) · Artwork (8) · Effects and fallbacks (5).
+**Issues**
+
+- [x] **EP-38/IS-38.01 — Theme system per area** · 8 pts · SHOULD — the page path picks a space (`web/src/lib/spaces.ts`); each space tunes the colour tokens so text keeps AA contrast, and a scrim calms the heading band.
+- [x] **EP-38/IS-38.02 — Artwork** · 8 pts · SHOULD — nine sceneries in light and dark (notebook, library, blueprint, garden, summit, almanac, ledger, atlas, desk), drawn from geometry by `web/scripts/spaces.py`: original, shipped under the project's licence, nothing fetched from another origin.
+- [x] **EP-38/IS-38.03 — Effects and fallbacks** · 5 pts · SHOULD — slow light effects that stop with reduced motion; reduced transparency removes the artwork; Preferences has a Themed spaces switch (`appearance.spaces`).
+
+**Notes**
+
+- Taken from the parallel branch `claude/axon-ui-features-9ryyt4`; flashcards, focus, and progress (built on this line) were added to the map.
+- axe checks every space in light and dark in the e2e suite.
+- Stacks on Today (EP-34) stay open: Today keeps its own scenery and was not reorganised here.
 
 ### EP-39 — Personal finance
 
@@ -1385,6 +1395,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-38 delivered from the parallel branch: themed spaces with original artwork for every area, AA contrast in light and dark, and a switch in Preferences. |
 | 2026-10-11 | EP-39 delivered from the parallel branch: accounts, transfers, budgets, tags, recurring transactions, rules, CSV import, and reports. Budget is in the main nav. |
 | 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
