@@ -12,9 +12,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/fsrs"
-	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
