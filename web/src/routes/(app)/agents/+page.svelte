@@ -11,7 +11,13 @@
 	type Listing = paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
 	type Run = Schemas['AgentRun'];
 	type Proposal = Schemas['Proposal'];
-	type RunDetail = { run: Run; reply: string | null; proposals: Proposal[] };
+	type RunDetail = {
+		run: Run;
+		reply: string | null;
+		proposals: Proposal[];
+		can_continue?: boolean;
+	};
+	type Turn = { who: 'you' | 'agent'; text: string };
 	type Memory = { id: string; agent: string; content: string; created_at: string };
 
 	let listing = $state<Listing | null>(null);
@@ -22,6 +28,9 @@
 	let budget = $state('');
 	let instructions = $state<Record<string, string>>({});
 	let current = $state<RunDetail | null>(null);
+	// The conversation lives only in this tab; the server keeps it for an hour.
+	let thread = $state<Turn[]>([]);
+	let answer = $state('');
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
 	const reasons: Record<string, string> = {
@@ -69,6 +78,7 @@
 		if (current.run.status === 'running') {
 			timer = setTimeout(() => poll(id), 1000);
 		} else {
+			if (current.reply) thread = [...thread, { who: 'agent', text: current.reply }];
 			await load();
 		}
 	}
@@ -76,10 +86,29 @@
 	async function start(name: string, e: SubmitEvent) {
 		e.preventDefault();
 		try {
+			const instruction = instructions[name] ?? '';
 			const run = await api<Run>(`/v1/agents/${name}/runs`, {
 				method: 'POST',
-				body: { instruction: instructions[name] ?? '' }
+				body: { instruction }
 			});
+			thread = [{ who: 'you', text: instruction }];
+			current = { run, reply: null, proposals: [] };
+			await poll(run.id);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	async function reply(e: SubmitEvent) {
+		e.preventDefault();
+		if (!current) return;
+		try {
+			const run = await api<Run>(`/v1/agent-runs/${current.run.id}/continue`, {
+				method: 'POST',
+				body: { instruction: answer }
+			});
+			thread = [...thread, { who: 'you', text: answer }];
+			answer = '';
 			current = { run, reply: null, proposals: [] };
 			await poll(run.id);
 		} catch (err) {
@@ -176,13 +205,29 @@
 
 	{#if current}
 		<section class="card" aria-labelledby="current-title" aria-live="polite">
-			<h2 id="current-title">Latest run · {outcomes[current.run.status] ?? current.run.status}</h2>
-			{#if current.reply}<p class="reply">{current.reply}</p>{/if}
+			<h2 id="current-title">
+				Conversation with {current.run.agent} · {outcomes[current.run.status] ?? current.run.status}
+			</h2>
+			<ol class="thread">
+				{#each thread as t, i (i)}
+					<li class={t.who}>
+						<span class="visually-hidden">{t.who === 'you' ? 'You' : 'Agent'}:</span>
+						<p class="reply">{t.text}</p>
+					</li>
+				{/each}
+			</ol>
 			{#if current.run.status !== 'running'}
 				<p class="muted small">
 					{current.run.proposals} proposal(s) · {current.run.tools_called.length} tool call(s) · cost
 					{dollars(current.run.cost_micros)}
 				</p>
+			{/if}
+			{#if current.can_continue}
+				<form class="answer" onsubmit={reply}>
+					<label for="answer">Answer the agent</label>
+					<textarea id="answer" rows="2" maxlength="4000" required bind:value={answer}></textarea>
+					<Button type="submit" variant="secondary">Send</Button>
+				</form>
 			{/if}
 		</section>
 	{/if}
@@ -394,6 +439,34 @@
 	}
 	.reply {
 		white-space: pre-wrap;
+		margin: 0;
+	}
+	.thread {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+		display: grid;
+		gap: var(--space-2);
+	}
+	.thread li {
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		max-width: 46rem;
+	}
+	.thread li.you {
+		background: var(--accent-soft);
+		justify-self: end;
+	}
+	.thread li.agent {
+		border: 1px solid var(--border);
+	}
+	.answer {
+		display: grid;
+		gap: var(--space-2);
+		justify-items: start;
+	}
+	.answer textarea {
+		width: 100%;
 	}
 	summary {
 		cursor: pointer;

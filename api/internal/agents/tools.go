@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -93,6 +94,10 @@ func notFound(err error, what string) error {
 	var h habits.ValidationError
 	if errors.As(err, &h) {
 		return toolError{h.Msg}
+	}
+	var rv roadmaps.ValidationError
+	if errors.As(err, &rv) {
+		return toolError{rv.Msg}
 	}
 	return err
 }

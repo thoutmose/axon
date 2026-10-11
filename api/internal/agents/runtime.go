@@ -44,6 +44,7 @@ var (
 	ErrNoBudget    = errors.New("monthly agent budget used up")
 	ErrBusy        = errors.New("another run is in progress")
 	ErrUnknown     = errors.New("no such agent")
+	ErrExpired     = errors.New("conversation no longer held")
 )
 
 // Runner starts and executes agent runs.
@@ -125,6 +126,24 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 	if !ok {
 		return uuid.Nil, ErrUnknown
 	}
+	return r.begin(ctx, userID, skill, instruction, nil, nil)
+}
+
+// Continue answers a finished run: a new run starts with that run's
+// conversation, which is held in memory for an hour and never stored.
+func (r *Runner) Continue(ctx context.Context, userID, parent uuid.UUID, instruction string) (uuid.UUID, error) {
+	c := r.replies.conversation(parent, userID)
+	if c == nil {
+		return uuid.Nil, ErrExpired
+	}
+	skill, ok := r.Skills[c.agent]
+	if !ok {
+		return uuid.Nil, ErrUnknown
+	}
+	return r.begin(ctx, userID, skill, instruction, &parent, c.messages)
+}
+
+func (r *Runner) begin(ctx context.Context, userID uuid.UUID, skill Skill, instruction string, parent *uuid.UUID, history []anthropic.BetaMessageParam) (uuid.UUID, error) {
 	st, err := r.status(ctx, r.db, userID)
 	if err != nil {
 		return uuid.Nil, err
@@ -160,8 +179,8 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 		if busy {
 			return ErrBusy
 		}
-		_, err := tx.Exec(ctx, `INSERT INTO agent_runs (id, user_id, agent, skill_version, model) VALUES ($1, $2, $3, $4, $5)`,
-			id, userID, skill.Name, skill.Version, res.name+"/"+res.model)
+		_, err := tx.Exec(ctx, `INSERT INTO agent_runs (id, user_id, agent, skill_version, model, parent_run_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+			id, userID, skill.Name, skill.Version, res.name+"/"+res.model, parent)
 		return err
 	})
 	if err != nil {
@@ -173,9 +192,9 @@ func (r *Runner) Start(ctx context.Context, userID uuid.UUID, agent, instruction
 	bg := context.WithoutCancel(ctx)
 	go func() {
 		defer r.wg.Done()
-		ctx, cancel := context.WithTimeout(repos.WithSealer(bg, r.sealer), runTimeout)
+		ctx, cancel := context.WithTimeout(withFetchBudget(repos.WithSealer(bg, r.sealer)), runTimeout)
 		defer cancel()
-		r.execute(ctx, id, userID, skill, res, instruction, budget)
+		r.execute(ctx, id, userID, skill, res, instruction, history, budget)
 	}()
 	return id, nil
 }
@@ -191,19 +210,20 @@ type run struct {
 	output       int64
 	cost         int64
 	reply        string
+	messages     []anthropic.BetaMessageParam // the conversation, to continue it
 	budgetMicros int64
 }
 
-func (r *Runner) execute(ctx context.Context, id, userID uuid.UUID, skill Skill, res *resolved, instruction string, budget int64) {
+func (r *Runner) execute(ctx context.Context, id, userID uuid.UUID, skill Skill, res *resolved, instruction string, history []anthropic.BetaMessageParam, budget int64) {
 	rn := &run{id: id, status: "running", budgetMicros: budget}
 	defer func() {
 		if p := recover(); p != nil {
 			r.log.Error("agent run panicked", "run", id, "panic", fmt.Sprint(p))
 			rn.status, rn.errCode = "failed", "internal"
 		}
-		r.finish(userID, rn)
+		r.finish(userID, skill.Name, rn)
 	}()
-	if err := r.loop(ctx, userID, skill, res, instruction, rn); err != nil {
+	if err := r.loop(ctx, userID, skill, res, instruction, history, rn); err != nil {
 		r.log.Error("agent run failed", "run", id, "agent", skill.Name, "err", err)
 		rn.status = "failed"
 		if rn.errCode == "" {
@@ -238,7 +258,7 @@ func (r *Runner) system(ctx context.Context, userID uuid.UUID, skill Skill) (str
 	return b.String(), nil
 }
 
-func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *resolved, instruction string, rn *run) error {
+func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *resolved, instruction string, history []anthropic.BetaMessageParam, rn *run) error {
 	system, err := r.system(ctx, userID, skill)
 	if err != nil {
 		return err
@@ -258,7 +278,7 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *r
 		MaxTokens: maxTokens,
 		System:    []anthropic.BetaTextBlockParam{{Text: system}},
 		Tools:     tools,
-		Messages:  []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(instruction))},
+		Messages:  append(slices.Clone(history), anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(instruction))),
 	}
 	if res.effort {
 		params.OutputConfig = anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffort(skill.Effort)}
@@ -306,6 +326,7 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *r
 		}
 		if resp.StopReason != anthropic.BetaStopReasonToolUse || len(results) == 0 {
 			rn.reply = strings.TrimSpace(strings.Join(text, "\n\n"))
+			rn.messages = params.Messages
 			rn.status = "completed"
 			return nil
 		}
@@ -435,7 +456,7 @@ func (r *Runner) progress(ctx context.Context, rn *run) error {
 	return err
 }
 
-func (r *Runner) finish(userID uuid.UUID, rn *run) {
+func (r *Runner) finish(userID uuid.UUID, agent string, rn *run) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	var errCode *string
@@ -451,8 +472,8 @@ func (r *Runner) finish(userID uuid.UUID, rn *run) {
 	if err != nil {
 		r.log.Error("recording agent run failed", "run", rn.id, "err", err)
 	}
-	if rn.reply != "" {
-		r.replies.put(rn.id, userID, rn.reply)
+	if rn.reply != "" || rn.messages != nil {
+		r.replies.put(rn.id, userID, agent, rn.reply, rn.messages)
 	}
 	// Never log content: agent, outcome, tools, tokens, and cost only.
 	r.log.Info("agent run finished", "run", rn.id, "status", rn.status, "tools", len(rn.tools),
@@ -471,20 +492,23 @@ func truncate(s string, n int) string {
 
 func utf8Start(b byte) bool { return b&0xC0 != 0x80 }
 
-// replies keeps each run's final answer in memory for an hour, so the person
-// can read it; it is never written to the database or logs.
+// replies keeps each run's final answer and conversation in memory for an
+// hour, so the person can read and answer it; neither is ever written to the
+// database or logs.
 type replies struct {
 	mu sync.Mutex
 	m  map[uuid.UUID]reply
 }
 
 type reply struct {
-	userID  uuid.UUID
-	text    string
-	expires time.Time
+	userID   uuid.UUID
+	agent    string
+	text     string
+	messages []anthropic.BetaMessageParam
+	expires  time.Time
 }
 
-func (c *replies) put(id, userID uuid.UUID, text string) {
+func (c *replies) put(id, userID uuid.UUID, agent, text string, messages []anthropic.BetaMessageParam) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	now := time.Now()
@@ -493,14 +517,22 @@ func (c *replies) put(id, userID uuid.UUID, text string) {
 			delete(c.m, k)
 		}
 	}
-	c.m[id] = reply{userID, text, now.Add(time.Hour)}
+	c.m[id] = reply{userID, agent, text, messages, now.Add(time.Hour)}
 }
 
-func (c *replies) get(id, userID uuid.UUID) *string {
+func (c *replies) conversation(id, userID uuid.UUID) *reply {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	v, ok := c.m[id]
 	if !ok || v.userID != userID || time.Now().After(v.expires) {
+		return nil
+	}
+	return &v
+}
+
+func (c *replies) get(id, userID uuid.UUID) *string {
+	v := c.conversation(id, userID)
+	if v == nil || v.text == "" {
 		return nil
 	}
 	return &v.text

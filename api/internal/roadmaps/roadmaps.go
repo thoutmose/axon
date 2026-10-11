@@ -391,17 +391,27 @@ type curriculum struct {
 	} `json:"courses"`
 }
 
-// Sources lists what can be imported, with its licence.
-func Sources() []map[string]string {
+// Sources lists what can be imported, with its licence or attribution.
+func Sources() []Source {
 	var c curriculum
 	_ = json.Unmarshal(ossuJSON, &c)
-	return []map[string]string{{"id": "ossu", "title": c.Title, "description": c.Description, "attribution": c.Attribution, "license_url": c.LicenseURL}}
+	out := []Source{{ID: "ossu", Kind: "curriculum", Title: c.Title, Description: c.Description, Attribution: c.Attribution, LicenseURL: &c.LicenseURL, Count: len(c.Courses)}}
+	for _, d := range lib.Roadmaps {
+		out = append(out, Source{ID: d.ID, Kind: "library", Title: d.Title, Description: d.Description, Attribution: lib.Attribution, Count: len(d.Resources)})
+	}
+	return out
 }
 
-// Import creates a roadmap from a bundled, openly licensed curriculum.
+// Import creates a roadmap from the OSSU curriculum (MIT licensed) or a
+// domain of the curated library.
 func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, source string) (Roadmap, error) {
 	if source != "ossu" {
-		return Roadmap{}, ValidationError{"The only importable source is ossu (MIT licensed). roadmap.sh content may not be redistributed."}
+		for _, d := range lib.Roadmaps {
+			if d.ID == source {
+				return importLibrary(ctx, tx, userID, actor, d)
+			}
+		}
+		return Roadmap{}, ValidationError{"Import ossu or a library domain from GET /v1/roadmaps/sources. roadmap.sh content may not be redistributed."}
 	}
 	var c curriculum
 	if err := json.Unmarshal(ossuJSON, &c); err != nil {

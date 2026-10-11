@@ -61,7 +61,8 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### 🌱 Habits, goals, and roadmaps
 - Atomic Habits cues, cravings, responses, rewards, stacking, two-minute starts, and recovery.
 - Goals and milestones connected to tasks, notes, habits, projects, and learning.
-- Manual, roadmap.sh, OSSU, and AI-generated roadmaps with a D3/Sigma.js skill graph.
+- Roadmaps you build by hand, import from OSSU, or start from Axon's curated library: 24 domains of the most recommended books, papers, university lectures, courses, and channels, from computer science and maths to Kubernetes, MLOps, and security. Each one is shown as a list or a layered skill graph.
+- A Tutor agent that interviews you and drafts a roadmap where every skill cites its source, and a Resources agent that finds material for what you are learning. Both wait for your approval.
 
 ### 📚 Learning and media
 - Retrieval practice, interleaving, elaboration, concrete examples, dual coding, and spaced practice.
@@ -382,12 +383,12 @@ Privacy controls include consent records, purpose limitation, retention policies
 
 | Agent | Responsibility | Guardrail |
 |---|---|---|
-| Tutor | Interview, research, and draft roadmaps. | Cited sources; user approves publication. |
+| Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. |
 | Goals/Milestones | Break outcomes into measurable steps. | No silent commitments or dates. |
 | Habits | Suggest cues, stacks, recovery, and reviews. | No shame or manipulative pressure. |
 | Side-Projects | Analyze repos into epics, issues, and tasks. | Read-only by default; human mutation approval. |
 | Code Review | Review diffs, tests, security, and maintainability. | Cannot approve its own author’s change. |
-| Resource | Find and classify cited resources. | Respect robots, licenses, quotas, attribution. |
+| Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. |
 | Task Manager | Triage and schedule work. | Preview before changing due dates. |
 | Teacher | Generate reviewed retrieval practice. | Reads only literature/permanent notes. |
 | Media | Normalize metadata and recommend. | Explain sources; user controls profile. |
@@ -422,11 +423,12 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 |---|---|---|
 | Foundation | Secure deployment, CI, observability, auth, privacy. | EP-00 → 01 → 02 → 03 → 04 |
 | Personal graph | Links, tasks, notes, goals, dashboard — no AI required. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
-| Guided growth | Agents, habits, projects, roadmaps, learning, Anki, gamification. | EP-19 → 12 → 10 → 14 → 16 → 15 |
+| Guided growth | Agents, habits, projects, roadmaps, notes workspace, delivery and tutor agents. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
+| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 16 → 15 → 36 → 37 → 38 → 39 → 40 |
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-26 done; EP-27 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-27 done; EP-28 next.** Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

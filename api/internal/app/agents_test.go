@@ -236,6 +236,8 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 	}
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/projects", []byte(`{"title":"Garden"}`)), &proj)
 	repo := alice.connectRepo(`{"owner":"ada","repo":"garden","allow_comments":true,"project_id":"` + proj.ID + `"}`)
+	var rm roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Flexibility"}`)), &rm)
 
 	inputs := map[string]struct{ agent, input string }{
 		"update_task":         {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
@@ -247,6 +249,8 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		"update_habit":        {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
 		"draft_issue":         {"side-projects", `{"repo_id":"` + repo.ID + `","title":"Add tests","details":"Start with main.go.","reason":"Missing."}`},
 		"post_review_comment": {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
+		"draft_roadmap":       {"tutor", `{"title":"Yoga","skills":[{"title":"Sun salutation","url":"https://en.wikipedia.org/wiki/Sun_Salutation"}],"reason":"Asked."}`},
+		"suggest_resources":   {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
 	}
 	var tested []string
 	for name := range inputs {
@@ -313,7 +317,8 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 
 // Eval with prompt-injection fixtures: whatever a model is tricked into
 // requesting, it cannot use tools it was not granted, change data without
-// approval, or reach the network (no tool can).
+// approval, or reach the network (only fetch_page can, for allowlisted
+// learning sites, and only agents granted it).
 func TestEvalInjectionCannotTriggerUnapprovedActions(t *testing.T) {
 	e := newEnv(t, false)
 	alice := e.client()

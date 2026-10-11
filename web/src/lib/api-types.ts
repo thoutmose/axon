@@ -1095,6 +1095,25 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/agent-runs/{id}/continue': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Answer an agent; starts a new run that carries the conversation (held in memory for an hour, never stored) */
+		post: operations['continueAgentRun'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/proposals': {
 		parameters: {
 			query?: never;
@@ -1520,7 +1539,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Curricula that can be imported, with licence and attribution */
+		/** Curricula and curated library domains that can be imported, with licence and attribution */
 		get: operations['listRoadmapSources'];
 		put?: never;
 		post?: never;
@@ -1539,7 +1558,7 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/** Import a bundled curriculum (ossu); roadmap.sh content may not be redistributed */
+		/** Import the OSSU curriculum or a curated library domain; roadmap.sh content may not be redistributed */
 		post: operations['importRoadmap'];
 		delete?: never;
 		options?: never;
@@ -1915,6 +1934,11 @@ export interface components {
 		AgentRun: {
 			/** Format: uuid */
 			id: string;
+			/**
+			 * Format: uuid
+			 * @description The run this one continues.
+			 */
+			parent_run_id: string | null;
 			agent: string;
 			skill_version: string;
 			model: string;
@@ -2100,7 +2124,7 @@ export interface components {
 			title: string;
 			description: string;
 			/** @enum {unknown} */
-			source: 'manual' | 'ossu';
+			source: 'manual' | 'ossu' | 'library' | 'tutor';
 			/** @description Shown with imported content. */
 			attribution: string;
 			license_url: string | null;
@@ -4392,11 +4416,50 @@ export interface operations {
 						run: components['schemas']['AgentRun'];
 						reply: string | null;
 						proposals: components['schemas']['Proposal'][];
+						/** @description True while the conversation is held in memory (an hour), so you can answer the agent. */
+						can_continue: boolean;
 					};
 				};
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	continueAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					instruction: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Started. */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentRun'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			402: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			410: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			503: components['responses']['Problem'];
 		};
 	};
 	listProposals: {
@@ -5417,11 +5480,16 @@ export interface operations {
 				content: {
 					'application/json': {
 						items: {
+							/** @example system-design */
 							id: string;
+							/** @enum {string} */
+							kind: 'curriculum' | 'library';
 							title: string;
 							description: string;
 							attribution: string;
-							license_url: string;
+							license_url: string | null;
+							/** @description Courses or resources in it. */
+							count: number;
 						}[];
 					};
 				};

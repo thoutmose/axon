@@ -1710,13 +1710,45 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [run, reply, proposals]
+                required: [run, reply, proposals, can_continue]
                 properties:
                   run: { $ref: "#/components/schemas/AgentRun" }
                   reply: { type: [string, "null"] }
                   proposals: { type: array, items: { $ref: "#/components/schemas/Proposal" } }
+                  can_continue: { type: boolean, description: "True while the conversation is held in memory (an hour), so you can answer the agent." }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/agent-runs/{id}/continue:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [agents]
+      operationId: continueAgentRun
+      summary: Answer an agent; starts a new run that carries the conversation (held in memory for an hour, never stored)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instruction]
+              additionalProperties: false
+              properties:
+                instruction: { type: string, minLength: 1, maxLength: 4000 }
+      responses:
+        "202":
+          description: Started.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentRun" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "402": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "410": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
   /v1/proposals:
     get:
       tags: [agents]
@@ -2441,7 +2473,7 @@ paths:
     get:
       tags: [roadmaps]
       operationId: listRoadmapSources
-      summary: Curricula that can be imported, with licence and attribution
+      summary: Curricula and curated library domains that can be imported, with licence and attribution
       responses:
         "200":
           description: Sources.
@@ -2455,19 +2487,21 @@ paths:
                     type: array
                     items:
                       type: object
-                      required: [id, title, description, attribution, license_url]
+                      required: [id, kind, title, description, attribution, license_url, count]
                       properties:
-                        id: { type: string }
+                        id: { type: string, example: system-design }
+                        kind: { type: string, enum: [curriculum, library] }
                         title: { type: string }
                         description: { type: string }
                         attribution: { type: string }
-                        license_url: { type: string }
+                        license_url: { type: [string, "null"] }
+                        count: { type: integer, description: Courses or resources in it. }
         "401": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/import:
     post:
       tags: [roadmaps]
       operationId: importRoadmap
-      summary: Import a bundled curriculum (ossu); roadmap.sh content may not be redistributed
+      summary: Import the OSSU curriculum or a curated library domain; roadmap.sh content may not be redistributed
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
@@ -2995,9 +3029,10 @@ components:
     AgentRun:
       type: object
       description: The audit record of a run. It never contains prompt, reply, or tool input text.
-      required: [id, agent, skill_version, model, status, tools_called, proposals, input_tokens, output_tokens, cost_micros, error, started_at, finished_at]
+      required: [id, agent, skill_version, model, status, tools_called, proposals, input_tokens, output_tokens, cost_micros, error, started_at, finished_at, parent_run_id]
       properties:
         id: { type: string, format: uuid }
+        parent_run_id: { type: [string, "null"], format: uuid, description: The run this one continues. }
         agent: { type: string }
         skill_version: { type: string }
         model: { type: string }
@@ -3147,7 +3182,7 @@ components:
         id: { type: string, format: uuid }
         title: { type: string }
         description: { type: string }
-        source: { enum: [manual, ossu] }
+        source: { enum: [manual, ossu, library, tutor] }
         attribution: { type: string, description: Shown with imported content. }
         license_url: { type: [string, "null"] }
         done: { type: integer }

@@ -19,6 +19,16 @@
 	let error = $state('');
 	let form = $state({ title: '', section: '', url: '', requires: [] as string[] });
 	let confirmDelete = $state(false);
+	let editing = $state(false);
+	let meta = $state({ title: '', description: '' });
+	let skillEdit = $state<{
+		id: string;
+		title: string;
+		section: string;
+		url: string;
+		description: string;
+	} | null>(null);
+	let skillOpen = $state(false);
 
 	const skills = $derived(roadmap?.skills ?? []);
 	const edges = $derived((roadmap?.edges ?? []).map((e) => ({ from: e.from, to: e.to })));
@@ -85,6 +95,47 @@
 		}
 	}
 
+	function openEdit() {
+		if (!roadmap) return;
+		meta = { title: roadmap.title, description: roadmap.description };
+		editing = true;
+	}
+
+	async function saveMeta(e: SubmitEvent) {
+		e.preventDefault();
+		try {
+			await api(`/v1/roadmaps/${id}`, { method: 'PATCH', body: meta });
+			editing = false;
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	function editSkill(s: Skill) {
+		skillEdit = {
+			id: s.id,
+			title: s.title,
+			section: s.section,
+			url: s.url ?? '',
+			description: s.description
+		};
+		skillOpen = true;
+	}
+
+	async function saveSkill(e: SubmitEvent) {
+		e.preventDefault();
+		if (!skillEdit) return;
+		const { id: sid, ...body } = skillEdit;
+		try {
+			await api(`/v1/skills/${sid}`, { method: 'PATCH', body });
+			skillOpen = false;
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
 	async function removeSkill(s: Skill) {
 		try {
 			await api(`/v1/skills/${s.id}`, { method: 'DELETE' });
@@ -133,7 +184,10 @@
 				</p>
 			{/if}
 		</div>
-		<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+		<div class="row">
+			<Button variant="secondary" onclick={openEdit}>Edit</Button>
+			<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+		</div>
 	</div>
 
 	<nav class="tabs" aria-label="View">
@@ -228,6 +282,7 @@
 			<aside class="detail card glass" aria-labelledby="detail-title">
 				<div class="row">
 					<h2 id="detail-title">{selected.title}</h2>
+					<Button variant="ghost" onclick={() => selected && editSkill(selected)}>Edit</Button>
 					<Button variant="ghost" onclick={() => go({ skill: null })} aria-label="Close details"
 						>✕</Button
 					>
@@ -259,6 +314,62 @@
 
 	<Connections id={roadmap.id} type="roadmap" />
 {/if}
+
+<Dialog bind:open={editing} title="Edit roadmap">
+	<form onsubmit={saveMeta}>
+		<TextField id="roadmap-title" label="Title" bind:value={meta.title} maxlength={500} required />
+		<div class="field wide">
+			<label for="roadmap-description">Description</label>
+			<textarea id="roadmap-description" rows="4" maxlength="20000" bind:value={meta.description}
+			></textarea>
+		</div>
+		<div class="row end">
+			<Button variant="secondary" onclick={() => (editing = false)}>Cancel</Button>
+			<Button type="submit">Save</Button>
+		</div>
+	</form>
+</Dialog>
+
+<Dialog bind:open={skillOpen} title="Edit skill">
+	{#if skillEdit}
+		<form onsubmit={saveSkill}>
+			<TextField
+				id="edit-skill-title"
+				label="Skill"
+				bind:value={skillEdit.title}
+				maxlength={500}
+				required
+			/>
+			<TextField
+				id="edit-skill-section"
+				label="Section"
+				list="sections"
+				bind:value={skillEdit.section}
+				maxlength={200}
+			/>
+			<TextField
+				id="edit-skill-url"
+				label="Link"
+				type="url"
+				placeholder="https://…"
+				bind:value={skillEdit.url}
+			/>
+			<div class="field wide">
+				<label for="edit-skill-description">Notes</label>
+				<textarea
+					id="edit-skill-description"
+					rows="3"
+					maxlength="5000"
+					bind:value={skillEdit.description}
+				></textarea>
+			</div>
+			<div class="row end">
+				<Button variant="secondary" onclick={() => (skillOpen = false)}>Cancel</Button>
+				<Button type="submit">Save</Button>
+			</div>
+		</form>
+	{/if}
+</Dialog>
 
 <Dialog bind:open={confirmDelete} title="Delete this roadmap?">
 	<p>Its skills and their links are removed. Goals and notes stay.</p>
@@ -394,6 +505,18 @@
 	}
 	.field label {
 		font-weight: 600;
+	}
+	.field.wide {
+		max-width: none;
+	}
+	textarea {
+		font: inherit;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		width: 100%;
 	}
 	.row {
 		display: flex;

@@ -8,16 +8,32 @@
 	type Roadmap = Schemas['Roadmap'];
 	type Source = {
 		id: string;
+		kind: 'curriculum' | 'library';
 		title: string;
 		description: string;
 		attribution: string;
-		license_url: string;
+		license_url: string | null;
+		count: number;
+	};
+	const sourceNames: Record<string, string> = {
+		ossu: 'OSSU',
+		library: 'from the library',
+		tutor: 'drafted by the Tutor'
 	};
 	let roadmaps = $state<Roadmap[] | null>(null);
 	let sources = $state<Source[]>([]);
 	let error = $state('');
 	let title = $state('');
 	let importing = $state(false);
+	let filter = $state('');
+	const curricula = $derived(sources.filter((s) => s.kind === 'curriculum'));
+	const domains = $derived(
+		sources.filter(
+			(s) =>
+				s.kind === 'library' &&
+				`${s.title} ${s.description}`.toLowerCase().includes(filter.trim().toLowerCase())
+		)
+	);
 
 	async function load() {
 		try {
@@ -100,7 +116,7 @@
 						<span style:width="{r.total ? (r.done / r.total) * 100 : 0}%"></span>
 					</div>
 					<p class="muted small">
-						{r.done} of {r.total} skills{r.source !== 'manual' ? ' · imported' : ''}
+						{r.done} of {r.total} skills{sourceNames[r.source] ? ` · ${sourceNames[r.source]}` : ''}
 					</p>
 				</li>
 			{/each}
@@ -112,16 +128,58 @@
 		/>
 	{/if}
 
+	<section class="card glass library" aria-labelledby="library-title">
+		<h2 id="library-title">The library</h2>
+		<p class="muted small">
+			Roadmaps built from the world's most recommended books, papers, university lectures, courses,
+			and channels, one per domain. Import one, then make it yours: rename, reorder, add, or remove
+			anything. Or ask the Tutor agent on the <a href="/agents">Agents</a> page to draft one for your
+			goal.
+		</p>
+		<label for="library-filter" class="visually-hidden">Filter domains</label>
+		<input
+			id="library-filter"
+			class="filter"
+			type="search"
+			placeholder="Filter domains, e.g. kubernetes, data, rust…"
+			bind:value={filter}
+		/>
+		<ul class="domains">
+			{#each domains as s (s.id)}
+				<li>
+					<strong>{s.title}</strong>
+					<p class="muted small">{s.description}</p>
+					<div class="row">
+						<span class="muted small">{s.count} resources</span>
+						<Button
+							variant="secondary"
+							busy={importing}
+							onclick={() => importSource(s)}
+							aria-label="Import {s.title}">Import</Button
+						>
+					</div>
+				</li>
+			{:else}
+				<li class="muted">No domain matches “{filter}”.</li>
+			{/each}
+		</ul>
+		{#if sources.find((s) => s.kind === 'library')}
+			<p class="small attribution">{sources.find((s) => s.kind === 'library')?.attribution}</p>
+		{/if}
+	</section>
+
 	<section class="card glass imports" aria-labelledby="import-title">
 		<h2 id="import-title">Start from an open curriculum</h2>
-		{#each sources as s (s.id)}
+		{#each curricula as s (s.id)}
 			<div class="source">
 				<div>
 					<strong>{s.title}</strong>
 					<p class="muted small">{s.description}</p>
 					<p class="small attribution">
 						{s.attribution}
-						<a href={s.license_url} rel="noopener noreferrer" target="_blank">Licence</a>
+						{#if s.license_url}<a href={s.license_url} rel="noopener noreferrer" target="_blank"
+								>Licence</a
+							>{/if}
 					</p>
 				</div>
 				<Button variant="secondary" busy={importing} onclick={() => importSource(s)}>Import</Button>
@@ -191,8 +249,49 @@
 	.card p {
 		margin: var(--space-2) 0 0;
 	}
-	.imports h2 {
+	.imports h2,
+	.library h2 {
 		font-size: var(--text-lg);
+	}
+	.library {
+		margin-bottom: var(--space-6);
+	}
+	.filter {
+		font: inherit;
+		width: 100%;
+		max-width: 28rem;
+		min-height: 2.75rem;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		margin: var(--space-2) 0 var(--space-4);
+	}
+	.domains {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+		gap: var(--space-3);
+	}
+	.domains li {
+		display: grid;
+		gap: var(--space-1);
+		align-content: space-between;
+		padding: var(--space-3) var(--space-4);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+	.domains p {
+		margin: 0;
+	}
+	.row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
 	}
 	.source {
 		display: flex;

@@ -13,7 +13,9 @@ async function noSeriousA11yViolations(p: Page) {
 	const serious = result.violations.filter(
 		(v) => v.impact === 'serious' || v.impact === 'critical'
 	);
-	expect(serious.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`)).toEqual([]);
+	expect(
+		serious.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`)
+	).toEqual([]);
 }
 
 test.beforeAll(async ({ browser }) => {
@@ -364,6 +366,7 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 
 	await page.getByLabel('Add a card to To do').fill('Buy timber');
 	await page.keyboard.press('Enter');
+	await expect(page.getByRole('link', { name: 'Buy timber' })).toBeVisible();
 	await page.getByLabel('Add a card to To do').fill('Pour the base');
 	await page.keyboard.press('Enter');
 	await expect(page.getByRole('link', { name: 'Pour the base' })).toBeVisible();
@@ -399,7 +402,7 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 test('import an open curriculum with attribution, track skills, and use the graph or the list', async () => {
 	await page.goto('/roadmaps');
 	await expect(page.getByText('MIT License')).toBeVisible(); // attribution before import
-	await page.getByRole('button', { name: 'Import' }).click();
+	await page.getByRole('button', { name: 'Import', exact: true }).click();
 	await expect(
 		page.getByRole('heading', { level: 1, name: 'OSSU Computer Science' })
 	).toBeVisible();
@@ -418,6 +421,32 @@ test('import an open curriculum with attribution, track skills, and use the grap
 	await expect(
 		graph.getByRole('link', { name: 'Class-based Program Design, learning' })
 	).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('import a library roadmap of the best resources, then rename and edit it', async () => {
+	await page.goto('/roadmaps');
+	await page.getByLabel('Filter domains').fill('kubernetes');
+	await expect(page.getByRole('button', { name: /^Import / })).toHaveCount(1);
+	await page.getByRole('button', { name: 'Import Docker, Podman, and Kubernetes' }).click();
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Docker, Podman, and Kubernetes' })
+	).toBeVisible();
+	await expect(page.getByText(/belongs to its authors/)).toBeVisible();
+
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
+	const edit = page.getByRole('dialog', { name: 'Edit roadmap' });
+	await edit.getByLabel('Title').fill('My container path');
+	await edit.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'My container path' })).toBeVisible();
+
+	await page.getByRole('link', { name: 'Docker: Get started' }).click();
+	const detail = page.getByRole('complementary', { name: 'Docker: Get started' });
+	await detail.getByRole('button', { name: 'Edit' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Edit skill' });
+	await dialog.getByLabel('Skill', { exact: true }).fill('Docker basics');
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByRole('link', { name: 'Docker basics' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 

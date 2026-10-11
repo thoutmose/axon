@@ -27,6 +27,7 @@ func (r *Runner) Routes(m chi.Router) {
 	m.Post("/v1/agents/{name}/runs", r.start)
 	m.Get("/v1/agent-runs", r.runs)
 	m.Get("/v1/agent-runs/{id}", r.getRun)
+	m.Post("/v1/agent-runs/{id}/continue", r.continueRun)
 	m.Get("/v1/proposals", r.proposals)
 	m.Get("/v1/agent-memories", r.memories)
 }
@@ -55,6 +56,8 @@ func (r *Runner) fail(w http.ResponseWriter, err error) {
 		httpx.Problem(w, http.StatusForbidden, "Agents are off. Turn on “AI agents” under Account → Privacy to use them.")
 	case errors.Is(err, ErrNoBudget):
 		httpx.Problem(w, http.StatusPaymentRequired, "This month's agent budget is used up. Raise it in agent settings or wait until next month.")
+	case errors.Is(err, ErrExpired):
+		httpx.Problem(w, http.StatusGone, "This conversation is no longer held (replies are kept for an hour). Start a new run.")
 	case errors.Is(err, ErrBusy):
 		httpx.Problem(w, http.StatusConflict, "An agent is already working for you. Wait for it to finish.")
 	default:
@@ -124,31 +127,67 @@ func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 	httpx.JSON(w, http.StatusOK, st)
 }
 
-func (r *Runner) start(w http.ResponseWriter, req *http.Request) {
-	who, _ := auth.FromContext(req.Context())
+// instruction reads and checks the person's message to an agent.
+func instruction(w http.ResponseWriter, req *http.Request) (string, bool) {
 	var body struct {
 		Instruction string `json:"instruction"`
 	}
 	if err := httpx.Decode(req, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
-		return
+		return "", false
 	}
 	body.Instruction = strings.TrimSpace(body.Instruction)
 	if body.Instruction == "" || utf8.RuneCountInString(body.Instruction) > 4000 {
 		httpx.Problem(w, http.StatusUnprocessableEntity, "Tell the agent what to do in 1 to 4,000 characters.")
+		return "", false
+	}
+	return body.Instruction, true
+}
+
+func (r *Runner) start(w http.ResponseWriter, req *http.Request) {
+	who, _ := auth.FromContext(req.Context())
+	text, ok := instruction(w, req)
+	if !ok {
 		return
 	}
-	id, err := r.Start(req.Context(), who.UserID, chi.URLParam(req, "name"), body.Instruction)
+	r.started(w, req, who.UserID)(r.Start(req.Context(), who.UserID, chi.URLParam(req, "name"), text))
+}
+
+func (r *Runner) continueRun(w http.ResponseWriter, req *http.Request) {
+	who, _ := auth.FromContext(req.Context())
+	parent, err := uuid.Parse(chi.URLParam(req, "id"))
 	if err != nil {
+		httpx.Problem(w, http.StatusNotFound, "No such run.")
+		return
+	}
+	text, ok := instruction(w, req)
+	if !ok {
+		return
+	}
+	if _, err := r.record(req, who.UserID, parent); errors.Is(err, graph.ErrNotFound) {
+		httpx.Problem(w, http.StatusNotFound, "No such run.")
+		return
+	} else if err != nil {
 		r.fail(w, err)
 		return
 	}
-	rec, err := r.record(req, who.UserID, id)
-	if err != nil {
-		r.fail(w, err)
-		return
+	r.started(w, req, who.UserID)(r.Continue(req.Context(), who.UserID, parent, text))
+}
+
+// started answers a request that started a run.
+func (r *Runner) started(w http.ResponseWriter, req *http.Request, userID uuid.UUID) func(uuid.UUID, error) {
+	return func(id uuid.UUID, err error) {
+		if err != nil {
+			r.fail(w, err)
+			return
+		}
+		rec, err := r.record(req, userID, id)
+		if err != nil {
+			r.fail(w, err)
+			return
+		}
+		httpx.JSON(w, http.StatusAccepted, rec)
 	}
-	httpx.JSON(w, http.StatusAccepted, rec)
 }
 
 // RunRecord is the audit record of a run: no prompt or reply text.
@@ -166,9 +205,10 @@ type RunRecord struct {
 	Error        *string    `json:"error"`
 	StartedAt    time.Time  `json:"started_at"`
 	FinishedAt   *time.Time `json:"finished_at"`
+	ParentRunID  *uuid.UUID `json:"parent_run_id"`
 }
 
-const runColumns = `id, agent, skill_version, model, status, tools_called, proposals, input_tokens, output_tokens, cost_micros, error, started_at, finished_at`
+const runColumns = `id, agent, skill_version, model, status, tools_called, proposals, input_tokens, output_tokens, cost_micros, error, started_at, finished_at, parent_run_id`
 
 func (r *Runner) record(req *http.Request, userID, id uuid.UUID) (RunRecord, error) {
 	rows, err := r.db.Query(req.Context(), `SELECT `+runColumns+` FROM agent_runs WHERE id = $1 AND user_id = $2`, id, userID)
@@ -221,7 +261,8 @@ func (r *Runner) getRun(w http.ResponseWriter, req *http.Request) {
 		r.fail(w, err)
 		return
 	}
-	httpx.JSON(w, http.StatusOK, map[string]any{"run": rec, "reply": r.replies.get(id, who.UserID), "proposals": props})
+	httpx.JSON(w, http.StatusOK, map[string]any{"run": rec, "reply": r.replies.get(id, who.UserID), "proposals": props,
+		"can_continue": r.replies.conversation(id, who.UserID) != nil && rec.Status == "completed"})
 }
 
 // Proposal is a change an agent wants, waiting for the user's decision.

@@ -98,7 +98,20 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-24 | Connect everything | Link any element to any other from wherever it is shown, and see every connection. | MUST | 13 pts | EP-05, EP-12 | Done |
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Done |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Done |
-| EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Planned |
+| EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps, a curated library of the best resources per domain, and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Done |
+| EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Planned |
+| EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Planned |
+| EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Planned |
+| EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
+| EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Planned |
+| EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Planned |
+| EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Planned |
+| EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Planned |
+| EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Planned |
+| EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
+| EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Planned |
+| EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Planned |
+| EP-40 | Instance export & import | Move a whole Axon (database, files, settings) to another server or configuration. | MUST | 13 pts | EP-01, EP-31 | Planned |
 
 ## Delivery order
 
@@ -108,7 +121,8 @@ Dependencies above are satisfied by this order. Change it only through a human d
 |---|---|---|
 | R0 — Foundations | EP-00 → EP-01 → EP-02 → EP-03 → EP-04 | Secure deploy, CI, observability, auth, privacy baseline |
 | R1 — Personal graph | EP-05 → EP-06 → EP-07 → EP-09 → EP-11 → EP-13 → EP-08 | Notes, links, tasks, goals, and dashboard in one daily loop — no AI required |
-| R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 → EP-16 → EP-15 | Human-approved agents, habits, projects, roadmaps, retrieval, Anki |
+| R2 — Guided growth | EP-19 → EP-12 → EP-22 → EP-23 → EP-24 → EP-25 → EP-10 → EP-26 → EP-14 → EP-27 | Human-approved agents, habits, projects, roadmaps |
+| R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-15 → EP-36 → EP-37 → EP-38 → EP-39 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-20 | Media, health, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
 
@@ -617,18 +631,205 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **Goal.** Build roadmaps with the Tutor agent (interview, cited draft roadmaps) and find learning resources with the Resource agent. Split from EP-14.
 
+**Issues** (design in [ADR 0014](adr/0014-tutor-library-and-web-reading.md))
+
+- [x] **EP-27/IS-27.01 — Curated library** · 8 pts · MUST
+  - [x] 24 domains, 258 widely recommended books, papers, university courses, videos, channels, and practice sites, chosen for the owner's domains (CS, DSA, maths, OS, Linux/Bash, C/C++, Java, Python, Rust, networking, DevOps/GitOps, Docker/Podman/Kubernetes, web/full stack, API design, system design/data-intensive, databases, data engineering/DataOps/big data, data analysis, data science, ML, MLOps, security/DevSecOps, cloud, soft skills). Titles and links only; every link checked when written.
+  - [x] Each domain imports as an ordinary roadmap with prerequisites, and can then be renamed, edited, or deleted (UI and API).
+- [x] **EP-27/IS-27.02 — Allowlisted page reading** · 5 pts · MUST
+  - [x] `fetch_page`: allowlisted educational hosts (redirects re-checked), https only, private addresses refused, robots.txt honoured, 15 pages per run, text only, framed as data (unit and integration tests).
+- [x] **EP-27/IS-27.03 — Conversations** · 5 pts · MUST
+  - [x] Answer an agent from the Agents page (`POST /v1/agent-runs/{id}/continue`); the transcript lives in memory for an hour and is never stored; `parent_run_id` links runs; only the owner can continue (tested).
+- [x] **EP-27/IS-27.04 — Tutor agent** · 10 pts · SHOULD
+  - [x] Interviews first, then proposes `draft_roadmap`: every skill needs a source link and prerequisites name earlier skills; nothing is created before approval (tested, including uncited and refused fetches).
+- [x] **EP-27/IS-27.05 — Resource agent** · 6 pts · SHOULD
+  - [x] Searches the library and allowlisted pages, and proposes `suggest_resources` with links and attribution; approval adds them as skills.
+
+**Exit evidence.** API unit and integration tests (including the every-write-tool and injection evals), contract coverage, and 19 Playwright scenarios with axe pass. Cross-cutting matrix: identity, authorization (owner-only continue), privacy (new processor row, transcripts memory-only), accessibility (dialogs, labelled thread), reliability (fetch timeouts, bounded pages), performance (bounded tool output), observability (content-free run records), documentation (ADR 0014, README), AI safety (allowlist, citations, approval), supply chain (no new dependency).
+
+### EP-28 — Demo account
+
+**Goal.** Anyone with access to the server can try every feature on realistic data, without a passkey and without seeing or touching real accounts.
+
+**In scope.** `axon demo seed` creates (or resets) one demo user with sample tasks, projects, notes (Zettelkasten and PARA), goals, habits, roadmaps from the library, and agent proposals. `AXON_DEMO=1` shows a "Try the demo" button that signs into that user with a short, demo-only session. A nightly reset. Agents use a scripted provider in the demo, so no AI key or spend is involved.
+
 **Acceptance criteria**
 
-- Every Tutor suggestion cites its sources and stays a draft until approved.
-- Resources respect robots, licences, and quotas, with attribution.
+- The demo session cannot reach any other user's data, tokens, settings, or exports (authorization tests).
+- The demo cannot register passkeys, create tokens, change providers, or send anything outside Axon.
+- Staging and production can each run a demo; real accounts are unaffected (integration test).
 
-**Candidate issues.** Tutor agent (21) · Resource agent (13).
+**Candidate issues.** Seed data (5) · Demo sign-in and limits (5) · Reset job and docs (3).
+
+### EP-29 — Docs in two languages & API reference
+
+**Goal.** README in English and French with a switch at the top of each, an interactive API reference, and one name everywhere: Axon.
+
+**In scope.** `README.fr.md` kept in step with `README.md` (a CI check compares their section lists); Swagger UI served at `/api/docs` from the bundled OpenAPI document; a repository sweep for leftover names.
+
+**Acceptance criteria**
+
+- Both READMEs describe the current state and link to each other.
+- `/api/docs` renders the live OpenAPI document without loading anything from a CDN.
+
+**Candidate issues.** French README and section check (3) · Swagger UI (3) · Naming sweep (2).
+
+### EP-30 — Command dashboard
+
+**Goal.** The home page answers "how am I doing?" at a glance: KPIs, trends, tables, and a skills network.
+
+**In scope.** KPI tiles (tasks done, focus time, habit consistency, goal progress, learning, notes written) with week-over-week change; charts (trends, heatmap, burn-down); tables (due soon, stalled projects, reviews due); a network graph of skills from roadmaps, tagged hard or soft, linked to the goals, projects, and notes that use them. Every number opens the items behind it (as in EP-08).
+
+**Acceptance criteria**
+
+- Every KPI has a written definition, and its number matches the items it opens (tested).
+- Charts have table alternatives and pass axe; the page loads in under 500 ms with a year of data.
+
+**Candidate issues.** KPI service (8) · Charts (8) · Tables (5) · Skills network with hard/soft tags (13).
+
+### EP-31 — Settings, languages & YAML configuration
+
+**Goal.** One place to configure Axon, in the browser or as a YAML file.
+
+**In scope.** Language (English and French UI, translated strings with a fallback), theme, font family and size, icon theme, default templates for notes, projects, and resources, AI provider keys and monthly limits; `GET/PUT /v1/me/settings` and YAML export and import of the same document, validated against a schema.
+
+**Acceptance criteria**
+
+- A YAML file round-trips without loss; invalid files are rejected with line-level messages.
+- Secrets in YAML are write-only: export never contains keys.
+- The whole UI is available in French (no missing-string fallbacks in e2e).
+
+**Candidate issues.** Settings model and API (8) · YAML import and export (5) · i18n framework and French strings (13) · Appearance settings (5) · Template settings (3).
+
+### EP-32 — Keyboard shortcuts & Vim mode
+
+**Goal.** Fast, discoverable keyboard use everywhere, and Vim keybindings for people who write notes in Vim.
+
+**In scope.** A shortcut registry with a `?` help overlay; go-to chords (`g t` Today, `g n` Notes, …); per-page actions; optional Vim mode in the Markdown editor (normal, insert, visual; motions, operators, `:w`), turned on in settings.
+
+**Acceptance criteria**
+
+- Shortcuts never fire while typing in a field (except editor mode keys) and can be turned off (WCAG 2.1.4).
+- Vim mode is covered by unit tests for its motions and operators.
+
+**Candidate issues.** Shortcut registry and overlay (5) · Vim mode (8).
+
+### EP-33 — Profile & avatars
+
+**Goal.** A face for every account: an uploaded picture or a generated default.
+
+**In scope.** Upload (PNG, JPEG, WebP; resized and stripped of metadata on the server), a deterministic generated avatar by default, shown in the header and on shared items.
+
+**Acceptance criteria**
+
+- Uploaded images are re-encoded (no EXIF location survives) and limited in size.
+- Export includes the picture; erasure removes it.
+
+**Candidate issues.** Upload and processing (3) · Default avatar and display (2).
+
+### EP-34 — Atomic Habits
+
+**Goal.** Habits designed with James Clear's method: make good habits obvious, attractive, easy, and satisfying; make bad habits invisible, unattractive, difficult, and unsatisfying.
+
+**In scope.** Habit stacking ("After I [current habit], I will [new habit]") and implementation intentions ("I will [behaviour] at [time] in [location]") as structured fields; identity statements ("I am a person who…") with votes cast by check-ins; the habits scorecard; the two-minute rule and gradual levelling up; bad habits with inversion strategies; a habit contract with an accountability partner (optional, opt-in).
+
+**Acceptance criteria**
+
+- Each law appears as a guided step when designing a habit, and the Habits agent uses the same model.
+- Stacks show as a chain on the habits page and on Today.
+
+**Candidate issues.** Model and API (8) · Design flow (8) · Scorecard and identity (5).
+
+### EP-35 — Focus & Pomodoro
+
+**Goal.** Focused work sessions that count everywhere.
+
+**In scope.** A session is 25 min work, 5 min break, 25 work, 5 break, 25 work, 15 min long break by default. Durations, the number of rounds, and the number of sessions are editable (one session by default). Each session links to a task, project, skill, note, or review; minutes feed KPIs, streaks, and XP. Focus sounds generated in the browser (white, pink, brown noise, rain), plus music links the person chooses for each kind of work.
+
+**Acceptance criteria**
+
+- The timer stays correct across tab sleep and reloads (tested with a fake clock).
+- No third-party audio is loaded unless the person added it.
+
+**Candidate issues.** Timer and settings (8) · Links and KPIs (5) · Focus sounds (8).
+
+### EP-36 — Live vault sync
+
+**Goal.** Adding, editing, renaming, or deleting a Markdown file in the vault updates the note in Axon within seconds, and the other way round.
+
+**In scope.** `axon notes-sync -watch` (file events plus a periodic scan) as a service on `srv-second-brain`; Axon changes pushed through an event stream; templates synced as files; conflict handling unchanged (both versions kept).
+
+**Acceptance criteria**
+
+- Create, edit, rename, and delete propagate both ways within 10 s (integration test).
+- No change is lost when both sides edit the same note (tested).
+
+**Candidate issues.** Watch mode (8) · Change stream (8) · Templates as files (5).
+
+### EP-37 — Knowledge explorer & NLP graph
+
+**Goal.** See what you know: filter, chart, and navigate notes as a knowledge graph.
+
+**In scope.** Filters by PARA area, Zettelkasten type, tags, dates, and links; charts (notes over time, tag clouds, orphan notes); a knowledge graph combining wikilinks with NLP edges: keywords (TF-IDF), named entities, synonyms from an open thesaurus (WordNet), and semantic similarity (pgvector embeddings when an embedding provider is configured; local methods otherwise).
+
+**Acceptance criteria**
+
+- Every NLP edge says why it exists (shared keyword, entity, synonym, or similarity score).
+- Works fully without any AI provider.
+
+**Candidate issues.** Filters and charts (8) · Keyword and entity extraction (8) · Thesaurus (5) · Embeddings (8) · Graph view (5).
+
+### EP-38 — Themed spaces
+
+**Goal.** Each area has its own atmosphere, and the visual language from EP-23 continues everywhere.
+
+**In scope.** Bundled, licence-clear artwork and effects:
+- notes: a Da Vinci notebook, with parchment, sepia sketches, and ink;
+- learning and resources: an Oxford library, with wood, leather, warm lamps, and serif type;
+- projects: a workshop or blueprint;
+- the other areas follow the same pattern.
+
+Effects are subtle (parallax, grain, light) and respect reduced motion and reduced transparency. Themes can be turned off in settings.
+
+**Acceptance criteria**
+
+- Text contrast passes WCAG AA on every themed surface (axe in e2e).
+- All artwork is original or openly licensed, with attribution in the repository.
+
+**Candidate issues.** Theme system per area (8) · Artwork (8) · Effects and fallbacks (5).
+
+### EP-39 — Personal finance
+
+**Goal.** Know where money comes from and goes, in the spirit of Firefly III, without sending data anywhere.
+
+**In scope.** Asset, liability, revenue, and expense accounts; double-entry transactions (income, expense, transfer) with categories, tags, and notes; budgets per period; recurring transactions; rules that categorise automatically; CSV import; reports; full API; finance data classified sensitive, encrypted at rest where supported, excluded from agents unless a separate consent is granted.
+
+**Acceptance criteria**
+
+- Balances always reconcile (property tests on double entry).
+- Recurring transactions and rules are idempotent (re-running creates nothing twice).
+- Finance endpoints pass the authorization matrix; amounts use exact decimals, never floats.
+
+**Candidate issues.** Accounts and transactions (13) · Categories, tags, budgets (8) · Recurring and rules (13) · CSV import (8) · Reports and UI (13). **Split before start.**
+
+### EP-40 — Instance export & import
+
+**Goal.** Move an entire Axon to another server or configuration and keep everything.
+
+**In scope.** `axon instance export` (database dump, settings, uploaded files, a manifest with versions and checksums) and `axon instance import` into an empty installation, with migrations applied; documented in operations.
+
+**Acceptance criteria**
+
+- An export imported on a fresh stack passes the restore drill (integration test).
+- Secrets sealed with `AXON_ENCRYPTION_KEY` are re-sealed or require the same key, as documented.
+
+**Candidate issues.** Export (5) · Import (5) · Drill and docs (3).
 
 ### EP-16 — Learning engine, Teacher agent & Anki
 
 **Goal.** Retrieval-first learning: spaced scheduling, reviewed practice questions, dual-coded cards, and Anki sync.
 
-**In scope.** FSRS scheduling (SM-2 fallback); review sessions; Teacher agent generating questions and cards from literature and permanent notes only; approval before cards enter the deck; Anki `.apkg` export and sync with the existing `anki-sync-server`.
+**In scope.** FSRS scheduling (SM-2 fallback); review sessions and tests on the website; illustrated flashcards (image, cloze, front/back) that the person can view, add, edit, and delete; Teacher agent generating questions and cards from literature and permanent notes only; approval before cards enter the deck; Anki `.apkg` export and automatic sync of approved cards to the `anki-sync-server` on `srv-services`, by hand or after a Teacher proposal is approved.
 
 **Acceptance criteria**
 
@@ -636,13 +837,13 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 - The Teacher agent cannot read fleeting notes (tested).
 - Exported decks import into Anki desktop without errors.
 
-**Candidate issues.** Card and review model (8) · FSRS scheduler (8) · Review session UI (13) · Teacher agent (21) · Card approval queue (8) · Anki export (8) · Anki sync (13). **Split before start.**
+**Candidate issues.** Card and review model with images (8) · FSRS scheduler (8) · Review session and test UI (13) · Flashcard editor (8) · Teacher agent (21) · Card approval queue (8) · Anki export (8) · Anki sync to `srv-services` (13). **Split before start.**
 
 ### EP-15 — Gamification engine
 
 **Goal.** Recognize meaningful progress with transparent, opt-in XP, levels, badges, streaks, and freezes bought only with earned points.
 
-**In scope.** XP rules, levels, badges, the streak state machine (see README), earned-point freezes.
+**In scope.** XP rules, levels, badges, the streak state machine (see README), earned-point freezes. Every area feeds the same engine: tasks, projects, habits, goals, notes (Zettelkasten, PARA, daily notes), roadmaps and reviews, Pomodoro sessions, and media and book trackers, so one streak and one progress view reflect the whole life. Shared experiences (opt-in sharing of a badge or a streak with another person on the same Axon) are in scope only if they need no public exposure.
 
 **Acceptance criteria**
 
@@ -861,6 +1062,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Refinement (EP-00/IS-00.05): replaced templated Epic text with specific goals, scope, and acceptance criteria; detailed EP-00–EP-06 into issues. Fixed dependencies so each points to an earlier Epic: EP-08 now follows EP-09/11/13; Task Manager and Goals agents moved into EP-19, so EP-09 and EP-13 no longer depend on it; EP-21 depends on MUST Epics instead of EP-20. EP-01 reduced to one host per ADR 0003 (55 → 34 pts); EP-09 55 → 34 and EP-13 34 → 21 after moving their agents. Added delivery order and a walking skeleton to EP-00. |
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
+| 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 
 ## Standard issue evidence template
 

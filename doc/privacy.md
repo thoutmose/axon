@@ -26,7 +26,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Agent run records (agent, skill version, model, tool names, tokens, cost, outcome; no content) | `agent_runs` | Personal, operational | Audit and budget | Until erasure |
 | Agent proposals (proposed change and its summary) | `agent_proposals` | Personal | Let the user approve or reject | Until erasure |
 | Agent memories (facts the user approved) | `agent_memories` | Personal | Context for later runs | Until deleted or erasure |
-| Agent replies | API process memory only | Personal | Show the run's answer | 1 hour; never stored or logged |
+| Agent replies and conversation transcripts | API process memory only | Personal | Show the run's answer and let the person answer the agent | 1 hour; never stored or logged |
 | Habits (design, schedule, status) and habit check-ins (day, status, note) | `habits`, `habit_checkins` | Personal | Building habits | Until deleted or erasure |
 | Projects (title, outcome, status, WIP limit, docs folder) and board cards (column, order, kind, parent) | `projects`, `project_cards` | Personal | Running projects | Until deleted or erasure |
 | Repository connections (owner/name, token sealed with `AXON_ENCRYPTION_KEY`, comment switch, project) | `repo_connections` | Secret (token), personal | Let delivery agents read repositories | Until disconnected or erasure; the token is never exported |
@@ -57,6 +57,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 | Service | Receives | When | Status |
 |---|---|---|---|
 | GitHub | Requests to read the repositories the person connected; approved comments | Only for connected repositories, during runs the person starts | Available (EP-26) |
+| Allowlisted educational sites (Wikipedia, MDN, MIT OCW, Coursera, edX, Khan Academy, arXiv, language docs, freeCodeCamp, OpenStax, Gutenberg, OSSU) | A GET request for a public page the Tutor or Resource agent chose, with Axon's User-Agent; no user data beyond what the URL itself contains | Only during runs the person starts, at most 15 pages per run, robots.txt honoured (ADR 0014) | Available (EP-27) |
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |
