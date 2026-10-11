@@ -7871,6 +7871,13 @@ export interface operations {
 							title: string;
 							/** @description Version of the SKILL.md the agent runs. */
 							version: string;
+							/** @description Consents this agent needs on top of ai_agents (health coaches: health_data and health_ai). */
+							consents?: string[];
+							/**
+							 * @description Health guards: red-flag referral without a model call, and no unsafe restriction in replies or proposals.
+							 * @enum {string}
+							 */
+							safety?: 'health';
 							description: string;
 							tools: {
 								name: string;

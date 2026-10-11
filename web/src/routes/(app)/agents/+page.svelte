@@ -237,6 +237,12 @@
 		<section class="card" aria-labelledby="agent-{a.name}">
 			<h2 id="agent-{a.name}">{a.title} <span class="muted small">v{a.version}</span></h2>
 			<p class="muted">{a.description}</p>
+			{#if a.consents?.length}
+				<p class="small">
+					Also needs your consent: {a.consents.join(', ')}.
+					<a href="/account/privacy">Review in Privacy</a>, where each says what is shared.
+				</p>
+			{/if}
 			<details>
 				<summary>What it can do</summary>
 				<ul class="tools">
