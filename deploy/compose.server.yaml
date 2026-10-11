@@ -15,6 +15,9 @@ services:
     restart: unless-stopped
   valkey:
     restart: unless-stopped
+  anki:
+    build: !reset null
+    restart: unless-stopped
   backup:
     image: axon-backup:${AXON_VERSION:?}
     restart: unless-stopped

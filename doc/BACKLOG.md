@@ -88,7 +88,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-14 | Roadmaps & skill graph | Manual roadmaps, OSSU import, and a skill graph view. | SHOULD | 42 pts | EP-11, EP-13 | Done |
 | EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, illustrated cards, practice tests, a Teacher agent, and Anki packages. | SHOULD | 76 pts | EP-11, EP-14, EP-19 | Done |
-| EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Planned |
+| EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
 | EP-18 | Health, nutrition, sport & coach agents | Food and training logs with consent-gated, educational coaching. | COULD | 89 pts | EP-04, EP-06, EP-07, EP-19 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -1069,13 +1069,29 @@ Cross-cutting matrix:
 
 **In scope.** A small sidecar using the official `anki` library: it holds a collection per person, imports new and changed cards (pictures included), and syncs to the server with credentials kept in `deploy/env/*.env.age`. It runs by hand from the Flashcards page, or after a Teacher proposal is approved. Operations docs cover the credentials and restore.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0018](adr/0018-anki-bridge.md))
 
-- An approved card appears in Anki desktop after its next sync (integration test against a disposable `anki-sync-server`).
-- Edits update the same Anki note, never duplicate it (stable GUIDs).
-- Sync never deletes the person's Anki-only cards.
+- [x] **EP-42/IS-42.01 — Sidecar and collection** · 5 pts · SHOULD
+  - [x] `deploy/anki`: the official `anki` library (26.9.3) behind `POST /sync`, with one collection per person.
+  - [x] Imports update notes in place by GUID and never delete. Full syncs are resolved safely: download into a new collection, upload only to an empty server.
+- [x] **EP-42/IS-42.02 — Sync trigger and status** · 5 pts · SHOULD
+  - [x] `GET/PUT/DELETE /v1/me/anki` stores a per-person account with the password sealed and write-only. `POST /v1/me/anki/sync` syncs now.
+  - [x] Automatic sync after the Teacher's cards are approved; the last result is shown on Learn → Flashcards.
+- [x] **EP-42/IS-42.03 — Deploy and docs** · 3 pts · SHOULD
+  - [x] Compose service and server overlay; deploy builds and ships `axon-anki`; CI scans it. `ANKI_SYNC_URL` suggests the `srv-services` server in both settings files. Runbook, privacy register, and ADR 0018.
 
-**Candidate issues.** Sidecar and collection (5) · Sync trigger and status (5) · Deploy and docs (3).
+**Exit evidence.**
+- `scripts/check-anki-sync.sh` (also in CI) runs against a disposable `anki-sync-server`: 2 cards arrive in a fresh "Anki desktop" collection; a second sync adds none (updated in place); a note added in Anki survives the next bridge sync.
+- The integration test, with a fake bridge, covers validation, a write-only password kept on update, what the bridge receives (a real `.apkg`), the ok and error status with a 502, auto-sync after approving Teacher cards, and disconnect.
+- Playwright connects an account, sees the failure shown for an unreachable server, and disconnects, with axe.
+
+Cross-cutting matrix:
+- identity: session only, NotDemo;
+- security: sealed password, internal-only bridge, no body logging;
+- privacy: register rows, the processor is the person's own server;
+- reliability: per-user lock and safe full-sync rules;
+- observability: status recorded and warnings logged without content;
+- supply chain: `anki` pinned, Python base pinned by digest, image scanned by Trivy.
 
 ### EP-15 — Gamification engine
 

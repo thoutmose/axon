@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import type { Flashcard } from '$lib/flashcards';
+	import AnkiSync from '$lib/AnkiSync.svelte';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
@@ -158,6 +159,8 @@
 	{:else}
 		<Status kind="empty" message="No cards yet. Write your first one below." />
 	{/if}
+
+	<AnkiSync />
 
 	<section class="card glass" aria-labelledby="add-title">
 		<h2 id="add-title">Add a card</h2>

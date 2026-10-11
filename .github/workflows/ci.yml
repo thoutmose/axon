@@ -87,6 +87,8 @@ jobs:
           go-version-file: api/go.mod
       - name: Exported decks import into Anki (official library)
         run: sh scripts/check-apkg.sh
+      - name: The Anki bridge syncs with anki-sync-server (official library)
+        run: sh scripts/check-anki-sync.sh
 
   e2e:
     runs-on: ubuntu-24.04
@@ -129,6 +131,7 @@ jobs:
           - { name: api, context: api }
           - { name: web, context: web }
           - { name: backup, context: deploy/backup }
+          - { name: anki, context: deploy/anki }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build

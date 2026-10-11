@@ -75,7 +75,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 
 ### 📚 Apprentissage et médias
 - ✅ Des cartes mémoire illustrées à consulter, ajouter, modifier et supprimer, révisées avec FSRS-5 (le planificateur d’Anki, vérifié sur son implémentation de référence), des tests d’entraînement, et un agent Enseignant qui rédige des questions de récupération à partir de vos notes de lecture et permanentes, soumises à votre approbation.
-- ✅ Paquets Anki (.apkg) par paquet de cartes, images comprises ; prévu : synchronisation automatique avec `anki-sync-server` sur `srv-services` (EP-42).
+- ✅ Paquets Anki (.apkg) par paquet de cartes, images comprises, et synchronisation automatique avec votre propre `anki-sync-server` (par exemple sur `srv-services`), à la demande ou dès que vous approuvez les cartes de l’Enseignant ; les cartes présentes seulement dans Anki ne sont jamais supprimées.
 - Prévu : suivi des films, séries et livres avec TMDB et Open Library.
 
 ### 🥗 Santé et sport
@@ -380,7 +380,7 @@ Ouvrez ensuite <http://localhost:3000>. L’API est servie sous `/api` (par exem
 | `ANTHROPIC_API_KEY` | Facultatif | secret | Clé Anthropic par défaut du serveur pour les agents (chacun peut aussi choisir son fournisseur). |
 | `AXON_ANTHROPIC_OAUTH` | Facultatif | config | `1` pour utiliser un profil `ant auth login` au lieu d’une clé. |
 | `TMDB_API_KEY` | Facultatif | secret | Adaptateur de métadonnées des médias. |
-| `ANKI_SYNC_URL` | Facultatif | URL privée | Intégration avec le service hôte. |
+| `ANKI_SYNC_URL` | Facultatif | URL privée | Adresse suggérée du serveur anki-sync-server pour le pont Anki (chacun saisit son propre compte). |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Facultatif | URL privée | Export des traces. |
 | `S3_BACKUP_BUCKET` | Facultatif | bucket | Destination des sauvegardes chiffrées. |
 
@@ -444,7 +444,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-35, EP-16 et EP-41 terminés ; EP-42 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-14, EP-19 et EP-22 à EP-35, EP-16, EP-41 et EP-42 terminés ; EP-15 ensuite.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 

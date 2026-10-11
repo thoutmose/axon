@@ -4,6 +4,7 @@ package app
 import (
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,6 +12,7 @@ import (
 	"github.com/thoutmose/axon/api/openapi"
 
 	"github.com/thoutmose/axon/api/internal/agents"
+	"github.com/thoutmose/axon/api/internal/ankisync"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/avatars"
 	"github.com/thoutmose/axon/api/internal/cards"
@@ -67,6 +69,9 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	focusAPI := focus.NewHandlers(pool, log)
 	cardsAPI := cards.NewHandlers(pool, log)
+	ankiAPI := ankisync.New(pool, log, sealer, os.Getenv("AXON_ANKI_BRIDGE_URL"), os.Getenv("ANKI_SYNC_URL"))
+	agentsAPI.OnApproved = ankiAPI.AfterApproved
+	priv.Register("anki_account", ankiAPI.Export)
 	priv.Register("card_reviews", cards.ExportReviews)
 	priv.RegisterFiles("account", avatars.Files)
 	return server.New(version, pool, log, m, func(r chi.Router) {
@@ -95,6 +100,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				agentsAPI.SessionRoutes(r)
 				settingsAPI.Routes(r)
 				avatarsAPI.Routes(r)
+				ankiAPI.Routes(r)
 				reposAPI.Routes(r)
 			})
 			r.Group(func(r chi.Router) {

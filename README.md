@@ -75,7 +75,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ### 📚 Learning and media
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
-- ✅ Anki packages (.apkg) per deck, pictures included; planned: automatic sync to `anki-sync-server` on `srv-services` (EP-42).
+- ✅ Anki packages (.apkg) per deck, pictures included, and automatic sync to your own `anki-sync-server` (for example on `srv-services`), by hand or right after you approve the Teacher's cards; Anki-only cards are never deleted.
 - Planned: movie, TV, and book tracking backed by TMDB and Open Library.
 
 ### 🥗 Health and sport
@@ -380,7 +380,7 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
 | `TMDB_API_KEY` | Optional | secret | Media metadata adapter. |
-| `ANKI_SYNC_URL` | Optional | private URL | Host service integration. |
+| `ANKI_SYNC_URL` | Optional | private URL | Suggested anki-sync-server address for the Anki bridge (each person enters their own account). |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Optional | private URL | Trace export. |
 | `S3_BACKUP_BUCKET` | Optional | bucket | Encrypted backup destination. |
 
@@ -444,7 +444,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-16, EP-19, EP-22–EP-35, and EP-41 done; EP-42 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-16, EP-19, EP-22–EP-35, EP-41, and EP-42 done; EP-15 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

@@ -60,6 +60,9 @@ type Runner struct {
 	now          func() time.Time
 	replies      replies
 	wg           sync.WaitGroup
+	// OnApproved runs after a proposal is applied, outside its transaction
+	// (EP-42 uses it to sync approved flashcards to Anki).
+	OnApproved func(userID uuid.UUID, tool string)
 }
 
 // NewRunner returns a runner. provider is the server default and may be nil;

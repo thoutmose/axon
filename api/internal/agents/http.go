@@ -371,6 +371,9 @@ func (r *Runner) decide(w http.ResponseWriter, req *http.Request, f func(tx pgx.
 	case applyErr != nil:
 		httpx.Problem(w, http.StatusUnprocessableEntity, "Could not apply this proposal: "+applyErr.Error()+". It was marked failed; nothing changed.")
 	default:
+		if out.Status == "approved" && r.OnApproved != nil {
+			r.OnApproved(who.UserID, out.Tool)
+		}
 		httpx.JSON(w, http.StatusOK, out)
 	}
 }

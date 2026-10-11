@@ -13,6 +13,7 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Habits scorecard (behaviours of the day with good, neutral, or bad ratings) and habit identity, intention, and contract fields | `habit_scorecards`, `habits` | Personal, possibly sensitive | Atomic Habits design (EP-34) | Until changed or erasure; included in exports; nothing is sent to an accountability partner |
 | Focus sessions (what was focused on, start, minutes worked, rounds) and Pomodoro preferences, including music links | `focus_sessions`, `user_settings` | Personal | Count focus time and show it on the dashboard and linked items | Until deleted or erasure; included in exports |
 | Flashcards (question, answer, deck, optional picture, FSRS schedule) and review history (rating, time, duration) | `cards`, `card_reviews` | Personal | Retrieval practice and scheduling | Until deleted or erasure; both exported |
+| Anki sync account (sync server address, user name, password sealed with `AXON_ENCRYPTION_KEY`, last sync status) and the bridge's copy of the person's Anki collection | `anki_accounts`; `ankidata` volume | Secret (password), personal | Send flashcards to the person's own anki-sync-server | Until disconnected or erasure; the password is never exported; the collection copy is derived and rebuilt from the sync server |
 | Demo account and its sample data (no personal data; whatever visitors type is visible to other visitors) | `users` with `demo = true`, and the rows it owns | Sample, shared | Let people try Axon (ADR 0015) | Reset every night |
 | Passkey public keys, names, last use | `passkeys` | Personal, security | Sign-in | Until removed or erasure |
 | Sessions (token hash, user agent, times) | `sessions` | Personal, security | Keep the user signed in | 7 days idle, 30 days absolute, or sign-out |
@@ -65,6 +66,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 |---|---|---|---|
 | GitHub | Requests to read the repositories the person connected; approved comments | Only for connected repositories, during runs the person starts | Available (EP-26) |
 | Allowlisted educational sites (Wikipedia, MDN, MIT OCW, Coursera, edX, Khan Academy, arXiv, language docs, freeCodeCamp, OpenStax, Gutenberg, OSSU) | A GET request for a public page the Tutor or Resource agent chose, with Axon's User-Agent; no user data beyond what the URL itself contains | Only during runs the person starts, at most 15 pages per run, robots.txt honoured (ADR 0014) | Available (EP-27) |
+| The person's own anki-sync-server (for example on `srv-services`) | Their flashcards (questions, answers, pictures) and their Anki credentials, through the Anki bridge | Only when they press "Sync to Anki now", or after approving Teacher cards with automatic sync on | Available (EP-42) |
 | Tailscale | Connection metadata between devices and hosts; TLS certificate requests for `*.ts.net` | Always (network layer) | In use |
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |

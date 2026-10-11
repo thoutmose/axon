@@ -2564,6 +2564,97 @@ paths:
         "204": { description: Removed. }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/anki:
+    get:
+      tags: [cards]
+      operationId: getAnkiAccount
+      summary: Your Anki sync account (never the password) and how the last sync went
+      responses:
+        "200":
+          description: The account, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [available, default_endpoint, account]
+                properties:
+                  available: { type: boolean, description: The server runs the Anki bridge and can store passwords. }
+                  default_endpoint: { type: string, description: "The server's suggested sync address (ANKI_SYNC_URL)." }
+                  account:
+                    type: [object, "null"]
+                    required: [endpoint, username, auto_sync, last_sync_at, last_status, last_message]
+                    properties:
+                      endpoint: { type: string }
+                      username: { type: string }
+                      auto_sync: { type: boolean, description: Sync automatically after you approve the Teacher's cards. }
+                      last_sync_at: { type: [string, "null"], format: date-time }
+                      last_status: { type: [string, "null"], enum: [ok, error, null] }
+                      last_message: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [cards]
+      operationId: putAnkiAccount
+      summary: Connect your anki-sync-server account; the password is sealed and never returned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, username]
+              additionalProperties: false
+              properties:
+                endpoint: { type: string, maxLength: 500, example: "https://anki.example/" }
+                username: { type: string, minLength: 1, maxLength: 200 }
+                password: { type: string, minLength: 1, maxLength: 500, description: Leave out to keep the stored one. }
+                auto_sync: { type: boolean, default: true }
+      responses:
+        "200":
+          description: The account.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [available, default_endpoint, account]
+                properties:
+                  available: { type: boolean }
+                  default_endpoint: { type: string }
+                  account: { type: [object, "null"] }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [cards]
+      operationId: deleteAnkiAccount
+      summary: Disconnect your Anki sync account
+      responses:
+        "204": { description: Disconnected. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/anki/sync:
+    post:
+      tags: [cards]
+      operationId: syncAnki
+      summary: Send your flashcards to your Anki account now; notes are updated in place and Anki-only cards are never deleted
+      responses:
+        "200":
+          description: What the sync did.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [added, updated, unchanged]
+                properties:
+                  added: { type: integer }
+                  updated: { type: integer }
+                  unchanged: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
   /v1/me/settings:
     get:
       tags: [account]

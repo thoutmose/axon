@@ -687,6 +687,20 @@ test('flashcards: add an illustrated card, review it with the keyboard, take a t
 	await page.keyboard.press('4'); // Easy
 	await expect(page.getByRole('heading', { name: 'All done for now' })).toBeVisible();
 
+	// Connect an Anki account; with no sync server reachable, the failure is shown, not hidden.
+	await page.goto('/cards');
+	const anki = page.getByRole('region', { name: 'Anki' });
+	await anki.getByLabel('Sync server').fill('http://127.0.0.1:9/');
+	await anki.getByLabel('Anki user name').fill('e2e');
+	await anki.getByLabel('Anki password').fill('not-a-real-password');
+	await anki.getByRole('button', { name: 'Save' }).click();
+	await expect(anki).toContainText('Connected to http://127.0.0.1:9/ as e2e');
+	await anki.getByRole('button', { name: 'Sync to Anki now' }).click();
+	await expect(anki.getByRole('status')).toContainText('Last sync');
+	await noSeriousA11yViolations(page);
+	await anki.getByRole('button', { name: 'Disconnect' }).click();
+	await expect(anki.getByLabel('Anki user name')).toBeVisible();
+
 	await page.goto('/cards/test?deck=Memory');
 	await page.getByLabel('Your answer').fill('The next review');
 	await page.getByRole('button', { name: 'Check' }).click();

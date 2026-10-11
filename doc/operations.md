@@ -113,7 +113,15 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 
 ## Anki packages
 
-`GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. Syncing to `anki-sync-server` on `srv-services` arrives with EP-42.
+`GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. 
+
+### Anki bridge (EP-42)
+
+The `anki` service (image `axon-anki`, deployed with the rest) syncs people's flashcards to their own anki-sync-server.
+- Set `ANKI_SYNC_URL` in the settings file to suggest the address of the server on `srv-services`.
+- Each person enters their own Anki user name and password under Learn → Flashcards → Anki.
+- To check the bridge against a disposable sync server: `sh scripts/check-anki-sync.sh` (CI runs it too).
+- If the `ankidata` volume is lost, the next sync downloads each person's collection from the sync server again; nothing is lost.
 
 ## Data backfills
 

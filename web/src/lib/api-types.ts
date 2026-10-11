@@ -1560,6 +1560,42 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/anki': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your Anki sync account (never the password) and how the last sync went */
+		get: operations['getAnkiAccount'];
+		/** Connect your anki-sync-server account; the password is sealed and never returned */
+		put: operations['putAnkiAccount'];
+		post?: never;
+		/** Disconnect your Anki sync account */
+		delete: operations['deleteAnkiAccount'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/anki/sync': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send your flashcards to your Anki account now; notes are updated in place and Anki-only cards are never deleted */
+		post: operations['syncAnki'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/me/settings': {
 		parameters: {
 			query?: never;
@@ -6156,6 +6192,133 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+		};
+	};
+	getAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The account, or null. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description The server runs the Anki bridge and can store passwords. */
+						available: boolean;
+						/** @description The server's suggested sync address (ANKI_SYNC_URL). */
+						default_endpoint: string;
+						account: {
+							endpoint: string;
+							username: string;
+							/** @description Sync automatically after you approve the Teacher's cards. */
+							auto_sync: boolean;
+							/** Format: date-time */
+							last_sync_at: string | null;
+							/** @enum {string|null} */
+							last_status: 'ok' | 'error' | null;
+							last_message: string;
+						} | null;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example https://anki.example/ */
+					endpoint: string;
+					username: string;
+					/** @description Leave out to keep the stored one. */
+					password?: string;
+					/** @default true */
+					auto_sync?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The account. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						available: boolean;
+						default_endpoint: string;
+						account: Record<string, never> | null;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Disconnected. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	syncAnki: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What the sync did. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						added: number;
+						updated: number;
+						unchanged: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+			503: components['responses']['Problem'];
 		};
 	};
 	getSettings: {

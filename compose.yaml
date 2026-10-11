@@ -29,9 +29,22 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-} # optional server default for agents
       AXON_ANTHROPIC_OAUTH: ${AXON_ANTHROPIC_OAUTH:-} # "1": use an "ant auth login" profile instead of a key
       ANTHROPIC_CONFIG_DIR: ${ANTHROPIC_CONFIG_DIR:-}
+      AXON_ANKI_BRIDGE_URL: http://anki:8090 # the Anki bridge below (EP-42)
+      ANKI_SYNC_URL: ${ANKI_SYNC_URL:-} # suggested anki-sync-server address, e.g. on srv-services
     depends_on:
       db:
         condition: service_healthy
+
+  # Anki bridge (EP-42): the official Anki library syncing people's cards to
+  # their anki-sync-server. Internal only; collections are rebuilt from the
+  # sync server if lost, so they are not backed up.
+  anki:
+    image: axon-anki:${AXON_VERSION:-dev}
+    build:
+      context: ./deploy/anki
+      network: ${AXON_BUILD_NETWORK:-default}
+    volumes:
+      - ankidata:/data
 
   web:
     image: axon-web:${AXON_VERSION:-dev}
@@ -61,3 +74,4 @@ services:
 
 volumes:
   pgdata:
+  ankidata:
