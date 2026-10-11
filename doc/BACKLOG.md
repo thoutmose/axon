@@ -111,7 +111,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Done |
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Done |
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Done |
-| EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
+| EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Done (embeddings open) |
 | EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Done |
 | EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Done |
 | EP-40 | Instance export & import | Move a whole Axon (database, files, settings) to another server or configuration. | MUST | 13 pts | EP-01, EP-31 | Planned |
@@ -998,7 +998,17 @@ Cross-cutting matrix:
 - Every NLP edge says why it exists (shared keyword, entity, synonym, or similarity score).
 - Works fully without any AI provider.
 
-**Candidate issues.** Filters and charts (8) · Keyword and entity extraction (8) · Thesaurus (5) · Embeddings (8) · Graph view (5).
+**Issues**
+
+- [x] **EP-37/IS-37.01 — Filters and charts** · 8 pts · SHOULD — `GET /v1/notes/explore` filters by PARA, Zettelkasten type, tag, text, creation date, or unconnected notes, and returns counts for notes per month, PARA, type, tags, and shared keywords.
+- [x] **EP-37/IS-37.02 — Keyword and entity extraction** · 8 pts · SHOULD — Markdown cleaning, English and French stopwords and stemming, TF-IDF keywords, and entity spotting, unit-tested in `internal/knowledge`.
+- [x] **EP-37/IS-37.03 — Thesaurus** · 5 pts · SHOULD — a bundled English/French synonym list (`thesaurus.txt`), small and hand-made rather than WordNet, to keep the image light and the licence clear.
+- [ ] **EP-37/IS-37.04 — Embeddings** · 8 pts · COULD — not done: Axon has no embedding provider or pgvector column yet, so similarity uses local TF-IDF cosine. It needs its own consent and provider settings.
+- [x] **EP-37/IS-37.05 — Graph view** · 5 pts · SHOULD — `GET /v1/notes/graph` keeps wikilinks and connections, then the strongest local reason per pair (entity, keywords, synonym, or similarity), at most six NLP edges per note and 600 notes; `/notes/explore` shows the graph coloured by PARA, toggles per kind, the reasons for the focused note, and a table version.
+
+**Notes**
+
+- Taken from the parallel branch `claude/axon-ui-features-9ryyt4` (`3e5f098`). No AI provider is involved; queries are scoped to the signed-in person and bounded.
 
 ### EP-38 — Themed spaces
 
@@ -1395,6 +1405,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-37 delivered from the parallel branch: notes explorer, charts, and a local NLP knowledge graph. Embeddings (IS-37.04) stay open. |
 | 2026-10-11 | EP-38 delivered from the parallel branch: themed spaces with original artwork for every area, AA contrast in light and dark, and a switch in Preferences. |
 | 2026-10-11 | EP-39 delivered from the parallel branch: accounts, transfers, budgets, tags, recurring transactions, rules, CSV import, and reports. Budget is in the main nav. |
 | 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
