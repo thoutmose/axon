@@ -2030,6 +2030,37 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/habits/scorecard:
+    get:
+      tags: [habits]
+      operationId: getHabitScorecard
+      summary: Your habits scorecard — the behaviours of your day, each rated good, neutral, or bad
+      responses:
+        "200":
+          description: The scorecard.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HabitScorecard" }
+        "401": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [habits]
+      operationId: putHabitScorecard
+      summary: Replace your habits scorecard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HabitScorecard" }
+      responses:
+        "200":
+          description: The saved scorecard.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HabitScorecard" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/habits/{id}:
     parameters: [{ $ref: "#/components/parameters/ID" }]
     get:
@@ -3381,6 +3412,21 @@ components:
         status: { enum: [pending, approved, rejected, failed] }
         created_at: { type: string, format: date-time }
         decided_at: { type: [string, "null"], format: date-time }
+    HabitScorecard:
+      type: object
+      required: [items]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [behavior, rating]
+            additionalProperties: false
+            properties:
+              behavior: { type: string, minLength: 1, maxLength: 200, example: Check my phone }
+              rating: { enum: ["+", "=", "-"] }
     HabitFields:
       type: object
       additionalProperties: false
@@ -3393,10 +3439,23 @@ components:
         two_minute: { type: string, maxLength: 500, example: "Put on my running shoes" }
         days: { type: array, minItems: 1, maxItems: 7, items: { type: integer, minimum: 1, maximum: 7 }, description: "ISO weekdays in the user's time zone, 1 = Monday." }
         status: { enum: [active, paused, archived] }
+        kind: { enum: [build, break], description: "build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying." }
+        identity: { type: string, maxLength: 500, example: "I am a person who reads every day" }
+        intention_time: { type: string, pattern: "^(([01][0-9]|2[0-3]):[0-5][0-9])?$", example: "07:30", description: "Implementation intention: I will [behaviour] at [time] in [place]." }
+        intention_place: { type: string, maxLength: 500, example: "in the kitchen" }
+        contract_partner: { type: string, maxLength: 200, description: Optional accountability partner (Axon sends nothing to them). }
+        contract_pledge: { type: string, maxLength: 2000 }
     Habit:
       type: object
-      required: [id, title, cue, craving, reward, stack_after, two_minute, days, status, state, created_at, updated_at]
+      required: [id, title, cue, craving, reward, stack_after, two_minute, days, status, kind, identity, intention_time, intention_place, contract_partner, contract_pledge, votes, state, created_at, updated_at]
       properties:
+        kind: { enum: [build, break], description: "build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying." }
+        identity: { type: string, example: "I am a person who reads every day" }
+        intention_time: { type: string, pattern: "^(([01][0-9]|2[0-3]):[0-5][0-9])?$", example: "07:30", description: "Implementation intention: I will [behaviour] at [time] in [place]." }
+        intention_place: { type: string, example: "in the kitchen" }
+        contract_partner: { type: string, description: Optional accountability partner (Axon sends nothing to them). }
+        contract_pledge: { type: string }
+        votes: { type: integer, description: "Check-ins kept so far; each is a vote for the identity." }
         id: { type: string, format: uuid }
         title: { type: string }
         cue: { type: string }

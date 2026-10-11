@@ -60,6 +60,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.RegisterFiles("notes", notes.Files)
 	priv.Register("agents", agents.Export)
 	priv.Register("settings", settings.Export)
+	priv.Register("habit_scorecard", habits.ExportScorecard)
 	settingsAPI := settings.NewHandlers(pool, log, agentsAPI)
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	priv.RegisterFiles("account", avatars.Files)

@@ -34,6 +34,8 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 // Routes mounts the endpoints; the caller wraps them in auth.Require.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/habits", h.list)
+	r.Get("/v1/habits/scorecard", h.getScorecard)
+	r.Put("/v1/habits/scorecard", h.putScorecard)
 	r.Post("/v1/habits", h.create)
 	r.Get("/v1/habits/{id}", h.get)
 	r.Patch("/v1/habits/{id}", h.update)
@@ -69,11 +71,19 @@ func DecodeFields(b []byte) (Fields, error) {
 		TwoMinute  *string `json:"two_minute"`
 		Status     *string `json:"status"`
 		Days       []int   `json:"days"`
+		Kind       *string `json:"kind"`
+		Identity   *string `json:"identity"`
+		Time       *string `json:"intention_time"`
+		Place      *string `json:"intention_place"`
+		Partner    *string `json:"contract_partner"`
+		Pledge     *string `json:"contract_pledge"`
 	}
 	if err := httpx.DecodeStrict(b, &raw); err != nil {
 		return Fields{}, ValidationError{"The request body is not valid JSON for this endpoint."}
 	}
-	return Fields{raw.Title, raw.Cue, raw.Craving, raw.Reward, raw.StackAfter, raw.TwoMinute, raw.Status, raw.Days}, nil
+	return Fields{Title: raw.Title, Cue: raw.Cue, Craving: raw.Craving, Reward: raw.Reward, StackAfter: raw.StackAfter,
+		TwoMinute: raw.TwoMinute, Status: raw.Status, Days: raw.Days, Kind: raw.Kind, Identity: raw.Identity,
+		IntentionTime: raw.Time, IntentionPlace: raw.Place, ContractPartner: raw.Partner, ContractPledge: raw.Pledge}, nil
 }
 
 func (h *Handlers) fields(r *http.Request) (Fields, error) {

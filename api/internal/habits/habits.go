@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -47,9 +48,19 @@ type Habit struct {
 	TwoMinute  string    `json:"two_minute"`
 	Days       []int     `json:"days"`
 	Status     string    `json:"status"`
-	State      State     `json:"state"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	// Atomic Habits (EP-34). For a habit to break, cue, craving, two_minute,
+	// and reward hold the inverted laws: invisible, unattractive, difficult,
+	// and unsatisfying.
+	Kind            string    `json:"kind"`     // build or break
+	Identity        string    `json:"identity"` // "I am a person who…"
+	IntentionTime   string    `json:"intention_time"`
+	IntentionPlace  string    `json:"intention_place"`
+	ContractPartner string    `json:"contract_partner"`
+	ContractPledge  string    `json:"contract_pledge"`
+	Votes           int       `json:"votes"` // check-ins kept so far: each one is a vote for the identity
+	State           State     `json:"state"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // State is where a habit stands today, in the user's time zone.
@@ -144,12 +155,14 @@ func recoveryMessage(missed int, last, today time.Time) string {
 	return "It's been a few scheduled days. No catching up needed: start again today with the smallest version."
 }
 
-const columns = `h.id, e.title, h.cue, h.craving, h.reward, h.stack_after, h.two_minute, h.days, h.status, e.created_at, h.updated_at`
+const columns = `h.id, e.title, h.cue, h.craving, h.reward, h.stack_after, h.two_minute, h.days, h.status,
+	h.kind, h.identity, h.intention_time, h.intention_place, h.contract_partner, h.contract_pledge, e.created_at, h.updated_at`
 
 func scan(row pgx.Row) (Habit, error) {
 	var h Habit
 	var days []int16
-	err := row.Scan(&h.ID, &h.Title, &h.Cue, &h.Craving, &h.Reward, &h.StackAfter, &h.TwoMinute, &days, &h.Status, &h.CreatedAt, &h.UpdatedAt)
+	err := row.Scan(&h.ID, &h.Title, &h.Cue, &h.Craving, &h.Reward, &h.StackAfter, &h.TwoMinute, &days, &h.Status,
+		&h.Kind, &h.Identity, &h.IntentionTime, &h.IntentionPlace, &h.ContractPartner, &h.ContractPledge, &h.CreatedAt, &h.UpdatedAt)
 	for _, d := range days {
 		h.Days = append(h.Days, int(d))
 	}
@@ -199,7 +212,24 @@ func withState(ctx context.Context, q db.Querier, list []Habit, today time.Time,
 	if err := rows.Err(); err != nil {
 		return err
 	}
+	votes := map[uuid.UUID]int{}
+	rows, err = q.Query(ctx, `SELECT habit_id, count(*) FROM habit_checkins WHERE habit_id = ANY($1) AND status IN ('done', 'two_minute') GROUP BY habit_id`, ids)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var id uuid.UUID
+		var n int
+		if err := rows.Scan(&id, &n); err != nil {
+			return err
+		}
+		votes[id] = n
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
 	for i := range list {
+		list[i].Votes = votes[list[i].ID]
 		c := list[i].CreatedAt.In(loc)
 		created := time.Date(c.Year(), c.Month(), c.Day(), 0, 0, 0, 0, time.UTC)
 		list[i].State = Compute(list[i].Days, byHabit[list[i].ID], today, created)
@@ -250,7 +280,11 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, status string, no
 type Fields struct {
 	Title, Cue, Craving, Reward, StackAfter, TwoMinute, Status *string
 	Days                                                       []int
+	Kind, Identity, IntentionTime, IntentionPlace              *string
+	ContractPartner, ContractPledge                            *string
 }
+
+var clock = regexp.MustCompile(`^(([01][0-9]|2[0-3]):[0-5][0-9])?$`)
 
 func (f *Fields) validate() error {
 	if f.Title != nil {
@@ -269,6 +303,23 @@ func (f *Fields) validate() error {
 	}
 	if f.Status != nil && !slices.Contains(statuses, *f.Status) {
 		return ValidationError{"Status must be active, paused, or archived."}
+	}
+	for _, s := range []*string{f.Kind, f.Identity, f.IntentionTime, f.IntentionPlace, f.ContractPartner, f.ContractPledge} {
+		if s != nil {
+			*s = strings.TrimSpace(*s)
+		}
+	}
+	switch {
+	case f.Kind != nil && *f.Kind != "build" && *f.Kind != "break":
+		return ValidationError{"Kind is build (a habit to start) or break (a habit to stop)."}
+	case f.IntentionTime != nil && !clock.MatchString(*f.IntentionTime):
+		return ValidationError{"The time is HH:MM, like 07:30, or empty."}
+	case f.Identity != nil && len([]rune(*f.Identity)) > 500, f.IntentionPlace != nil && len([]rune(*f.IntentionPlace)) > 500:
+		return ValidationError{"Identity and place are limited to 500 characters each."}
+	case f.ContractPartner != nil && len([]rune(*f.ContractPartner)) > 200:
+		return ValidationError{"The partner's name is limited to 200 characters."}
+	case f.ContractPledge != nil && len([]rune(*f.ContractPledge)) > 2000:
+		return ValidationError{"The pledge is limited to 2,000 characters."}
 	}
 	if f.Days != nil {
 		seen := map[int]bool{}
@@ -308,9 +359,11 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err != nil {
 		return Habit{}, err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO habits (id, cue, craving, reward, stack_after, two_minute, days, status)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, id, or(f.Cue, ""), or(f.Craving, ""), or(f.Reward, ""),
-		or(f.StackAfter, ""), or(f.TwoMinute, ""), f.Days, or(f.Status, "active"))
+	_, err = tx.Exec(ctx, `INSERT INTO habits (id, cue, craving, reward, stack_after, two_minute, days, status,
+		kind, identity, intention_time, intention_place, contract_partner, contract_pledge)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`, id, or(f.Cue, ""), or(f.Craving, ""), or(f.Reward, ""),
+		or(f.StackAfter, ""), or(f.TwoMinute, ""), f.Days, or(f.Status, "active"),
+		or(f.Kind, "build"), or(f.Identity, ""), or(f.IntentionTime, ""), or(f.IntentionPlace, ""), or(f.ContractPartner, ""), or(f.ContractPledge, ""))
 	if err != nil {
 		return Habit{}, err
 	}
@@ -344,6 +397,12 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	set("stack_after", f.StackAfter, &next.StackAfter)
 	set("two_minute", f.TwoMinute, &next.TwoMinute)
 	set("status", f.Status, &next.Status)
+	set("kind", f.Kind, &next.Kind)
+	set("identity", f.Identity, &next.Identity)
+	set("intention_time", f.IntentionTime, &next.IntentionTime)
+	set("intention_place", f.IntentionPlace, &next.IntentionPlace)
+	set("contract_partner", f.ContractPartner, &next.ContractPartner)
+	set("contract_pledge", f.ContractPledge, &next.ContractPledge)
 	if f.Days != nil && !slices.Equal(f.Days, cur.Days) {
 		next.Days = f.Days
 		changed = append(changed, "days")
@@ -355,8 +414,10 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 		return Habit{}, err
 	}
 	_, err = tx.Exec(ctx, `UPDATE habits SET cue = $2, craving = $3, reward = $4, stack_after = $5, two_minute = $6,
-		days = $7, status = $8, updated_at = clock_timestamp() WHERE id = $1`,
-		id, next.Cue, next.Craving, next.Reward, next.StackAfter, next.TwoMinute, next.Days, next.Status)
+		days = $7, status = $8, kind = $9, identity = $10, intention_time = $11, intention_place = $12,
+		contract_partner = $13, contract_pledge = $14, updated_at = clock_timestamp() WHERE id = $1`,
+		id, next.Cue, next.Craving, next.Reward, next.StackAfter, next.TwoMinute, next.Days, next.Status,
+		next.Kind, next.Identity, next.IntentionTime, next.IntentionPlace, next.ContractPartner, next.ContractPledge)
 	if err != nil {
 		return Habit{}, err
 	}

@@ -65,7 +65,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - Planned: Pomodoro focus sessions and personal finance.
 
 ### 🌱 Habits, goals, and roadmaps
-- ✅ Habits with cues, stacking, two-minute versions, check-ins, and gentle recovery prompts; planned: James Clear's full Atomic Habits method (four laws, implementation intentions, identity).
+- ✅ Habits designed with James Clear's Atomic Habits: build good habits (obvious, attractive, easy, satisfying) or break bad ones (invisible, unattractive, difficult, unsatisfying), habit stacking ("After I…, I will…"), implementation intentions ("I will… at… in…"), an identity that every check-in votes for, habit contracts, the habits scorecard, two-minute versions, and gentle recovery prompts.
 - ✅ Goals and milestones connected to tasks, notes, habits, projects, and roadmaps, with explained progress and a weekly review.
 - ✅ Roadmaps you build by hand, import from OSSU, or start from Axon's curated library: 24 domains of the most recommended books, papers, university lectures, courses, and channels, from computer science and maths to Kubernetes, MLOps, and security. Each one is shown as a list or a layered skill graph.
 - ✅ A skills assessment before you start: your situation, goals, and quick checks per domain give an explained level, and roadmaps start at your level.
@@ -443,7 +443,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-19, and EP-22–EP-33 and EP-41 done; EP-34 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-14, EP-19, and EP-22–EP-34 and EP-41 done; EP-35 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

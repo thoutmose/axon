@@ -32,7 +32,13 @@
 		stack_after: '',
 		two_minute: '',
 		days: [] as number[],
-		status: 'active' as Habit['status']
+		status: 'active' as Habit['status'],
+		kind: 'build' as Habit['kind'],
+		identity: '',
+		intention_time: '',
+		intention_place: '',
+		contract_partner: '',
+		contract_pledge: ''
 	});
 
 	async function load() {
@@ -50,7 +56,13 @@
 				stack_after: h.stack_after,
 				two_minute: h.two_minute,
 				days: [...h.days],
-				status: h.status
+				status: h.status,
+				kind: h.kind,
+				identity: h.identity,
+				intention_time: h.intention_time,
+				intention_place: h.intention_place,
+				contract_partner: h.contract_partner,
+				contract_pledge: h.contract_pledge
 			};
 			const hist = await api<{ items: HabitCheckin[] }>(`/v1/habits/${id}/checkins`);
 			checkins = Object.fromEntries(hist.items.map((c) => [c.day, c.status]));
@@ -147,6 +159,25 @@
 		<h2 id="design-title">Design</h2>
 		<form onsubmit={save}>
 			<TextField id="h-title" label="Habit" bind:value={form.title} maxlength={500} required />
+			<fieldset class="kind">
+				<legend>Kind</legend>
+				<label><input type="radio" value="build" bind:group={form.kind} /> Build</label>
+				<label><input type="radio" value="break" bind:group={form.kind} /> Break</label>
+			</fieldset>
+			<TextField
+				id="h-identity"
+				label="Identity"
+				hint="Who you are becoming; each check-in is a vote."
+				bind:value={form.identity}
+				maxlength={500}
+			/>
+			<div class="pair">
+				<div class="field">
+					<label for="h-time">Time</label>
+					<input id="h-time" type="time" bind:value={form.intention_time} />
+				</div>
+				<TextField id="h-place" label="Place" bind:value={form.intention_place} maxlength={500} />
+			</div>
 			<TextField
 				id="h-two"
 				label="Two-minute version"
@@ -176,6 +207,13 @@
 				bind:value={form.reward}
 				maxlength={500}
 			/>
+			<TextField
+				id="h-partner"
+				label="Accountability partner"
+				bind:value={form.contract_partner}
+				maxlength={200}
+			/>
+			<TextField id="h-pledge" label="Pledge" bind:value={form.contract_pledge} maxlength={2000} />
 			<fieldset class="days">
 				<legend>Days</legend>
 				{#each weekdays as d (d.id)}
@@ -338,5 +376,36 @@
 		width: 1.1rem;
 		height: 1.1rem;
 		accent-color: var(--accent);
+	}
+	.kind {
+		border: 0;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+		display: flex;
+		gap: var(--space-4);
+	}
+	.kind legend {
+		font-weight: 600;
+	}
+	.pair {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+		gap: var(--space-3);
+	}
+	.field {
+		display: grid;
+		gap: var(--space-1);
+		margin-bottom: var(--space-4);
+	}
+	.field label {
+		font-weight: 600;
+	}
+	.field input {
+		font: inherit;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
 	}
 </style>

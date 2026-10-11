@@ -618,14 +618,18 @@ func inputReason(raw json.RawMessage) string {
 
 func habitProperties(withID bool) map[string]any {
 	p := map[string]any{
-		"title":       map[string]any{"type": "string", "description": "The action, small and specific."},
-		"cue":         map[string]any{"type": "string", "description": "When and where: \"At 7:00 in the kitchen\"."},
-		"craving":     map[string]any{"type": "string", "description": "Why it matters to the person, in their words."},
-		"stack_after": map[string]any{"type": "string", "description": "An existing habit it follows: \"After I pour my coffee\"."},
-		"two_minute":  map[string]any{"type": "string", "description": "A version that takes two minutes or less."},
-		"reward":      map[string]any{"type": "string", "description": "Something immediately satisfying afterwards."},
-		"days":        map[string]any{"type": "array", "items": map[string]any{"type": "integer", "minimum": 1, "maximum": 7}, "description": "ISO weekdays, 1 = Monday."},
-		"reason":      reason,
+		"title":           map[string]any{"type": "string", "description": "The action, small and specific."},
+		"cue":             map[string]any{"type": "string", "description": "When and where: \"At 7:00 in the kitchen\"."},
+		"craving":         map[string]any{"type": "string", "description": "Why it matters to the person, in their words."},
+		"stack_after":     map[string]any{"type": "string", "description": "An existing habit it follows: \"After I pour my coffee\"."},
+		"two_minute":      map[string]any{"type": "string", "description": "A version that takes two minutes or less."},
+		"reward":          map[string]any{"type": "string", "description": "Something immediately satisfying afterwards."},
+		"days":            map[string]any{"type": "array", "items": map[string]any{"type": "integer", "minimum": 1, "maximum": 7}, "description": "ISO weekdays, 1 = Monday."},
+		"kind":            map[string]any{"type": "string", "enum": []string{"build", "break"}, "description": "build a good habit, or break a bad one (then cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying)."},
+		"identity":        map[string]any{"type": "string", "description": "The identity it votes for: \"I am a person who reads every day\"."},
+		"intention_time":  map[string]any{"type": "string", "description": "Implementation intention time, HH:MM."},
+		"intention_place": map[string]any{"type": "string", "description": "Implementation intention place: \"in the kitchen\"."},
+		"reason":          reason,
 	}
 	if withID {
 		p["id"] = idField

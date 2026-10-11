@@ -320,6 +320,10 @@ test('design a habit, check in with the two-minute version, and link it to a goa
 	await page.getByLabel('Habit', { exact: true }).fill('Swim one length');
 	await page.getByLabel('Two-minute version').fill('Pack my swim bag');
 	await page.getByLabel('After…').fill('After breakfast');
+	await page.getByLabel('Who do you want to become?').fill('I am a swimmer');
+	await page.getByLabel('I will do it at').fill('07:30');
+	await page.getByLabel('In or at').fill('at the pool');
+	await expect(page.getByText('After breakfast, I will swim one length.')).toBeVisible();
 	await page.getByRole('button', { name: 'Create habit' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Swim one length' })).toBeVisible();
 	await page.getByLabel('Connect to').fill('swim 1');
@@ -332,8 +336,19 @@ test('design a habit, check in with the two-minute version, and link it to a goa
 	await noSeriousA11yViolations(page);
 
 	await page.goto('/habits');
+	await expect(page.getByText('I will swim one length at 07:30 at the pool.')).toBeVisible();
 	await page.getByRole('button', { name: 'Did the two-minute version: Pack my swim bag' }).click();
 	await expect(page.getByText('Two-minute version today')).toBeVisible();
+	await expect(page.getByText('1 vote for “I am a swimmer”')).toBeVisible();
+
+	// The habits scorecard.
+	await page.getByLabel('Add a behaviour').fill('Check my phone');
+	await page.getByRole('button', { name: 'Add', exact: true }).click();
+	await page.getByRole('button', { name: 'bad: Check my phone' }).click();
+	await expect(page.getByRole('button', { name: 'bad: Check my phone' })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: "Undo today's check-in for Swim one length" }).click();
 	await expect(page.getByRole('button', { name: 'Done: Swim one length' })).toBeVisible();

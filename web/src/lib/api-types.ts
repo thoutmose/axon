@@ -1274,6 +1274,24 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/habits/scorecard': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your habits scorecard — the behaviours of your day, each rated good, neutral, or bad */
+		get: operations['getHabitScorecard'];
+		/** Replace your habits scorecard */
+		put: operations['putHabitScorecard'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/habits/{id}': {
 		parameters: {
 			query?: never;
@@ -2133,6 +2151,14 @@ export interface components {
 			/** Format: date-time */
 			decided_at: string | null;
 		};
+		HabitScorecard: {
+			items: {
+				/** @example Check my phone */
+				behavior: string;
+				/** @enum {unknown} */
+				rating: '+' | '=' | '-';
+			}[];
+		};
 		HabitFields: {
 			/** @description The action: “Read one page”. */
 			title?: string;
@@ -2147,8 +2173,44 @@ export interface components {
 			days?: number[];
 			/** @enum {unknown} */
 			status?: 'active' | 'paused' | 'archived';
+			/**
+			 * @description build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying.
+			 * @enum {unknown}
+			 */
+			kind?: 'build' | 'break';
+			/** @example I am a person who reads every day */
+			identity?: string;
+			/**
+			 * @description Implementation intention: I will [behaviour] at [time] in [place].
+			 * @example 07:30
+			 */
+			intention_time?: string;
+			/** @example in the kitchen */
+			intention_place?: string;
+			/** @description Optional accountability partner (Axon sends nothing to them). */
+			contract_partner?: string;
+			contract_pledge?: string;
 		};
 		Habit: {
+			/**
+			 * @description build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying.
+			 * @enum {unknown}
+			 */
+			kind: 'build' | 'break';
+			/** @example I am a person who reads every day */
+			identity: string;
+			/**
+			 * @description Implementation intention: I will [behaviour] at [time] in [place].
+			 * @example 07:30
+			 */
+			intention_time: string;
+			/** @example in the kitchen */
+			intention_place: string;
+			/** @description Optional accountability partner (Axon sends nothing to them). */
+			contract_partner: string;
+			contract_pledge: string;
+			/** @description Check-ins kept so far; each is a vote for the identity. */
+			votes: number;
 			/** Format: uuid */
 			id: string;
 			title: string;
@@ -5041,6 +5103,55 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getHabitScorecard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The scorecard. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitScorecard'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	putHabitScorecard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitScorecard'];
+			};
+		};
+		responses: {
+			/** @description The saved scorecard. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitScorecard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 		};
 	};

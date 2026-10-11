@@ -157,20 +157,21 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	// Habits with a month of history.
 	now = s.today.Add(12 * time.Hour)
 	type habitSeed struct {
-		title, stack, twoMin string
-		every                int // checked in every n days
+		title, stack, twoMin, identity, at, where string
+		every                                     int // checked in every n days
 	}
 	var habitIDs []uuid.UUID
 	for _, h := range []habitSeed{
-		{"Read 20 pages", "After I pour my morning coffee", "Read one page", 1},
-		{"Run", "After I get home from work", "Put on running shoes", 2},
-		{"Meditate", "After I brush my teeth at night", "One mindful breath", 1},
+		{"Read 20 pages", "After I pour my morning coffee", "Read one page", "I am a reader", "07:15", "on the balcony", 1},
+		{"Run", "After I get home from work", "Put on running shoes", "I am a runner", "18:30", "in the park", 2},
+		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1},
 	} {
 		if s.err != nil {
 			break
 		}
 		var habit habits.Habit
-		habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin)}, now)
+		habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin),
+			Identity: ptr(h.identity), IntentionTime: ptr(h.at), IntentionPlace: ptr(h.where)}, now)
 		habitIDs = append(habitIDs, habit.ID)
 		for back := 30; back >= 1 && s.err == nil; back-- {
 			if back%h.every != 0 || back%9 == 0 { // a few missed days, as in real life
@@ -182,6 +183,20 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			}
 			_, s.err = tx.Exec(ctx, `INSERT INTO habit_checkins (habit_id, day, status) VALUES ($1, $2, $3)`, habit.ID, s.day(-back), status)
 		}
+	}
+
+	// A habit to break, with the four laws inverted, and the habits scorecard.
+	if s.err == nil {
+		_, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr("Scroll my phone in bed"), Kind: ptr("break"),
+			Cue: ptr("Charge the phone in the kitchen"), Craving: ptr("I sleep worse and wake up tired"),
+			TwoMinute: ptr("Log out of social apps every night"), Reward: ptr("Two euros into the jar each time"),
+			Identity: ptr("I am a person who sleeps well")}, now)
+	}
+	if s.err == nil {
+		s.err = habits.PutScorecard(ctx, tx, user, []habits.ScorecardItem{
+			{Behavior: "Wake up", Rating: "="}, {Behavior: "Check my phone", Rating: "-"}, {Behavior: "Make coffee", Rating: "="},
+			{Behavior: "Read on the balcony", Rating: "+"}, {Behavior: "Commute by bike", Rating: "+"}, {Behavior: "Snack at 4 pm", Rating: "-"},
+		})
 	}
 
 	// Roadmaps from the library, with progress.

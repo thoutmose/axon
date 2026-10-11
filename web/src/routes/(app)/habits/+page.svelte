@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
-	import { scheduleLabel, weekdays, type Habit } from '$lib/habits';
+	import { chains, laws, plan, scheduleLabel, weekdays, type Habit } from '$lib/habits';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
@@ -9,7 +9,50 @@
 
 	let habits = $state<Habit[] | null>(null);
 	let error = $state('');
-	let form = $state({ title: '', two_minute: '', stack_after: '', days: [1, 2, 3, 4, 5, 6, 7] });
+	const blank = () => ({
+		title: '',
+		kind: 'build' as 'build' | 'break',
+		identity: '',
+		stack_after: '',
+		intention_time: '',
+		intention_place: '',
+		cue: '',
+		craving: '',
+		two_minute: '',
+		reward: '',
+		contract_partner: '',
+		contract_pledge: '',
+		days: [1, 2, 3, 4, 5, 6, 7]
+	});
+	let form = $state(blank());
+	const preview = $derived(form.title ? plan(form as unknown as Habit) : []);
+	const stacks = $derived(habits ? chains(habits) : []);
+
+	type Item = { behavior: string; rating: '+' | '=' | '-' };
+	let scorecard = $state<Item[]>([]);
+	let behavior = $state('');
+	api<{ items: Item[] }>('/v1/habits/scorecard')
+		.then((s) => (scorecard = s.items))
+		.catch(() => {});
+	async function saveScorecard(next: Item[]) {
+		try {
+			scorecard = (
+				await api<{ items: Item[] }>('/v1/habits/scorecard', {
+					method: 'PUT',
+					body: { items: next }
+				})
+			).items;
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+	function addBehavior(e: SubmitEvent) {
+		e.preventDefault();
+		if (!behavior.trim()) return;
+		saveScorecard([...scorecard, { behavior, rating: '=' }]);
+		behavior = '';
+	}
+	const ratingNames = { '+': 'good', '=': 'neutral', '-': 'bad' } as const;
 
 	async function load() {
 		error = '';
@@ -25,7 +68,7 @@
 		e.preventDefault();
 		try {
 			const h = await api<Habit>('/v1/habits', { method: 'POST', body: form });
-			form = { title: '', two_minute: '', stack_after: '', days: [1, 2, 3, 4, 5, 6, 7] };
+			form = blank();
 			await goto(`/habits/${h.id}`);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -93,8 +136,13 @@
 						<a href="/habits/{h.id}" class="title">{h.title}</a>
 						<span class="muted small">{scheduleLabel(h.days)}</span>
 					</div>
-					{#if h.stack_after || h.cue}
-						<p class="muted small">{[h.stack_after, h.cue].filter(Boolean).join(' · ')}</p>
+					{#if h.kind === 'break'}<span class="badge">Breaking</span>{/if}
+					{#each plan(h) as line (line)}<p class="plan small">{line}</p>{/each}
+					{#if h.identity}
+						<p class="muted small">
+							{h.votes}
+							{h.votes === 1 ? 'vote' : 'votes'} for “{h.identity}”
+						</p>
 					{/if}
 					{#if h.state.recovery}
 						<p class="recovery" role="note">{h.state.recovery.message}</p>
@@ -136,33 +184,129 @@
 		</ul>
 	{/if}
 
+	{#if stacks.length}
+		<section class="card" aria-labelledby="stacks-title">
+			<h2 id="stacks-title">Your habit stacks</h2>
+			{#each stacks as chain (chain[0].id)}
+				<ol class="chain">
+					{#each chain as link (link.id)}<li>
+							<a href="/habits/{link.id}">{link.title}</a>
+						</li>{/each}
+				</ol>
+			{/each}
+		</section>
+	{/if}
+
 	<section class="card" aria-labelledby="new-title">
-		<h2 id="new-title">New habit</h2>
+		<h2 id="new-title">Design a habit</h2>
+		<p class="muted small">
+			James Clear's four laws: make good habits obvious, attractive, easy, and satisfying; make bad
+			ones invisible, unattractive, difficult, and unsatisfying. Start small, and build the
+			identity, not only the result.
+		</p>
 		<form onsubmit={create}>
+			<fieldset class="kind">
+				<legend>I want to</legend>
+				<label><input type="radio" value="build" bind:group={form.kind} /> build a good habit</label
+				>
+				<label><input type="radio" value="break" bind:group={form.kind} /> break a bad habit</label>
+			</fieldset>
 			<TextField
 				id="habit-title"
 				label="Habit"
-				placeholder="Read one page"
+				placeholder={form.kind === 'build' ? 'Read one page' : 'Scroll my phone in bed'}
 				bind:value={form.title}
 				maxlength={500}
 				required
 			/>
 			<TextField
+				id="habit-identity"
+				label="Who do you want to become?"
+				hint="Every check-in is a vote for this identity."
+				placeholder="I am a person who reads every day"
+				bind:value={form.identity}
+				maxlength={500}
+			/>
+			<h3>1. {laws[form.kind][0].law}</h3>
+			{#if form.kind === 'build'}
+				<TextField
+					id="habit-stack"
+					label="After…"
+					hint="Habit stacking: “After I [current habit], I will [new habit].”"
+					placeholder="After I pour my coffee"
+					bind:value={form.stack_after}
+					maxlength={500}
+				/>
+				<div class="pair">
+					<div class="field">
+						<label for="habit-time">I will do it at</label>
+						<input id="habit-time" type="time" bind:value={form.intention_time} />
+					</div>
+					<TextField
+						id="habit-place"
+						label="In or at"
+						placeholder="in the kitchen"
+						bind:value={form.intention_place}
+						maxlength={500}
+					/>
+				</div>
+			{/if}
+			<TextField
+				id="habit-cue"
+				label={laws[form.kind][0].prompt}
+				bind:value={form.cue}
+				maxlength={500}
+			/>
+			<h3>2. {laws[form.kind][1].law}</h3>
+			<TextField
+				id="habit-craving"
+				label={laws[form.kind][1].prompt}
+				bind:value={form.craving}
+				maxlength={500}
+			/>
+			<h3>3. {laws[form.kind][2].law}</h3>
+			<TextField
 				id="habit-two-minute"
-				label="Two-minute version"
-				hint="The smallest step that still counts on a hard day."
-				placeholder="Open the book"
+				label={form.kind === 'build' ? 'Two-minute version' : laws.break[2].prompt}
+				hint={form.kind === 'build'
+					? 'The smallest step that still counts on a hard day.'
+					: 'Make the bad habit take more steps.'}
+				placeholder={form.kind === 'build'
+					? 'Open the book'
+					: 'Leave the phone charging in the kitchen'}
 				bind:value={form.two_minute}
 				maxlength={500}
 			/>
+			<h3>4. {laws[form.kind][3].law}</h3>
 			<TextField
-				id="habit-stack"
-				label="After…"
-				hint="Stack it after something you already do every day."
-				placeholder="After I pour my coffee"
-				bind:value={form.stack_after}
+				id="habit-reward"
+				label={laws[form.kind][3].prompt}
+				bind:value={form.reward}
 				maxlength={500}
 			/>
+			<details>
+				<summary>Habit contract (optional)</summary>
+				<TextField
+					id="habit-partner"
+					label="Accountability partner"
+					hint="Axon sends nothing to them; share it yourself."
+					bind:value={form.contract_partner}
+					maxlength={200}
+				/>
+				<TextField
+					id="habit-pledge"
+					label="Pledge"
+					placeholder="If I skip a week, I buy Sam lunch."
+					bind:value={form.contract_pledge}
+					maxlength={2000}
+				/>
+			</details>
+			{#if preview.length}
+				<div class="preview" aria-live="polite">
+					<strong>Your plan</strong>
+					{#each preview as line (line)}<p>{line}</p>{/each}
+				</div>
+			{/if}
 			<fieldset class="days">
 				<legend>Days</legend>
 				{#each weekdays as d (d.id)}
@@ -176,6 +320,51 @@
 			<Button type="submit" variant="secondary" disabled={form.days.length === 0}
 				>Create habit</Button
 			>
+		</form>
+	</section>
+
+	<section class="card" aria-labelledby="scorecard-title">
+		<h2 id="scorecard-title">Habits scorecard</h2>
+		<p class="muted small">
+			List what you do in a day, in order, and mark each behaviour good, neutral, or bad. Seeing it
+			is the first step; nothing here is scored.
+		</p>
+		{#if scorecard.length}
+			<ol class="scorecard">
+				{#each scorecard as item, i (i)}
+					<li>
+						<span class="grow">{item.behavior}</span>
+						<span class="ratings" role="group" aria-label="Rating for {item.behavior}">
+							{#each ['+', '=', '-'] as const as r (r)}
+								<button
+									type="button"
+									class="rate r{r === '+' ? 'good' : r === '-' ? 'bad' : 'neutral'}"
+									aria-pressed={item.rating === r}
+									aria-label="{ratingNames[r]}: {item.behavior}"
+									onclick={() =>
+										saveScorecard(scorecard.map((x, j) => (j === i ? { ...x, rating: r } : x)))}
+									>{r === '-' ? '−' : r}</button
+								>
+							{/each}
+						</span>
+						<Button
+							variant="ghost"
+							onclick={() => saveScorecard(scorecard.filter((_, j) => j !== i))}
+							aria-label="Remove {item.behavior}">✕</Button
+						>
+					</li>
+				{/each}
+			</ol>
+		{/if}
+		<form class="add-behavior" onsubmit={addBehavior}>
+			<TextField
+				id="scorecard-behavior"
+				label="Add a behaviour"
+				placeholder="Wake up, check my phone, make coffee…"
+				bind:value={behavior}
+				maxlength={200}
+			/>
+			<Button type="submit" variant="secondary">Add</Button>
 		</form>
 	</section>
 {/if}
@@ -263,5 +452,126 @@
 		width: 1.1rem;
 		height: 1.1rem;
 		accent-color: var(--accent);
+	}
+	.badge {
+		font-size: var(--text-sm);
+		background: var(--bad-soft);
+		color: var(--bad);
+		border-radius: 999px;
+		padding: 0 var(--space-2);
+	}
+	.plan {
+		margin: var(--space-1) 0;
+		font-style: italic;
+	}
+	.kind {
+		border: 0;
+		padding: 0;
+		margin: 0 0 var(--space-3);
+		display: flex;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+	.kind legend {
+		font-weight: 600;
+		margin-bottom: var(--space-1);
+	}
+	h3 {
+		font-size: var(--text-base);
+		margin: var(--space-4) 0 var(--space-2);
+	}
+	.pair {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+		gap: var(--space-3);
+	}
+	.field {
+		display: grid;
+		gap: var(--space-1);
+		margin-bottom: var(--space-4);
+	}
+	.field label {
+		font-weight: 600;
+	}
+	.field input {
+		font: inherit;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+	}
+	details {
+		margin: var(--space-3) 0;
+	}
+	summary {
+		cursor: pointer;
+		color: var(--accent);
+	}
+	.preview {
+		border-left: 3px solid var(--accent);
+		padding: var(--space-2) var(--space-3);
+		margin: var(--space-3) 0;
+		background: var(--accent-soft);
+		border-radius: var(--radius-sm);
+	}
+	.preview p {
+		margin: var(--space-1) 0 0;
+	}
+	.chain {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		padding: 0;
+	}
+	.chain li:not(:last-child)::after {
+		content: ' →';
+		color: var(--muted);
+	}
+	.scorecard {
+		padding-left: var(--space-6);
+	}
+	.scorecard li {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-1) 0;
+		border-bottom: 1px solid var(--border);
+	}
+	.grow {
+		flex: 1;
+	}
+	.ratings {
+		display: flex;
+		gap: var(--space-1);
+	}
+	.rate {
+		font: inherit;
+		min-width: 2.25rem;
+		min-height: 2.25rem;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		cursor: pointer;
+	}
+	.rate[aria-pressed='true'].rgood {
+		background: var(--ok);
+		color: var(--bg);
+	}
+	.rate[aria-pressed='true'].rneutral {
+		background: var(--muted);
+		color: var(--bg);
+	}
+	.rate[aria-pressed='true'].rbad {
+		background: var(--bad);
+		color: var(--bg);
+	}
+	.add-behavior {
+		display: flex;
+		gap: var(--space-2);
+		align-items: flex-end;
+		flex-wrap: wrap;
 	}
 </style>

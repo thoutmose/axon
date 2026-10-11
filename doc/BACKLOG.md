@@ -106,7 +106,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Done (French for the remaining pages: IS-31.06) |
 | EP-32 | Keyboard shortcuts & Vim mode | Shortcuts for every page with a help overlay, and optional Vim keybindings in the note editor. | SHOULD | 13 pts | EP-25, EP-31 | Done |
 | EP-33 | Profile & avatars | Profile pictures with a generated default avatar. | SHOULD | 5 pts | EP-04 | Done |
-| EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Planned |
+| EP-34 | Atomic Habits | James Clear's four laws, habit stacking, implementation intentions, identity, and breaking bad habits. | SHOULD | 21 pts | EP-12 | Done |
 | EP-35 | Focus & Pomodoro | Configurable Pomodoro sessions linked to tasks, projects, skills, and notes, with focus sounds. | SHOULD | 21 pts | EP-09, EP-14 | Planned |
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Planned |
 | EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
@@ -883,12 +883,31 @@ Cross-cutting matrix:
 
 **In scope.** Habit stacking ("After I [current habit], I will [new habit]") and implementation intentions ("I will [behaviour] at [time] in [location]") as structured fields; identity statements ("I am a person who…") with votes cast by check-ins; the habits scorecard; the two-minute rule and gradual levelling up; bad habits with inversion strategies; a habit contract with an accountability partner (optional, opt-in).
 
-**Acceptance criteria**
+**Issues**
 
-- Each law appears as a guided step when designing a habit, and the Habits agent uses the same model.
-- Stacks show as a chain on the habits page and on Today.
+- [x] **EP-34/IS-34.01 — Model and API** · 8 pts · SHOULD
+  - [x] Habits gain:
+    - `kind`: build, or break with the four laws inverted;
+    - `identity`, and `votes` (kept check-ins);
+    - an implementation intention (`intention_time` as HH:MM, `intention_place`);
+    - an optional habit contract (`contract_partner`, `contract_pledge`; nothing is sent to anyone).
+  - [x] `GET/PUT /v1/habits/scorecard` (up to 100 behaviours rated +, =, or −) is exported and erased.
+  - [x] The Habits agent (1.1.0) uses the same model: the laws, stacking and intention formulas, identity, and breaking.
+- [x] **EP-34/IS-34.02 — Design flow** · 8 pts · SHOULD
+  - [x] "Design a habit" chooses build or break, then identity, then one step per law, whose wording flips for a habit to break. An optional contract follows. A live "Your plan" preview uses Clear's formulas: "After I…, I will…" and "I will… at… in…".
+- [x] **EP-34/IS-34.03 — Scorecard, identity, and stacks** · 5 pts · SHOULD
+  - [x] Habit cards show the plan, a "Breaking" badge, and "N votes for “I am…”".
+  - [x] "Your habit stacks" shows chains of habits stacked after other habits; cycles are handled (unit-tested).
+  - [x] The scorecard is edited in place, and the edit page covers every new field.
+  - [ ] Stacks on Today: left for the Today redesign in EP-38 (themed spaces), which reorganises that page.
 
-**Candidate issues.** Model and API (8) · Design flow (8) · Scorecard and identity (5).
+**Exit evidence.** The integration test covers the new fields and defaults, votes counted from check-ins, a break habit, validation (kind, time format), and the scorecard round trip with its validation; the demo gains identities, intentions, a habit to break, and a scorecard. Vitest covers plan sentences, chains, and cycles. Playwright designs a habit with identity, time, and place, sees the plan preview and the stored plan, checks in and sees the vote, and rates a scorecard behaviour, with axe.
+
+Cross-cutting matrix:
+- privacy: register row (the scorecard can reveal habits, kept private and exportable);
+- accessibility: labelled rating buttons with `aria-pressed`, live preview;
+- AI safety: the agent proposes, as before;
+- remaining rows unchanged.
 
 ### EP-35 — Focus & Pomodoro
 
