@@ -856,8 +856,15 @@ test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async (
 	await page.keyboard.press('k');
 	await page.keyboard.press('d');
 	await page.keyboard.press('d');
+	const saved = page.waitForResponse(
+		(r) =>
+			r.request().method() === 'PUT' &&
+			(r.request().postData() ?? '').includes('typed in vim') &&
+			!(r.request().postData() ?? '').includes('first line')
+	);
 	for (const k of [':', 'w', 'Enter']) await page.keyboard.press(k);
 	await expect(editor).toHaveValue('# Vim test\n\ntyped in vim');
+	await saved;
 	await page.reload();
 	await expect(page.getByLabel('Markdown')).toHaveValue('# Vim test\n\ntyped in vim');
 

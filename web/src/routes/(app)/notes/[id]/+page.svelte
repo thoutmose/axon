@@ -95,8 +95,15 @@
 		.then((s) => (keyboard = s.keyboard))
 		.catch(() => {});
 
+	// A save asked for while one is in flight runs right after it, so the
+	// latest text always reaches the server (an autosave must not swallow :w).
+	let saveAgain = false;
 	async function save(withPath: boolean, version = etag) {
-		if (!note || saving) return;
+		if (!note) return;
+		if (saving) {
+			saveAgain = true;
+			return;
+		}
 		saving = true;
 		const sent = content;
 		try {
@@ -118,6 +125,11 @@
 			else toast(message(err), 'error');
 		} finally {
 			saving = false;
+			if (saveAgain && content !== sent) {
+				saveAgain = false;
+				save(false);
+			}
+			saveAgain = false;
 		}
 	}
 
