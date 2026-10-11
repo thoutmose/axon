@@ -490,3 +490,25 @@ test('sign out, then sign back in with the passkey', async () => {
 	await expect(page).toHaveURL(/\/account$/);
 	await expect(page.getByLabel('Your name')).toHaveValue('E2E Owner');
 });
+
+test('try the shared demo without a passkey, with sample data in every area', async () => {
+	await page.goto('/account');
+	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+	await page.goto('/');
+	await page.getByRole('button', { name: 'Try the demo' }).click();
+	await expect(page).toHaveURL(/\/today$/);
+	await expect(page.getByRole('note')).toContainText('You are in the shared demo');
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/projects');
+	await expect(page.getByRole('link', { name: 'Personal website' })).toBeVisible();
+	await page.goto('/roadmaps');
+	await expect(page.getByRole('link', { name: 'Python' })).toBeVisible();
+	await page.goto('/agents');
+	await expect(page.getByText('Agents do not run in the shared demo')).toBeVisible();
+	await expect(page.getByRole('region', { name: /Waiting for your approval/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/account');
+	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+});

@@ -29,25 +29,26 @@ func (s *Service) Routes(r chi.Router) {
 		r.Post("/v1/auth/login/begin", s.loginBegin)
 		r.Post("/v1/auth/login/finish", s.loginFinish)
 		r.Post("/v1/auth/recovery", s.recoveryLogin)
+		r.Post("/v1/auth/demo", s.demoLogin)
 	})
 	r.Group(func(r chi.Router) {
 		r.Use(s.RequireSession)
 		r.Get("/v1/me", s.me)
 		r.Patch("/v1/me", s.updateMe)
 		r.Get("/v1/me/tokens", s.listTokens)
-		r.Post("/v1/me/tokens", s.createToken)
+		r.With(NotDemo).Post("/v1/me/tokens", s.createToken)
 		r.Delete("/v1/me/tokens/{id}", s.revokeToken)
 		r.Post("/v1/me/logout-all", s.logoutAll)
 		r.Get("/v1/me/sessions", s.listSessions)
 		r.Delete("/v1/me/sessions/{id}", s.revokeSession)
 		r.Get("/v1/me/passkeys", s.listPasskeys)
-		r.Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
-		r.Post("/v1/me/passkeys/finish", s.addPasskeyFinish)
-		r.Delete("/v1/me/passkeys/{id}", s.removePasskey)
-		r.Post("/v1/me/recovery-codes", s.regenerateRecoveryCodes)
-		r.Post("/v1/me/totp/begin", s.totpBegin)
-		r.Post("/v1/me/totp/confirm", s.totpConfirm)
-		r.Post("/v1/me/totp/disable", s.totpDisable)
+		r.With(NotDemo).Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
+		r.With(NotDemo).Post("/v1/me/passkeys/finish", s.addPasskeyFinish)
+		r.With(NotDemo).Delete("/v1/me/passkeys/{id}", s.removePasskey)
+		r.With(NotDemo).Post("/v1/me/recovery-codes", s.regenerateRecoveryCodes)
+		r.With(NotDemo).Post("/v1/me/totp/begin", s.totpBegin)
+		r.With(NotDemo).Post("/v1/me/totp/confirm", s.totpConfirm)
+		r.With(NotDemo).Post("/v1/me/totp/disable", s.totpDisable)
 		r.Get("/v1/me/audit", s.listAudit)
 	})
 }
@@ -71,12 +72,40 @@ func (s *Service) status(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	_, idErr := s.identify(r)
+	id, idErr := s.identify(r)
 	httpx.JSON(w, http.StatusOK, map[string]bool{
 		"registration_open": open,
 		"signed_in":         idErr == nil,
 		"totp_available":    s.sealer != nil,
+		"demo_available":    s.demo,
+		"demo_session":      idErr == nil && id.Demo,
 	})
+}
+
+// demoSession is how long a demo sign-in lasts.
+const demoSession = 12 * time.Hour
+
+// demoLogin signs into the shared demo account, when the server offers one.
+func (s *Service) demoLogin(w http.ResponseWriter, r *http.Request) {
+	if !s.demo {
+		httpx.Problem(w, http.StatusNotFound, "This Axon has no demo account.")
+		return
+	}
+	var id uuid.UUID
+	err := s.db.QueryRow(r.Context(), `SELECT id FROM users WHERE demo`).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		httpx.Problem(w, http.StatusServiceUnavailable, "The demo is being prepared. Try again in a minute.")
+		return
+	}
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if err := s.startSessionFor(r.Context(), s.db, w, r, id, demoSession); err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {

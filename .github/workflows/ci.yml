@@ -83,8 +83,10 @@ jobs:
       - name: Start the stack
         run: |
           cp .env.example .env
+          echo AXON_DEMO=1 >> .env
           docker compose up -d --build --wait
           docker compose exec -T api axon migrate up
+          docker compose exec -T api axon demo reset
       - name: Playwright with axe (Chromium, virtual passkey)
         run: >-
           docker run --rm --network host -v "$PWD/web:/work" -w /work

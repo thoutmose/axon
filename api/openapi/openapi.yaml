@@ -110,11 +110,13 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [registration_open, signed_in, totp_available]
+                required: [registration_open, signed_in, totp_available, demo_available, demo_session]
                 properties:
                   registration_open: { type: boolean }
                   signed_in: { type: boolean }
                   totp_available: { type: boolean }
+                  demo_available: { type: boolean, description: "The server offers the shared demo account (AXON_DEMO=1)." }
+                  demo_session: { type: boolean, description: The caller is signed into the demo account. }
   /v1/auth/register/begin:
     post:
       tags: [auth]
@@ -200,6 +202,17 @@ paths:
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
         "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/demo:
+    post:
+      tags: [auth]
+      operationId: demoSignIn
+      summary: Sign into the shared demo account (sample data, reset nightly; credentials, tokens, providers, and erasure are refused)
+      security: []
+      responses:
+        "204": { description: Signed in; the session cookie lasts 12 hours. }
+        "404": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
   /v1/auth/logout:
     post:
       tags: [auth]
@@ -2766,7 +2779,7 @@ components:
       items: { type: string, pattern: "^[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}-[a-z2-7]{4}$" }
     Me:
       type: object
-      required: [id, display_name, timezone, created_at, totp_enabled, passkeys, recovery_codes_remaining]
+      required: [id, display_name, timezone, created_at, totp_enabled, passkeys, recovery_codes_remaining, demo]
       properties:
         id: { type: string, format: uuid }
         display_name: { type: string }
@@ -2775,6 +2788,7 @@ components:
         totp_enabled: { type: boolean }
         passkeys: { type: integer }
         recovery_codes_remaining: { type: integer }
+        demo: { type: boolean, description: The shared demo account. }
     Session:
       type: object
       required: [id, user_agent, created_at, last_seen_at, current]
@@ -3023,7 +3037,7 @@ components:
       properties:
         available: { type: boolean }
         provider: { type: [string, "null"], description: The provider runs would use. }
-        reason: { type: [string, "null"], enum: [not_configured, no_consent, budget_exhausted, null] }
+        reason: { type: [string, "null"], enum: [demo, not_configured, no_consent, budget_exhausted, null] }
         monthly_budget_cents: { type: integer }
         spent_micros: { type: integer, description: "US dollars × 1,000,000 spent this calendar month (UTC)." }
     AgentRun:

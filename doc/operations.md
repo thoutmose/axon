@@ -26,6 +26,8 @@ age -d -i ~/.config/axon/age.key deploy/env/staging.env.age > /tmp/s    # editâ€
 age -e -R deploy/env/recipients.txt -o deploy/env/staging.env.age /tmp/s && rm /tmp/s
 ```
 
+Settings that are not secret (for example `AXON_DEMO`) live in plain text in `deploy/env/{staging,prod}.settings.env`. `deploy.sh` appends them to the decrypted secrets, so they are reviewed in pull requests like code. Never repeat a secret's name there.
+
 > [!CAUTION]
 > Losing every private key listed in `recipients.txt` makes the env files and **all backups** unreadable. Keep a copy of `~/.config/axon/age.key` in a password manager. To add a key holder, append their public key to `recipients.txt` and re-encrypt both env files.
 
@@ -99,6 +101,15 @@ To rehearse without touching a server, restore into a throwaway `pgvector/pgvect
 4. Once the import looks right, schedule it (systemd timer or cron, every 15 minutes). Add `-two-way -git` to write Axon's edits back and commit/push the repository.
 
 Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
+
+## Demo account
+
+With `AXON_DEMO=1` (on for staging and production in the settings files), the landing page offers **Try the demo**. It is a shared account with sample data in every area, and it needs no passkey (ADR 0015).
+
+- The API creates the demo account once migrations have run, then resets it every night after 03:00 UTC.
+- To reset it now: `docker compose exec api axon demo reset`.
+- The demo cannot create tokens or passkeys, set AI providers, connect repositories, delete the account, or run agents. Real accounts never see its data.
+- To turn it off, set `AXON_DEMO=` in the settings file and deploy. The demo user stays in the database, unused, until you run `axon demo reset` again or remove it with `DELETE FROM users WHERE demo`.
 
 ## Data backfills
 

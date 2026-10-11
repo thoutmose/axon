@@ -26,6 +26,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/app"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/demo"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
@@ -59,11 +60,16 @@ func run(args []string) error {
 		return integrity()
 	case "notes-sync":
 		return notesSync(args[1:])
+	case "demo":
+		if len(args) != 2 || args[1] != "reset" {
+			return errors.New("usage: axon demo reset")
+		}
+		return demoReset()
 	case "version":
 		fmt.Println(version)
 		return nil
 	default:
-		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, notes-sync, or version)", cmd)
+		return fmt.Errorf("unknown command %q (want serve, migrate, integrity, notes-sync, demo, or version)", cmd)
 	}
 }
 
@@ -97,9 +103,13 @@ func serve() error {
 		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
 		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
 		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
+		Demo:             demoEnabled(),
 	}, pool, log, metrics, provider(log))
 	if err != nil {
 		return err
+	}
+	if demoEnabled() {
+		go keepDemo(ctx, pool, log)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
@@ -122,6 +132,54 @@ func serve() error {
 	defer cancel()
 	_ = metricsSrv.Shutdown(shutdownCtx)
 	return api.Shutdown(shutdownCtx)
+}
+
+// demoEnabled reports whether this server offers the demo account (AXON_DEMO=1).
+func demoEnabled() bool { return os.Getenv("AXON_DEMO") == "1" }
+
+// keepDemo creates the demo account once the database is migrated, then
+// resets it every night after 03:00 UTC, so visitors' changes never pile up.
+func keepDemo(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
+	last := time.Now().UTC()
+	for {
+		exists, err := demo.Exists(ctx, pool)
+		now := time.Now().UTC()
+		nightly := time.Date(last.Year(), last.Month(), last.Day(), 3, 0, 0, 0, time.UTC)
+		if !nightly.After(last) {
+			nightly = nightly.AddDate(0, 0, 1)
+		}
+		if err == nil && (!exists || now.After(nightly)) {
+			if _, err := demo.Reset(ctx, pool, now); err != nil {
+				log.Error("demo reset failed", "err", err)
+			} else {
+				log.Info("demo account reset")
+				last = now
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Minute):
+		}
+	}
+}
+
+func demoReset() error {
+	dsn, err := databaseURL()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	if _, err := demo.Reset(ctx, pool, time.Now()); err != nil {
+		return err
+	}
+	fmt.Println("demo account reset")
+	return nil
 }
 
 func newHTTPServer(addr string, h http.Handler) *http.Server {

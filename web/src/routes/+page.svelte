@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { api, type AuthStatus } from '$lib/api';
+	import { api, message, type AuthStatus } from '$lib/api';
+	import { toast } from '$lib/ui/toast.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Scenery from '$lib/ui/Scenery.svelte';
 	import type { PageProps } from './$types';
@@ -13,6 +14,19 @@
 		status = await api<AuthStatus>('/v1/auth/status').catch(() => null);
 		if (status?.signed_in) await goto('/today', { replaceState: true });
 	});
+
+	let entering = $state(false);
+	async function tryDemo() {
+		entering = true;
+		try {
+			await api('/v1/auth/demo', { method: 'POST' });
+			await goto('/today');
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			entering = false;
+		}
+	}
 
 	const features = [
 		{
@@ -69,7 +83,13 @@
 				{#if status.registration_open}<Button href="/register" variant="secondary"
 						>Create your account</Button
 					>{/if}
+				{#if status.demo_available}<Button variant="secondary" busy={entering} onclick={tryDemo}
+						>Try the demo</Button
+					>{/if}
 			</div>
+			{#if status.demo_available}<p class="demo-note">
+					The demo is a shared account with sample data, reset every night. No passkey needed.
+				</p>{/if}
 		{/if}
 	</div>
 </section>
@@ -153,6 +173,12 @@
 		display: flex;
 		gap: var(--space-3);
 		flex-wrap: wrap;
+	}
+	.demo-note {
+		font-size: var(--text-sm);
+		color: rgb(255 255 255 / 0.92);
+		text-shadow: 0 1px 12px rgb(0 0 0 / 0.5);
+		margin-top: var(--space-3);
 	}
 	.features {
 		max-width: var(--wide-width);

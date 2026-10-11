@@ -76,6 +76,8 @@ remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@
 ssh "$host" 'f=/var/lib/prometheus/node-exporter/axon_backup.prom; [ -f $f ] || sudo install -o "$(id -un)" -m 0644 /dev/null $f'
 {
   age --decrypt -i "$key" "deploy/env/$env.env.age"
+  # Non-secret settings, reviewed in the open (they must not repeat a secret's name).
+  grep -v '^\s*\(#\|$\)' "deploy/env/$env.settings.env"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"
   echo "AXON_VERSION=$version"
 } | ssh "$host" "umask 077 && cat > $remote_dir/.env.next"

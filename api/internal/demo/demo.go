@@ -1,0 +1,252 @@
+// Package demo creates and resets the shared demo account (EP-28): one user
+// with realistic sample data in every area, so people can try Axon without
+// a passkey and without seeing anyone's real data.
+package demo
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/thoutmose/axon/api/internal/goals"
+	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/projects"
+	"github.com/thoutmose/axon/api/internal/roadmaps"
+	"github.com/thoutmose/axon/api/internal/tasks"
+)
+
+// Name is the demo account's display name.
+const Name = "Demo"
+
+// Exists reports whether the demo account has been created.
+func Exists(ctx context.Context, pool *pgxpool.Pool) (bool, error) {
+	var ok bool
+	err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users WHERE demo)`).Scan(&ok)
+	return ok, err
+}
+
+// Reset deletes the demo account with everything it owns (every table
+// cascades from users) and creates it again with fresh sample data. It runs
+// in one transaction, so the demo is never half-built.
+func Reset(ctx context.Context, pool *pgxpool.Pool, now time.Time) (uuid.UUID, error) {
+	id := uuid.Must(uuid.NewV7())
+	err := pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `DELETE FROM users WHERE demo`); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `INSERT INTO users (id, display_name, timezone, demo) VALUES ($1, $2, 'Europe/Paris', true)`, id, Name); err != nil {
+			return err
+		}
+		return seed(ctx, tx, id, now)
+	})
+	return id, err
+}
+
+func ptr[T any](v T) *T { return &v }
+
+type seeder struct {
+	ctx   context.Context
+	tx    pgx.Tx
+	user  uuid.UUID
+	today time.Time
+	err   error
+}
+
+func (s *seeder) day(offset int) *time.Time { return ptr(s.today.AddDate(0, 0, offset)) }
+
+func (s *seeder) link(from uuid.UUID, relation string, to uuid.UUID) {
+	if s.err == nil {
+		_, s.err = graph.CreateLink(s.ctx, s.tx, s.user, graph.UserActor, from, relation, to)
+	}
+}
+
+func (s *seeder) task(title, status string, context *string, due *time.Time, notes string) uuid.UUID {
+	if s.err != nil {
+		return uuid.Nil
+	}
+	t, err := tasks.Create(s.ctx, s.tx, s.user, graph.UserActor, tasks.Fields{Title: &title, Status: &status, Context: context, DueOn: due, Notes: &notes})
+	s.err = err
+	return t.ID
+}
+
+func (s *seeder) note(path, content string) uuid.UUID {
+	if s.err != nil {
+		return uuid.Nil
+	}
+	n, err := notes.Create(s.ctx, s.tx, s.user, graph.UserActor, path, content)
+	s.err = err
+	return n.ID
+}
+
+func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
+	loc, _ := time.LoadLocation("Europe/Paris")
+	y, m, d := now.In(loc).Date()
+	s := &seeder{ctx: ctx, tx: tx, user: user, today: time.Date(y, m, d, 0, 0, 0, 0, time.UTC)}
+	phone, computer, home := ptr("@phone"), ptr("@computer"), ptr("@home")
+
+	// Tasks across GTD lists.
+	call := s.task("Call the dentist to move Thursday's appointment", "next", phone, s.day(1), "")
+	review := s.task("Weekly review", "next", home, s.day(0), "Inbox to zero, look at every project, pick next actions.")
+	s.task("Renew passport", "next", computer, s.day(9), "Photos are in the drawer.")
+	s.task("Reply to Sam about the hiking weekend", "inbox", nil, nil, "")
+	s.task("Ideas for Lea's birthday", "inbox", nil, nil, "")
+	s.task("Wait for the plumber's quote", "waiting", phone, s.day(3), "")
+	s.task("Learn to bake sourdough", "someday", nil, nil, "")
+	s.task("Back up the photo library", "done", computer, nil, "")
+	if s.err == nil {
+		_, s.err = tx.Exec(ctx, `UPDATE tasks SET recurrence = 'FREQ=WEEKLY;BYDAY=SU' WHERE id = $1`, review)
+	}
+
+	// A project on a board.
+	var project projects.Project
+	if s.err == nil {
+		project, s.err = projects.Create(ctx, tx, user, graph.UserActor, projects.Fields{
+			Title: ptr("Personal website"), Description: ptr("A portfolio with a blog, live by the end of the month."),
+			WIPLimit: ptr(2), DocsFolder: ptr("1-Projects/personal-website"),
+		})
+	}
+	cards := []struct{ title, column string }{
+		{"Pick a static site generator", "done"}, {"Write the About page", "doing"}, {"Design the home page", "doing"},
+		{"Set up deployment", "todo"}, {"Write the first blog post", "todo"}, {"Add an RSS feed", "backlog"}, {"Dark mode", "backlog"},
+	}
+	var cardIDs []uuid.UUID
+	for _, c := range cards {
+		if s.err != nil {
+			break
+		}
+		var card projects.Card
+		card, s.err = projects.AddCard(ctx, tx, user, project.ID, graph.UserActor, c.title, projects.CardInput{Column: ptr(c.column)})
+		cardIDs = append(cardIDs, card.TaskID)
+	}
+
+	// Notes: PARA folders, Zettelkasten with wikilinks, a daily note.
+	moc := s.note("3-Resources/Learning/Learning MOC.md", "---\ntags: [moc, learning]\n---\n# Learning MOC\n\nA map of how I learn.\n\n- [[Spaced repetition]]\n- [[Retrieval practice]]\n- [[The Feynman technique]]\n")
+	spaced := s.note("4-Zettelkasten/Spaced repetition.md", "---\ntags: [learning, memory]\n---\n# Spaced repetition\n\nReviewing just before forgetting makes memories last longer. Intervals grow with each successful review.\n\n> [!tip] Pair it with [[Retrieval practice]]: test yourself instead of rereading.\n\nSource: Ebbinghaus' forgetting curve.\n")
+	s.note("4-Zettelkasten/Retrieval practice.md", "---\ntags: [learning]\n---\n# Retrieval practice\n\nPulling information out of memory strengthens it more than putting it in again. See [[Spaced repetition]].\n")
+	s.note("4-Zettelkasten/The Feynman technique.md", "---\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n")
+	site := s.note("1-Projects/personal-website/Spec.md", "---\ntags: [project, web]\n---\n# Website spec\n\n| Page | Status |\n|---|---|\n| Home | ==in design== |\n| About | drafting |\n| Blog | planned |\n\n- [ ] Choose fonts\n- [x] Pick a generator\n")
+	s.note("2-Areas/Health/Running log.md", "---\ntags: [health, running]\n---\n# Running log\n\n- 5 km in 29:40, felt easy\n- Intervals: 6 x 400 m\n")
+	s.note("Daily/"+s.today.Format(time.DateOnly)+".md", "# "+s.today.Format("Monday 2 January 2006")+"\n\n## Focus\n- Finish the About page\n\n## Notes\n- Read about [[Spaced repetition]] on the train.\n")
+	s.note("0-Inbox/Book ideas.md", "# Book ideas\n\n- *Atomic Habits*, James Clear\n- *How to Take Smart Notes*, Sönke Ahrens\n")
+
+	// Goals with milestones, connected to their work.
+	var health, career goals.Goal
+	if s.err == nil {
+		health, s.err = goals.Create(ctx, tx, user, graph.UserActor, goals.Fields{Title: ptr("Run a 10 km race"), Outcome: ptr("Finish the city 10 km in under an hour."), TargetDate: s.day(75)})
+	}
+	if s.err == nil {
+		career, s.err = goals.Create(ctx, tx, user, graph.UserActor, goals.Fields{Title: ptr("Become a backend engineer"), Outcome: ptr("Ship a production service and pass a system design interview."), TargetDate: s.day(240)})
+	}
+	for i, ms := range []struct {
+		goal  uuid.UUID
+		title string
+		done  bool
+	}{{health.ID, "Run 5 km without stopping", true}, {health.ID, "Run 8 km", false}, {health.ID, "Race day", false},
+		{career.ID, "Finish the Python roadmap", false}, {career.ID, "Read Designing Data-Intensive Applications", false}} {
+		if s.err == nil {
+			_, s.err = goals.AddMilestone(ctx, tx, user, ms.goal, graph.UserActor, goals.MilestoneFields{Title: ptr(ms.title), Done: ptr(ms.done), DueOn: s.day(20 * (i%3 + 1))})
+		}
+	}
+
+	// Habits with a month of history.
+	now = s.today.Add(12 * time.Hour)
+	type habitSeed struct {
+		title, stack, twoMin string
+		every                int // checked in every n days
+	}
+	var habitIDs []uuid.UUID
+	for _, h := range []habitSeed{
+		{"Read 20 pages", "After I pour my morning coffee", "Read one page", 1},
+		{"Run", "After I get home from work", "Put on running shoes", 2},
+		{"Meditate", "After I brush my teeth at night", "One mindful breath", 1},
+	} {
+		if s.err != nil {
+			break
+		}
+		var habit habits.Habit
+		habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin)}, now)
+		habitIDs = append(habitIDs, habit.ID)
+		for back := 30; back >= 1 && s.err == nil; back-- {
+			if back%h.every != 0 || back%9 == 0 { // a few missed days, as in real life
+				continue
+			}
+			status := "done"
+			if back%5 == 0 {
+				status = "two_minute"
+			}
+			_, s.err = tx.Exec(ctx, `INSERT INTO habit_checkins (habit_id, day, status) VALUES ($1, $2, $3)`, habit.ID, s.day(-back), status)
+		}
+	}
+
+	// Roadmaps from the library, with progress.
+	var python, design roadmaps.Roadmap
+	if s.err == nil {
+		python, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "python")
+	}
+	if s.err == nil {
+		design, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "system-design")
+	}
+	for i, sk := range python.Skills {
+		if s.err != nil || i > 4 {
+			break
+		}
+		status := "done"
+		if i >= 3 {
+			status = "learning"
+		}
+		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
+	}
+	if s.err == nil && len(design.Skills) > 0 {
+		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
+	}
+
+	// Everything connects.
+	if s.err == nil {
+		s.link(project.ID, goals.Supports, career.ID)
+		s.link(python.ID, goals.Supports, career.ID)
+		s.link(design.ID, goals.Supports, career.ID)
+		s.link(habitIDs[1], goals.Supports, health.ID)
+		s.link(habitIDs[0], goals.Supports, career.ID)
+		s.link(site, graph.RelatesTo, project.ID)
+		s.link(moc, graph.RelatesTo, python.ID)
+		s.link(spaced, graph.RelatesTo, habitIDs[0])
+		s.link(call, graph.RelatesTo, health.ID)
+		s.link(cardIDs[1], graph.RelatesTo, site)
+	}
+	if s.err != nil {
+		return fmt.Errorf("demo seed: %w", s.err)
+	}
+	return seedProposals(ctx, tx, user, review)
+}
+
+// seedProposals adds an agent run with pending proposals, so the approval
+// queue can be tried without an AI provider.
+func seedProposals(ctx context.Context, tx pgx.Tx, user, task uuid.UUID) error {
+	run := uuid.Must(uuid.NewV7())
+	if _, err := tx.Exec(ctx, `INSERT INTO agent_runs (id, user_id, agent, skill_version, model, status, tools_called, proposals, finished_at)
+		VALUES ($1, $2, 'task-manager', '1.0.0', 'demo/scripted', 'completed', ARRAY['list_tasks', 'create_task:proposed', 'update_task:proposed'], 2, now())`, run, user); err != nil {
+		return err
+	}
+	var version time.Time
+	if err := tx.QueryRow(ctx, `SELECT updated_at FROM tasks WHERE id = $1`, task).Scan(&version); err != nil {
+		return err
+	}
+	for _, p := range []struct{ tool, input, summary, reason string }{
+		{"create_task", `{"title":"Book a table for Lea's birthday","status":"next","context":"@phone","reason":"Her birthday is in your inbox."}`,
+			"Create “Book a table for Lea's birthday” in Next (@phone)", "Her birthday is in your inbox."},
+		{"update_task", fmt.Sprintf(`{"id":%q,"context":"@computer","reason":"You do your review at the desk.","version":%q}`, task, version.Format(time.RFC3339Nano)),
+			"Set the context of “Weekly review” to @computer", "You do your review at the desk."},
+	} {
+		if _, err := tx.Exec(ctx, `INSERT INTO agent_proposals (id, user_id, run_id, agent, tool, input, summary, reason)
+			VALUES ($1, $2, $3, 'task-manager', $4, $5, $6, $7)`, uuid.Must(uuid.NewV7()), user, run, p.tool, p.input, p.summary, p.reason); err != nil {
+			return err
+		}
+	}
+	return nil
+}

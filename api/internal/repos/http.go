@@ -34,8 +34,8 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger, sealer *auth.Sealer) *Han
 // Routes mounts the endpoints.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/repos", h.list)
-	r.Post("/v1/repos", h.create)
-	r.Patch("/v1/repos/{id}", h.update)
+	r.With(auth.NotDemo).Post("/v1/repos", h.create)
+	r.With(auth.NotDemo).Patch("/v1/repos/{id}", h.update)
 	r.Delete("/v1/repos/{id}", h.delete)
 }
 

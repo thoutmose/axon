@@ -27,13 +27,14 @@ func (s *Service) me(w http.ResponseWriter, r *http.Request) {
 		TOTPEnabled            bool      `json:"totp_enabled"`
 		Passkeys               int       `json:"passkeys"`
 		RecoveryCodesRemaining int       `json:"recovery_codes_remaining"`
+		Demo                   bool      `json:"demo"`
 	}
 	err := s.db.QueryRow(r.Context(),
 		`SELECT u.updated_at, u.id, u.display_name, u.timezone, u.created_at, u.totp_enabled_at IS NOT NULL,
 		        (SELECT count(*) FROM passkeys WHERE user_id = u.id),
-		        (SELECT count(*) FROM recovery_codes WHERE user_id = u.id AND used_at IS NULL)
+		        (SELECT count(*) FROM recovery_codes WHERE user_id = u.id AND used_at IS NULL), u.demo
 		 FROM users u WHERE u.id = $1`, id.UserID).
-		Scan(&version, &out.ID, &out.DisplayName, &out.Timezone, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining)
+		Scan(&version, &out.ID, &out.DisplayName, &out.Timezone, &out.CreatedAt, &out.TOTPEnabled, &out.Passkeys, &out.RecoveryCodesRemaining, &out.Demo)
 	if err != nil {
 		s.fail(w, r, err)
 		return

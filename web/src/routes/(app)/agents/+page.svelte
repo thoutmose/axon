@@ -34,6 +34,7 @@
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
 	const reasons: Record<string, string> = {
+		demo: 'Agents do not run in the shared demo, so nobody spends AI credit. The proposals below were prepared so you can try approving and rejecting.',
 		not_configured:
 			'No AI provider is set up yet. Choose one under “AI provider” below; everything else in Axon works without agents.',
 		no_consent:

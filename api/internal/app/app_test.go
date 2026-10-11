@@ -62,13 +62,17 @@ type env struct {
 
 func newEnv(t *testing.T, openRegistration bool) *env {
 	t.Helper()
+	return newEnvWith(t, auth.Config{OpenRegistration: openRegistration})
+}
+
+// newEnvWith starts the API with cfg; the URL, RP ID, and key are filled in.
+func newEnvWith(t *testing.T, cfg auth.Config) *env {
+	t.Helper()
 	if _, err := pool.Exec(context.Background(), `TRUNCATE users, webauthn_ceremonies CASCADE`); err != nil {
 		t.Fatal(err)
 	}
-	h, err := Handler("test", auth.Config{
-		BaseURL: origin, RPID: "localhost", OpenRegistration: openRegistration,
-		EncryptionKey: strings.Repeat("ab", 32),
-	}, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), server.NewMetrics(prometheus.NewRegistry(), "test", pool), fake)
+	cfg.BaseURL, cfg.RPID, cfg.EncryptionKey = origin, "localhost", strings.Repeat("ab", 32)
+	h, err := Handler("test", cfg, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), server.NewMetrics(prometheus.NewRegistry(), "test", pool), fake)
 	if err != nil {
 		t.Fatal(err)
 	}

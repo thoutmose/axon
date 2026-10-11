@@ -99,7 +99,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-25 | Notes workspace & Second Brain | A note-taking workspace on par with dedicated apps: tree, live editor, Zettelkasten, PARA, daily notes, templates, quick switcher. | MUST | 34 pts | EP-11 | Done |
 | EP-26 | Delivery agents | Side-Projects agent (read-only repository analysis drafting issues) and Code Review agent. | SHOULD | 55 pts | EP-10, EP-19 | Done |
 | EP-27 | Tutor & Resource agents | Interview-based, cited draft roadmaps, a curated library of the best resources per domain, and resource finding. | SHOULD | 34 pts | EP-14, EP-19 | Done |
-| EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Planned |
+| EP-28 | Demo account | A resettable demo account with realistic sample data, to try every feature without touching real data. | MUST | 13 pts | EP-04, EP-27 | Done |
 | EP-29 | Docs in two languages & API reference | README in English and French with a language switch, an interactive OpenAPI (Swagger) reference, and consistent Axon naming. | MUST | 8 pts | EP-06 | Planned |
 | EP-30 | Command dashboard | The home page as a detailed dashboard: KPIs, charts, tables, and a network graph of hard and soft skills. | MUST | 34 pts | EP-08, EP-14 | Planned |
 | EP-31 | Settings, languages & YAML configuration | One place for language (English, French), theme, fonts, icon theme, templates, AI keys and limits; editable in the UI or as a YAML file. | MUST | 34 pts | EP-22, EP-25 | Planned |
@@ -653,13 +653,36 @@ Detailed Epics list issues with acceptance criteria. Outlined Epics list scope a
 
 **In scope.** `axon demo seed` creates (or resets) one demo user with sample tasks, projects, notes (Zettelkasten and PARA), goals, habits, roadmaps from the library, and agent proposals. `AXON_DEMO=1` shows a "Try the demo" button that signs into that user with a short, demo-only session. A nightly reset. Agents use a scripted provider in the demo, so no AI key or spend is involved.
 
-**Acceptance criteria**
+**Issues** (design in [ADR 0015](adr/0015-demo-account.md))
 
-- The demo session cannot reach any other user's data, tokens, settings, or exports (authorization tests).
-- The demo cannot register passkeys, create tokens, change providers, or send anything outside Axon.
-- Staging and production can each run a demo; real accounts are unaffected (integration test).
+- [x] **EP-28/IS-28.01 — Seed data** · 5 pts · MUST
+  - [x] `axon demo reset` builds, in one transaction:
+    - 8 tasks across GTD lists, with a weekly recurrence;
+    - a project board with 7 cards and a WIP limit;
+    - 8 notes (PARA, Zettelkasten with wikilinks, tags, callouts, a table, a daily note);
+    - 2 goals with milestones;
+    - 3 habits with a month of check-ins;
+    - 2 library roadmaps with progress;
+    - links across all of them, and 2 pending agent proposals.
+- [x] **EP-28/IS-28.02 — Demo sign-in and limits** · 5 pts · MUST
+  - [x] `POST /v1/auth/demo` (only with `AXON_DEMO=1`): a 12-hour session, "Try the demo" on the landing page, and a banner in the app.
+  - [x] Refused with 403: tokens, passkeys, recovery codes, TOTP, AI providers, repositories, and erasure. Agents are off (reason `demo`).
+  - [x] Isolation is tested both ways, and the demo does not close first-account registration.
+- [x] **EP-28/IS-28.03 — Reset job and docs** · 3 pts · MUST
+  - [x] The server seeds the demo once migrations have run and resets it nightly after 03:00 UTC; a reset signs visitors out (tested).
+  - [x] Non-secret per-environment settings (`deploy/env/*.settings.env`); the demo is on for staging and production; runbook, privacy register, and ADR 0015.
 
-**Candidate issues.** Seed data (5) · Demo sign-in and limits (5) · Reset job and docs (3).
+**Exit evidence.** Integration tests pass: the demo is off unless enabled; the sample data, approvals, isolation, refused routes, agents off, and the reset are all checked. Playwright: 20 scenarios with axe, including the new demo journey. Cross-cutting matrix:
+- identity: demo session, 12 h;
+- authorization: NotDemo plus ownership checks;
+- privacy: register row, no personal data;
+- accessibility: banner role note, axe;
+- reliability: one transaction per reset, retried each minute;
+- performance: bounded seed;
+- observability: reset logged;
+- documentation: runbook, ADR;
+- AI safety: agents off;
+- supply chain: no new dependency.
 
 ### EP-29 — Docs in two languages & API reference
 

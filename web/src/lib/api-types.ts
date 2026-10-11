@@ -157,6 +157,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/auth/demo': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Sign into the shared demo account (sample data, reset nightly; credentials, tokens, providers, and erasure are refused) */
+		post: operations['demoSignIn'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/auth/logout': {
 		parameters: {
 			query?: never;
@@ -1653,6 +1670,8 @@ export interface components {
 			totp_enabled: boolean;
 			passkeys: number;
 			recovery_codes_remaining: number;
+			/** @description The shared demo account. */
+			demo: boolean;
 		};
 		Session: {
 			/** Format: uuid */
@@ -1925,7 +1944,7 @@ export interface components {
 			/** @description The provider runs would use. */
 			provider: string | null;
 			/** @enum {string|null} */
-			reason: 'not_configured' | 'no_consent' | 'budget_exhausted' | null;
+			reason: 'demo' | 'not_configured' | 'no_consent' | 'budget_exhausted' | null;
 			monthly_budget_cents: number;
 			/** @description US dollars × 1,000,000 spent this calendar month (UTC). */
 			spent_micros: number;
@@ -2341,6 +2360,10 @@ export interface operations {
 						registration_open: boolean;
 						signed_in: boolean;
 						totp_available: boolean;
+						/** @description The server offers the shared demo account (AXON_DEMO=1). */
+						demo_available: boolean;
+						/** @description The caller is signed into the demo account. */
+						demo_session: boolean;
 					};
 				};
 			};
@@ -2441,6 +2464,27 @@ export interface operations {
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 			429: components['responses']['Problem'];
+		};
+	};
+	demoSignIn: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Signed in; the session cookie lasts 12 hours. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			404: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
 		};
 	};
 	logout: {

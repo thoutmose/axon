@@ -79,7 +79,7 @@ func (s *Service) Routes(r chi.Router) {
 	r.Get("/v1/me/consents", s.listConsents)
 	r.Put("/v1/me/consents/{purpose}", s.setConsent)
 	r.Get("/v1/me/export", s.export)
-	r.Delete("/v1/me", s.erase)
+	r.With(auth.NotDemo).Delete("/v1/me", s.erase)
 }
 
 func (s *Service) fail(w http.ResponseWriter, err error) {

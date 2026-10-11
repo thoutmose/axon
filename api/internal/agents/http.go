@@ -38,9 +38,9 @@ func (r *Runner) Routes(m chi.Router) {
 func (r *Runner) SessionRoutes(m chi.Router) {
 	m.Put("/v1/me/agent-settings", r.settings)
 	m.Get("/v1/me/agent-provider", r.getProvider)
-	m.Put("/v1/me/agent-provider", r.putProvider)
-	m.Delete("/v1/me/agent-provider", r.deleteProvider)
-	m.Post("/v1/me/agent-provider/test", r.testProvider)
+	m.With(auth.NotDemo).Put("/v1/me/agent-provider", r.putProvider)
+	m.With(auth.NotDemo).Delete("/v1/me/agent-provider", r.deleteProvider)
+	m.With(auth.NotDemo).Post("/v1/me/agent-provider/test", r.testProvider)
 	m.Post("/v1/proposals/{id}/approve", r.approve)
 	m.Post("/v1/proposals/{id}/reject", r.reject)
 	m.Delete("/v1/agent-memories/{id}", r.forget)

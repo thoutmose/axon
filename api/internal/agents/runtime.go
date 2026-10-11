@@ -79,7 +79,7 @@ func (r *Runner) Wait() { r.wg.Wait() }
 // Status says whether a user can run agents now, and their budget.
 type Status struct {
 	Available   bool    `json:"available"`
-	Reason      *string `json:"reason"`   // not_configured, no_consent, budget_exhausted
+	Reason      *string `json:"reason"`   // demo, not_configured, no_consent, budget_exhausted
 	Provider    *string `json:"provider"` // the provider runs would use
 	BudgetCents int     `json:"monthly_budget_cents"`
 	SpentMicros int64   `json:"spent_micros"` // this calendar month (UTC)
@@ -87,10 +87,12 @@ type Status struct {
 
 func (r *Runner) status(ctx context.Context, q db.Querier, userID uuid.UUID) (Status, error) {
 	s := Status{BudgetCents: 200}
+	var demo bool
 	err := q.QueryRow(ctx, `SELECT
 		coalesce((SELECT monthly_budget_cents FROM agent_settings WHERE user_id = $1), 200),
-		coalesce((SELECT sum(cost_micros) FROM agent_runs WHERE user_id = $1 AND started_at >= date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'), 0)`, userID).
-		Scan(&s.BudgetCents, &s.SpentMicros)
+		coalesce((SELECT sum(cost_micros) FROM agent_runs WHERE user_id = $1 AND started_at >= date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'), 0),
+		coalesce((SELECT demo FROM users WHERE id = $1), false)`, userID).
+		Scan(&s.BudgetCents, &s.SpentMicros, &demo)
 	if err != nil {
 		return s, err
 	}
@@ -106,6 +108,8 @@ func (r *Runner) status(ctx context.Context, q db.Querier, userID uuid.UUID) (St
 		return s, err
 	}
 	switch {
+	case demo: // the shared demo never spends anyone's AI budget
+		reason = "demo"
 	case err != nil:
 		reason = "not_configured"
 	case !consent:
@@ -150,7 +154,7 @@ func (r *Runner) begin(ctx context.Context, userID uuid.UUID, skill Skill, instr
 	}
 	if !st.Available {
 		switch *st.Reason {
-		case "not_configured":
+		case "not_configured", "demo":
 			return uuid.Nil, ErrUnavailable
 		case "no_consent":
 			return uuid.Nil, ErrNoConsent
