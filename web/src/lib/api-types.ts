@@ -838,6 +838,45 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes/analysis': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Topics and a concept graph of your literature and permanent notes
+		 * @description All local, no AI provider: Snowball stemming (English and French), TextRank key phrases, topics by label propagation over TF-IDF similarity, concepts in at least two notes linked by NPMI or as Open English WordNet synonyms.
+		 */
+		get: operations['analyseNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/analysis': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One note's key phrases, readability, topic, and closest literature and permanent notes with reasons */
+		get: operations['analyseNote'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/notes/graph': {
 		parameters: {
 			query?: never;
@@ -3100,6 +3139,66 @@ export interface components {
 			label: string;
 			count: number;
 		}[];
+		NoteBrief: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			kind: string;
+		};
+		NoteTopic: {
+			id: number;
+			label: string;
+			terms: string[];
+			notes: components['schemas']['NoteBrief'][];
+		};
+		KeyPhrase: {
+			text: string;
+			/** @description 0 to 1, relative to the note's best phrase. */
+			score: number;
+		};
+		Readability: {
+			/** @enum {string} */
+			language: 'en' | 'fr';
+			words: number;
+			sentences: number;
+			reading_minutes: number;
+			/** @description Flesch reading ease (English) or Kandel–Moles (French), 0 to 100. */
+			ease: number;
+		};
+		NoteCorpusAnalysis: {
+			notes: number;
+			words: number;
+			languages: {
+				[key: string]: number;
+			};
+			ease: number;
+			topics: components['schemas']['NoteTopic'][];
+			concepts: {
+				id: string;
+				text: string;
+				notes: number;
+				of: components['schemas']['NoteBrief'][] | null;
+			}[];
+			edges: {
+				from: string;
+				to: string;
+				/** @enum {string} */
+				relation: 'co-occurs' | 'synonym';
+				together: number;
+				npmi: number;
+				reason: string;
+			}[];
+			truncated: boolean;
+		};
+		NoteAnalysis: {
+			readability: components['schemas']['Readability'];
+			phrases: components['schemas']['KeyPhrase'][];
+			topic: components['schemas']['NoteTopic'] | null;
+			related: (components['schemas']['NoteBrief'] & {
+				similarity: number;
+				reasons: string[];
+			})[];
+		};
 		KnowledgeGraph: {
 			truncated: boolean;
 			nodes: {
@@ -5739,6 +5838,55 @@ export interface operations {
 			};
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
+		};
+	};
+	analyseNotes: {
+		parameters: {
+			query?: {
+				/** @description Both kinds when omitted. */
+				kind?: 'literature' | 'permanent';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The analysis. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteCorpusAnalysis'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	analyseNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The analysis. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteAnalysis'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	noteKnowledgeGraph: {
