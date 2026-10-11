@@ -72,13 +72,19 @@ type Focus struct {
 	Music       []MusicLink `json:"music" yaml:"music"`
 }
 
+// Gamification turns progress rewards on (EP-15); off means no surface shows them.
+type Gamification struct {
+	Enabled bool `json:"enabled" yaml:"enabled"`
+}
+
 // Doc is the stored part of the settings.
 type Doc struct {
-	Language   string     `json:"language" yaml:"language"` // en or fr
-	Appearance Appearance `json:"appearance" yaml:"appearance"`
-	Templates  Templates  `json:"templates" yaml:"templates"`
-	Keyboard   Keyboard   `json:"keyboard" yaml:"keyboard"`
-	Focus      Focus      `json:"focus" yaml:"focus"`
+	Language     string       `json:"language" yaml:"language"` // en or fr
+	Appearance   Appearance   `json:"appearance" yaml:"appearance"`
+	Templates    Templates    `json:"templates" yaml:"templates"`
+	Keyboard     Keyboard     `json:"keyboard" yaml:"keyboard"`
+	Focus        Focus        `json:"focus" yaml:"focus"`
+	Gamification Gamification `json:"gamification" yaml:"gamification"`
 }
 
 // Defaults are what a new account starts with.

@@ -20,6 +20,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
+	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -257,6 +258,16 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		if s.err == nil && i < 2 {
 			_, s.err = cards.Review(ctx, tx, user, c.ID, fsrs.Easy, nil, now.Add(-72*time.Hour))
 		}
+	}
+
+	// Progress rewards on, with a freeze in stock, so the demo shows them.
+	if s.err == nil {
+		doc := settings.Defaults()
+		doc.Gamification.Enabled = true
+		s.err = settings.Put(ctx, tx, user, doc)
+	}
+	if s.err == nil {
+		_, s.err = tx.Exec(ctx, `INSERT INTO streak_freezes (id, user_id, bought_on) VALUES ($1, $2, $3)`, uuid.Must(uuid.NewV7()), user, s.today)
 	}
 
 	// A skills assessment, as taken before starting the roadmaps.

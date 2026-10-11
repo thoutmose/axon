@@ -25,6 +25,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/privacy"
+	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
@@ -69,6 +70,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	focusAPI := focus.NewHandlers(pool, log)
 	cardsAPI := cards.NewHandlers(pool, log)
+	progressAPI := progress.NewHandlers(pool, log)
+	priv.Register("streak_freezes", progress.Export)
 	ankiAPI := ankisync.New(pool, log, sealer, os.Getenv("AXON_ANKI_BRIDGE_URL"), os.Getenv("ANKI_SYNC_URL"))
 	agentsAPI.OnApproved = ankiAPI.AfterApproved
 	priv.Register("anki_account", ankiAPI.Export)
@@ -113,6 +116,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				roadmapsAPI.Routes(r)
 				focusAPI.Routes(r)
 				cardsAPI.Routes(r)
+				progressAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
 			})

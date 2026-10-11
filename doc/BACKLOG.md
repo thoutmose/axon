@@ -86,7 +86,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-12 | Habits & Habits agent | Evidence-based habit design with gentle recovery. | SHOULD | 55 pts | EP-07, EP-19 | Done |
 | EP-13 | Goals & milestones | Outcomes linked to measurable milestones, tasks, habits, and notes. | MUST | 21 pts | EP-05, EP-06, EP-07, EP-09 | Done |
 | EP-14 | Roadmaps & skill graph | Manual roadmaps, OSSU import, and a skill graph view. | SHOULD | 42 pts | EP-11, EP-13 | Done |
-| EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Planned |
+| EP-15 | Gamification engine | Transparent, opt-in XP, streaks, badges, and earned freezes. | SHOULD | 55 pts | EP-09, EP-12, EP-13 | Done |
 | EP-16 | Learning engine, Teacher agent & Anki | Retrieval practice with FSRS scheduling, illustrated cards, practice tests, a Teacher agent, and Anki packages. | SHOULD | 76 pts | EP-11, EP-14, EP-19 | Done |
 | EP-42 | Anki sync to srv-services | Approved cards reach the existing `anki-sync-server` on `srv-services` automatically, by hand or after a Teacher proposal. Split from EP-16. | SHOULD | 13 pts | EP-16 | Done |
 | EP-17 | Media trackers & Media agent | Films, series, and books with attributed metadata and explained recommendations. | COULD | 34 pts | EP-06, EP-07, EP-19 | Planned |
@@ -1107,7 +1107,33 @@ Cross-cutting matrix:
 - The streak state machine is covered by property tests, including time zones.
 - No notification uses loss-aversion or shaming language.
 
-**Candidate issues.** XP and rule engine (13) · Streak state machine (8) · Freezes (5) · Badges (8) · Levels and progress screens (13) · Settings and opt-out (3).
+**Issues** (design in [ADR 0019](adr/0019-progress-from-source-data.md))
+
+- [x] **EP-15/IS-15.01 — XP and rule engine** · 13 pts · SHOULD
+  - [x] A ledger computed from every area's source data: tasks (on-time bonus), habits, focus, flashcards, notes (permanent bonus), skills, milestones, goals, and projects. 12 published rules. It sums exactly to the total (tested) and follows undo.
+- [x] **EP-15/IS-15.02 — Streak state machine** · 8 pts · SHOULD
+  - [x] Inactive, active, at risk, frozen, broken, computed on local dates. Property tests over 3,000 random histories and six time zones across a DST change.
+- [x] **EP-15/IS-15.03 — Freezes** · 5 pts · SHOULD
+  - [x] 100 earned points each, at most 2 held, no money path. A freeze bridges a gap only when there is a run behind it, is used automatically, and its use is saved.
+- [x] **EP-15/IS-15.04 — Badges** · 8 pts · SHOULD
+  - [x] Eleven badges, from count thresholds or run lengths, each with the date it was earned.
+- [x] **EP-15/IS-15.05 — Levels and progress screens** · 13 pts · SHOULD
+  - [x] The Progress page shows the level bar, the run with its state and message, freezes, badges, a 30-day ledger in plain language, and every rule. A chip on Today appears only when rewards are on.
+- [x] **EP-15/IS-15.06 — Settings and opt-out** · 3 pts · SHOULD
+  - [x] `gamification.enabled` (off by default) is in Preferences and YAML. Off hides every surface and the API refuses the ledger and freezes. There are no notifications; messages avoid loss framing. The demo has it on, with one freeze.
+- Deferred: **shared experiences** (sharing a badge or a run with another person on the same Axon), until a person-to-person model exists; production has one account. **Media and books** join the ledger with EP-17.
+
+**Exit evidence.**
+- Go property and example tests for the streak.
+- The integration test covers: off by default (no data, a 409 on ledger and freezes), turning it on through YAML, points from five areas (26), the ledger matching the total, a badge earned, the freeze refused without points, and the freeze bought once points are earned.
+- Playwright turns rewards on, checks the ledger entries and the "First step" badge with axe, and sees the chip on Today.
+
+Cross-cutting matrix:
+- privacy: register row, nothing stored but freezes;
+- accessibility: progress bar with values, badge contrast without opacity;
+- reliability: an advisory lock serialises freeze purchases;
+- AI safety: n/a;
+- supply chain: no dependency.
 
 ### EP-17 — Media trackers & Media agent
 

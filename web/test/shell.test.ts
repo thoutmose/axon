@@ -708,6 +708,21 @@ test('flashcards: add an illustrated card, review it with the keyboard, take a t
 	await expect(page.getByRole('heading', { name: 'Score: 1 of 1' })).toBeVisible();
 });
 
+test('progress rewards are opt-in, explain every point, and reflect every area', async () => {
+	await page.goto('/progress');
+	await expect(page.getByRole('heading', { name: 'Progress rewards are off' })).toBeVisible();
+	await page.getByRole('button', { name: 'Turn on progress rewards' }).click();
+	await expect(page.getByRole('heading', { name: /^Level \d+$/ })).toBeVisible();
+	await expect(page.getByRole('heading', { name: /-day run$/ })).toBeVisible();
+	const ledger = page.getByRole('region', { name: /How you earned your points/ });
+	await expect(ledger.getByRole('cell', { name: /Complete a task/ }).first()).toBeVisible();
+	await expect(ledger.getByRole('cell', { name: /Review a flashcard/ }).first()).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Badges' })).toContainText('First step');
+	await noSeriousA11yViolations(page);
+	await page.goto('/today');
+	await expect(page.getByRole('link', { name: /^Level \d+ · \d+-day run/ })).toBeVisible();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await page.getByRole('button', { name: 'Sign out', exact: true }).click();

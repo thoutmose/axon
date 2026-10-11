@@ -83,7 +83,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - Planned: workouts plus Personal Trainer and Nutritionist agents with conservative, educational outputs.
 
 ### ✨ Humane progress
-- Planned: XP, levels, badges, and streaks across every area, with freezes bought only with earned points.
+- ✅ Opt-in progress rewards: points from every area (tasks, projects, habits, focus, flashcards, notes, roadmaps, goals), each traceable in a ledger, levels, badges, one daily streak with freezes bought only with earned points, and no shame or notifications.
 - ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
 - ✅ A profile picture, with a generated default (your initials on your own colours); uploads are re-encoded so no location data survives.
 - ✅ Preferences in one place: English or French, theme, font, text size, icons, motion, templates for notes, projects, and resources, and your AI provider and budget. Edit them in the app or as a YAML file (keys are write-only).
@@ -444,7 +444,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-14, EP-16, EP-19, EP-22–EP-35, EP-41, and EP-42 done; EP-15 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-41, and EP-42 done; EP-36 next.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

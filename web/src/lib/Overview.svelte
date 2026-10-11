@@ -3,6 +3,7 @@
 	import Heatmap from '$lib/charts/Heatmap.svelte';
 	import LineChart from '$lib/charts/LineChart.svelte';
 	import { trend, type Overview } from '$lib/overview';
+	import ProgressChip from '$lib/ProgressChip.svelte';
 	import SkillNetwork from '$lib/SkillNetwork.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { t } from '$lib/i18n.svelte';
@@ -42,6 +43,7 @@
 <section class="overview" aria-labelledby="overview-title">
 	<div class="head">
 		<h2 id="overview-title">{t('Your progress')}</h2>
+		<ProgressChip />
 		<label>
 			<span class="visually-hidden">{t('Period')}</span>
 			<select bind:value={days}>

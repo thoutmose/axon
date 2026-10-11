@@ -16,6 +16,12 @@ export const fr: Record<string, string> = {
 	'Skills assessment': 'Évaluation des compétences',
 	'Review flashcards': 'Réviser les cartes',
 	'Cards to review': 'Cartes à réviser',
+	'Progress rewards': 'Récompenses de progression',
+	'Earn points, levels, badges, and a daily streak from everything you do':
+		'Gagner des points, des niveaux, des badges et une série quotidienne grâce à tout ce que vous faites',
+	'Off hides every surface. No notifications, no shame for missed days, nothing bought with money.':
+		'Désactivé, rien n’est affiché. Pas de notifications, pas de honte pour les jours manqués, rien ne s’achète avec de l’argent.',
+	'How points are earned': 'Comment les points sont gagnés',
 	'Focus time': 'Temps de concentration',
 	'Focus minutes': 'Minutes de concentration',
 	Calendar: 'Calendrier',

@@ -1461,6 +1461,74 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/progress': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** XP, level, points, the daily streak, and badges — or only enabled false when progress rewards are off */
+		get: operations['getProgress'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/ledger': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** How every point was earned, newest first (up to 500 entries) */
+		get: operations['getProgressLedger'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/rules': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every way to earn points, and what a freeze costs */
+		get: operations['listProgressRules'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/freezes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Buy a streak freeze with 100 earned points (never with money; up to two in stock) */
+		post: operations['buyStreakFreeze'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/habits/scorecard': {
 		parameters: {
 			query?: never;
@@ -2681,6 +2749,10 @@ export interface components {
 					/** @example https://example.org/my-focus-playlist */
 					url: string;
 				}[];
+			};
+			/** @description Progress rewards (XP, levels, badges, streak); off by default, and off hides every surface. */
+			gamification?: {
+				enabled: boolean;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -5893,6 +5965,144 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getProgress: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Progress. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						enabled: boolean;
+						/** @description All points ever earned, computed from what you did. */
+						xp?: number;
+						today_xp?: number;
+						level?: number;
+						level_from?: number;
+						level_to?: number;
+						/** @description XP not spent on freezes. */
+						points?: number;
+						streak?: {
+							/** @enum {unknown} */
+							state: 'inactive' | 'active' | 'at_risk' | 'frozen' | 'broken';
+							days: number;
+							/** @description Unused freezes in stock. */
+							freezes: number;
+						};
+						badges?: {
+							id: string;
+							title: string;
+							description: string;
+							/** Format: date-time */
+							earned_at: string | null;
+						}[];
+						message?: string;
+						areas?: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getProgressLedger: {
+		parameters: {
+			query?: {
+				days?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Ledger entries. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: date-time */
+							at: string;
+							rule: string;
+							points: number;
+							/** Format: uuid */
+							entity_id: string;
+							title: string;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	listProgressRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Rules. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							id: string;
+							description: string;
+							points: number;
+						}[];
+						freeze_cost: number;
+						max_freezes: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	buyStreakFreeze: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The updated progress. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						enabled: boolean;
+						points: number;
+						streak: Record<string, never>;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
 		};
 	};
 	getHabitScorecard: {

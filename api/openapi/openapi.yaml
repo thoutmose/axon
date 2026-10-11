@@ -42,6 +42,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: progress
+    description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
   - name: focus
     description: Pomodoro focus sessions linked to what they were for (EP-35).
   - name: habits
@@ -2377,6 +2379,117 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/progress:
+    get:
+      tags: [progress]
+      operationId: getProgress
+      summary: XP, level, points, the daily streak, and badges — or only enabled false when progress rewards are off
+      responses:
+        "200":
+          description: Progress.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled]
+                properties:
+                  enabled: { type: boolean }
+                  xp: { type: integer, description: "All points ever earned, computed from what you did." }
+                  today_xp: { type: integer }
+                  level: { type: integer }
+                  level_from: { type: integer }
+                  level_to: { type: integer }
+                  points: { type: integer, description: XP not spent on freezes. }
+                  streak:
+                    type: object
+                    required: [state, days, freezes]
+                    properties:
+                      state: { enum: [inactive, active, at_risk, frozen, broken] }
+                      days: { type: integer }
+                      freezes: { type: integer, description: Unused freezes in stock. }
+                  badges:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, description, earned_at]
+                      properties:
+                        id: { type: string }
+                        title: { type: string }
+                        description: { type: string }
+                        earned_at: { type: [string, "null"], format: date-time }
+                  message: { type: string }
+                  areas: { type: array, items: { type: string } }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/progress/ledger:
+    get:
+      tags: [progress]
+      operationId: getProgressLedger
+      summary: How every point was earned, newest first (up to 500 entries)
+      parameters:
+        - { name: days, in: query, schema: { type: integer, minimum: 1, maximum: 3650, default: 30 } }
+      responses:
+        "200":
+          description: Ledger entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [at, rule, points, entity_id, title]
+                      properties:
+                        at: { type: string, format: date-time }
+                        rule: { type: string }
+                        points: { type: integer }
+                        entity_id: { type: string, format: uuid }
+                        title: { type: string }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /v1/progress/rules:
+    get:
+      tags: [progress]
+      operationId: listProgressRules
+      summary: Every way to earn points, and what a freeze costs
+      responses:
+        "200":
+          description: Rules.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, freeze_cost, max_freezes]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, description, points]
+                      properties:
+                        id: { type: string }
+                        description: { type: string }
+                        points: { type: integer }
+                  freeze_cost: { type: integer }
+                  max_freezes: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/progress/freezes:
+    post:
+      tags: [progress]
+      operationId: buyStreakFreeze
+      summary: Buy a streak freeze with 100 earned points (never with money; up to two in stock)
+      responses:
+        "201":
+          description: The updated progress.
+          content:
+            application/json:
+              schema: { type: object, required: [enabled, points, streak], properties: { enabled: { type: boolean }, points: { type: integer }, streak: { type: object } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
   /v1/habits/scorecard:
     get:
       tags: [habits]
@@ -4114,6 +4227,13 @@ components:
                 properties:
                   activity: { type: string, maxLength: 100, example: coding }
                   url: { type: string, maxLength: 1000, example: "https://example.org/my-focus-playlist" }
+        gamification:
+          type: object
+          required: [enabled]
+          additionalProperties: false
+          description: Progress rewards (XP, levels, badges, streak); off by default, and off hides every surface.
+          properties:
+            enabled: { type: boolean }
         keyboard:
           type: object
           required: [shortcuts, vim]

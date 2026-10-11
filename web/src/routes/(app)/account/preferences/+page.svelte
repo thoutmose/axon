@@ -21,6 +21,7 @@
 	type Settings = Schemas['Settings'] & {
 		keyboard: { shortcuts: boolean; vim: boolean };
 		focus: Focus;
+		gamification: { enabled: boolean };
 	};
 	const focusDefaults: Focus = {
 		work_minutes: 25,
@@ -44,7 +45,8 @@
 			s = {
 				...loaded,
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
-				focus: (loaded.focus as Focus | undefined) ?? focusDefaults
+				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
+				gamification: loaded.gamification ?? { enabled: false }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -58,7 +60,8 @@
 		s = {
 			...saved,
 			keyboard: saved.keyboard ?? { shortcuts: true, vim: false },
-			focus: (saved.focus as Focus | undefined) ?? focusDefaults
+			focus: (saved.focus as Focus | undefined) ?? focusDefaults,
+			gamification: saved.gamification ?? { enabled: false }
 		};
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
@@ -70,11 +73,11 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates, keyboard, focus } = s;
+			const { language, appearance, templates, keyboard, focus, gamification } = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
-					body: { language, appearance, templates, keyboard, focus }
+					body: { language, appearance, templates, keyboard, focus, gamification }
 				})
 			);
 			await api('/v1/me/agent-settings', {
@@ -154,6 +157,19 @@
 			>
 			<p class="muted small">
 				{t('Turn single-key shortcuts off, or Vim mode on, in Preferences.')}
+			</p>
+		</Section>
+
+		<Section id="gamification" title={t('Progress rewards')}>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.gamification.enabled} />
+				{t('Earn points, levels, badges, and a daily streak from everything you do')}</label
+			>
+			<p class="muted small">
+				{t(
+					'Off hides every surface. No notifications, no shame for missed days, nothing bought with money.'
+				)}
+				<a href="/progress">{t('How points are earned')}</a>
 			</p>
 		</Section>
 
