@@ -542,8 +542,12 @@ test('preferences switch the language, theme, and text size, and export as YAML'
 
 test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async () => {
 	await page.goto('/today');
-	await page.keyboard.press('?');
 	const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+	// The app listens for keys once it has mounted; retry until it has.
+	await expect(async () => {
+		await page.keyboard.press('?');
+		await expect(help).toBeVisible({ timeout: 1000 });
+	}).toPass();
 	await expect(help).toContainText('g t');
 	await noSeriousA11yViolations(page);
 	await page.keyboard.press('Escape');
