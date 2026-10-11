@@ -48,6 +48,8 @@ tags:
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
   - name: progress
     description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
+  - name: media
+    description: Films, series, and books with catalogue lookups and explained recommendations (EP-17).
   - name: focus
     description: Pomodoro focus sessions linked to what they were for (EP-35).
   - name: habits
@@ -3161,6 +3163,189 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/media:
+    get:
+      tags: [media]
+      operationId: listMedia
+      summary: Films, series, and books, most recently changed first
+      parameters:
+        - { name: kind, in: query, schema: { type: string, enum: [film, series, book] } }
+        - { name: status, in: query, schema: { type: string, enum: [want, doing, done, dropped] } }
+      responses:
+        "200":
+          description: The items.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/MediaItem" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [media]
+      operationId: createMedia
+      summary: Add a film, series, or book, by hand or from a catalogue entry
+      description: "With catalog, the entry's details and cover are fetched and copied to Axon; fields you send win over the catalogue's."
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/MediaFields"
+                - type: object
+                  required: [kind]
+                  properties:
+                    catalog:
+                      type: object
+                      required: [source, source_id]
+                      additionalProperties: false
+                      properties:
+                        source: { enum: [tmdb, openlibrary] }
+                        source_id: { type: string, maxLength: 100 }
+      responses:
+        "201":
+          description: The new item.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+  /v1/media/catalogs:
+    get:
+      tags: [media]
+      operationId: getMediaCatalogs
+      summary: Which catalogues this server can search
+      responses:
+        "200":
+          description: Books come from Open Library; films and series need a TMDB key on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [books, films_and_series]
+                properties:
+                  books: { type: boolean }
+                  films_and_series: { type: boolean }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/media/search:
+    get:
+      tags: [media]
+      operationId: searchMediaCatalog
+      summary: Search Open Library (books) or TMDB (films and series)
+      description: Results are cached for a week. Each person has 30 lookups a minute.
+      parameters:
+        - { name: kind, in: query, required: true, schema: { type: string, enum: [film, series, book] } }
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 200 } }
+      responses:
+        "200":
+          description: Catalogue entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/MediaCandidate" } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+  /v1/media/recommendations:
+    get:
+      tags: [media]
+      operationId: getMediaRecommendations
+      summary: What to watch or read next from your own list, each with its reasons
+      description: "No AI and no catalogue: reasons come from what you rated 8 or more and what you started."
+      parameters:
+        - { name: kind, in: query, schema: { type: string, enum: [film, series, book] } }
+      responses:
+        "200":
+          description: Up to 10 recommendations, best first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [item, score, reasons]
+                      properties:
+                        item: { $ref: "#/components/schemas/MediaItem" }
+                        score: { type: integer }
+                        reasons: { type: array, minItems: 1, items: { type: string } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/media/covers/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [media]
+      operationId: getMediaCover
+      summary: A cover copied from a catalogue, served by Axon
+      responses:
+        "200":
+          description: The image.
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/media/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [media]
+      operationId: getMedia
+      summary: One film, series, or book
+      responses:
+        "200":
+          description: The item.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaItem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [media]
+      operationId: updateMedia
+      summary: Change status, rating, progress, review, or details
+      description: Moving to doing or done fills in empty start and finish dates; done sets progress to the total.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaFields" }
+      responses:
+        "200":
+          description: The item.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaItem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [media]
+      operationId: deleteMedia
+      summary: Delete an item and its links
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/progress:
     get:
       tags: [progress]
@@ -4872,6 +5057,59 @@ components:
             id: { type: string, format: uuid }
             type: { type: string }
             title: { type: string }
+    MediaItem:
+      type: object
+      required: [id, title, kind, status, year, creators, genres, rating, progress, total, started_on, finished_on, review, source, source_id, overview, cover_id, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        kind: { enum: [film, series, book] }
+        status: { enum: [want, doing, done, dropped] }
+        year: { type: [integer, "null"] }
+        creators: { type: string, description: "Authors, directors, or creators, comma-separated." }
+        genres: { type: array, items: { type: string } }
+        rating: { type: [integer, "null"], minimum: 1, maximum: 10 }
+        progress: { type: integer, description: "Pages, episodes, or minutes, whichever total counts." }
+        total: { type: [integer, "null"] }
+        started_on: { type: [string, "null"], format: date }
+        finished_on: { type: [string, "null"], format: date }
+        review: { type: string }
+        source: { enum: [manual, tmdb, openlibrary] }
+        source_id: { type: string }
+        overview: { type: string, description: "From the catalogue; TMDB text is dropped after six months." }
+        cover_id: { type: [string, "null"], format: uuid, description: "Fetch it from /v1/media/covers/{id}." }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MediaFields:
+      type: object
+      description: Unknown fields are refused by the server.
+      properties:
+        title: { type: string, minLength: 1, maxLength: 500 }
+        kind: { enum: [film, series, book] }
+        status: { enum: [want, doing, done, dropped] }
+        year: { type: integer, description: "0 clears it." }
+        creators: { type: string, maxLength: 500 }
+        genres: { type: array, maxItems: 12, items: { type: string, maxLength: 60 } }
+        rating: { type: integer, minimum: 0, maximum: 10, description: "0 clears it." }
+        progress: { type: integer, minimum: 0, maximum: 100000 }
+        total: { type: integer, minimum: 0, maximum: 100000, description: "0 clears it." }
+        started_on: { type: string, description: "YYYY-MM-DD, or empty to clear." }
+        finished_on: { type: string, description: "YYYY-MM-DD, or empty to clear." }
+        review: { type: string, maxLength: 10000 }
+    MediaCandidate:
+      type: object
+      required: [source, source_id, kind, title, year, creators, genres, overview, total, has_cover]
+      properties:
+        source: { enum: [tmdb, openlibrary] }
+        source_id: { type: string }
+        kind: { enum: [film, series, book] }
+        title: { type: string }
+        year: { type: [integer, "null"] }
+        creators: { type: string }
+        genres: { type: array, items: { type: string } }
+        overview: { type: string }
+        total: { type: [integer, "null"] }
+        has_cover: { type: boolean }
     HabitScorecard:
       type: object
       required: [items]
