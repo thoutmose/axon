@@ -1172,6 +1172,52 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "413": { $ref: "#/components/responses/Problem" }
+  /v1/notes/explore:
+    get:
+      tags: [notes]
+      operationId: exploreNotes
+      summary: Filter notes by PARA, type, tag, text, and date, with statistics for charts and each note's keywords
+      parameters:
+        - { name: para, in: query, schema: { type: string, enum: [inbox, projects, areas, resources, archive, other] } }
+        - { name: kind, in: query, description: "Zettelkasten type from front matter (fleeting, literature, permanent…).", schema: { type: string, maxLength: 50 } }
+        - { name: tag, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: q, in: query, description: Text in the title or body., schema: { type: string, maxLength: 200 } }
+        - { name: from, in: query, description: Created on or after., schema: { type: string, format: date } }
+        - { name: to, in: query, description: Created on or before., schema: { type: string, format: date } }
+        - { name: orphans, in: query, description: Only notes with no connection., schema: { type: boolean } }
+      responses:
+        "200":
+          description: Up to 1,500 notes, newest first, and their statistics.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NoteExploration" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/notes/graph:
+    get:
+      tags: [notes]
+      operationId: noteKnowledgeGraph
+      summary: A knowledge graph of the filtered notes, from links and local NLP, where every edge says why
+      description: >
+        Edges are wikilinks and connections (always kept), then the strongest NLP reason per pair:
+        a shared named entity, shared TF-IDF keywords, thesaurus synonyms, or similar wording
+        (cosine similarity). At most six NLP edges per note. No AI provider is involved.
+      parameters:
+        - { name: para, in: query, schema: { type: string, enum: [inbox, projects, areas, resources, archive, other] } }
+        - { name: kind, in: query, description: "Zettelkasten type from front matter (fleeting, literature, permanent…).", schema: { type: string, maxLength: 50 } }
+        - { name: tag, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: q, in: query, description: Text in the title or body., schema: { type: string, maxLength: 200 } }
+        - { name: from, in: query, description: Created on or after., schema: { type: string, format: date } }
+        - { name: to, in: query, description: Created on or before., schema: { type: string, format: date } }
+        - { name: orphans, in: query, description: Only notes with no connection., schema: { type: boolean } }
+      responses:
+        "200":
+          description: Nodes and edges (up to 600 notes).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KnowledgeGraph" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/notes/sync/version:
     get:
       tags: [notes]
@@ -1283,7 +1329,7 @@ paths:
       parameters:
         - name: status
           in: query
-          schema: { enum: [active, archived], default: active }
+          schema: { type: string, enum: [active, archived], default: active }
       responses:
         "200":
           description: Up to 500 areas.
@@ -1382,7 +1428,7 @@ paths:
       parameters:
         - name: status
           in: query
-          schema: { enum: [active, archived], default: active }
+          schema: { type: string, enum: [active, archived], default: active }
       responses:
         "200":
           description: Up to 500 resources.
@@ -4576,6 +4622,75 @@ components:
         content: { type: string, description: "The Markdown exactly as written; omitted from lists." }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    NoteExploration:
+      type: object
+      required: [notes, stats, truncated]
+      properties:
+        truncated: { type: boolean, description: More notes matched than were analysed. }
+        notes:
+          type: array
+          items:
+            type: object
+            required: [id, title, path, para, kind, tags, words, links, keywords, created_at, updated_at]
+            properties:
+              id: { type: string, format: uuid }
+              title: { type: string }
+              path: { type: string }
+              para: { $ref: "#/components/schemas/NotePara" }
+              kind: { type: string }
+              tags: { type: array, items: { type: string } }
+              words: { type: integer }
+              links: { type: integer, description: Connections in and out. }
+              keywords: { type: array, items: { type: string } }
+              created_at: { type: string, format: date-time }
+              updated_at: { type: string, format: date-time }
+        stats:
+          type: object
+          required: [total, orphans, words, by_month, by_para, by_kind, tags, keywords]
+          properties:
+            total: { type: integer }
+            orphans: { type: integer }
+            words: { type: integer }
+            by_month: { $ref: "#/components/schemas/LabelCounts" }
+            by_para: { $ref: "#/components/schemas/LabelCounts" }
+            by_kind: { $ref: "#/components/schemas/LabelCounts" }
+            tags: { $ref: "#/components/schemas/LabelCounts" }
+            keywords: { $ref: "#/components/schemas/LabelCounts" }
+    LabelCounts:
+      type: array
+      items:
+        type: object
+        required: [label, count]
+        properties:
+          label: { type: string }
+          count: { type: integer }
+    KnowledgeGraph:
+      type: object
+      required: [nodes, edges, truncated]
+      properties:
+        truncated: { type: boolean }
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, title, para, kind, keywords]
+            properties:
+              id: { type: string, format: uuid }
+              title: { type: string }
+              para: { $ref: "#/components/schemas/NotePara" }
+              kind: { type: string }
+              keywords: { type: array, items: { type: string } }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to, kind, why, weight]
+            properties:
+              from: { type: string, format: uuid }
+              to: { type: string, format: uuid }
+              kind: { enum: [link, entity, keyword, synonym, similar] }
+              why: { type: string, example: "Shared keywords: memory, repetition" }
+              weight: { type: number, minimum: 0, maximum: 1 }
     NotePara:
       type: string
       enum: [inbox, projects, areas, resources, archive, other]

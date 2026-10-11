@@ -42,13 +42,13 @@ export type Positioned = NetNode & { x: number; y: number };
  * node order), so the same data always gives the same picture, and it runs a
  * fixed number of steps, so a large network can never hang the page.
  */
-export function forceLayout(
-	nodes: NetNode[],
-	edges: NetEdge[],
+export function forceLayout<N extends { id: string } = NetNode>(
+	nodes: N[],
+	edges: { from: string; to: string }[],
 	width = 900,
 	height = 560,
 	steps = 220
-): Positioned[] {
+): (N & { x: number; y: number })[] {
 	const n = nodes.length;
 	if (n === 0) return [];
 	const index = new Map(nodes.map((node, i) => [node.id, i]));

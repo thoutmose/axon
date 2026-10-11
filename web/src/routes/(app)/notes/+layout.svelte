@@ -56,6 +56,7 @@
 			<label for="note-search" class="visually-hidden">Search notes</label>
 			<input id="note-search" type="search" placeholder="Search notes…" bind:value={query} />
 		</form>
+		<a class="explore" href="/notes/explore">🕸 Explore and knowledge graph</a>
 		<nav aria-label="Folders">
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}
@@ -198,5 +199,10 @@
 	}
 	.content {
 		min-width: 0;
+	}
+	.explore {
+		display: block;
+		margin: var(--space-2) 0 var(--space-3);
+		font-size: var(--text-sm);
 	}
 </style>
