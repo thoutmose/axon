@@ -15,6 +15,7 @@
 	const statusNames: Record<string, string> = {
 		inbox: 'Inbox',
 		next: 'Next action',
+		doing: 'In progress',
 		waiting: 'Waiting for',
 		someday: 'Someday / maybe',
 		done: 'Done',

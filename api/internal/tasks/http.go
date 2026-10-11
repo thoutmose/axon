@@ -213,6 +213,7 @@ var views = map[string]view{
 	"all":     {where: open},
 	"inbox":   {where: `t.status = 'inbox'`},
 	"next":    {where: `t.status = 'next'`},
+	"doing":   {where: `t.status = 'doing'`},
 	"waiting": {where: `t.status = 'waiting'`},
 	"someday": {where: `t.status = 'someday'`},
 	"today":   {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on <= $2 OR t.due_on <= $2)`},
@@ -239,7 +240,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	}
 	v, ok := views[name]
 	if !ok {
-		httpx.Problem(w, http.StatusBadRequest, "?view= must be one of all, inbox, next, waiting, someday, today, overdue, week, month, done.")
+		httpx.Problem(w, http.StatusBadRequest, "?view= must be one of all, inbox, next, doing, waiting, someday, today, overdue, week, month, done.")
 		return
 	}
 	limit, ok := httpx.Limit(r)

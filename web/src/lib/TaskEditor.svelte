@@ -108,6 +108,7 @@
 				<select id="task-status" bind:value={form.status}>
 					<option value="inbox">Inbox</option>
 					<option value="next">Next action</option>
+					<option value="doing">In progress</option>
 					<option value="waiting">Waiting for</option>
 					<option value="someday">Someday / maybe</option>
 					<option value="done">Done</option>

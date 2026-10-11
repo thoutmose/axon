@@ -2241,7 +2241,7 @@ export interface components {
 			updated_at: string;
 		};
 		/** @enum {unknown} */
-		TaskStatus: 'inbox' | 'next' | 'waiting' | 'someday' | 'done' | 'cancelled';
+		TaskStatus: 'inbox' | 'next' | 'doing' | 'waiting' | 'someday' | 'done' | 'cancelled';
 		TaskFields: {
 			title?: string;
 			notes?: string;
@@ -3906,6 +3906,7 @@ export interface operations {
 					| 'all'
 					| 'inbox'
 					| 'next'
+					| 'doing'
 					| 'waiting'
 					| 'someday'
 					| 'today'
