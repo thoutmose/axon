@@ -28,3 +28,19 @@ export function byDay<T extends { date: string }>(items: T[]): [string, T[]][] {
 	for (const it of items) groups.set(it.date, [...(groups.get(it.date) ?? []), it]);
 	return [...groups];
 }
+
+/** Weeks (Monday first) covering a "YYYY-MM" month, as ISO dates, padded with the neighbouring months' days. */
+export function monthGrid(month: string): string[][] {
+	const { from, to } = monthRange(month);
+	const day = (iso: string) => new Date(`${iso}T00:00:00Z`);
+	const start = day(from);
+	start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+	const end = day(to);
+	end.setUTCDate(end.getUTCDate() + ((7 - end.getUTCDay()) % 7));
+	const weeks: string[][] = [];
+	for (const d = start; d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+		if ((d.getUTCDay() + 6) % 7 === 0) weeks.push([]);
+		weeks[weeks.length - 1].push(d.toISOString().slice(0, 10));
+	}
+	return weeks;
+}

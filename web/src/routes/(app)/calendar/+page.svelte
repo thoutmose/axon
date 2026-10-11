@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
-	import { byDay, monthLabel, monthRange, shiftMonth } from '$lib/calendar';
+	import { byDay, monthGrid, monthLabel, monthRange, shiftMonth } from '$lib/calendar';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
@@ -24,13 +24,34 @@
 		milestone: 'Milestone'
 	};
 
-	const thisMonth = new Date().toISOString().slice(0, 7);
+	const todayISO = new Date().toLocaleDateString('sv'); // YYYY-MM-DD in local time
+	const thisMonth = todayISO.slice(0, 7);
 	const month = $derived(page.url.searchParams.get('month') ?? thisMonth);
+	// The month grid is the default; the agenda lists the same events by day.
+	const layout = $derived(page.url.searchParams.get('layout') === 'agenda' ? 'agenda' : 'month');
+	const weeks = $derived(monthGrid(month));
+	const weekdays = $derived(
+		weeks[0].map((d) =>
+			new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, {
+				weekday: 'short',
+				timeZone: 'UTC'
+			})
+		)
+	);
+	const query = (changes: Record<string, string | null>) => {
+		const u = new URLSearchParams(page.url.searchParams);
+		for (const [k, v] of Object.entries(changes)) {
+			if (v === null) u.delete(k);
+			else u.set(k, v);
+		}
+		return `?${u}`;
+	};
 	const shown = $derived(
 		(page.url.searchParams.get('types') ?? 'task,goal,milestone').split(',') as Kind[]
 	);
 	let events = $state<Event[] | null>(null);
 	let error = $state('');
+	const byDate = $derived(new Map(byDay(events ?? [])));
 	let feeds = $state<Feed[]>([]);
 	let feedName = $state('');
 	let feedTypes = $state<Kind[]>(['task', 'milestone']);
@@ -38,7 +59,8 @@
 
 	async function load() {
 		error = '';
-		const { from, to } = monthRange(month);
+		const { from, to } =
+			layout === 'month' ? { from: weeks[0][0], to: weeks.at(-1)!.at(-1)! } : monthRange(month);
 		try {
 			const params = new URLSearchParams({ from, to, types: shown.join(',') });
 			events = shown.length ? (await api<{ items: Event[] }>(`/v1/calendar?${params}`)).items : [];
@@ -58,6 +80,7 @@
 	$effect(() => {
 		void month;
 		void shown;
+		void layout;
 		events = null;
 		load();
 	});
@@ -81,6 +104,7 @@
 	function href(e: Event): string | null {
 		if (e.type === 'goal') return `/goals/${e.id}`;
 		if (e.type === 'milestone' && e.goal_id) return `/goals/${e.goal_id}`;
+		if (e.type === 'task') return `/tasks/${e.id}`;
 		return null;
 	}
 
@@ -130,12 +154,18 @@
 
 <div class="toolbar">
 	<nav aria-label="Month" class="months">
-		<a href="?month={shiftMonth(month, -1)}&types={shown.join(',')}" aria-label="Previous month"
-			>←</a
-		>
+		<a href={query({ month: shiftMonth(month, -1) })} aria-label="Previous month">←</a>
 		<h2 aria-live="polite">{monthLabel(month)}</h2>
-		<a href="?month={shiftMonth(month, 1)}&types={shown.join(',')}" aria-label="Next month">→</a>
-		{#if month !== thisMonth}<a href="?types={shown.join(',')}" class="small">This month</a>{/if}
+		<a href={query({ month: shiftMonth(month, 1) })} aria-label="Next month">→</a>
+		{#if month !== thisMonth}<a href={query({ month: null })} class="small">This month</a>{/if}
+	</nav>
+	<nav aria-label="Calendar view" class="layouts">
+		<a href={query({ layout: null })} aria-current={layout === 'month' ? 'page' : undefined}
+			>Month</a
+		>
+		<a href={query({ layout: 'agenda' })} aria-current={layout === 'agenda' ? 'page' : undefined}
+			>Agenda</a
+		>
 	</nav>
 	<fieldset class="filters">
 		<legend class="visually-hidden">Show</legend>
@@ -156,6 +186,45 @@
 	<Status kind="error" message={error} retry={load} />
 {:else if !events}
 	<Status kind="loading" message="Loading the calendar…" />
+{:else if layout === 'month'}
+	<table class="grid">
+		<caption class="visually-hidden">{monthLabel(month)}</caption>
+		<thead>
+			<tr
+				>{#each weekdays as w (w)}<th scope="col">{w}</th>{/each}</tr
+			>
+		</thead>
+		<tbody>
+			{#each weeks as week (week[0])}
+				<tr>
+					{#each week as d (d)}
+						<td class:out={!d.startsWith(month)} class:today={d === todayISO}>
+							<span class="num" aria-label={dayLabel(d)}>{Number(d.slice(8))}</span>
+							{#if byDate.get(d)}
+								<ul>
+									{#each byDate.get(d) ?? [] as e (e.id + e.kind)}
+										<li class="ev {e.type}" class:done={e.done}>
+											{#if prefix[e.kind]}<span class="visually-hidden">{prefix[e.kind]}:</span
+												>{/if}
+											{#if href(e)}<a href={href(e)} title={e.title}>{e.title}</a>{:else}<span
+													title={e.title}>{e.title}</span
+												>{/if}
+											{#if e.done}<span class="visually-hidden">(done)</span>{/if}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+	<p class="legend">
+		<span class="ev task">Task</span><span class="ev goal">Goal target</span><span
+			class="ev milestone">Milestone</span
+		>
+	</p>
 {:else if events.length === 0}
 	<Status
 		kind="empty"
@@ -326,6 +395,120 @@
 		padding: 0 var(--space-2);
 		background: var(--accent-soft);
 		color: var(--fg);
+	}
+	.layouts {
+		display: flex;
+		gap: var(--space-1);
+	}
+	.layouts a {
+		padding: var(--space-1) var(--space-3);
+		border-radius: 999px;
+		color: var(--muted);
+		text-decoration: none;
+	}
+	.layouts a[aria-current='page'] {
+		background: var(--accent-soft);
+		color: var(--fg);
+		font-weight: 600;
+	}
+	.grid {
+		width: 100%;
+		table-layout: fixed;
+		border-collapse: separate;
+		border-spacing: 0;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		margin-bottom: var(--space-4);
+	}
+	.grid th {
+		font-size: var(--text-sm);
+		color: var(--muted);
+		font-weight: 600;
+		padding: var(--space-2);
+		border-bottom: 1px solid var(--border);
+	}
+	.grid td {
+		vertical-align: top;
+		height: 7.5rem;
+		padding: var(--space-1) var(--space-2);
+		border-right: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
+	}
+	.grid td:last-child {
+		border-right: none;
+	}
+	.grid tr:last-child td {
+		border-bottom: none;
+	}
+	.grid td.out {
+		background: rgb(127 127 127 / 0.06);
+	}
+	.grid td.out .num {
+		color: var(--muted);
+	}
+	.num {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.75rem;
+		height: 1.75rem;
+		font-size: var(--text-sm);
+		font-weight: 600;
+		border-radius: 999px;
+	}
+	.today .num {
+		background: var(--accent);
+		color: var(--accent-fg);
+	}
+	.grid ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 2px;
+	}
+	.ev {
+		display: block;
+		font-size: var(--text-sm);
+		border-radius: var(--radius-sm);
+		padding: 0 var(--space-1);
+		background: var(--accent-soft);
+		border-left: 3px solid var(--chart-1);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.ev a {
+		color: var(--fg);
+		text-decoration: none;
+	}
+	.ev a:hover {
+		text-decoration: underline;
+	}
+	.ev.goal {
+		border-left-color: var(--chart-2);
+	}
+	.ev.milestone {
+		border-left-color: var(--chart-3);
+	}
+	.ev.done {
+		opacity: 0.6;
+		text-decoration: line-through;
+	}
+	.legend {
+		display: flex;
+		gap: var(--space-3);
+		margin-bottom: var(--space-8);
+	}
+	@media (max-width: 40rem) {
+		.grid td {
+			height: 4.5rem;
+			padding: 2px;
+		}
+		.ev {
+			font-size: 0.7rem;
+		}
 	}
 	.card {
 		background: var(--surface);

@@ -125,7 +125,8 @@
 	{/each}
 </div>
 <p class="keys">
-	Drag a card to another column, use its menu, or focus its title and press <kbd>Shift</kbd>+<kbd>←</kbd
+	Drag a card to another column, use its menu, or focus its title and press <kbd>Shift</kbd>+<kbd
+		>←</kbd
 	>/<kbd>→</kbd>.
 </p>
 
@@ -200,8 +201,8 @@
 		accent-color: var(--accent);
 	}
 	.title {
-		flex: 1;
-		min-width: 6rem;
+		flex: 1 1 calc(100% - 2rem); /* the title gets its own line; meta and menu go below */
+		min-width: 0;
 		text-align: left;
 		font: inherit;
 		color: var(--fg);
