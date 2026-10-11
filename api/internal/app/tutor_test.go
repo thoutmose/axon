@@ -91,8 +91,12 @@ func TestLibraryImportsCuratedDomains(t *testing.T) {
 	}
 	var rm roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"system-design"}`)), &rm)
-	if rm.Source != "library" || len(rm.Skills) < 10 || len(rm.Edges) == 0 || !strings.Contains(rm.Attribution, "belongs to its authors") {
+	if rm.Source != "library" || len(rm.Skills) < 5 || len(rm.Edges) == 0 || !strings.Contains(rm.Attribution, "belongs to its authors") {
 		t.Fatalf("library roadmap = %+v", rm)
+	}
+	// Nodes are competencies; the book that teaches one is listed under it.
+	if s := rm.Skills[0]; s.Title != "Data-intensive application design" || len(s.Resources) == 0 || s.Resources[0].Title != "Designing Data-Intensive Applications" {
+		t.Fatalf("first skill = %+v", s)
 	}
 	// Imported roadmaps are the person's own: editable and deletable.
 	alice.mustDo(200, "PATCH", "/v1/roadmaps/"+rm.ID, []byte(`{"title":"My system design path"}`))

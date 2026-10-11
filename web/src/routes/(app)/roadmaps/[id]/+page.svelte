@@ -45,6 +45,25 @@
 	const needs = (sid: string) => edges.filter((e) => e.from === sid).map((e) => titleOf(e.to));
 	const selected = $derived(skills.find((s) => s.id === selectedId) ?? null);
 	const sections = $derived([...new Set(skills.map((s) => s.section).filter(Boolean))]);
+	// Imports from before skills were competencies list one book or course per node.
+	const ungrouped = $derived(
+		(roadmap?.source === 'library' || roadmap?.source === 'ossu') &&
+			skills.length > 0 &&
+			skills.every((s) => s.resources.length === 0)
+	);
+	let regrouping = $state(false);
+
+	async function regroup() {
+		regrouping = true;
+		try {
+			roadmap = await api<Roadmap>(`/v1/roadmaps/${id}/regroup`, { method: 'POST' });
+			toast('Grouped into skills. Your progress and connections were kept.');
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			regrouping = false;
+		}
+	}
 	const statusNames: Record<string, string> = {
 		todo: 'To learn',
 		learning: 'Learning',
@@ -201,6 +220,17 @@
 		</div>
 	</div>
 
+	{#if ungrouped}
+		<div class="upgrade card glass" role="note">
+			<p>
+				This roadmap was imported when each book or course was its own node. Group them into the
+				skills they teach, with the resources listed under each skill. Progress and connections are
+				kept.
+			</p>
+			<Button variant="secondary" busy={regrouping} onclick={regroup}>Group into skills</Button>
+		</div>
+	{/if}
+
 	<nav class="tabs" aria-label="View">
 		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>List</a>
 		<a href="?view=graph" aria-current={view === 'graph' ? 'page' : undefined}>Skill graph</a>
@@ -306,7 +336,21 @@
 					>
 				</div>
 				{#if selected.description}<p class="muted">{selected.description}</p>{/if}
-				{#if selected.url}<p>
+				{#if selected.resources.length}
+					<h3 class="small">Learn it with</h3>
+					<ul class="resources">
+						{#each selected.resources as r (r.url + r.title)}
+							<li>
+								<a href={r.url} rel="noopener noreferrer" target="_blank">{r.title} ↗</a>
+								<span class="muted small"
+									>{r.kind}{r.by ? ` · ${r.by}` : ''}{r.free ? ' · free' : ''}{r.note
+										? ` · ${r.note}`
+										: ''}</span
+								>
+							</li>
+						{/each}
+					</ul>
+				{:else if selected.url}<p>
 						<a href={selected.url} rel="noopener noreferrer" target="_blank"
 							>Open the course or resource ↗</a
 						>
@@ -557,5 +601,27 @@
 		flex-wrap: wrap;
 		gap: var(--space-2);
 		margin-bottom: var(--space-4);
+	}
+	.resources {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 var(--space-4);
+		display: grid;
+		gap: var(--space-2);
+	}
+	.resources li {
+		display: grid;
+	}
+	.upgrade {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-4);
+	}
+	.upgrade p {
+		margin: 0;
+		max-width: 60rem;
 	}
 </style>

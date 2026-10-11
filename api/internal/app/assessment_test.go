@@ -84,7 +84,7 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 		Description string `json:"description"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+py.ID, nil), &full)
-	if py.Done != 8 || !strings.Contains(full.Description, "Placed by your skills assessment") || !strings.Contains(full.Description, "“1 · Start” and “2 · Idioms” are marked done") {
+	if py.Done != 3 || !strings.Contains(full.Description, "Placed by your skills assessment") || !strings.Contains(full.Description, "“1 · Start” and “2 · Idioms” are marked done") {
 		t.Fatalf("python placement: done %d, %q", py.Done, full.Description)
 	}
 	for _, s := range py.Skills {
