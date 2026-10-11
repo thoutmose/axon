@@ -113,7 +113,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-36 | Live vault sync | The Markdown vault, the notes database, and templates stay in step continuously, not only when a sync runs. | SHOULD | 21 pts | EP-11, EP-25 | Done |
 | EP-37 | Knowledge explorer & NLP graph | Explore notes with PARA and Second Brain filters, charts, and a knowledge graph built from NLP (keywords, entities, synonyms, similarity). | SHOULD | 34 pts | EP-25, EP-36 | Planned |
 | EP-38 | Themed spaces | Each area gets its own scenery and effects: a Da Vinci notebook for notes, an Oxford library for learning, a workshop for projects, and more. | SHOULD | 21 pts | EP-23, EP-31 | Planned |
-| EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Planned |
+| EP-39 | Personal finance | Accounts, income, expenses, transfers, categories, budgets, recurring transactions, and rules, in the spirit of Firefly III. | SHOULD | 55 pts | EP-04, EP-06, EP-07 | Done |
 | EP-40 | Instance export & import | Move a whole Axon (database, files, settings) to another server or configuration. | MUST | 13 pts | EP-01, EP-31 | Planned |
 
 ## Delivery order
@@ -1031,7 +1031,19 @@ Effects are subtle (parallax, grain, light) and respect reduced motion and reduc
 - Recurring transactions and rules are idempotent (re-running creates nothing twice).
 - Finance endpoints pass the authorization matrix; amounts use exact decimals, never floats.
 
-**Candidate issues.** Accounts and transactions (13) · Categories, tags, budgets (8) · Recurring and rules (13) · CSV import (8) · Reports and UI (13). **Split before start.**
+**Issues**
+
+- [x] **EP-39/IS-39.01 — Accounts and transactions** · 13 pts · SHOULD — asset and liability accounts with opening balances; income, expense, and transfer transactions; balances are opening + income − expenses ± transfers, and transfers never count as spending; an account with history can only be archived.
+- [x] **EP-39/IS-39.02 — Categories, tags, budgets** · 8 pts · SHOULD — expense and income categories with monthly budgets, tags on transactions, and filters by tag and account.
+- [x] **EP-39/IS-39.03 — Recurring and rules** · 13 pts · SHOULD — recurring transactions on an RRULE, caught up when the budget opens, with a unique (series, date) index; rules on payee or note set a category and add a tag, never overriding a chosen category.
+- [x] **EP-39/IS-39.04 — CSV import** · 8 pts · SHOULD — separator, date format, column mapping, decimal commas, and signed amounts; a per-row hash makes re-importing an overlapping export create nothing twice.
+- [x] **EP-39/IS-39.05 — Reports and UI** · 13 pts · SHOULD — Budget in the main nav with Overview, Accounts, Recurring, Rules, Import, and Reports (monthly flows, spending by category, savings rate, net worth).
+
+**Notes**
+
+- Taken from the parallel branch `claude/axon-ui-features-9ryyt4` (migrations renumbered 00030 and 00031).
+- Amounts are integer cents end to end. Finance data is excluded from search and agents (no separate consent flow yet) and included in the account export. Encryption at rest relies on the host disk; column-level encryption was not added.
+- Property test: total of balances = openings + income − expenses over random ledgers; integration tests cover reconciliation, idempotent recurrence and import, and the cross-user 404 matrix.
 
 ### EP-40 — Instance export & import
 
@@ -1373,6 +1385,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-39 delivered from the parallel branch: accounts, transfers, budgets, tags, recurring transactions, rules, CSV import, and reports. Budget is in the main nav. |
 | 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 
