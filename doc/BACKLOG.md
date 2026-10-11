@@ -96,7 +96,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Done |
 | EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
-| EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Planned |
+| EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Planned |
 | EP-22 | AI providers | Agents on Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model, chosen per person. | MUST | 21 pts | EP-19 | Done |
 | EP-23 | Visual design refresh | A cinematic, calm interface: imagery, depth, translucency, generous type. | MUST | 21 pts | EP-07 | Done |
@@ -1324,7 +1324,17 @@ Cross-cutting matrix:
 - All computation stays on the deployment.
 - Reports stay bounded in time and memory with a year of events.
 
-**Candidate issues.** Metric definitions and projections (13) · Weekly review (13) · Trend views (13) · CSV export (5) · Performance work (8).
+**Issues**
+
+- [x] **EP-20/IS-20.01 — Metric definitions** · 13 pts · COULD — nine metrics in `internal/insights`, each with a title, unit, plain formula, source columns, a weekly query, and an items query; ISO weeks in the person's time zone; `GET /v1/insights?weeks=4..104`.
+- [x] **EP-20/IS-20.02 — Weekly review** · 13 pts · COULD — `GET /v1/insights/review?week=YYYY-Www`: each metric against the week before, highlights for changes of 25 % or more (no praise or blame), the items behind each number (25 per section), open tasks due by the end of the week; previous and next weeks.
+- [x] **EP-20/IS-20.03 — Trend views** · 13 pts · COULD — the last four weeks against the four before (up, down, steady, new) in a sentence; `/insights` with 8, 12, 26, or 52 weeks, sparklines, "How it is counted", and drill-down via `GET /v1/insights/metrics/{id}/items`.
+- [x] **EP-20/IS-20.04 — CSV export** · 5 pts · COULD — `GET /v1/insights/export.csv?weeks=` (52 by default): a row per week, a column per metric id.
+- [x] **EP-20/IS-20.05 — Performance work** · 8 pts · COULD — indexes on completion, milestone, review, and entity creation dates (`00035`); the integration test loads a year of activity (7,300 tasks) and requires the weekly series, review, and 104-week CSV within three seconds together.
+
+**Notes**
+
+- Health and finance data are not insights metrics: health needs its own consent, and finance has its own reports (EP-39).
 
 ### EP-22 — AI providers
 
@@ -1491,6 +1501,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-11 | EP-20 delivered: explainable weekly metrics, trends, weekly review, CSV export. R3 complete; next EP-21. |
 | 2026-10-11 | EP-44 delivered: Personal Trainer and Nutritionist with a health_ai consent and deterministic safety guards. |
 | 2026-10-11 | EP-46 delivered: local NLP analysis of literature and permanent notes (Snowball, TextRank, Open English WordNet, topics, NPMI concept graph). |
 | 2026-10-11 | EP-45 delivered: Pomodoro 4 rounds, compact Today header, skills-only dashboard network, savings pots. |
