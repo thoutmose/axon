@@ -22,6 +22,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/health"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/knowledge"
@@ -62,6 +63,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	if contact == "" {
 		contact = cfg.BaseURL
 	}
+	healthAPI := health.NewHandlers(pool, log, health.NewCatalogs(pool, version, contact, os.Getenv("USDA_API_KEY")))
+	priv.Register("health", health.Export)
 	mediaAPI := media.NewHandlers(pool, log, media.NewCatalogs(pool, version, contact, os.Getenv("TMDB_API_KEY")))
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
@@ -133,6 +136,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)
 				mediaAPI.Routes(r)
+				healthAPI.Routes(r)
 				knowledgeAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				agentsAPI.Routes(r)
