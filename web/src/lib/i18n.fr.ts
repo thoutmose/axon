@@ -238,5 +238,10 @@ export const fr: Record<string, string> = {
 	Year: 'Année',
 	Genres: 'Genres',
 	'Comma-separated': 'Séparés par des virgules',
-	Show: 'Afficher'
+	Show: 'Afficher',
+	'Lookups are on. You can turn them off in Privacy.':
+		'Les recherches sont activées. Vous pouvez les désactiver dans Confidentialité.',
+	'To search, Axon sends the title you type to Open Library (books) or TMDB (films and series). Nothing else about you is sent.':
+		'Pour rechercher, Axon envoie le titre saisi à Open Library (livres) ou TMDB (films et séries). Rien d’autre vous concernant n’est envoyé.',
+	'Allow lookups': 'Autoriser les recherches'
 };

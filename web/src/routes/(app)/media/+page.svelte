@@ -33,7 +33,7 @@
 	let items = $state<Item[] | null>(null);
 	let recs = $state<Rec[]>([]);
 	let error = $state('');
-	let catalogs = $state({ books: true, films_and_series: false });
+	let catalogs = $state({ books: true, films_and_series: false, consented: false });
 
 	async function load() {
 		error = '';
@@ -70,7 +70,19 @@
 	let results = $state<Candidate[] | null>(null);
 	let searching = $state(false);
 	let adding = $state('');
-	const canSearch = $derived(addKind === 'book' ? catalogs.books : catalogs.films_and_series);
+	const available = $derived(addKind === 'book' ? catalogs.books : catalogs.films_and_series);
+	const canSearch = $derived(available && catalogs.consented);
+
+	// Lookups send the title to Open Library or TMDB, so they wait for consent.
+	async function allowLookups() {
+		try {
+			await api('/v1/me/consents/external_metadata', { method: 'PUT', body: { granted: true } });
+			catalogs = { ...catalogs, consented: true };
+			toast(t('Lookups are on. You can turn them off in Privacy.'));
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
 
 	async function search(e: SubmitEvent) {
 		e.preventDefault();
@@ -240,9 +252,16 @@
 			<Button type="submit">{t('Add')}</Button>
 		{/if}
 	</form>
-	{#if !canSearch}
+	{#if !available}
 		<p class="small muted">
 			{t('Films and series are added by hand: this server has no TMDB key.')}
+		</p>
+	{:else if !catalogs.consented}
+		<p class="small">
+			{t(
+				'To search, Axon sends the title you type to Open Library (books) or TMDB (films and series). Nothing else about you is sent.'
+			)}
+			<Button variant="secondary" onclick={allowLookups}>{t('Allow lookups')}</Button>
 		</p>
 	{/if}
 	{#if results}

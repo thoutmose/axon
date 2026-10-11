@@ -1225,6 +1225,7 @@ Cross-cutting matrix:
 
 **Notes**
 
+- Lookups need the `external_metadata` consent (defined in EP-04), since the search text goes to the provider; the Media page asks for it, with what is sent, and Privacy turns it off.
 - Searches are cached for a week and capped at 30 lookups a minute per person; a catalogue that cannot be reached answers 503 with "add it by hand".
 - Covers are copied to Axon (at most 2 MB, type checked from the bytes) so the CSP stays same-origin and readers' IP addresses never reach the providers.
 - Catalogue text is never sent to the AI provider, which keeps TMDB content out of models.

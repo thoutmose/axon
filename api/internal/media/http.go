@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/privacy"
 )
 
 // lookupsPerMinute bounds catalogue lookups per person, cached or not.
@@ -57,6 +58,8 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 		httpx.Problem(w, http.StatusUnprocessableEntity, v.Msg)
 	case errors.Is(err, graph.ErrNotFound), errors.Is(err, pgx.ErrNoRows):
 		httpx.Problem(w, http.StatusNotFound, "No such item.")
+	case errors.Is(err, errNoConsent):
+		httpx.Problem(w, http.StatusForbidden, "Catalogue lookups are off. Allow them to search Open Library and TMDB, or add items by hand.")
 	case errors.Is(err, ErrUnavailable):
 		h.log.Warn("media catalogue unavailable", "err", err)
 		httpx.Problem(w, http.StatusServiceUnavailable, "The catalogue cannot be reached right now. You can still add it by hand.")
@@ -72,6 +75,20 @@ func id(r *http.Request) (uuid.UUID, error) {
 		return v, graph.ErrNotFound
 	}
 	return v, nil
+}
+
+// Consent is the purpose that allows catalogue lookups: they send the search
+// text to Open Library or TMDB.
+const Consent = "external_metadata"
+
+var errNoConsent = errors.New("no consent for catalogue lookups")
+
+func (h *Handlers) consented(r *http.Request, user uuid.UUID) error {
+	ok, err := privacy.Granted(r.Context(), h.db, user, Consent)
+	if err == nil && !ok {
+		err = errNoConsent
+	}
+	return err
 }
 
 // allow spends one lookup from the person's per-minute quota.
@@ -103,12 +120,22 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
-func (h *Handlers) catalogInfo(w http.ResponseWriter, _ *http.Request) {
-	httpx.JSON(w, http.StatusOK, map[string]any{"books": true, "films_and_series": h.catalogs.TMDBEnabled()})
+func (h *Handlers) catalogInfo(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	err := h.consented(r, who.UserID)
+	if err != nil && !errors.Is(err, errNoConsent) {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"books": true, "films_and_series": h.catalogs.TMDBEnabled(), "consented": err == nil})
 }
 
 func (h *Handlers) search(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
+	if err := h.consented(r, who.UserID); err != nil {
+		h.fail(w, err)
+		return
+	}
 	if !h.allow(who.UserID) {
 		httpx.Problem(w, http.StatusTooManyRequests, "That is a lot of searches in a minute. Wait a moment and try again.")
 		return
@@ -186,6 +213,10 @@ func (h *Handlers) create(w http.ResponseWriter, r *http.Request) {
 	if body.Catalog != nil {
 		if f.Kind == nil {
 			httpx.Problem(w, http.StatusUnprocessableEntity, "Say whether it is a film, a series, or a book.")
+			return
+		}
+		if err := h.consented(r, who.UserID); err != nil {
+			h.fail(w, err)
 			return
 		}
 		if !h.allow(who.UserID) {
