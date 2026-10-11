@@ -1073,7 +1073,10 @@ test('progress rewards are opt-in, explain every point, and reflect every area',
 
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
-	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+	await Promise.all([
+		page.waitForResponse((r) => r.url().endsWith('/v1/auth/logout')),
+		page.getByRole('button', { name: 'Sign out', exact: true }).click()
+	]);
 	await page.goto('/account');
 	await expect(page).toHaveURL(/\/signin\?next=%2Faccount/);
 	await noSeriousA11yViolations(page);
@@ -1084,7 +1087,10 @@ test('sign out, then sign back in with the passkey', async () => {
 
 test('try the shared demo without a passkey, with sample data in every area', async () => {
 	await page.goto('/account');
-	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+	await Promise.all([
+		page.waitForResponse((r) => r.url().endsWith('/v1/auth/logout')),
+		page.getByRole('button', { name: 'Sign out', exact: true }).click()
+	]);
 	await page.goto('/');
 	await page.getByRole('button', { name: 'Try the demo' }).click();
 	await expect(page).toHaveURL(/\/today$/);
@@ -1116,7 +1122,10 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await noSeriousA11yViolations(page);
 
 	await page.goto('/account');
-	await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+	await Promise.all([
+		page.waitForResponse((r) => r.url().endsWith('/v1/auth/logout')),
+		page.getByRole('button', { name: 'Sign out', exact: true }).click()
+	]);
 });
 
 test('the API reference renders the live OpenAPI document without a CDN', async () => {
