@@ -60,6 +60,12 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/budget/rules/apply", h.applyRules)
 	r.Post("/v1/budget/import", h.importCSV)
 	r.Get("/v1/budget/report", h.report)
+	r.Get("/v1/budget/pots", h.pots)
+	r.Post("/v1/budget/pots", h.createPot)
+	r.Patch("/v1/budget/pots/{id}", h.updatePot)
+	r.Delete("/v1/budget/pots/{id}", h.deletePot)
+	r.Post("/v1/budget/pots/{id}/moves", h.movePot)
+	r.Delete("/v1/budget/pots/{id}/moves/{move}", h.deletePotMove)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
@@ -607,4 +613,117 @@ func (h *Handlers) report(w http.ResponseWriter, r *http.Request) {
 	}
 	rep, err := BuildReport(r.Context(), h.db, who.UserID, today, months)
 	h.reply(w, http.StatusOK, rep, err)
+}
+
+// --- Savings pots ---
+
+func (h *Handlers) today(r *http.Request, user uuid.UUID) (time.Time, error) {
+	return Today(r.Context(), h.db, user, h.now())
+}
+
+func (h *Handlers) pots(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	today, err := h.today(r, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	items, err := Pots(r.Context(), h.db, who.UserID, today)
+	h.reply(w, http.StatusOK, map[string]any{"items": items}, err)
+}
+
+func (h *Handlers) potFields(w http.ResponseWriter, r *http.Request) (PotFields, time.Time, bool) {
+	who, _ := auth.FromContext(r.Context())
+	var f PotFields
+	if err := httpx.Decode(r, &f); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return f, time.Time{}, false
+	}
+	today, err := h.today(r, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return f, today, false
+	}
+	return f, today, true
+}
+
+func (h *Handlers) createPot(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	f, today, ok := h.potFields(w, r)
+	if !ok {
+		return
+	}
+	p, err := CreatePot(r.Context(), h.db, who.UserID, f, today)
+	h.reply(w, http.StatusCreated, p, err)
+}
+
+func (h *Handlers) updatePot(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	f, today, ok := h.potFields(w, r)
+	if !ok {
+		return
+	}
+	p, err := UpdatePot(r.Context(), h.db, who.UserID, id, f, today)
+	h.reply(w, http.StatusOK, p, err)
+}
+
+func (h *Handlers) deletePot(w http.ResponseWriter, r *http.Request) {
+	h.remove(w, r, DeletePot)
+}
+
+func (h *Handlers) movePot(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var m PotMove
+	if err := httpx.Decode(r, &m); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	today, err := h.today(r, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var p Pot
+	err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		var err error
+		p, err = MovePot(r.Context(), tx, who.UserID, id, m, today)
+		return err
+	})
+	h.reply(w, http.StatusCreated, p, err)
+}
+
+func (h *Handlers) deletePotMove(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := pathID(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	move, err := uuid.Parse(chi.URLParam(r, "move"))
+	if err != nil {
+		h.fail(w, ErrNotFound)
+		return
+	}
+	today, err := h.today(r, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var p Pot
+	err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		var err error
+		p, err = DeletePotMove(r.Context(), tx, who.UserID, id, move, today)
+		return err
+	})
+	h.reply(w, http.StatusOK, p, err)
 }

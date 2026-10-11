@@ -233,6 +233,16 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		_, s.err = budget.CreateAccount(ctx, tx, user, budget.AccountFields{Name: ptr("Visa"), Type: ptr("liability"), OpeningCents: ptr(int64(-24000))})
 	}
 	if s.err == nil {
+		var pot budget.Pot
+		pot, s.err = budget.CreatePot(ctx, tx, user, budget.PotFields{Name: ptr("Summer holiday"), TargetCents: ptr(int64(150000)),
+			TargetDate: ptr(s.today.AddDate(0, 8, 0).Format(time.DateOnly))}, s.today)
+		for _, c := range []int64{20000, 15000} {
+			if s.err == nil {
+				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: c}, s.today)
+			}
+		}
+	}
+	if s.err == nil {
 		groceries := cats["Groceries"]
 		_, s.err = budget.CreateRule(ctx, tx, user, budget.RuleFields{Name: ptr("Supermarkets"), Value: ptr("market"), CategoryID: &groceries, Tag: ptr("food")})
 	}

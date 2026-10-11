@@ -564,6 +564,10 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 		return nil, err
 	}
 	rules, err := Rules(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	pots, err := Pots(ctx, q, userID, time.Now())
 	return map[string]any{"currency": currency, "categories": cats, "accounts": accounts, "transactions": txs,
-		"recurring": recurring, "rules": rules}, err
+		"recurring": recurring, "rules": rules, "pots": pots}, err
 }

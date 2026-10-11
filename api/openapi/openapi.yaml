@@ -2020,6 +2020,125 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/pots:
+    get:
+      tags: [budget]
+      operationId: listSavingsPots
+      summary: Savings pots (tirelire) with what is saved, their history, and what to put in each month
+      responses:
+        "200":
+          description: Pots, open ones first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/SavingsPot" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [budget]
+      operationId: createSavingsPot
+      summary: Start a savings pot for something to buy later
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/SavingsPotFields"
+                - type: object
+                  required: [name, target_cents]
+      responses:
+        "201":
+          description: The pot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavingsPot" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/pots/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [budget]
+      operationId: updateSavingsPot
+      summary: Rename, retarget, or archive a pot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SavingsPotFields" }
+      responses:
+        "200":
+          description: The pot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavingsPot" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [budget]
+      operationId: deleteSavingsPot
+      summary: Delete a pot and its history
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/budget/pots/{id}/moves:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [budget]
+      operationId: moveSavingsPot
+      summary: Put money in (positive) or take it out (negative); a pot never goes below zero
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_cents]
+              additionalProperties: false
+              properties:
+                amount_cents: { type: integer, description: "Not zero; negative takes money out." }
+                occurred_on: { type: string, format: date, description: "Defaults to today." }
+                note: { type: string, maxLength: 500 }
+      responses:
+        "201":
+          description: The pot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavingsPot" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/budget/pots/{id}/moves/{move}:
+    parameters:
+      - { $ref: "#/components/parameters/ID" }
+      - { name: move, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [budget]
+      operationId: deleteSavingsPotMove
+      summary: Remove one move from a pot's history
+      responses:
+        "200":
+          description: The pot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavingsPot" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/budget/report:
     get:
       tags: [budget]
@@ -5711,6 +5830,38 @@ components:
       properties:
         day: { type: string, format: date }
         value: { type: integer }
+    SavingsPot:
+      type: object
+      required: [id, name, target_cents, target_date, note, archived, saved_cents, monthly_cents, moves, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        target_cents: { type: integer }
+        target_date: { type: [string, "null"], format: date }
+        note: { type: string }
+        archived: { type: boolean }
+        saved_cents: { type: integer }
+        monthly_cents: { type: [integer, "null"], description: "To put in each month from this month on to reach the target by its date." }
+        moves:
+          type: array
+          items:
+            type: object
+            required: [id, occurred_on, amount_cents, note]
+            properties:
+              id: { type: string, format: uuid }
+              occurred_on: { type: string, format: date }
+              amount_cents: { type: integer }
+              note: { type: string }
+        created_at: { type: string, format: date-time }
+    SavingsPotFields:
+      type: object
+      description: Unknown fields are refused by the server.
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        target_cents: { type: integer, minimum: 1 }
+        target_date: { type: string, description: "YYYY-MM-DD, or empty to clear." }
+        note: { type: string, maxLength: 2000 }
+        archived: { type: boolean }
     BudgetAccount:
       type: object
       required: [id, name, type, role, opening_cents, balance_cents, archived, created_at, updated_at]

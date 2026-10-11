@@ -119,7 +119,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/budget',
 		'/notes/explore',
 		'/media',
-		'/health'
+		'/health',
+		'/budget/pots'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -761,6 +762,20 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await noSeriousA11yViolations(page);
 });
 
+test('savings pots: put money aside for a later purchase', async () => {
+	await page.goto('/budget/pots');
+	await page.getByLabel('What it is for').fill('New bike');
+	await page.getByLabel('Target').fill('1200');
+	await page.getByRole('button', { name: 'Start the pot' }).click();
+	await page.getByLabel('Amount for New bike').fill('150,50');
+	await page.getByRole('button', { name: 'Put money in New bike' }).click();
+	await expect(page.getByRole('progressbar', { name: 'New bike: 13 % saved' })).toBeVisible();
+	await page.getByLabel('Amount for New bike').fill('500');
+	await page.getByRole('button', { name: 'Take money out of New bike' }).click();
+	await expect(page.getByText('There is not that much in the pot.')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();
@@ -903,11 +918,11 @@ test('a Pomodoro session for a task: start, pause, skip to the break, and save',
 	await expect(
 		page
 			.locator('p.hint')
-			.filter({ hasText: '25 min of focus and 5 min breaks, a 15 min break after 3 rounds' })
+			.filter({ hasText: '25 min of focus and 5 min breaks, a 15 min break after 4 rounds' })
 	).toBeVisible();
 	await page.getByLabel('A task, project, skill, note, or anything else').fill('Buy timber');
 	await page.getByRole('button', { name: /Buy timber/ }).click();
-	await page.getByRole('button', { name: 'Start 75 min of focus' }).click();
+	await page.getByRole('button', { name: 'Start 100 min of focus' }).click();
 	const timer = page.getByRole('region', { name: 'Focus' });
 	await expect(timer).toContainText('Buy timber');
 	await expect(timer.getByRole('img', { name: /left in Focus/ })).toBeVisible();
@@ -1019,7 +1034,7 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await expect(overview.getByRole('img', { name: /Daily activity/ })).toBeVisible();
 	await expect(overview.getByRole('img', { name: /The last 12 months/ })).toBeVisible();
 	const network = overview.getByRole('group', {
-		name: /Skills network: \d+ hard skills, \d+ soft skills/
+		name: /Skills network: \d+ hard skills and \d+ soft skills/
 	});
 	await expect(network).toBeVisible();
 	await overview.getByRole('button', { name: /^Soft/ }).click();
