@@ -3,6 +3,7 @@ package notes
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -54,6 +55,11 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/notes/sync/version", h.syncVersion)
 	r.Post("/v1/notes/sync", h.push)
 	r.Post("/v1/notes/sync/delete", h.pushDelete)
+	r.Get("/v1/notes/files", h.files)
+	r.Post("/v1/notes/files", h.upload)
+	r.Get("/v1/notes/file", h.file)
+	r.Put("/v1/notes/file", h.putFile)
+	r.Delete("/v1/notes/file", h.removeFile)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
@@ -258,7 +264,14 @@ func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 			if f.FileInfo().IsDir() {
 				continue
 			}
-			p, ok := CleanPath(strings.TrimPrefix(f.Name, "notes/"))
+			name := strings.TrimPrefix(f.Name, "notes/")
+			if fp, _, ok := CleanFilePath(name); ok && f.UncompressedSize64 <= maxFile {
+				if err := importFile(r.Context(), tx, who.UserID, f, fp, &res); err != nil {
+					return err
+				}
+				continue
+			}
+			p, ok := CleanPath(name)
 			if !ok || f.UncompressedSize64 > 1_000_000 {
 				res.Skipped = append(res.Skipped, f.Name)
 				continue
@@ -296,6 +309,41 @@ func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, res)
 }
 
+// importFile adds a picture or PDF from the archive; one that differs from
+// the stored file is a conflict, and one that is not what its name says is
+// skipped.
+func importFile(ctx context.Context, tx pgx.Tx, userID uuid.UUID, f *zip.File, p string, res *ImportResult) error {
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	data, err := io.ReadAll(io.LimitReader(rc, maxFile+1))
+	_ = rc.Close()
+	if err != nil {
+		return err
+	}
+	cur, err := getFile(ctx, tx, userID, p)
+	switch {
+	case errors.Is(err, errNoFile):
+		_, err = PutFile(ctx, tx, userID, p, data)
+		switch {
+		case errors.Is(err, ErrBadFile), errors.Is(err, ErrTooLarge):
+			res.Skipped = append(res.Skipped, f.Name)
+			return nil
+		case err != nil:
+			return err
+		}
+		res.Created = append(res.Created, p)
+	case err != nil:
+		return err
+	case cur.Hash == Hash(string(data)):
+		res.Unchanged = append(res.Unchanged, p)
+	default:
+		res.Conflicts = append(res.Conflicts, p)
+	}
+	return nil
+}
+
 // --- Sync ---
 //
 // A sync client (axon notes-sync) keeps a folder of Markdown files and Axon
@@ -324,13 +372,23 @@ func (h *Handlers) syncVersion(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	// Attachments count too, so a picture added in Axon wakes the sync.
+	var files int
+	var lastFile, lastFileDelete *time.Time
+	if err := h.db.QueryRow(r.Context(), `SELECT
+		(SELECT count(*) FROM note_files WHERE user_id = $1),
+		(SELECT max(updated_at) FROM note_files WHERE user_id = $1),
+		(SELECT max(deleted_at) FROM note_file_tombstones WHERE user_id = $1)`, who.UserID).Scan(&files, &lastFile, &lastFileDelete); err != nil {
+		h.fail(w, err)
+		return
+	}
 	stamp := func(t *time.Time) string {
 		if t == nil {
 			return "-"
 		}
 		return t.UTC().Format(time.RFC3339Nano)
 	}
-	httpx.JSON(w, http.StatusOK, map[string]string{"version": fmt.Sprintf("%d|%s|%s", count, stamp(lastEdit), stamp(lastDelete))})
+	httpx.JSON(w, http.StatusOK, map[string]string{"version": fmt.Sprintf("%d|%s|%s|%d|%s|%s", count, stamp(lastEdit), stamp(lastDelete), files, stamp(lastFile), stamp(lastFileDelete))})
 }
 
 func (h *Handlers) changes(w http.ResponseWriter, r *http.Request) {

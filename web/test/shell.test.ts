@@ -885,6 +885,38 @@ test('templates show their sections, and a task note in the vault becomes a task
 		.toBeGreaterThan(0);
 });
 
+test('paste a picture into a note: it is uploaded, embedded, and shown', async () => {
+	const res = await page.request.post('/api/v1/notes', {
+		headers: { Origin: new URL(page.url()).origin },
+		data: { path: 'Zettel/Whiteboard.md', content: '# Whiteboard\n\n' }
+	});
+	const note = await res.json();
+	await page.goto(`/notes/${note.id}?edit=1`);
+	const editor = page.getByLabel('Markdown');
+	await editor.click();
+	await editor.press('End');
+	await editor.evaluate(async (area: HTMLTextAreaElement) => {
+		const c = document.createElement('canvas');
+		c.width = 80;
+		c.height = 40;
+		c.getContext('2d')!.fillRect(0, 0, 40, 40);
+		const blob: Blob = await new Promise((r) => c.toBlob((b) => r(b!), 'image/png'));
+		const data = new DataTransfer();
+		data.items.add(new File([blob], 'image.png', { type: 'image/png' }));
+		area.dispatchEvent(
+			new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true })
+		);
+	});
+	await expect(editor).toHaveValue(/!\[image\]\(Attachments\/image-[0-9a-f]{8}\.png\)/);
+	const img = page.locator('article.markdown img.embed');
+	await expect(img).toBeVisible();
+	await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBe(80);
+	await expect(page.getByText('All changes saved')).toBeVisible({ timeout: 10000 });
+	await page.getByRole('button', { name: 'Read' }).click();
+	await expect(page.locator('article.reading img.embed')).toHaveAttribute('alt', 'image');
+	await noSeriousA11yViolations(page);
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();

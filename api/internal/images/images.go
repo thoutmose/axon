@@ -10,7 +10,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	_ "image/jpeg" // decoder for uploads
+	"image/jpeg"
 	"image/png"
 )
 
@@ -19,6 +19,31 @@ var ErrNotImage = errors.New("not a PNG or JPEG image")
 
 // Fit decodes data and returns a PNG no larger than maxSide on either side.
 func Fit(data []byte, maxSide int) ([]byte, error) {
+	rgba, err := fit(data, maxSide)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, rgba); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// FitJPEG is Fit for photos: a JPEG at quality 85, far smaller than a PNG.
+func FitJPEG(data []byte, maxSide int) ([]byte, error) {
+	rgba, err := fit(data, maxSide)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, rgba, &jpeg.Options{Quality: 85}); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func fit(data []byte, maxSide int) (*image.RGBA, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return nil, ErrNotImage
@@ -42,11 +67,7 @@ func Fit(data []byte, maxSide int) ([]byte, error) {
 		}
 		rgba = Resize(rgba, w, h)
 	}
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, rgba); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return rgba, nil
 }
 
 // Resize scales src to w×h by averaging the source pixels behind each target

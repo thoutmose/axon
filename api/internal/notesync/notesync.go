@@ -1,4 +1,5 @@
-// Package notesync keeps a folder of Markdown files (an Obsidian-style vault,
+// Package notesync keeps a folder of Markdown files, and the pictures and
+// PDFs they embed (an Obsidian-style vault,
 // usually a Git repository) and Axon's notes in step. It runs where the files
 // live and talks to Axon over HTTPS with a personal access token.
 //
@@ -44,10 +45,12 @@ type Config struct {
 type Report struct {
 	Pushed, Pulled, Deleted, Unchanged int
 	Conflicts                          []string
+	Skipped                            []string // files Axon would not take: not what their name says, or no room
 }
 
 type state struct {
-	Hashes map[string]string `json:"hashes"` // path → agreed content hash
+	Hashes map[string]string `json:"hashes"`          // note path → agreed content hash
+	Files  map[string]string `json:"files,omitempty"` // attachment path → agreed hash
 }
 
 type remoteNote struct {
@@ -187,6 +190,10 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 			}
 		}
 	}
+	if err := syncFiles(ctx, c, vault, st, &rep); err != nil {
+		_ = saveState(cfg.StatePath, st)
+		return rep, err
+	}
 	return rep, saveState(cfg.StatePath, st)
 }
 
@@ -257,7 +264,7 @@ func writeFile(vault *os.Root, p, content string) error {
 }
 
 func loadState(p string) (*state, error) {
-	st := &state{Hashes: map[string]string{}}
+	st := &state{Hashes: map[string]string{}, Files: map[string]string{}}
 	b, err := os.ReadFile(p) //nolint:gosec // the state path is the operator's own -state flag
 	if errors.Is(err, fs.ErrNotExist) {
 		return st, nil
@@ -270,6 +277,9 @@ func loadState(p string) (*state, error) {
 	}
 	if st.Hashes == nil {
 		st.Hashes = map[string]string{}
+	}
+	if st.Files == nil {
+		st.Files = map[string]string{}
 	}
 	return st, nil
 }
@@ -304,34 +314,47 @@ func (c client) do(ctx context.Context, method, p string, body any, out any) (in
 		}
 		rd = bytes.NewReader(b)
 	}
-	req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(c.cfg.URL, "/")+"/api"+p, rd)
+	code, b, err := c.send(ctx, method, p, "application/json", rd)
 	if err != nil {
-		return 0, err
+		return code, err
+	}
+	if out != nil && len(b) > 0 {
+		if err := decode(b, out); err != nil {
+			return code, err
+		}
+	}
+	return code, nil
+}
+
+func decode(b []byte, out any) error { return json.Unmarshal(b, out) }
+
+// send makes one request; a 409 is returned to the caller, other errors fail.
+func (c client) send(ctx context.Context, method, p, contentType string, body io.Reader) (int, []byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(c.cfg.URL, "/")+"/api"+p, body)
+	if err != nil {
+		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.cfg.Token)
-	req.Header.Set("Content-Type", "application/json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
 	hc := c.cfg.HTTP
 	if hc == nil {
 		hc = http.DefaultClient
 	}
 	res, err := hc.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	defer func() { _ = res.Body.Close() }()
 	b, err := io.ReadAll(io.LimitReader(res.Body, 64<<20))
 	if err != nil {
-		return res.StatusCode, err
+		return res.StatusCode, nil, err
 	}
 	if res.StatusCode >= 400 && res.StatusCode != http.StatusConflict {
-		return res.StatusCode, fmt.Errorf("axon: %s %s: %d %s", method, p, res.StatusCode, strings.TrimSpace(string(b)))
+		return res.StatusCode, nil, fmt.Errorf("axon: %s %s: %d %s", method, p, res.StatusCode, strings.TrimSpace(string(b)))
 	}
-	if out != nil && len(b) > 0 {
-		if err := json.Unmarshal(b, out); err != nil {
-			return res.StatusCode, err
-		}
-	}
-	return res.StatusCode, nil
+	return res.StatusCode, b, nil
 }
 
 func (c client) fetchAll(ctx context.Context) (map[string]remoteNote, []string, error) {

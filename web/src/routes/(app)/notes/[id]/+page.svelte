@@ -6,6 +6,7 @@
 	import { ApiError, api, apiResponse, message } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
 	import MarkdownEditor from '$lib/MarkdownEditor.svelte';
+	import { noteFiles, refreshFiles, resolveFile } from '$lib/noteFiles.svelte';
 	import { noteIndex, refreshNotes } from '$lib/noteIndex.svelte';
 	import { createNote, render, stem, wikilinks, type Note } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
@@ -42,9 +43,11 @@
 		render(
 			editing ? content : (note?.content ?? ''),
 			(t) => names.get(t),
-			(id) => noteIndex.notes.find((n) => n.id === id)?.title
+			(id) => noteIndex.notes.find((n) => n.id === id)?.title,
+			(t) => resolveFile(t, note?.path ?? '', noteFiles.files)
 		)
 	);
+	if (!noteFiles.loaded) refreshFiles().catch(() => {});
 	const missing = $derived(
 		wikilinks(editing ? content : (note?.content ?? '')).filter((t) => !names.has(t.toLowerCase()))
 	);
@@ -251,6 +254,7 @@
 					id="note-content"
 					bind:value={content}
 					vim={keyboard.vim}
+					pictures
 					onsave={() => save(false)}
 				/>
 				<p class="status muted small" aria-live="polite">
@@ -261,7 +265,7 @@
 							: unsaved
 								? 'Unsaved changes'
 								: 'All changes saved'}
-					· {words} words · Ctrl+S saves · type [[ to link a note
+					· {words} words · Ctrl+S saves · type [[ to link a note · paste or drop a picture
 				</p>
 				<details class="move">
 					<summary>Rename or move the file</summary>
@@ -447,6 +451,17 @@
 	}
 	.reading {
 		font-size: 1.0625rem;
+	}
+	.markdown :global(img.embed) {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin: var(--space-2) 0;
+		border-radius: var(--radius-sm);
+	}
+	.markdown :global(.embed.missing) {
+		color: var(--muted);
+		font-style: italic;
 	}
 	.markdown :global(:first-child) {
 		margin-top: 0;
