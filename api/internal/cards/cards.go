@@ -49,21 +49,42 @@ type Card struct {
 	Lapses     int        `json:"lapses"`
 	Suspended  bool       `json:"suspended"`
 	UpdatedAt  time.Time  `json:"updated_at"`
-	step       *int
+	// What makes it stick (EP-52): why it is true, a concrete example, a
+	// vivid image or mnemonic, and a place in a memory palace.
+	Elaboration string     `json:"elaboration"`
+	Example     string     `json:"example"`
+	Mnemonic    string     `json:"mnemonic"`
+	ImageType   *string    `json:"image_type"` // image/png or image/svg+xml; null without a picture
+	PalaceID    *uuid.UUID `json:"palace_id"`
+	Locus       *int       `json:"locus"`
+	// Leech: forgotten so often that reviewing it again will not help;
+	// rewrite it, add an example or an image, or split it.
+	Leech bool `json:"leech"`
+	step  *int
 }
 
+// LeechLapses is how many lapses make a card a leech (Anki uses 8; a
+// person working on their own benefits from hearing it earlier).
+const LeechLapses = 6
+
 const columns = `c.id, c.deck, c.front, c.back, c.image IS NOT NULL, c.state, c.due, c.last_review, c.stability, c.difficulty,
-	c.reps, c.lapses, c.suspended, c.updated_at, c.step`
+	c.reps, c.lapses, c.suspended, c.updated_at, c.step, c.elaboration, c.example, c.mnemonic,
+	CASE WHEN c.image IS NULL THEN NULL ELSE c.image_type END, c.palace_id, c.locus`
 
 func scan(row pgx.Row) (Card, error) {
 	var c Card
-	var step *int16
+	var step, locus *int16
 	err := row.Scan(&c.ID, &c.Deck, &c.Front, &c.Back, &c.HasImage, &c.State, &c.Due, &c.LastReview, &c.Stability, &c.Difficulty,
-		&c.Reps, &c.Lapses, &c.Suspended, &c.UpdatedAt, &step)
+		&c.Reps, &c.Lapses, &c.Suspended, &c.UpdatedAt, &step, &c.Elaboration, &c.Example, &c.Mnemonic, &c.ImageType, &c.PalaceID, &locus)
 	if step != nil {
 		s := int(*step)
 		c.step = &s
 	}
+	if locus != nil {
+		l := int(*locus)
+		c.Locus = &l
+	}
+	c.Leech = c.Lapses >= LeechLapses
 	return c, err
 }
 
@@ -99,54 +120,64 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, deck string) ([]C
 	return out, err
 }
 
-// Due returns cards due by now, oldest due first.
-func Due(ctx context.Context, q db.Querier, userID uuid.UUID, deck string, now time.Time, limit int) ([]Card, error) {
-	rows, err := q.Query(ctx, `SELECT `+columns+` FROM cards c JOIN entities e ON e.id = c.id
-		WHERE e.user_id = $1 AND NOT c.suspended AND c.due <= $2 AND ($3 = '' OR c.deck = $3)
-		ORDER BY c.due, c.id LIMIT $4`, userID, now, deck, limit)
-	if err != nil {
-		return nil, err
-	}
-	out, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (Card, error) { return scan(r) })
-	if out == nil {
-		out = []Card{}
-	}
-	return out, err
-}
-
 // Deck summarises one deck.
 type Deck struct {
 	Name  string `json:"name"`
 	Total int    `json:"total"`
-	Due   int    `json:"due"`
+	Due   int    `json:"due"` // what a review of the deck would offer now
 	New   int    `json:"new"` // never reviewed
 }
 
-// Decks lists the person's decks.
+// Decks lists the person's decks. A deck's due count is what a review of
+// it would offer now: known cards due and new cards within today's allowance.
 func Decks(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) ([]Deck, error) {
-	rows, err := q.Query(ctx, `SELECT c.deck, count(*), count(*) FILTER (WHERE NOT c.suspended AND c.due <= $2),
-		count(*) FILTER (WHERE c.reps = 0) FROM cards c JOIN entities e ON e.id = c.id
+	p, err := LoadPrefs(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	introduced, err := newIntroduced(ctx, q, userID, now)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := q.Query(ctx, `SELECT c.deck, count(*), count(*) FILTER (WHERE NOT c.suspended AND c.reps > 0 AND c.due <= $2),
+		count(*) FILTER (WHERE c.reps = 0), count(*) FILTER (WHERE c.reps = 0 AND NOT c.suspended) FROM cards c JOIN entities e ON e.id = c.id
 		WHERE e.user_id = $1 GROUP BY c.deck ORDER BY c.deck`, userID, now)
 	if err != nil {
 		return nil, err
 	}
-	out, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Deck])
+	allowance := max(0, p.NewPerDay-introduced)
+	out, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (Deck, error) {
+		var d Deck
+		var fresh int
+		err := r.Scan(&d.Name, &d.Total, &d.Due, &d.New, &fresh)
+		d.Due += min(fresh, allowance)
+		return d, err
+	})
 	if out == nil {
 		out = []Deck{}
 	}
 	return out, err
 }
 
-// Fields are the editable parts of a card.
+// Fields are the editable parts of a card. Palace is a palace id, or ""
+// to take the card out of its palace.
 type Fields struct {
-	Deck, Front, Back *string
-	Suspended         *bool
+	Deck, Front, Back              *string
+	Elaboration, Example, Mnemonic *string
+	Suspended                      *bool
+	Palace                         *string
+	Locus                          *int
 }
 
 func (f *Fields) validate() error {
-	for _, p := range []*string{f.Deck, f.Front, f.Back} {
+	for _, p := range []*string{f.Deck, f.Front, f.Back, f.Elaboration, f.Example, f.Mnemonic, f.Palace} {
 		if p != nil {
 			*p = strings.TrimSpace(*p)
+		}
+	}
+	for _, p := range []*string{f.Elaboration, f.Example, f.Mnemonic} {
+		if p != nil && len(*p) > 2000 {
+			return ValidationError{"The why, the example, and the memory image are up to 2,000 characters each."}
 		}
 	}
 	switch {
@@ -186,8 +217,14 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err != nil {
 		return Card{}, err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO cards (id, deck, front, back, due, step) VALUES ($1, $2, $3, $4, $5, 0)`, id, deck, *f.Front, back, now); err != nil {
+	if _, err := tx.Exec(ctx, `INSERT INTO cards (id, deck, front, back, due, step, elaboration, example, mnemonic) VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8)`,
+		id, deck, *f.Front, back, now, deref(f.Elaboration), deref(f.Example), deref(f.Mnemonic)); err != nil {
 		return Card{}, err
+	}
+	if f.Palace != nil && *f.Palace != "" {
+		if err := place(ctx, tx, userID, id, *f.Palace, f.Locus); err != nil {
+			return Card{}, err
+		}
 	}
 	if source != nil {
 		if _, err := graph.CreateLink(ctx, tx, userID, actor, id, DerivedFrom, *source); err != nil {
@@ -218,6 +255,33 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	set("deck", f.Deck, &c.Deck)
 	set("front", f.Front, &c.Front)
 	set("back", f.Back, &c.Back)
+	set("elaboration", f.Elaboration, &c.Elaboration)
+	set("example", f.Example, &c.Example)
+	set("mnemonic", f.Mnemonic, &c.Mnemonic)
+	if f.Palace != nil || f.Locus != nil {
+		palace := ""
+		if c.PalaceID != nil {
+			palace = c.PalaceID.String()
+		}
+		if f.Palace != nil {
+			palace = *f.Palace
+		}
+		locus := c.Locus
+		if f.Locus != nil {
+			locus = f.Locus
+		}
+		current := ""
+		if c.PalaceID != nil {
+			current = c.PalaceID.String()
+		}
+		samePlace := palace == "" || c.Locus != nil && locus != nil && *c.Locus == *locus
+		if palace != current || !samePlace {
+			if err := place(ctx, tx, userID, id, palace, locus); err != nil {
+				return c, err
+			}
+			changed = append(changed, "palace")
+		}
+	}
 	if f.Suspended != nil && *f.Suspended != c.Suspended {
 		c.Suspended, changed = *f.Suspended, append(changed, "suspended")
 	}
@@ -227,11 +291,44 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	if err := graph.UpdateEntity(ctx, tx, userID, id, actor, title(c.Front), c.Back, changed); err != nil {
 		return c, err
 	}
-	if _, err := tx.Exec(ctx, `UPDATE cards SET deck = $2, front = $3, back = $4, suspended = $5, updated_at = clock_timestamp() WHERE id = $1`,
-		id, c.Deck, c.Front, c.Back, c.Suspended); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE cards SET deck = $2, front = $3, back = $4, suspended = $5, elaboration = $6, example = $7, mnemonic = $8,
+		updated_at = clock_timestamp() WHERE id = $1`, id, c.Deck, c.Front, c.Back, c.Suspended, c.Elaboration, c.Example, c.Mnemonic); err != nil {
 		return c, err
 	}
 	return Get(ctx, tx, userID, id)
+}
+
+func deref(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
+// place puts a card at a locus of one of the person's palaces, or with
+// palace "" takes it out.
+func place(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, palace string, locus *int) error {
+	if palace == "" {
+		_, err := tx.Exec(ctx, `UPDATE cards SET palace_id = NULL, locus = NULL WHERE id = $1`, id)
+		return err
+	}
+	pid, err := uuid.Parse(palace)
+	if err != nil {
+		return ValidationError{"No such memory palace."}
+	}
+	var loci int
+	err = tx.QueryRow(ctx, `SELECT cardinality(loci) FROM memory_palaces WHERE id = $1 AND user_id = $2`, pid, userID).Scan(&loci)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ValidationError{"No such memory palace."}
+	}
+	if err != nil {
+		return err
+	}
+	if locus == nil || *locus < 0 || *locus >= loci {
+		return ValidationError{"Choose one of the palace's places (locus 0 to the number of places minus one)."}
+	}
+	_, err = tx.Exec(ctx, `UPDATE cards SET palace_id = $2, locus = $3 WHERE id = $1`, id, pid, *locus)
+	return err
 }
 
 // Preview is when a card would next be due for each rating.
@@ -243,14 +340,18 @@ type Preview struct {
 }
 
 // Next previews the four possible outcomes of reviewing c now.
-func Next(c Card, now time.Time) Preview {
-	s := fsrs.Default()
+func Next(c Card, now time.Time, p Prefs) Preview {
+	s := p.scheduler()
 	sc := c.schedule()
 	return Preview{s.Review(sc, fsrs.Again, now).Due, s.Review(sc, fsrs.Hard, now).Due, s.Review(sc, fsrs.Good, now).Due, s.Review(sc, fsrs.Easy, now).Due}
 }
 
 // Review records a review and reschedules the card.
 func Review(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, rating fsrs.Rating, duration *int, now time.Time) (Card, error) {
+	p, err := LoadPrefs(ctx, tx, userID)
+	if err != nil {
+		return Card{}, err
+	}
 	if rating < fsrs.Again || rating > fsrs.Easy {
 		return Card{}, ValidationError{"Rate 1 (again), 2 (hard), 3 (good), or 4 (easy)."}
 	}
@@ -261,7 +362,7 @@ func Review(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, rating fsrs.Ra
 	if err != nil {
 		return c, err
 	}
-	next := fsrs.Default().Review(c.schedule(), rating, now)
+	next := p.scheduler().Review(c.schedule(), rating, now)
 	lapse := 0
 	if rating == fsrs.Again && c.State == fsrs.Review {
 		lapse = 1
@@ -278,31 +379,30 @@ func Review(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, rating fsrs.Ra
 	return Get(ctx, tx, userID, id)
 }
 
-// SetImage stores (or with nil, removes) a card's picture.
-func SetImage(ctx context.Context, q db.Querier, userID, id uuid.UUID, png []byte) error {
-	tag, err := q.Exec(ctx, `UPDATE cards c SET image = $3, updated_at = clock_timestamp() FROM entities e
-		WHERE c.id = $1 AND e.id = c.id AND e.user_id = $2`, id, userID, png)
+// SetImage stores (or with nil, removes) a card's picture: a PNG, or a
+// drawing as sanitised SVG (contentType image/svg+xml).
+func SetImage(ctx context.Context, q db.Querier, userID, id uuid.UUID, data []byte, contentType ...string) error {
+	ct := "image/png"
+	if len(contentType) > 0 {
+		ct = contentType[0]
+	}
+	tag, err := q.Exec(ctx, `UPDATE cards c SET image = $3, image_type = $4, updated_at = clock_timestamp() FROM entities e
+		WHERE c.id = $1 AND e.id = c.id AND e.user_id = $2`, id, userID, data, ct)
 	if err == nil && tag.RowsAffected() == 0 {
 		return graph.ErrNotFound
 	}
 	return err
 }
 
-// Image returns a card's picture, or nil.
-func Image(ctx context.Context, q db.Querier, userID, id uuid.UUID) ([]byte, error) {
+// Image returns a card's picture and its type, or nil.
+func Image(ctx context.Context, q db.Querier, userID, id uuid.UUID) ([]byte, string, error) {
 	var img []byte
-	err := q.QueryRow(ctx, `SELECT c.image FROM cards c JOIN entities e ON e.id = c.id WHERE c.id = $1 AND e.user_id = $2`, id, userID).Scan(&img)
+	var ct string
+	err := q.QueryRow(ctx, `SELECT c.image, c.image_type FROM cards c JOIN entities e ON e.id = c.id WHERE c.id = $1 AND e.user_id = $2`, id, userID).Scan(&img, &ct)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, graph.ErrNotFound
+		return nil, "", graph.ErrNotFound
 	}
-	return img, err
-}
-
-// DueCount is how many cards are due now, for the dashboard.
-func DueCount(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (int, error) {
-	var n int
-	err := q.QueryRow(ctx, `SELECT count(*) FROM cards c JOIN entities e ON e.id = c.id WHERE e.user_id = $1 AND NOT c.suspended AND c.due <= $2`, userID, now).Scan(&n)
-	return n, err
+	return img, ct, err
 }
 
 func export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {

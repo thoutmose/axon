@@ -82,6 +82,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 
 ### 📚 Apprentissage et médias
 - ✅ Des cartes mémoire illustrées à consulter, ajouter, modifier et supprimer, révisées avec FSRS-5 (le planificateur d’Anki, vérifié sur son implémentation de référence), des tests d’entraînement, et un agent Enseignant qui rédige des questions de récupération à partir de vos notes de lecture et permanentes, soumises à votre approbation.
+- ✅ Un moteur d’apprentissage et de mémorisation inspiré de *Understanding How We Learn* et de *Moonwalking with Einstein* : Apprendre → Aujourd’hui planifie la journée (cartes à réviser et leur durée, notes à se remémorer, test mixte hebdomadaire, notes éphémères à traiter, cartes difficiles à travailler) ; quelques nouvelles cartes par jour et des paquets mélangés (entrelacement) ; écrire sa réponse avant de la voir ; chaque carte peut porter le pourquoi, un exemple concret, une image mentale frappante, et une image ou un dessin de l’IA (double codage) ; rappel libre de notes entières sur une page blanche, comparé à leurs idées clés et espacé davantage à chaque réussite ; palais de mémoire parcourus lieu par lieu ; cartes tirées de ce qu’une note marque (`question :: réponse`, `==terme==`, `**Terme** : définition`) ; et l’Enseignant rédige des cartes illustrées soumises à votre approbation.
 - ✅ Paquets Anki (.apkg) par paquet de cartes, images comprises, et synchronisation automatique avec votre propre `anki-sync-server` (par exemple sur `srv-services`), à la demande ou dès que vous approuvez les cartes de l’Enseignant ; les cartes présentes seulement dans Anki ne sont jamais supprimées.
 - ✅ Films, séries et livres : à voir ou à lire, en cours, terminés ou abandonnés, avec une note sur 10, la progression en pages, épisodes ou minutes, et une critique. Une fois les recherches autorisées (elles envoient le titre saisi), les livres viennent d’Open Library, et les films et séries de TMDB si le serveur a une clé ; tout peut s’ajouter à la main. Les couvertures sont copiées dans Axon, donc les pages ne chargent jamais d’images ailleurs. « À suivre » classe votre liste avec ses raisons (même créateur ou genre que ce que vous avez noté 8 ou plus, ou ce que vous avez commencé), et un agent Médias propose de nouveaux titres soumis à votre approbation.
 
@@ -215,20 +216,26 @@ erDiagram
 ```mermaid
 sequenceDiagram
   actor P as Person
-  participant N as Literature and permanent notes
+  participant N as Notes
   participant T as Teacher agent
   participant R as Review engine, FSRS
+  participant L as Learn: today's plan
   participant A as anki-sync-server
-  P->>N: reads, writes in own words, adds pictures
-  P->>T: make cards from these notes
-  T->>N: reads only the notes allowed
-  T-->>P: proposes cards: questions, answers, examples, illustrations
-  P->>R: approves the cards
-  loop Every day, spaced and interleaved
-    R-->>P: due cards, mixed topics
-    P->>R: recalls before seeing the answer, rates it
-    R->>R: schedules the next review
+  P->>N: captures fleeting notes, rewrites them as literature and permanent notes
+  P->>N: marks what to remember: q :: a, ==term==, **Term**: definition
+  N-->>R: Make cards: drafts from the marks, added by the person
+  P->>T: illustrated cards from these notes
+  T->>N: reads only literature and permanent notes
+  T-->>P: proposes cards with the why, an example, a vivid image, an SVG drawing
+  P->>R: approves, then places cards in a memory palace
+  loop Every day
+    L-->>P: cards due, a few new ones, decks mixed, and notes due for recall
+    P->>R: writes the answer, then sees it with the why, the example, and the image, and rates it
+    R->>R: schedules the next review at the chosen retention
+    P->>N: recalls a whole note on a blank page
+    N-->>L: ideas recalled and missed, next recall further away when recalled well
   end
+  L-->>P: weekly mixed test, and leeches to practise and rewrite
   R->>A: syncs approved cards
 ```
 

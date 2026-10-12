@@ -18,6 +18,8 @@ import (
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/images"
+	"github.com/thoutmose/axon/api/internal/learning"
 	"github.com/thoutmose/axon/api/internal/media"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/para"
@@ -366,7 +368,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
 	}
 
-	// Flashcards from the learning notes, a few already reviewed.
+	// Flashcards from the learning notes, a few already reviewed; the first
+	// with the why, an example, a memory image, and a drawing (EP-52).
+	var demoCards []cards.Card
 	for i, qa := range [][2]string{
 		{"Why does spaced repetition work?", "Reviewing just before you would forget makes the memory last longer."},
 		{"What is retrieval practice?", "Pulling information out of memory, for example by testing yourself."},
@@ -377,11 +381,49 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		if s.err != nil {
 			break
 		}
+		f := cards.Fields{Front: ptr(qa[0]), Back: ptr(qa[1]), Deck: ptr("Learning science")}
+		if i == 0 {
+			f.Elaboration = ptr("Each retrieval after some forgetting takes effort, and that effort rebuilds the memory more strongly than an easy one.")
+			f.Example = ptr("Ten minutes a day for a week beats an hour the night before the exam.")
+			f.Mnemonic = ptr("A gardener watering a plant a little every day while the neighbour floods theirs once a month and watches it wilt.")
+		}
 		var c cards.Card
-		c, s.err = cards.Create(ctx, tx, user, graph.UserActor, cards.Fields{Front: ptr(qa[0]), Back: ptr(qa[1]), Deck: ptr("Learning science")}, &spaced, now)
+		c, s.err = cards.Create(ctx, tx, user, graph.UserActor, f, &spaced, now)
 		if s.err == nil && i < 2 {
 			_, s.err = cards.Review(ctx, tx, user, c.ID, fsrs.Easy, nil, now.Add(-72*time.Hour))
 		}
+		demoCards = append(demoCards, c)
+	}
+	if s.err == nil && len(demoCards) == 5 {
+		var drawing []byte
+		if drawing, s.err = images.SanitizeSVG(forgettingCurve); s.err == nil {
+			s.err = cards.SetImage(ctx, tx, user, demoCards[0].ID, drawing, "image/svg+xml")
+		}
+	}
+	// A memory palace with three cards placed along the walk.
+	if s.err == nil && len(demoCards) == 5 {
+		var palace learning.Palace
+		palace, s.err = learning.CreatePalace(ctx, tx, user, graph.UserActor, learning.PalaceFields{
+			Title: ptr("My flat"), Description: ptr("From the front door to the balcony."),
+			Loci: &[]string{"Front door", "Coat hook", "Kitchen sink", "Sofa", "Balcony"},
+		})
+		for i, c := range demoCards[1:4] {
+			if s.err != nil {
+				break
+			}
+			locus := i * 2
+			_, s.err = cards.Update(ctx, tx, user, c.ID, graph.UserActor, cards.Fields{Palace: ptr(palace.ID.String()), Locus: &locus,
+				Mnemonic: ptr([]string{"A quiz show host bursting out of the front door, demanding answers.", "Your coat answering exam questions out loud.", "A man scrubbing a blackboard clean in the sink, but the chalk keeps coming back."}[i])})
+		}
+	}
+	// The spacing note was recalled three days ago, and is due again today; the last mixed test was eight days ago.
+	if s.err == nil {
+		_, s.err = tx.Exec(ctx, `INSERT INTO note_recalls (id, user_id, note_id, score, recalled_at, due_on) VALUES ($1, $2, $3, 0.6, $4, $5)`,
+			uuid.Must(uuid.NewV7()), user, spaced, now.AddDate(0, 0, -3), now.Format(time.DateOnly))
+	}
+	if s.err == nil {
+		_, s.err = tx.Exec(ctx, `INSERT INTO practice_tests (id, user_id, deck, questions, correct, taken_at) VALUES ($1, $2, '', 5, 4, $3)`,
+			uuid.Must(uuid.NewV7()), user, now.AddDate(0, 0, -8))
 	}
 
 	// Progress rewards on, with a freeze in stock, so the demo shows them.
@@ -449,3 +491,18 @@ func seedProposals(ctx context.Context, tx pgx.Tx, user, task uuid.UUID) error {
 	}
 	return nil
 }
+
+// forgettingCurve is the demo card's drawing: memory fading, and lifted
+// again by each spaced review.
+const forgettingCurve = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Memory fades, and each spaced review lifts it higher and makes it fade more slowly">
+<rect width="400" height="260" fill="#f4f1ea"/>
+<line x1="40" y1="220" x2="380" y2="220" stroke="#555" stroke-width="2"/>
+<line x1="40" y1="220" x2="40" y2="30" stroke="#555" stroke-width="2"/>
+<path d="M40 40 C70 120 90 150 120 160" fill="none" stroke="#c0392b" stroke-width="3"/>
+<path d="M120 40 C160 90 190 110 220 115" fill="none" stroke="#d35400" stroke-width="3"/>
+<path d="M220 40 C270 65 310 75 370 80" fill="none" stroke="#27ae60" stroke-width="3"/>
+<circle cx="120" cy="40" r="5" fill="#2c3e50"/><circle cx="220" cy="40" r="5" fill="#2c3e50"/>
+<text x="210" y="250" text-anchor="middle" font-size="14" fill="#333">time</text>
+<text x="20" y="130" text-anchor="middle" font-size="14" fill="#333" transform="rotate(-90 20 130)">memory</text>
+<text x="128" y="32" font-size="12" fill="#2c3e50">review</text><text x="228" y="32" font-size="12" fill="#2c3e50">review</text>
+</svg>`

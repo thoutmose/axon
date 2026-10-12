@@ -9,7 +9,7 @@ export const goTo: Shortcut[] = [
 	{ keys: 'g n', label: 'Notes', href: '/notes' },
 	{ keys: 'g o', label: 'Goals', href: '/goals' },
 	{ keys: 'g p', label: 'Projects', href: '/projects' },
-	{ keys: 'g l', label: 'Learn', href: '/roadmaps' },
+	{ keys: 'g l', label: 'Learn', href: '/learn' },
 	{ keys: 'g r', label: 'Review flashcards', href: '/cards/review' },
 	{ keys: 'g b', label: 'Habits', href: '/habits' },
 	{ keys: 'g f', label: 'Focus', href: '/focus' },

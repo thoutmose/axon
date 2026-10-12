@@ -113,6 +113,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/habits',
 		'/projects',
 		'/roadmaps',
+		'/learn',
+		'/learn/palaces',
 		'/areas',
 		'/resources',
 		'/archive',
@@ -1133,6 +1135,75 @@ test('flashcards: add an illustrated card, review it with the keyboard, take a t
 	await page.getByRole('button', { name: 'Check' }).click();
 	await page.getByRole('button', { name: 'I got it right' }).click();
 	await expect(page.getByRole('heading', { name: 'Score: 1 of 1' })).toBeVisible();
+});
+
+test('learn: cards from a note, free recall, a memory palace walk, and the day plan', async () => {
+	const origin = new URL(page.url()).origin;
+	const res = await page.request.post('/api/v1/notes', {
+		headers: { Origin: origin },
+		data: {
+			path: 'Zettel/Testing effect.md',
+			content:
+				'---\ntype: permanent\n---\n# Testing effect\n\nRetrieval practice strengthens long-term memory more than rereading.\nSpaced retrieval slows forgetting and makes learning durable.\n\nWhat is the testing effect? :: Remembering better what you were tested on than what you reread.\n'
+		}
+	});
+	const note = await res.json();
+	await page.goto(`/notes/${note.id}`);
+	await page.getByRole('button', { name: 'Make cards' }).click();
+	const drafts = page.getByRole('dialog', { name: 'Make cards from this note' });
+	await expect(drafts).toContainText('What is the testing effect?');
+	await drafts.getByRole('button', { name: 'Add 1 cards' }).click();
+	await expect(page.getByText('1 card added to Testing effect.')).toBeVisible();
+
+	// Free recall: the note stays hidden; the comparison names what came back.
+	await page.getByRole('link', { name: 'Recall' }).click();
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Recall: Testing effect' })
+	).toBeVisible();
+	await page
+		.getByLabel('What you remember')
+		.fill('Retrieval practice strengthens memory more than rereading.');
+	await page.getByRole('button', { name: 'Compare with the note' }).click();
+	await expect(page.getByRole('heading', { name: /% of the key ideas/ })).toBeVisible();
+	await expect(page.getByText('Next recall in 1 day')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	// A memory palace, a card placed in it, and a walk through it.
+	await page.goto('/learn/palaces');
+	await page.getByLabel('Place', { exact: true }).fill('My flat');
+	await page
+		.getByLabel('Spots, in walking order, one per line')
+		.fill('Front door\nCoat hook\nKitchen sink');
+	await page.getByRole('button', { name: 'Build' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'My flat' })).toBeVisible();
+	const palaceURL = page.url();
+	await page.goto('/cards?deck=Testing%20effect');
+	await page.getByRole('button', { name: 'Edit What is the testing effect?' }).click();
+	const edit = page.getByRole('dialog', { name: 'Edit card' });
+	await edit.getByText('Make it stick (optional)').click();
+	await edit
+		.getByLabel('A vivid memory image')
+		.fill('An examiner bursting out of the front door with a giant red pen.');
+	await edit.getByLabel('Memory palace').selectOption({ label: 'My flat' });
+	await edit.getByLabel('Place', { exact: true }).selectOption({ label: '1. Front door' });
+	await edit.getByRole('button', { name: 'Save' }).click();
+	await page.goto(palaceURL);
+	await page.getByRole('button', { name: 'Walk the palace' }).click();
+	await expect(page.getByRole('heading', { name: 'Front door' })).toBeVisible();
+	await page.getByRole('button', { name: 'Show' }).click();
+	await expect(page.getByText('Picture it: An examiner bursting')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	// The day's plan, and deliberate practice.
+	await page.getByRole('link', { name: 'Learn', exact: true }).first().click();
+	await expect(page).toHaveURL(/\/learn$/);
+	await expect(page.getByRole('heading', { name: 'Flashcards' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Recall your notes' })).toBeVisible();
+	await page.getByText('How Axon helps you remember').click();
+	await expect(page.getByText('Interleaving.')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.goto('/cards/review?practice=1');
+	await expect(page.getByRole('heading', { level: 1, name: 'Practise weak cards' })).toBeVisible();
 });
 
 test('progress rewards are opt-in, explain every point, and reflect every area', async () => {

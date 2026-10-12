@@ -3,12 +3,16 @@
 	import { t } from './i18n.svelte';
 
 	const tabs = [
-		{ href: '/roadmaps', label: 'Roadmaps' },
+		{ href: '/learn', label: 'Today' },
 		{ href: '/cards', label: 'Flashcards' },
+		{ href: '/learn/palaces', label: 'Memory palaces' },
+		{ href: '/roadmaps', label: 'Roadmaps' },
 		{ href: '/roadmaps/assessment', label: 'Skills assessment' }
 	];
 	const current = (href: string) =>
-		href === '/roadmaps' ? page.url.pathname === '/roadmaps' : page.url.pathname.startsWith(href);
+		href === '/roadmaps' || href === '/learn'
+			? page.url.pathname === href
+			: page.url.pathname.startsWith(href);
 </script>
 
 <nav class="learn-tabs" aria-label={t('Learn')}>

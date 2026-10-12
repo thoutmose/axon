@@ -15,6 +15,7 @@
 	import { toast } from '$lib/ui/toast.svelte';
 
 	type Mention = { id: string; title: string; path: string };
+	type Draft = { front: string; back: string; kind: string; line: number; exists: boolean };
 
 	const id = $derived(page.params.id ?? '');
 	const editing = $derived(page.url.searchParams.get('edit') === '1');
@@ -27,6 +28,10 @@
 	let conflict = $state(false);
 	let confirmDelete = $state(false);
 	let mentions = $state<Mention[]>([]);
+	let drafts = $state<(Draft & { pick: boolean })[] | null>(null);
+	let draftsOpen = $state(false);
+	let draftDeck = $state('');
+	const study = $derived(note?.kind === 'literature' || note?.kind === 'permanent');
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
 	// Every note by lower-cased stem and title (the stem wins, as on the
@@ -190,6 +195,64 @@
 		}
 	}
 
+	/** Cards from what the note marks: question :: answer, ==term==, **Term**: definition. */
+	async function openDrafts() {
+		if (!note) return;
+		draftDeck = note.title;
+		draftsOpen = true;
+		drafts = null;
+		try {
+			const res = await api<{ items: Draft[] }>(`/v1/notes/${id}/card-drafts`);
+			drafts = res.items.map((d) => ({ ...d, pick: !d.exists }));
+		} catch (err) {
+			toast(message(err), 'error');
+			draftsOpen = false;
+		}
+	}
+
+	async function addCards() {
+		const picked = (drafts ?? []).filter((d) => d.pick);
+		try {
+			for (const d of picked) {
+				await api('/v1/flashcards', {
+					method: 'POST',
+					body: { front: d.front, back: d.back, deck: draftDeck || 'Default', source_id: id }
+				});
+			}
+			draftsOpen = false;
+			toast(`${picked.length} ${picked.length === 1 ? 'card' : 'cards'} added to ${draftDeck}.`);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	/** Processing: a fleeting note becomes a literature or permanent note. */
+	async function promote(kind: 'literature' | 'permanent') {
+		if (!note) return;
+		const text = note.content ?? '';
+		const next = /^---\n[\s\S]*?\n---/.test(text)
+			? /^---\n[\s\S]*?^type:.*$/m.test(text)
+				? text.replace(/^(---\n[\s\S]*?)^type:.*$/m, `$1type: ${kind}`)
+				: text.replace(/^---\n/, `---\ntype: ${kind}\n`)
+			: `---\ntype: ${kind}\n---\n${text}`;
+		try {
+			const res = await apiResponse<Note>(`/v1/notes/${id}`, {
+				method: 'PUT',
+				headers: { 'If-Match': etag },
+				body: { path: note.path, content: next }
+			});
+			note = res.data;
+			etag = res.etag;
+			content = note.content ?? '';
+			toast(`Now a ${kind} note. Rewrite it in your own words.`);
+			await refreshNotes();
+			setEditing(true);
+		} catch (err) {
+			if (err instanceof ApiError && err.status === 412) conflict = true;
+			else toast(message(err), 'error');
+		}
+	}
+
 	async function remove() {
 		try {
 			await api(`/v1/notes/${id}`, { method: 'DELETE' });
@@ -225,6 +288,14 @@
 			{/if}
 		</div>
 		<div class="actions">
+			{#if study}
+				<Button variant="secondary" href="/notes/{note.id}/recall">Recall</Button>
+				<Button variant="secondary" onclick={openDrafts}>Make cards</Button>
+			{:else if note.kind === 'fleeting'}
+				<Button variant="secondary" onclick={() => promote('literature')}>To literature note</Button
+				>
+				<Button variant="secondary" onclick={() => promote('permanent')}>To permanent note</Button>
+			{/if}
 			{#if editing}
 				<Button variant="secondary" onclick={() => setEditing(false)}>Read</Button>
 			{:else}
@@ -329,6 +400,42 @@
 	<NoteAnalysis id={note.id} />
 	<Connections id={note.id} type="note" />
 {/if}
+
+<Dialog bind:open={draftsOpen} title="Make cards from this note">
+	{#if !drafts}
+		<Status kind="loading" message="Reading the note…" />
+	{:else if drafts.length === 0}
+		<p>
+			Nothing marked yet. In the note, write <code>question :: answer</code>, a
+			<code>Q:</code> line followed by an <code>A:</code> line, a <code>==key term==</code> in a
+			sentence, or <code>**Term**: definition</code>. Or ask the
+			<a
+				href="/agents?agent=teacher&ask={encodeURIComponent(
+					`Write illustrated flashcards from my note “${note?.title ?? ''}”.`
+				)}">Teacher</a
+			> to write cards from it.
+		</p>
+	{:else}
+		<ul class="drafts">
+			{#each drafts as d, i (i)}
+				<li>
+					<label>
+						<input type="checkbox" bind:checked={d.pick} />
+						<span><strong>{d.front}</strong> → {d.back}</span>
+						{#if d.exists}<span class="muted small">(already a card)</span>{/if}
+					</label>
+				</li>
+			{/each}
+		</ul>
+		<label for="draft-deck">Deck</label>
+		<input id="draft-deck" bind:value={draftDeck} maxlength="200" />
+		<div class="actions">
+			<Button onclick={addCards} disabled={!drafts.some((d) => d.pick)}
+				>Add {drafts.filter((d) => d.pick).length} cards</Button
+			>
+		</div>
+	{/if}
+</Dialog>
 
 <Dialog bind:open={confirmDelete} title="Delete this note?">
 	<p>
@@ -451,6 +558,19 @@
 	}
 	.reading {
 		font-size: 1.0625rem;
+	}
+	.drafts {
+		list-style: none;
+		padding: 0;
+		display: grid;
+		gap: var(--space-2);
+		max-height: 50vh;
+		overflow: auto;
+	}
+	.drafts label {
+		display: flex;
+		gap: var(--space-2);
+		align-items: baseline;
 	}
 	.markdown :global(img.embed) {
 		display: block;

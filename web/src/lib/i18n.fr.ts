@@ -317,5 +317,14 @@ export const fr: Record<string, string> = {
 		'Y écrire aussi mes journaux d’alimentation et d’entraînement (données de santé, dans un seul sens)',
 	'Each item is a note with its fields in the front matter and its text in sections. Edit either side and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into Archive/ archives it. Health logs also need the health consent and are removed from the vault if you withdraw it.':
 		'Chaque élément est une note, avec ses champs dans l’en-tête et son texte en sections. Modifiez l’un ou l’autre côté, l’autre suit ; une nouvelle note avec un type crée l’élément ; supprimer le fichier le supprime ; le déplacer dans Archive/ l’archive. Les journaux de santé demandent aussi le consentement santé et sont retirés du coffre si vous le retirez.',
-	'See the templates': 'Voir les modèles'
+	'See the templates': 'Voir les modèles',
+	Learning: 'Apprentissage',
+	'New flashcards a day': 'Nouvelles cartes par jour',
+	'Retention to aim for': 'Rétention visée',
+	'Mix decks when reviewing everything (interleaving)':
+		'Mélanger les paquets quand je révise tout (entrelacement)',
+	'Write my answer before it is shown': 'Écrire ma réponse avant de la voir',
+	'A few new cards a day keep reviews steady. Higher retention means more reviews; 90% is a good balance. Mixing decks and writing answers make reviews harder, and memories stronger.':
+		'Quelques nouvelles cartes par jour gardent des révisions régulières. Une rétention plus haute demande plus de révisions ; 90 % est un bon équilibre. Mélanger les paquets et écrire ses réponses rendent les révisions plus difficiles, et les souvenirs plus solides.',
+	'Memory palaces': 'Palais de mémoire'
 };

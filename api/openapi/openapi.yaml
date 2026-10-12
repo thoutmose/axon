@@ -46,6 +46,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: learning
+    description: "The learning and memory engine (EP-52): the day's plan, free recall of notes, cards drafted from notes, practice tests, and memory palaces."
   - name: progress
     description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
   - name: insights
@@ -993,6 +995,10 @@ paths:
           in: query
           description: "false leaves out the notes the vault mirror keeps for tasks, goals, habits, and other items."
           schema: { type: string, enum: ["false"] }
+        - name: kind
+          in: query
+          description: "Only notes of this type (front matter type), e.g. fleeting, literature, permanent."
+          schema: { type: string, maxLength: 100 }
         - name: folder
           in: query
           description: "Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note)."
@@ -1500,6 +1506,223 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/FileConflict" }
         "422": { $ref: "#/components/responses/Problem" }
+
+  /v1/learning/plan:
+    get:
+      tags: [learning]
+      operationId: getLearningPlan
+      summary: "Today's plan to learn and remember: cards to review (with minutes, retention, and leeches), notes to recall, whether a weekly practice test is due, fleeting notes to process, and the streak"
+      responses:
+        "200":
+          description: The plan.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearningPlan" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/learning/tests:
+    post:
+      tags: [learning]
+      operationId: recordPracticeTest
+      summary: Record a practice test's result (tests do not change when cards are due)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questions, correct]
+              additionalProperties: false
+              properties:
+                deck: { type: string, maxLength: 200, description: "Empty for a mixed test of every deck." }
+                questions: { type: integer, minimum: 1, maximum: 100 }
+                correct: { type: integer, minimum: 0, maximum: 100 }
+      responses:
+        "204": { description: Recorded. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/palaces:
+    get:
+      tags: [learning]
+      operationId: listPalaces
+      summary: Your memory palaces, by name
+      responses:
+        "200":
+          description: Palaces (without their cards).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Palace" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [learning]
+      operationId: createPalace
+      summary: Add a memory palace, a place you know well walked in a fixed order
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/PalaceFields"
+                - required: [title]
+      responses:
+        "201":
+          description: The palace.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Palace" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/palaces/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [learning]
+      operationId: getPalace
+      summary: A palace with the cards placed in it, in walking order
+      responses:
+        "200":
+          description: The palace.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Palace" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [learning]
+      operationId: updatePalace
+      summary: Rename a palace or change its places; cards at places that no longer exist leave it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PalaceFields" }
+      responses:
+        "200":
+          description: The palace.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Palace" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [learning]
+      operationId: deletePalace
+      summary: Delete a palace; its cards are kept, out of any palace
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}/recall:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [learning]
+      operationId: listNoteRecalls
+      summary: Your last 20 free-recall attempts at a note, newest first
+      responses:
+        "200":
+          description: Attempts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [score, recalled_at, due_on]
+                      properties:
+                        score: { type: number }
+                        recalled_at: { type: string, format: date-time }
+                        due_on: { type: string, format: date }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [learning]
+      operationId: recallNote
+      summary: "Free recall: send what you remember of a literature or permanent note; see which of its key ideas you recalled, and when to recall it next (expanding intervals)"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              additionalProperties: false
+              properties:
+                text: { type: string, minLength: 1, maxLength: 20000 }
+      responses:
+        "200":
+          description: The comparison and the next recall.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [score, ideas, due_on, interval_days, recalled_at]
+                properties:
+                  score: { type: number, description: "Share of key ideas recalled, 0 to 1." }
+                  ideas:
+                    type: array
+                    items:
+                      type: object
+                      required: [text, recalled]
+                      properties:
+                        text: { type: string }
+                        recalled: { type: boolean }
+                  due_on: { type: string, format: date }
+                  interval_days: { type: integer }
+                  recalled_at: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}/card-drafts:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [learning]
+      operationId: listCardDrafts
+      summary: "Cards drafted from the note's own markup (question :: answer, Q:/A:, ==highlights== as clozes, **Term**: definitions); nothing is stored until you add them"
+      responses:
+        "200":
+          description: Drafts, in note order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [front, back, kind, line, exists]
+                      properties:
+                        front: { type: string }
+                        back: { type: string }
+                        kind: { enum: [qa, reverse, cloze, definition] }
+                        line: { type: integer }
+                        exists: { type: boolean, description: "Already a card made from this note." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
 
   /v1/areas:
     get:
@@ -3148,9 +3371,10 @@ paths:
     get:
       tags: [cards]
       operationId: listCards
-      summary: Your cards, newest first (up to 1,000), optionally in one deck
+      summary: Your cards, newest first (up to 1,000), optionally in one deck or only leeches
       parameters:
         - { name: deck, in: query, schema: { type: string } }
+        - { name: leech, in: query, description: "true: only cards forgotten so often that they need rewriting.", schema: { type: boolean } }
       responses:
         "200":
           description: Cards.
@@ -3182,6 +3406,11 @@ paths:
                 deck: { type: string, minLength: 1, maxLength: 200, default: Default }
                 suspended: { type: boolean }
                 source_id: { type: string, format: uuid }
+                elaboration: { type: string, maxLength: 2000, description: "Why or how it is true (elaboration)." }
+                example: { type: string, maxLength: 2000, description: A concrete example. }
+                mnemonic: { type: string, maxLength: 2000, description: "A vivid image or mnemonic tying the question to the answer." }
+                palace_id: { type: string, description: "A memory palace to place the card in, or empty to take it out." }
+                locus: { type: integer, minimum: 0, maximum: 99, description: "The place in the palace (0 is the first)." }
       responses:
         "201":
           description: The card.
@@ -3196,7 +3425,7 @@ paths:
     get:
       tags: [cards]
       operationId: listDueCards
-      summary: Cards due now, oldest first, each with when it would next be due for every rating
+      summary: "What to review now: known cards due (oldest first), then new cards up to the day's allowance; across all decks, decks take turns (interleaving) unless turned off. Each card says when it would next be due for every rating."
       parameters:
         - { name: deck, in: query, schema: { type: string } }
         - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 50 } }
@@ -3226,6 +3455,25 @@ paths:
                                 hard: { type: string, format: date-time }
                                 good: { type: string, format: date-time }
                                 easy: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/practice:
+    get:
+      tags: [cards]
+      operationId: listPracticeCards
+      summary: "Cards for deliberate practice: leeches first, then the cards closest to being forgotten. Practising them does not change their schedule."
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        "200":
+          description: Cards to practise.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Flashcard" } }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
   /v1/flashcards/export.apkg:
@@ -3260,7 +3508,7 @@ paths:
     patch:
       tags: [cards]
       operationId: updateCard
-      summary: Change a card's question, answer, deck, or suspension (its schedule is kept)
+      summary: Change a card's text, deck, suspension, or place in a memory palace (its schedule is kept)
       requestBody:
         required: true
         content:
@@ -3273,6 +3521,11 @@ paths:
                 back: { type: string, maxLength: 10000 }
                 deck: { type: string, minLength: 1, maxLength: 200 }
                 suspended: { type: boolean }
+                elaboration: { type: string, maxLength: 2000, description: "Why or how it is true (elaboration)." }
+                example: { type: string, maxLength: 2000, description: A concrete example. }
+                mnemonic: { type: string, maxLength: 2000, description: "A vivid image or mnemonic tying the question to the answer." }
+                palace_id: { type: string, description: "A memory palace to place the card in, or empty to take it out." }
+                locus: { type: integer, minimum: 0, maximum: 99, description: "The place in the palace (0 is the first)." }
       responses:
         "200":
           description: The card.
@@ -3326,12 +3579,14 @@ paths:
     get:
       tags: [cards]
       operationId: getCardImage
-      summary: A card's picture (PNG)
+      summary: A card's picture (PNG) or drawing (sanitised SVG, served sandboxed)
       responses:
         "200":
           description: The picture.
           content:
             image/png:
+              schema: { type: string, format: binary }
+            image/svg+xml:
               schema: { type: string, format: binary }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
@@ -5245,6 +5500,83 @@ components:
               display_name: { type: string }
 
   schemas:
+    LearningPlan:
+      type: object
+      required: [cards, recall, test, fleeting, palaces, streak_days]
+      properties:
+        cards:
+          type: object
+          required: [due, reviews, new, minutes, leeches, retention, reviewed, target]
+          properties:
+            due: { type: integer, description: What a review now would offer. }
+            reviews: { type: integer }
+            new: { type: integer, description: "New cards in today's allowance." }
+            minutes: { type: integer, description: "Estimated from your own pace." }
+            leeches: { type: integer }
+            retention: { type: number, description: "Share of known cards remembered over 30 days; 0 with no reviews." }
+            reviewed: { type: integer }
+            target: { type: number }
+        recall:
+          type: object
+          required: [due, suggested]
+          properties:
+            due: { type: array, items: { $ref: "#/components/schemas/RecallNote" } }
+            suggested: { type: array, items: { $ref: "#/components/schemas/RecallNote" } }
+        test:
+          type: object
+          required: [due, last_at, score]
+          properties:
+            due: { type: boolean }
+            last_at: { type: [string, "null"], format: date-time }
+            score: { type: [number, "null"] }
+        fleeting: { type: integer, description: "Fleeting notes older than two days, to process." }
+        palaces: { type: integer }
+        streak_days: { type: integer }
+    RecallNote:
+      type: object
+      required: [id, title, path, kind, due_on, last_score, last_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        path: { type: string }
+        kind: { type: string }
+        due_on: { type: [string, "null"], format: date }
+        last_score: { type: [number, "null"] }
+        last_at: { type: [string, "null"], format: date-time }
+    PalaceFields:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200, example: My flat }
+        description: { type: string, maxLength: 5000 }
+        loci:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 200 }
+          example: [Front door, Coat hook, Kitchen sink, Sofa]
+    Palace:
+      type: object
+      required: [id, title, description, loci, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        loci: { type: array, items: { type: string } }
+        cards:
+          type: array
+          items:
+            type: object
+            required: [id, locus, deck, front, back, mnemonic, has_image]
+            properties:
+              id: { type: string, format: uuid }
+              locus: { type: integer }
+              deck: { type: string }
+              front: { type: string }
+              back: { type: string }
+              mnemonic: { type: string }
+              has_image: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     NoteFile:
       type: object
       required: [path, content_type, size, hash, updated_at]
@@ -5781,7 +6113,7 @@ components:
         decided_at: { type: [string, "null"], format: date-time }
     Flashcard:
       type: object
-      required: [id, deck, front, back, has_image, state, due, last_review, stability, difficulty, reps, lapses, suspended, updated_at]
+      required: [id, deck, front, back, has_image, state, due, last_review, stability, difficulty, reps, lapses, suspended, updated_at, elaboration, example, mnemonic, image_type, palace_id, locus, leech]
       properties:
         id: { type: string, format: uuid }
         deck: { type: string }
@@ -5797,6 +6129,13 @@ components:
         lapses: { type: integer }
         suspended: { type: boolean }
         updated_at: { type: string, format: date-time }
+        elaboration: { type: string }
+        example: { type: string }
+        mnemonic: { type: string }
+        image_type: { type: [string, "null"], enum: [image/png, image/svg+xml, null], description: "A picture (PNG) or a drawing (sanitised SVG); null without one." }
+        palace_id: { type: [string, "null"], format: uuid }
+        locus: { type: [integer, "null"] }
+        leech: { type: boolean, description: "Forgotten 6 times or more: rewrite it, add an example or an image, or split it." }
     FocusSession:
       type: object
       required: [id, title, started_at, ended_at, planned_minutes, worked_minutes, rounds, status, target]
@@ -6259,6 +6598,16 @@ components:
             mirror: { type: boolean }
             folder: { type: string, minLength: 1, maxLength: 100 }
             health: { type: boolean }
+        learning:
+          type: object
+          required: [new_per_day, retention, interleave, type_answer]
+          additionalProperties: false
+          description: "The review engine: new cards per day (default 20), the retention FSRS aims for (default 0.90), mixed decks in a review of everything (default on), and typing the answer before it is shown (default off)."
+          properties:
+            new_per_day: { type: integer, minimum: 0, maximum: 500 }
+            retention: { type: number, minimum: 0.7, maximum: 0.97 }
+            interleave: { type: boolean }
+            type_answer: { type: boolean }
         keyboard:
           type: object
           required: [shortcuts, vim]

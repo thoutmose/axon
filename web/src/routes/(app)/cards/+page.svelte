@@ -12,21 +12,33 @@
 	import { toast } from '$lib/ui/toast.svelte';
 
 	type Deck = { name: string; total: number; due: number; new: number };
+	type Palace = { id: string; title: string; loci: string[] };
 	const deck = $derived(page.url.searchParams.get('deck') ?? '');
 	let decks = $state<Deck[] | null>(null);
 	let cards = $state<Flashcard[]>([]);
 	let error = $state('');
-	let form = $state({ front: '', back: '', deck: '' });
+	const empty = { elaboration: '', example: '', mnemonic: '' };
+	let form = $state({ front: '', back: '', deck: '', ...empty });
+	let palaces = $state<Palace[]>([]);
 	let picture = $state<File | null>(null);
 	let editing = $state<Flashcard | null>(null);
 	let editOpen = $state(false);
-	let edit = $state({ front: '', back: '', deck: '' });
+	let edit = $state({
+		front: '',
+		back: '',
+		deck: '',
+		...empty,
+		palace_id: '',
+		locus: 0
+	});
+	const editPalace = $derived(palaces.find((p) => p.id === edit.palace_id));
 	let version = $state(Date.now());
 
 	async function load() {
 		error = '';
 		try {
 			decks = (await api<{ items: Deck[] }>('/v1/decks')).items;
+			palaces = (await api<{ items: Palace[] }>('/v1/palaces')).items;
 			cards = deck
 				? (await api<{ items: Flashcard[] }>(`/v1/flashcards?deck=${encodeURIComponent(deck)}`))
 						.items
@@ -56,11 +68,18 @@
 		try {
 			const c = await api<Flashcard>('/v1/flashcards', {
 				method: 'POST',
-				body: { front: form.front, back: form.back, deck: form.deck || 'Default' }
+				body: {
+					front: form.front,
+					back: form.back,
+					deck: form.deck || 'Default',
+					elaboration: form.elaboration,
+					example: form.example,
+					mnemonic: form.mnemonic
+				}
 			});
 			if (picture) await upload(c.id, picture);
 			toast('Card added.');
-			form = { front: '', back: '', deck: form.deck };
+			form = { front: '', back: '', deck: form.deck, ...empty };
 			picture = null;
 			if (deck !== c.deck) await goto(`/cards?deck=${encodeURIComponent(c.deck)}`);
 			else await load();
@@ -71,7 +90,16 @@
 
 	function open(c: Flashcard) {
 		editing = c;
-		edit = { front: c.front, back: c.back, deck: c.deck };
+		edit = {
+			front: c.front,
+			back: c.back,
+			deck: c.deck,
+			elaboration: c.elaboration,
+			example: c.example,
+			mnemonic: c.mnemonic,
+			palace_id: c.palace_id ?? '',
+			locus: c.locus ?? 0
+		};
 		editOpen = true;
 	}
 
@@ -79,7 +107,11 @@
 		e.preventDefault();
 		if (!editing) return;
 		try {
-			await api(`/v1/flashcards/${editing.id}`, { method: 'PATCH', body: edit });
+			const { palace_id, locus, ...text } = edit;
+			await api(`/v1/flashcards/${editing.id}`, {
+				method: 'PATCH',
+				body: palace_id ? { ...text, palace_id, locus } : { ...text, palace_id: '' }
+			});
 			editOpen = false;
 			await load();
 		} catch (err) {
@@ -113,7 +145,9 @@
 <LearnTabs />
 <p class="muted hint">
 	Retrieval practice with spaced repetition: cards come back just before you would forget them
-	(FSRS, the scheduler Anki uses). Ask the Teacher agent to write cards from your notes.
+	(FSRS, the scheduler Anki uses), a few new ones a day, with decks mixed. Give a card the why, an
+	example, and a vivid image so it sticks. The Teacher agent can write illustrated cards from your
+	literature and permanent notes.
 </p>
 
 {#if error}
@@ -123,6 +157,14 @@
 {:else}
 	<div class="actions">
 		<Button href="/cards/review" disabled={dueTotal === 0}>Review {dueTotal} due</Button>
+		<Button variant="secondary" href="/cards/review?practice=1">Practise weak cards</Button>
+		<Button variant="ghost" href="/cards/test">Mixed test</Button>
+		<Button
+			variant="ghost"
+			href="/agents?agent=teacher&ask={encodeURIComponent(
+				'Write illustrated flashcards from my newest literature and permanent notes, with the why, an example, and a vivid memory image.'
+			)}">✨ Illustrated cards with the Teacher</Button
+		>
 		{#if decks.length}<a class="export" href="/api/v1/flashcards/export.apkg" rel="external"
 				>Export all to Anki (.apkg)</a
 			>{/if}
@@ -192,6 +234,29 @@
 					/>
 				</div>
 			</div>
+			<details class="stick">
+				<summary>Make it stick (optional)</summary>
+				<div class="field">
+					<label for="card-elaboration">Why is it true? How does it work?</label>
+					<textarea id="card-elaboration" rows="2" maxlength="2000" bind:value={form.elaboration}
+					></textarea>
+				</div>
+				<div class="field">
+					<label for="card-example">A concrete example</label>
+					<textarea id="card-example" rows="2" maxlength="2000" bind:value={form.example}
+					></textarea>
+				</div>
+				<div class="field">
+					<label for="card-mnemonic">A vivid memory image</label>
+					<textarea
+						id="card-mnemonic"
+						rows="2"
+						maxlength="2000"
+						placeholder="Exaggerated, funny, or absurd images are remembered best."
+						bind:value={form.mnemonic}
+					></textarea>
+				</div>
+			</details>
 			<datalist id="deck-names"
 				>{#each decks as d (d.name)}<option value={d.name}></option>{/each}</datalist
 			>
@@ -214,6 +279,11 @@
 								/>{/if}
 							<div class="grow">
 								<strong>{c.front}</strong>
+								{#if c.leech}<span
+										class="leech"
+										title="Forgotten {c.lapses} times: rewrite it, add an example or a vivid image, or split it in two."
+										>Keeps slipping</span
+									>{/if}
 								<span class="muted small"
 									>{c.suspended ? 'Suspended' : `Due ${new Date(c.due).toLocaleDateString()}`} · {c.reps}
 									reviews</span
@@ -251,6 +321,48 @@
 				bind:value={edit.deck}
 				maxlength={200}
 			/>
+			<details class="stick" open={!!(edit.elaboration || edit.example || edit.mnemonic)}>
+				<summary>Make it stick (optional)</summary>
+				<div class="field">
+					<label for="edit-elaboration">Why is it true? How does it work?</label>
+					<textarea id="edit-elaboration" rows="2" maxlength="2000" bind:value={edit.elaboration}
+					></textarea>
+				</div>
+				<div class="field">
+					<label for="edit-example">A concrete example</label>
+					<textarea id="edit-example" rows="2" maxlength="2000" bind:value={edit.example}
+					></textarea>
+				</div>
+				<div class="field">
+					<label for="edit-mnemonic">A vivid memory image</label>
+					<textarea
+						id="edit-mnemonic"
+						rows="2"
+						maxlength="2000"
+						placeholder="Exaggerated, funny, or absurd images are remembered best."
+						bind:value={edit.mnemonic}
+					></textarea>
+				</div>
+			</details>
+			{#if palaces.length}
+				<div class="grid">
+					<div class="field">
+						<label for="edit-palace">Memory palace</label>
+						<select id="edit-palace" bind:value={edit.palace_id}>
+							<option value="">None</option>
+							{#each palaces as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
+						</select>
+					</div>
+					{#if editPalace}
+						<div class="field">
+							<label for="edit-locus">Place</label>
+							<select id="edit-locus" bind:value={edit.locus}>
+								{#each editPalace.loci as l, i (i)}<option value={i}>{i + 1}. {l}</option>{/each}
+							</select>
+						</div>
+					{/if}
+				</div>
+			{/if}
 			<div class="field">
 				<label for="edit-picture"
 					>{editing.has_image ? 'Replace the picture' : 'Add a picture'}</label
@@ -291,6 +403,18 @@
 </Dialog>
 
 <style>
+	.stick summary {
+		cursor: pointer;
+		margin: var(--space-2) 0;
+		color: var(--muted);
+	}
+	.leech {
+		font-size: var(--text-sm);
+		margin-left: var(--space-2);
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--warning-soft, var(--accent-soft));
+	}
 	.hint,
 	.small {
 		font-size: var(--text-sm);

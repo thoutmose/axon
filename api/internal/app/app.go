@@ -27,6 +27,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/insights"
 	"github.com/thoutmose/axon/api/internal/knowledge"
+	"github.com/thoutmose/axon/api/internal/learning"
 	"github.com/thoutmose/axon/api/internal/media"
 	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
 	"github.com/thoutmose/axon/api/internal/notes"
@@ -89,6 +90,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	avatarsAPI := avatars.NewHandlers(pool, log)
 	focusAPI := focus.NewHandlers(pool, log)
 	cardsAPI := cards.NewHandlers(pool, log)
+	learningAPI := learning.NewHandlers(pool, log)
+	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)
 	priv.Register("streak_freezes", progress.Export)
 	ankiAPI := ankisync.New(pool, log, sealer, os.Getenv("AXON_ANKI_BRIDGE_URL"), os.Getenv("ANKI_SYNC_URL"))
@@ -135,6 +138,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				roadmapsAPI.Routes(r)
 				focusAPI.Routes(r)
 				cardsAPI.Routes(r)
+				learningAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)

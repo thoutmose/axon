@@ -18,6 +18,7 @@
 
 	const para = $derived(page.url.searchParams.get('para') ?? 'all');
 	const tag = $derived(page.url.searchParams.get('tag'));
+	const kind = $derived(page.url.searchParams.get('kind'));
 	let notes = $state<Note[] | null>(null);
 	let cursor = $state<string | null>(null);
 	let error = $state('');
@@ -30,6 +31,7 @@
 		const params = new URLSearchParams({ limit: '100', mirrored: 'false' }); // item notes live in the Axon folder
 		if (para !== 'all') params.set('para', para);
 		if (tag) params.set('tag', tag);
+		if (kind) params.set('kind', kind);
 		if (more && cursor) params.set('after', cursor);
 		try {
 			const res = await api<{ items: Note[]; next_cursor: string | null }>(`/v1/notes?${params}`);
@@ -43,6 +45,7 @@
 	$effect(() => {
 		void para;
 		void tag;
+		void kind;
 		notes = null;
 		load();
 	});
@@ -88,7 +91,7 @@
 <svelte:head><title>Notes · Axon</title></svelte:head>
 
 <div class="head">
-	<h1>{tag ? `#${tag}` : 'Notes'}</h1>
+	<h1>{tag ? `#${tag}` : kind ? `${kind[0].toUpperCase()}${kind.slice(1)} notes` : 'Notes'}</h1>
 	<label class="upload" aria-busy={importing}>
 		<input type="file" accept=".zip,application/zip" onchange={importZip} disabled={importing} />
 		{importing ? 'Importing…' : 'Import ZIP'}
@@ -126,7 +129,7 @@
 	<a href="/notes/templates" class="all">All templates and their sections →</a>
 </nav>
 
-{#if para === 'all' && !tag}
+{#if para === 'all' && !tag && !kind}
 	<ZettelGraph />
 {/if}
 

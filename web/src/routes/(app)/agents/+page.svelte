@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
+	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import ProviderSettings from '$lib/ProviderSettings.svelte';
@@ -71,7 +72,16 @@
 			error = message(err);
 		}
 	}
-	load();
+	// Other pages hand over a request: /agents?agent=teacher&ask=…
+	const handover = page.url.searchParams.get('agent');
+	if (handover) instructions[handover] = page.url.searchParams.get('ask') ?? '';
+	load().then(async () => {
+		if (!handover) return;
+		await tick();
+		const field = document.getElementById(`ask-${handover}`);
+		field?.scrollIntoView({ block: 'center' });
+		field?.focus();
+	});
 	onDestroy(() => clearTimeout(timer));
 
 	async function poll(id: string) {

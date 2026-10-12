@@ -29,11 +29,20 @@
 		}
 	});
 
+	let missed = $state<Flashcard[]>([]);
 	function mark(ok: boolean) {
 		if (ok) right++;
+		else if (q) missed = [...missed, q];
 		i++;
 		answer = '';
 		revealed = false;
+		// The result feeds the plan, which offers the next test a week later.
+		if (questions && i === questions.length) {
+			api('/v1/learning/tests', {
+				method: 'POST',
+				body: { deck, questions: questions.length, correct: right }
+			}).catch(() => {});
+		}
 	}
 	const q = $derived(questions?.[i] ?? null);
 </script>
@@ -44,8 +53,9 @@
 <h1>Practice test{deck ? `: ${deck}` : ''}</h1>
 <LearnTabs />
 <p class="muted hint">
-	Up to ten random cards. Write your answer before you look: testing yourself is one of the most
-	effective ways to learn. A test does not change when cards are due.
+	Up to ten random cards{deck ? '' : ', from every deck, mixed'}. Write your answer before you look:
+	testing yourself is one of the most effective ways to learn, and getting some wrong is part of it.
+	A test does not change when cards are due.
 </p>
 
 {#if error}
@@ -85,8 +95,15 @@
 				? 'Every answer recalled.'
 				: 'The ones you missed are the ones worth reviewing next.'}
 		</p>
+		{#if missed.length}
+			<ul class="missed">
+				{#each missed as m (m.id)}<li><strong>{m.front}</strong> — {m.back}</li>{/each}
+			</ul>
+		{/if}
 		<div class="row">
-			<Button href="/cards/review?deck={encodeURIComponent(deck)}">Review the deck</Button>
+			<Button href={deck ? `/cards/review?deck=${encodeURIComponent(deck)}` : '/learn'}
+				>{deck ? 'Review the deck' : 'Today’s plan'}</Button
+			>
 			<Button variant="secondary" onclick={() => location.reload()}>Another test</Button>
 		</div>
 	</section>

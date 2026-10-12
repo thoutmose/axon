@@ -88,6 +88,19 @@ type Doc struct {
 	Focus        Focus        `json:"focus" yaml:"focus"`
 	Gamification Gamification `json:"gamification" yaml:"gamification"`
 	Vault        Vault        `json:"vault" yaml:"vault"`
+	Learning     Learning     `json:"learning" yaml:"learning"`
+}
+
+// Learning tunes the review engine (EP-52); package cards reads the same
+// keys. NewPerDay paces new cards, Retention is the chance FSRS aims for
+// of still remembering a card when it comes back, Interleave mixes decks in
+// a review of everything, and TypeAnswer asks for the answer in writing
+// before it is shown (retrieval, not recognition).
+type Learning struct {
+	NewPerDay  int     `json:"new_per_day" yaml:"new_per_day"`
+	Retention  float64 `json:"retention" yaml:"retention"`
+	Interleave bool    `json:"interleave" yaml:"interleave"`
+	TypeAnswer bool    `json:"type_answer" yaml:"type_answer"`
 }
 
 // Vault controls the vault mirror (EP-48): every task, goal, milestone,
@@ -113,6 +126,7 @@ func Defaults() Doc {
 		},
 		Keyboard: Keyboard{Shortcuts: true},
 		Vault:    Vault{Mirror: true, Folder: "Axon"},
+		Learning: Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
 		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
@@ -174,6 +188,12 @@ func (d Doc) Validate() error {
 		if u, err := url.Parse(m.URL); err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || len(m.URL) > 1000 || len([]rune(m.Activity)) > 100 {
 			return FieldError{"focus.music", "links are http(s) addresses with an activity up to 100 characters"}
 		}
+	}
+	switch {
+	case d.Learning.NewPerDay < 0 || d.Learning.NewPerDay > 500:
+		return FieldError{"learning.new_per_day", "is between 0 and 500"}
+	case d.Learning.Retention < 0.7 || d.Learning.Retention > 0.97:
+		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
 	if v := d.Vault.Folder; v == "" || len([]rune(v)) > 100 || strings.ContainsAny(v, "/\\") || strings.HasPrefix(v, ".") || strings.Contains(v, "..") {
 		return FieldError{"vault.folder", "is one folder name up to 100 characters, without slashes or a leading dot"}

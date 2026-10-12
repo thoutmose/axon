@@ -96,7 +96,12 @@ func Tokens(text string) []string {
 // TokensWithWords also returns each token's word as written (lower-cased),
 // so stems can be shown as real words.
 func TokensWithWords(text string) (stems, surface []string) {
-	lang := Language(text)
+	return TokensIn(text, Language(text))
+}
+
+// TokensIn is TokensWithWords for a known language, so a short phrase is
+// stemmed like the longer text it comes from.
+func TokensIn(text, lang string) (stems, surface []string) {
 	for _, f := range strings.FieldsFunc(strings.ToLower(text), func(r rune) bool { return !unicode.IsLetter(r) && r != '\'' }) {
 		f = strings.Trim(f, "'")
 		if i := strings.LastIndex(f, "'"); i >= 0 { // l'idée → idée

@@ -82,6 +82,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ### 📚 Learning and media
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
+- ✅ A learning and memory engine after *Understanding How We Learn* and *Moonwalking with Einstein*: Learn → Today plans the day (cards due with the minutes they take, notes due for recall, a weekly mixed test, fleeting notes to process, leeches to practise); a few new cards a day and decks mixed (interleaving); write your answer before you see it; every card can carry the why, a concrete example, a vivid memory image, and a picture or an AI drawing (dual coding); free recall of whole notes on a blank page, compared with their key ideas and spaced further each time; memory palaces you walk place by place; cards drafted from what a note marks (`question :: answer`, `==term==`, `**Term**: definition`); and the Teacher writes illustrated cards for your approval.
 - ✅ Anki packages (.apkg) per deck, pictures included, and automatic sync to your own `anki-sync-server` (for example on `srv-services`), by hand or right after you approve the Teacher's cards; Anki-only cards are never deleted.
 - ✅ Films, series, and books: want, in progress, finished, or dropped, with ratings out of 10, progress in pages, episodes, or minutes, and reviews. Once you allow lookups (they send the title you type), books come from Open Library, and films and series from TMDB when the server has a key; anything can be added by hand. Covers are copied to Axon, so pages never load images from elsewhere. "Up next" ranks your list with the reasons (same creator or genre as what you rated 8 or more, or something you started), and a Media agent proposes new titles for your approval.
 
@@ -215,20 +216,26 @@ erDiagram
 ```mermaid
 sequenceDiagram
   actor P as Person
-  participant N as Literature and permanent notes
+  participant N as Notes
   participant T as Teacher agent
   participant R as Review engine, FSRS
+  participant L as Learn: today's plan
   participant A as anki-sync-server
-  P->>N: reads, writes in own words, adds pictures
-  P->>T: make cards from these notes
-  T->>N: reads only the notes allowed
-  T-->>P: proposes cards: questions, answers, examples, illustrations
-  P->>R: approves the cards
-  loop Every day, spaced and interleaved
-    R-->>P: due cards, mixed topics
-    P->>R: recalls before seeing the answer, rates it
-    R->>R: schedules the next review
+  P->>N: captures fleeting notes, rewrites them as literature and permanent notes
+  P->>N: marks what to remember: q :: a, ==term==, **Term**: definition
+  N-->>R: Make cards: drafts from the marks, added by the person
+  P->>T: illustrated cards from these notes
+  T->>N: reads only literature and permanent notes
+  T-->>P: proposes cards with the why, an example, a vivid image, an SVG drawing
+  P->>R: approves, then places cards in a memory palace
+  loop Every day
+    L-->>P: cards due, a few new ones, decks mixed, and notes due for recall
+    P->>R: writes the answer, then sees it with the why, the example, and the image, and rates it
+    R->>R: schedules the next review at the chosen retention
+    P->>N: recalls a whole note on a blank page
+    N-->>L: ideas recalled and missed, next recall further away when recalled well
   end
+  L-->>P: weekly mixed test, and leeches to practise and rewrite
   R->>A: syncs approved cards
 ```
 
