@@ -102,6 +102,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-51 | Pictures in notes | Paste, drop, or pick pictures and PDFs in the editor; Markdown and Obsidian embeds render; files sync with the vault both ways and are exported. Owner request. | MUST | 8 pts | EP-11, EP-36 | Done |
 | EP-52 | Learning and memory engine | Spaced, interleaved, retrieval-first reviews with a daily plan; free recall of notes; memory palaces; cards with the why, an example, a vivid image, and AI drawings; cards drafted from notes; deliberate practice. Owner request. | MUST | 21 pts | EP-16, EP-46, EP-51 | Done |
 | EP-53 | Agents on every page | Each page offers the agents whose skills fit it, with ready-made requests, the page's context, and approvals in place. Owner request. | SHOULD | 5 pts | EP-19, EP-52 | Done |
+| EP-54 | Navigation groups | Eighteen menu links become Today and five groups (Do, Think, Grow, Life, Reflect); one Menu sheet on phones. Owner decision on the EP-49 proposals. | SHOULD | 2 pts | EP-53 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1405,6 +1406,14 @@ Cross-cutting matrix:
 - [x] **EP-53/IS-53.02** · 2 pts · SHOULD — other pages hand a request to the Agents page (`/agents?agent=…&ask=…`), as Flashcards and Make cards do for the Teacher.
 
 **Tests.** A unit test checks that every page names existing agents and suggests only for them; e2e "each page offers its own agents, and says when none can run yet".
+
+### EP-54 — Navigation groups
+
+**Goal.** The first of the twelve features proposed in the EP-49 audit and approved by the owner ("do all the functionalities you have found", 2026-10-12): eighteen links in one row were hard to scan.
+
+- [x] **EP-54/IS-54.01** · 2 pts · SHOULD — Today, then Do (Tasks, Projects, Calendar, Focus), Think (Notes, Areas, Resources, Archive), Grow (Learn, Goals, Habits), Life (Health, Media, Budget), and Reflect (Insights, Agents) as disclosure menus; the current group is marked; menus close on navigation, Escape, or a click elsewhere. Under 760 px, one Menu button opens every group in a sheet. French labels included.
+
+**Tests.** e2e "the menu groups pages: Do, Think, Grow, Life, Reflect" (disclosure state, Escape, the current section, the phone sheet, accessibility).
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

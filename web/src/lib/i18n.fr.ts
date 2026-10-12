@@ -326,5 +326,12 @@ export const fr: Record<string, string> = {
 	'Write my answer before it is shown': 'Écrire ma réponse avant de la voir',
 	'A few new cards a day keep reviews steady. Higher retention means more reviews; 90% is a good balance. Mixing decks and writing answers make reviews harder, and memories stronger.':
 		'Quelques nouvelles cartes par jour gardent des révisions régulières. Une rétention plus haute demande plus de révisions ; 90 % est un bon équilibre. Mélanger les paquets et écrire ses réponses rendent les révisions plus difficiles, et les souvenirs plus solides.',
-	'Memory palaces': 'Palais de mémoire'
+	'Memory palaces': 'Palais de mémoire',
+	Do: 'Faire',
+	Think: 'Penser',
+	Grow: 'Grandir',
+	Life: 'Vie',
+	Reflect: 'Bilan',
+	'current section': 'section actuelle',
+	Menu: 'Menu'
 };

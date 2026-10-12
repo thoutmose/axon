@@ -98,9 +98,8 @@
 	</div>
 </section>
 
-<AgentDock {...pageAgents.today} onapplied={() => load()} />
-
 <div class="body">
+	<AgentDock {...pageAgents.today} onapplied={() => load()} />
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !d}
