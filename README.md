@@ -119,190 +119,165 @@ Large typography, generous whitespace, dark mode, translucent glass over bundled
 
 Axon uses a Go modular monolith first, PostgreSQL 16 + pgvector as the system of record (background work runs in-process, coordinated through PostgreSQL), and SvelteKit + TypeScript for the web application. Agents call bounded tools through an approval-aware orchestration layer.
 
-### PlantUML — C4 context
+### Mermaid — system context
 
-```plantuml
-@startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-LAYOUT_WITH_LEGEND()
-Person(user, "User", "Owns data and approves mutations")
-System(axon, "Axon", "Self-hosted life OS")
-System_Ext(anthropic, "Anthropic API", "Claude / Agent SDK")
-System_Ext(metadata, "Metadata APIs", "TMDB, Open Library, Open Food Facts")
-Rel(user, axon, "Plans, captures, reviews")
-Rel(axon, anthropic, "Sends approved prompts/tools")
-Rel(axon, metadata, "Fetches attributed metadata")
-@enduml
+```mermaid
+flowchart LR
+  user(["Person: owns the data, approves every AI change"])
+  axon["Axon: self-hosted life OS"]
+  ai["AI provider of each person's choice: Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model"]
+  cat["Catalogues: Open Library, TMDB, Open Food Facts, USDA"]
+  anki["anki-sync-server"]
+  vault["Markdown vault, e.g. Obsidian"]
+  user -->|"plans, captures, learns, reviews"| axon
+  axon -->|"approved prompts and tools, with consent"| ai
+  axon -->|"lookups, with consent"| cat
+  axon -->|"flashcards"| anki
+  axon <-->|"notes and items, both ways"| vault
 ```
 
-### PlantUML — container diagram
+### Mermaid — containers
 
-```plantuml
-@startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
-Person(user, "User")
-System_Boundary(axon, "Axon") {
-  Container(web, "Web", "SvelteKit/TypeScript", "Accessible UI")
-  Container(api, "API", "Go/chi", "REST/OpenAPI 3.1")
-  Container(agents, "Agent runtime", "Go workers + Claude tools", "Bounded workflows")
-  ContainerDb(db, "PostgreSQL", "Postgres 16 + pgvector", "System of record")
-}
-Rel(user, web, "HTTPS")
-Rel(web, api, "JSON/REST")
-Rel(api, db, "SQL")
-Rel(agents, api, "Approved tools")
-Rel(agents, db, "Read/write through policy")
-@enduml
-```
-
-### PlantUML — deployment
-
-```plantuml
-@startuml
-node "Your machine" as dev { artifact "Compose stack (make up)" as d }
-node "srv-staging" as stg {
-  artifact "Axon: Caddy, API, web, Anki bridge" as s
-  database "PostgreSQL 16 + pgvector" as spg
-}
-node "srv-prod" as prod {
-  artifact "Axon: Caddy, API, web, Anki bridge" as p
-  database "PostgreSQL 16 + pgvector" as ppg
-}
-node "srv-services" as svc { artifact "anki-sync-server; encrypted backups" as anki }
-node "srv-secondbrain" as sb { artifact "~/SecondBrain Markdown vault" as notes }
-dev ..> stg : deploy.sh staging (green CI)
-stg ..> prod : deploy.sh prod (what staging serves)
-prod --> svc : Anki sync, backups (tailnet)
-prod <--> sb : notes-sync -watch (tailnet)
-@enduml
-```
-
-### PlantUML — core entities and polymorphic graph
-
-```plantuml
-@startuml
-entity User
-entity Note
-entity Task
-entity Project
-entity Habit
-entity Goal
-entity Milestone
-entity Roadmap
-entity LearningItem
-entity MediaItem
-entity Link
-User ||--o{ Note
-User ||--o{ Task
-User ||--o{ Project
-User ||--o{ Habit
-User ||--o{ Goal
-User ||--o{ Roadmap
-Link }o--|| User : owner
-Link }o--|| Note : source/target
-Link }o--|| Task : source/target
-Link }o--|| Project : source/target
-Link }o--|| Habit : source/target
-Link }o--|| Goal : source/target
-Link }o--|| Milestone : source/target
-Link }o--|| Roadmap : source/target
-Link }o--|| LearningItem : source/target
-Link }o--|| MediaItem : source/target
-@enduml
-```
-
-### PlantUML — Tutor agent roadmap generation
-
-```plantuml
-@startuml
-actor User
-participant "Tutor agent" as Tutor
-participant "Resource agent" as Resource
-participant "Roadmap service" as Roadmap
-database "Axon DB" as DB
-User -> Tutor : goals, domain, time, format, motivation
-Tutor -> Resource : research approved sources
-Resource --> Tutor : cited candidates
-Tutor -> Roadmap : propose milestones and links
-Roadmap -> DB : save draft graph
-DB --> User : preview with citations
-User -> Roadmap : approve mutation
-Roadmap -> DB : publish roadmap
-@enduml
-```
-
-### PlantUML — Teacher agent and Anki export
-
-```plantuml
-@startuml
-actor User
-participant "Teacher agent" as Teacher
-database "Literature + permanent notes" as Notes
-participant "Review service" as Review
-participant "anki-sync-server" as Anki
-User -> Teacher : request review
-Teacher -> Notes : read-only retrieval
-Notes --> Teacher : permitted notes
-Teacher -> Review : generate, validate, schedule test
-Review --> User : approval queue
-User -> Review : approve cards
-Review -> Anki : export deck / sync
-Anki --> User : cards available
-@enduml
-```
-
-### PlantUML — streak and freeze states
-
-```plantuml
-@startuml
-[*] --> Inactive
-Inactive --> Active : complete qualifying action
-Active --> Active : complete within window / extend
-Active --> AtRisk : window closes soon
-AtRisk --> Active : complete action
-AtRisk --> Frozen : spend earned freeze
-Frozen --> Active : next qualifying action
-AtRisk --> Broken : miss without freeze
-Broken --> Active : restart without shame
-Active --> [*] : archive habit
-@enduml
+```mermaid
+flowchart TB
+  user(["Browser or phone"])
+  subgraph host["One host per environment, Docker Compose"]
+    caddy["Caddy: HTTPS front, headers"]
+    web["Web: SvelteKit + TypeScript"]
+    api["API: Go + chi, REST and OpenAPI 3.1"]
+    workers["In-process workers: agents, vault mirror, demo reset, media prune"]
+    bridge["Anki bridge: official Anki library"]
+    db[("PostgreSQL 16 + pgvector: system of record")]
+    backup["Backup: encrypted dumps"]
+  end
+  user --> caddy
+  caddy --> web
+  caddy -->|"/api"| api
+  web -->|"server-side calls"| api
+  api --- workers
+  api --> db
+  workers --> db
+  api --> bridge
+  backup --> db
 ```
 
 ### Mermaid — deployment
 
 ```mermaid
 flowchart LR
-  dev[Your machine] -->|deploy.sh staging| staging[srv-staging: Axon + PostgreSQL] -->|deploy.sh prod| prod[srv-prod: Axon + PostgreSQL]
-  prod --> services[srv-services: anki-sync-server, backups]
-  prod <--> brain[srv-secondbrain: Markdown vault]
+  dev["Your machine: make up, make check"] -->|"deploy.sh staging, green CI only"| staging["srv-staging: Axon + PostgreSQL"]
+  staging -->|"deploy.sh prod, only what staging serves"| prod["srv-prod: Axon + PostgreSQL"]
+  prod -->|"Anki sync, encrypted backups, tailnet"| services["srv-services: anki-sync-server, backups"]
+  prod <-->|"notes-sync -watch, tailnet"| brain["srv-secondbrain: Markdown vault"]
 ```
 
-### Mermaid — core ER and links
+### Mermaid — data model and universal links
 
 ```mermaid
 erDiagram
-  USER ||--o{ NOTE : owns
-  USER ||--o{ TASK : owns
-  USER ||--o{ GOAL : owns
-  USER ||--o{ HABIT : owns
-  USER ||--o{ LINK : creates
-  LINK }o--|| NOTE : source_or_target
-  LINK }o--|| TASK : source_or_target
-  LINK }o--|| GOAL : source_or_target
-  LINK }o--|| HABIT : source_or_target
-  NOTE {
+  USER ||--o{ ENTITY : owns
+  ENTITY ||--o{ LINK : "source or target"
+  ENTITY ||--o{ EVENT : "history"
+  ENTITY ||--o| NOTE : "is a"
+  ENTITY ||--o| TASK : "is a"
+  ENTITY ||--o| GOAL : "is a"
+  GOAL ||--o{ MILESTONE : has
+  ENTITY ||--o| PROJECT : "is a"
+  ENTITY ||--o| HABIT : "is a"
+  ENTITY ||--o| ROADMAP : "is a"
+  ROADMAP ||--o{ SKILL : has
+  ENTITY ||--o| CARD : "is a"
+  CARD ||--o{ CARD_REVIEW : "reviewed in"
+  ENTITY ||--o| MEDIA_ITEM : "is a"
+  ENTITY ||--o| VAULT_NOTE : "mirrored as"
+  ENTITY {
     uuid id PK
+    uuid user_id FK
     string type
-    text body
+    string title
   }
   LINK {
     uuid id PK
-    uuid owner_id FK
-    string source_type
-    uuid source_id
-    string target_type
-    uuid target_id
+    uuid source_id FK
+    string relation
+    uuid target_id FK
   }
+  EVENT {
+    uuid id PK
+    string kind
+    string fields
+  }
+```
+
+### Mermaid — learning and memory loop
+
+```mermaid
+sequenceDiagram
+  actor P as Person
+  participant N as Literature and permanent notes
+  participant T as Teacher agent
+  participant R as Review engine, FSRS
+  participant A as anki-sync-server
+  P->>N: reads, writes in own words, adds pictures
+  P->>T: make cards from these notes
+  T->>N: reads only the notes allowed
+  T-->>P: proposes cards: questions, answers, examples, illustrations
+  P->>R: approves the cards
+  loop Every day, spaced and interleaved
+    R-->>P: due cards, mixed topics
+    P->>R: recalls before seeing the answer, rates it
+    R->>R: schedules the next review
+  end
+  R->>A: syncs approved cards
+```
+
+### Mermaid — assessment and Tutor roadmaps
+
+```mermaid
+sequenceDiagram
+  actor P as Person
+  participant As as Assessment
+  participant Tu as Tutor agent
+  participant L as Curated library
+  participant Ro as Roadmaps
+  P->>As: situation, job, goals, current level
+  As-->>Ro: places you on roadmaps
+  P->>Tu: what to learn, time, format
+  Tu->>L: searches the best resources
+  L-->>Tu: books, courses, papers, videos
+  Tu-->>P: draft roadmap, every skill cites its source
+  P->>Ro: approves, edits, or removes
+```
+
+### Mermaid — vault mirror, both ways
+
+```mermaid
+sequenceDiagram
+  participant I as Item, e.g. a task
+  participant M as Vault mirror worker
+  participant N as Note under Axon/
+  participant V as Markdown vault
+  I->>M: created, changed, or deleted
+  M->>N: writes front matter and sections
+  N->>V: notes-sync carries the file
+  V->>N: you edit, add, move, or delete the file
+  N->>M: change in the event log
+  M->>I: updates, creates, archives, or deletes the item
+```
+
+### Mermaid — daily streak and freezes
+
+```mermaid
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Active: first qualifying action of the day
+  Active --> Active: an action on each following day
+  Active --> AtRisk: a day passes without an action
+  AtRisk --> Active: act today
+  AtRisk --> Frozen: a freeze bought with earned points covers the day
+  Frozen --> Active: act on the next day
+  AtRisk --> Restart: two days without an action
+  Restart --> Active: start again, without shame
 ```
 
 ## Tech stack

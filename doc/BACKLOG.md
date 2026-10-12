@@ -98,6 +98,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-47 | Zettelkasten knowledge graph | A knowledge graph of literature and permanent notes on the Notes page, from combined NLP evidence, with communities, labels, centrality, and bridges. Owner request. | SHOULD | 13 pts | EP-46 | Done |
 | EP-48 | Everything in the vault, visible templates | Tasks, goals, milestones, projects, areas, archives, habits, health, and media as Markdown notes kept in step both ways; templates for every note type shown with their sections. Owner request. | MUST | 21 pts | EP-36, EP-43 | Done |
 | EP-49 | Audit: fixes and legacy removal | A whole-project audit: bugs fixed, unused code and services removed, documentation brought back to what runs. Owner request. | MUST | 8 pts | EP-48 | Done |
+| EP-50 | Diagrams GitHub can display | Every README diagram in Mermaid, up to date with what runs. Owner request. | MUST | 2 pts | EP-49 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1361,6 +1362,12 @@ Cross-cutting matrix:
 - [x] Dependabot's `fxamacker/cbor` 2.9.4 → 2.9.6, and `go mod tidy` (snowball is a direct dependency).
 
 **Checked and kept.** Functions only tests reach are deliberate references (the balance property test, FSRS vectors, NLP helpers); no unused web files; `swagger-ui-dist` is used by the build script.
+
+### EP-50 — Diagrams GitHub can display
+
+**Goal.** The owner could not see the UML diagrams: GitHub draws Mermaid but shows PlantUML as raw text (2026-10-12).
+
+- [x] **EP-50/IS-50.01** · 2 pts · MUST — the seven PlantUML diagrams and the two older Mermaid ones become eight Mermaid diagrams in both READMEs: system context, containers, deployment, data model and universal links, learning and memory loop, assessment and Tutor roadmaps, vault mirror both ways, daily streak and freezes; each rendered with the Mermaid CLI before committing.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -1562,6 +1569,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
 | 2026-10-12 | Owner request: EP-49 audit; fixes and legacy removal delivered. |
 | 2026-10-12 | Owner request: EP-48 puts every item in the vault as a note, both ways, and shows every template with its sections. Delivered. |
 | 2026-10-12 | Owner request: EP-47 adds the Zettelkasten knowledge graph to the Notes page, on top of EP-46. Delivered. |
