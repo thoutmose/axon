@@ -9,7 +9,7 @@ How Axon runs on its servers. Host configuration (SSH, Docker, monitoring, logs)
 | Staging | `srv-staging` | https://srv-staging.tail781d53.ts.net |
 | Production | `srv-prod` | https://srv-prod.tail781d53.ts.net |
 
-Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, API, web, PostgreSQL 16 + pgvector, Valkey, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
+Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the API (with its background workers), web, PostgreSQL 16 + pgvector, the Anki bridge, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
 
 ## Prerequisites on the operator machine
 
