@@ -1676,7 +1676,7 @@ Cross-cutting matrix:
 
 **Tests.** `TestKeyPhrasesAreCachedByText` (same result as `KeyPhrases`, one entry per text and k, a caller's change does not reach the cache), written first; the knowledge tests unchanged.
 
-**Measured next.** What remains of the Zettelkasten graph is its pair loop (1.2 s at 600 notes): 10 × 10 keyword synonym checks per pair, which a per-note index of thesaurus groups could make linear.
+**Measured next.** What remains of the Zettelkasten graph is its pair loop (1.2 s at 600 notes): 10 × 10 keyword synonym checks per pair. Tried and dropped: skipping pairs whose keywords share no thesaurus group gave nothing measurable (1.66 s against 1.68 s), since with real vocabulary nearly every pair shares one.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
