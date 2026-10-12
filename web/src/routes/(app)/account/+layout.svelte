@@ -9,6 +9,7 @@
 		{ href: '/account/tokens', label: 'Access tokens' },
 		{ href: '/account/privacy', label: 'Privacy & data' },
 		{ href: '/account/import', label: 'Import' },
+		{ href: '/account/trash', label: 'Trash' },
 		{ href: '/account/preferences', label: 'Preferences' },
 		{ href: '/account/activity', label: 'Activity' }
 	];

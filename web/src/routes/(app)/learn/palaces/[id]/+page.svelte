@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
@@ -58,6 +59,8 @@
 	async function remove() {
 		try {
 			await api(`/v1/palaces/${id}`, { method: 'DELETE' });
+			const gone = id;
+			deleted('Palace deleted.', gone, () => goto(`/learn/palaces/${gone}`));
 			await goto('/learn/palaces');
 		} catch (err) {
 			toast(message(err), 'error');

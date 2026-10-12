@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
@@ -100,7 +101,7 @@
 		busy = true;
 		try {
 			await api(`/v1/habits/${id}`, { method: 'DELETE' });
-			toast('Deleted.');
+			deleted('Habit deleted.', id, () => goto(`/habits/${id}`));
 			await goto('/habits');
 		} catch (err) {
 			toast(message(err), 'error');

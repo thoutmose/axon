@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
@@ -132,6 +133,7 @@
 					body: { suspended: what === 'suspend' }
 				});
 			editOpen = false;
+			if (what === 'delete') deleted('Card deleted.', c.id, () => load());
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');

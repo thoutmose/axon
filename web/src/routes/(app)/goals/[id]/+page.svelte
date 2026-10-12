@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
@@ -166,7 +167,7 @@
 	async function removeMilestone(m: Milestone) {
 		try {
 			await api(`/v1/milestones/${m.id}`, { method: 'DELETE' });
-			toast(`Removed “${m.title}”.`);
+			deleted(`Removed “${m.title}”.`, m.id, () => load());
 			await refresh();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -177,7 +178,8 @@
 		busy = true;
 		try {
 			await api(`/v1/goals/${id}`, { method: 'DELETE' });
-			toast('Deleted.');
+			const gone = id;
+			deleted('Goal deleted.', gone, () => goto(`/goals/${gone}`));
 			await goto('/goals');
 		} catch (err) {
 			toast(message(err), 'error');

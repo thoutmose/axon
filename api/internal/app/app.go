@@ -105,6 +105,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	householdAPI := household.NewHandlers(pool, log)
 	semanticAPI := semantic.NewHandlers(pool, log, sealer)
 	priv.Register("household", household.Export)
+	priv.Register("trash", graph.TrashExport)
 	priv.Register("calendar_sources", calendars.Export)
 	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)

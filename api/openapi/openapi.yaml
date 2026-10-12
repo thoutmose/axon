@@ -2411,6 +2411,92 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
 
+  /v1/trash:
+    get:
+      tags: [graph]
+      operationId: listTrash
+      summary: "Deletions of the last 30 days, newest first: one line per deletion, with what was deleted along with it"
+      responses:
+        "200":
+          description: The trash.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, entity_id, type, title, with, deleted_at, expires_at]
+                      properties:
+                        id: { type: string, format: uuid }
+                        entity_id: { type: string, format: uuid }
+                        type: { type: string }
+                        title: { type: string }
+                        with: { type: integer, description: "Items deleted along with it (a goal's milestones)." }
+                        deleted_at: { type: string, format: date-time }
+                        expires_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [graph]
+      operationId: emptyTrash
+      summary: Empty the trash now
+      responses:
+        "204": { description: Emptied. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/trash/undo:
+    post:
+      tags: [graph]
+      operationId: undoDelete
+      summary: Put back the latest deletion of an item (what an Undo button sends)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entity_id]
+              additionalProperties: false
+              properties:
+                entity_id: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/Restored" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /v1/trash/{id}/restore:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [graph]
+      operationId: restoreFromTrash
+      summary: Put back a deletion and what was deleted with it
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { $ref: "#/components/responses/Restored" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /v1/trash/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [graph]
+      operationId: forgetFromTrash
+      summary: Delete one deletion for good now
+      responses:
+        "204": { description: Gone for good. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
   /v1/areas:
     get:
       tags: [para]
@@ -6176,6 +6262,16 @@ components:
                       - $ref: "#/components/schemas/NoteFile"
                       - type: "null"
                     description: Axon's version, or null when the file was deleted in Axon.
+    Restored:
+      description: Put back.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [entity_id, type]
+            properties:
+              entity_id: { type: string, format: uuid }
+              type: { type: string }
     SignedIn:
       description: Signed in; the session cookie is set.
       content:

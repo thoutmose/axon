@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import NoteAnalysis from '$lib/NoteAnalysis.svelte';
 	import { page } from '$app/state';
@@ -259,7 +260,8 @@
 		try {
 			await api(`/v1/notes/${id}`, { method: 'DELETE' });
 			note = null; // nothing left to lose
-			toast('Deleted.');
+			const gone = id;
+			deleted('Note deleted.', gone, () => refreshNotes().then(() => goto(`/notes/${gone}`)));
 			await refreshNotes();
 			await goto('/notes');
 		} catch (err) {

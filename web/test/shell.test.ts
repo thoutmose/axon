@@ -1251,6 +1251,35 @@ test('drag a task onto a day of the calendar, or pick its date', async () => {
 	await noSeriousA11yViolations(page);
 });
 
+test('a deleted note can be undone, and restored from the trash', async () => {
+	const origin = new URL(page.url()).origin;
+	const note = await (
+		await page.request.post('/api/v1/notes', {
+			headers: { Origin: origin },
+			data: { path: 'Zettel/To keep.md', content: '# To keep\n\nWorth keeping.' }
+		})
+	).json();
+	await page.goto(`/notes/${note.id}`);
+	await page.getByRole('button', { name: 'Delete' }).click();
+	await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+	await expect(page).toHaveURL(/\/notes$/);
+	await page.getByRole('button', { name: 'Undo' }).click();
+	await expect(page.getByText('Put back.')).toBeVisible();
+	await expect(page).toHaveURL(new RegExp(`/notes/${note.id}$`));
+	await expect(page.getByText('Worth keeping.')).toBeVisible();
+
+	await page.getByRole('button', { name: 'Delete' }).click();
+	await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+	await page.goto('/account/trash');
+	await expect(page.getByText('To keep', { exact: true })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Restore To keep' }).click();
+	await expect(page).toHaveURL(new RegExp(`/notes/${note.id}$`));
+	await page.goto('/account/trash');
+	await expect(page.getByRole('heading', { level: 1, name: 'Account' })).toBeVisible();
+	await expect(page.getByText('To keep', { exact: true })).toHaveCount(0);
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
