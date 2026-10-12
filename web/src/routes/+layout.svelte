@@ -101,9 +101,10 @@
 			>
 			<a href="/archive" aria-current={current('/archive') ? 'page' : undefined}>{t('Archive')}</a>
 			<a
-				href="/roadmaps"
-				aria-current={current('/roadmaps') || current('/cards') ? 'page' : undefined}
-				>{t('Learn')}</a
+				href="/learn"
+				aria-current={current('/learn') || current('/roadmaps') || current('/cards')
+					? 'page'
+					: undefined}>{t('Learn')}</a
 			>
 			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>{t('Habits')}</a>
 			<a href="/focus" aria-current={current('/focus') ? 'page' : undefined}>{t('Focus')}</a>

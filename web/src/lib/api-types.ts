@@ -1009,6 +1009,118 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/learning/plan': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Today's plan to learn and remember: cards to review (with minutes, retention, and leeches), notes to recall, whether a weekly practice test is due, fleeting notes to process, and the streak */
+		get: operations['getLearningPlan'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/learning/tests': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record a practice test's result (tests do not change when cards are due) */
+		post: operations['recordPracticeTest'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/palaces': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your memory palaces, by name */
+		get: operations['listPalaces'];
+		put?: never;
+		/** Add a memory palace, a place you know well walked in a fixed order */
+		post: operations['createPalace'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/palaces/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A palace with the cards placed in it, in walking order */
+		get: operations['getPalace'];
+		put?: never;
+		post?: never;
+		/** Delete a palace; its cards are kept, out of any palace */
+		delete: operations['deletePalace'];
+		options?: never;
+		head?: never;
+		/** Rename a palace or change its places; cards at places that no longer exist leave it */
+		patch: operations['updatePalace'];
+		trace?: never;
+	};
+	'/v1/notes/{id}/recall': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Your last 20 free-recall attempts at a note, newest first */
+		get: operations['listNoteRecalls'];
+		put?: never;
+		/** Free recall: send what you remember of a literature or permanent note; see which of its key ideas you recalled, and when to recall it next (expanding intervals) */
+		post: operations['recallNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/card-drafts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Cards drafted from the note's own markup (question :: answer, Q:/A:, ==highlights== as clozes, **Term**: definitions); nothing is stored until you add them */
+		get: operations['listCardDrafts'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -1898,7 +2010,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Your cards, newest first (up to 1,000), optionally in one deck */
+		/** Your cards, newest first (up to 1,000), optionally in one deck or only leeches */
 		get: operations['listCards'];
 		put?: never;
 		/** Add a flashcard, due now, optionally linked to the note or skill it comes from */
@@ -1916,8 +2028,25 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Cards due now, oldest first, each with when it would next be due for every rating */
+		/** What to review now: known cards due (oldest first), then new cards up to the day's allowance; across all decks, decks take turns (interleaving) unless turned off. Each card says when it would next be due for every rating. */
 		get: operations['listDueCards'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/practice': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Cards for deliberate practice: leeches first, then the cards closest to being forgotten. Practising them does not change their schedule. */
+		get: operations['listPracticeCards'];
 		put?: never;
 		post?: never;
 		delete?: never;
@@ -1960,7 +2089,7 @@ export interface paths {
 		delete: operations['deleteCard'];
 		options?: never;
 		head?: never;
-		/** Change a card's question, answer, deck, or suspension (its schedule is kept) */
+		/** Change a card's text, deck, suspension, or place in a memory palace (its schedule is kept) */
 		patch: operations['updateCard'];
 		trace?: never;
 	};
@@ -1992,7 +2121,7 @@ export interface paths {
 			};
 			cookie?: never;
 		};
-		/** A card's picture (PNG) */
+		/** A card's picture (PNG) or drawing (sanitised SVG, served sandboxed) */
 		get: operations['getCardImage'];
 		/** Illustrate a card with a PNG or JPEG (up to 10 MB); it is scaled to fit 1200 px and re-encoded without metadata */
 		put: operations['putCardImage'];
@@ -3044,6 +3173,83 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		LearningPlan: {
+			cards: {
+				/** @description What a review now would offer. */
+				due: number;
+				reviews: number;
+				/** @description New cards in today's allowance. */
+				new: number;
+				/** @description Estimated from your own pace. */
+				minutes: number;
+				leeches: number;
+				/** @description Share of known cards remembered over 30 days; 0 with no reviews. */
+				retention: number;
+				reviewed: number;
+				target: number;
+			};
+			recall: {
+				due: components['schemas']['RecallNote'][];
+				suggested: components['schemas']['RecallNote'][];
+			};
+			test: {
+				due: boolean;
+				/** Format: date-time */
+				last_at: string | null;
+				score: number | null;
+			};
+			/** @description Fleeting notes older than two days, to process. */
+			fleeting: number;
+			palaces: number;
+			streak_days: number;
+		};
+		RecallNote: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			path: string;
+			kind: string;
+			/** Format: date */
+			due_on: string | null;
+			last_score: number | null;
+			/** Format: date-time */
+			last_at: string | null;
+		};
+		PalaceFields: {
+			/** @example My flat */
+			title?: string;
+			description?: string;
+			/**
+			 * @example [
+			 *       "Front door",
+			 *       "Coat hook",
+			 *       "Kitchen sink",
+			 *       "Sofa"
+			 *     ]
+			 */
+			loci?: string[];
+		};
+		Palace: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			loci: string[];
+			cards?: {
+				/** Format: uuid */
+				id: string;
+				locus: number;
+				deck: string;
+				front: string;
+				back: string;
+				mnemonic: string;
+				has_image: boolean;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
 		NoteFile: {
 			/** @example Attachments/whiteboard-1a2b3c4d.png */
 			path: string;
@@ -3603,6 +3809,19 @@ export interface components {
 			suspended: boolean;
 			/** Format: date-time */
 			updated_at: string;
+			elaboration: string;
+			example: string;
+			mnemonic: string;
+			/**
+			 * @description A picture (PNG) or a drawing (sanitised SVG); null without one.
+			 * @enum {string|null}
+			 */
+			image_type: 'image/png' | 'image/svg+xml' | null;
+			/** Format: uuid */
+			palace_id: string | null;
+			locus: number | null;
+			/** @description Forgotten 6 times or more: rewrite it, add an example or an image, or split it. */
+			leech: boolean;
 		};
 		FocusSession: {
 			/** Format: uuid */
@@ -4100,6 +4319,13 @@ export interface components {
 				mirror: boolean;
 				folder: string;
 				health: boolean;
+			};
+			/** @description The review engine: new cards per day (default 20), the retention FSRS aims for (default 0.90), mixed decks in a review of everything (default on), and typing the answer before it is shown (default off). */
+			learning?: {
+				new_per_day: number;
+				retention: number;
+				interleave: boolean;
+				type_answer: boolean;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -5826,6 +6052,8 @@ export interface operations {
 				path?: string;
 				/** @description false leaves out the notes the vault mirror keeps for tasks, goals, habits, and other items. */
 				mirrored?: 'false';
+				/** @description Only notes of this type (front matter type), e.g. fleeting, literature, permanent. */
+				kind?: string;
 				/** @description Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note). */
 				folder?: string;
 				/** @description next_cursor from the previous page (the last path). */
@@ -6509,6 +6737,307 @@ export interface operations {
 			403: components['responses']['Problem'];
 			409: components['responses']['FileConflict'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getLearningPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The plan. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['LearningPlan'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	recordPracticeTest: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Empty for a mixed test of every deck. */
+					deck?: string;
+					questions: number;
+					correct: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Recorded. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listPalaces: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Palaces (without their cards). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Palace'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createPalace: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['PalaceFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description The palace. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getPalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The palace. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deletePalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updatePalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['PalaceFields'];
+			};
+		};
+		responses: {
+			/** @description The palace. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listNoteRecalls: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Attempts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							score: number;
+							/** Format: date-time */
+							recalled_at: string;
+							/** Format: date */
+							due_on: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	recallNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					text: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The comparison and the next recall. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description Share of key ideas recalled, 0 to 1. */
+						score: number;
+						ideas: {
+							text: string;
+							recalled: boolean;
+						}[];
+						/** Format: date */
+						due_on: string;
+						interval_days: number;
+						/** Format: date-time */
+						recalled_at: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listCardDrafts: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Drafts, in note order. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							front: string;
+							back: string;
+							/** @enum {unknown} */
+							kind: 'qa' | 'reverse' | 'cloze' | 'definition';
+							line: number;
+							/** @description Already a card made from this note. */
+							exists: boolean;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	listAreas: {
@@ -8730,6 +9259,8 @@ export interface operations {
 		parameters: {
 			query?: {
 				deck?: string;
+				/** @description true: only cards forgotten so often that they need rewriting. */
+				leech?: boolean;
 			};
 			header?: never;
 			path?: never;
@@ -8771,6 +9302,16 @@ export interface operations {
 					suspended?: boolean;
 					/** Format: uuid */
 					source_id?: string;
+					/** @description Why or how it is true (elaboration). */
+					elaboration?: string;
+					/** @description A concrete example. */
+					example?: string;
+					/** @description A vivid image or mnemonic tying the question to the answer. */
+					mnemonic?: string;
+					/** @description A memory palace to place the card in, or empty to take it out. */
+					palace_id?: string;
+					/** @description The place in the palace (0 is the first). */
+					locus?: number;
 				};
 			};
 		};
@@ -8822,6 +9363,32 @@ export interface operations {
 								easy: string;
 							};
 						})[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	listPracticeCards: {
+		parameters: {
+			query?: {
+				limit?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Cards to practise. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Flashcard'][];
 					};
 				};
 			};
@@ -8916,6 +9483,16 @@ export interface operations {
 					back?: string;
 					deck?: string;
 					suspended?: boolean;
+					/** @description Why or how it is true (elaboration). */
+					elaboration?: string;
+					/** @description A concrete example. */
+					example?: string;
+					/** @description A vivid image or mnemonic tying the question to the answer. */
+					mnemonic?: string;
+					/** @description A memory palace to place the card in, or empty to take it out. */
+					palace_id?: string;
+					/** @description The place in the palace (0 is the first). */
+					locus?: number;
 				};
 			};
 		};
@@ -8988,6 +9565,7 @@ export interface operations {
 				};
 				content: {
 					'image/png': string;
+					'image/svg+xml': string;
 				};
 			};
 			401: components['responses']['Problem'];

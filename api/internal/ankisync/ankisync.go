@@ -114,7 +114,10 @@ func (s *Service) send(ctx context.Context, userID uuid.UUID, a *Account, passwo
 	if len(list) == 0 {
 		return Result{}, nil
 	}
-	pkg, err := cards.APKG(ctx, list, func(id uuid.UUID) ([]byte, error) { return cards.Image(ctx, s.db, userID, id) }, time.Now())
+	pkg, err := cards.APKG(ctx, list, func(id uuid.UUID) ([]byte, error) {
+		img, _, err := cards.Image(ctx, s.db, userID, id)
+		return img, err
+	}, time.Now())
 	if err != nil {
 		return Result{}, err
 	}

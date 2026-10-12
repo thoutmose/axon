@@ -133,13 +133,22 @@ func APKG(ctx context.Context, list []Card, image func(uuid.UUID) ([]byte, error
 	var files [][2]string // zip name, file path
 	for i, c := range list {
 		back := field(c.Back)
+		for _, extra := range []struct{ label, text string }{{"Why", c.Elaboration}, {"Example", c.Example}, {"Memory image", c.Mnemonic}} {
+			if extra.text != "" {
+				back += fmt.Sprintf("<br><br><b>%s:</b> %s", extra.label, field(extra.text))
+			}
+		}
 		if c.HasImage {
 			img, err := image(c.ID)
 			if err != nil {
 				return nil, err
 			}
 			if img != nil {
-				name := fmt.Sprintf("axon-%s.png", c.ID)
+				ext := "png"
+				if c.ImageType != nil && *c.ImageType == "image/svg+xml" {
+					ext = "svg"
+				}
+				name := fmt.Sprintf("axon-%s.%s", c.ID, ext)
 				key := strconv.Itoa(len(media))
 				media[key] = name
 				p := filepath.Join(dir, key)

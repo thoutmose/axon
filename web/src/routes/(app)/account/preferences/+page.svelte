@@ -23,6 +23,13 @@
 		focus: Focus;
 		gamification: { enabled: boolean };
 		vault: { mirror: boolean; folder: string; health: boolean };
+		learning: { new_per_day: number; retention: number; interleave: boolean; type_answer: boolean };
+	};
+	const learningDefaults = {
+		new_per_day: 20,
+		retention: 0.9,
+		interleave: true,
+		type_answer: false
 	};
 	const focusDefaults: Focus = {
 		work_minutes: 25,
@@ -49,7 +56,8 @@
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
 				gamification: loaded.gamification ?? { enabled: false },
-				vault: loaded.vault ?? { mirror: true, folder: 'Axon', health: false }
+				vault: loaded.vault ?? { mirror: true, folder: 'Axon', health: false },
+				learning: loaded.learning ?? learningDefaults
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -65,7 +73,8 @@
 			keyboard: saved.keyboard ?? { shortcuts: true, vim: false },
 			focus: (saved.focus as Focus | undefined) ?? focusDefaults,
 			gamification: saved.gamification ?? { enabled: false },
-			vault: saved.vault ?? { mirror: true, folder: 'Axon', health: false }
+			vault: saved.vault ?? { mirror: true, folder: 'Axon', health: false },
+			learning: saved.learning ?? learningDefaults
 		};
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
@@ -77,11 +86,20 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates, keyboard, focus, gamification, vault } = s;
+			const { language, appearance, templates, keyboard, focus, gamification, vault, learning } = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
-					body: { language, appearance, templates, keyboard, focus, gamification, vault }
+					body: {
+						language,
+						appearance,
+						templates,
+						keyboard,
+						focus,
+						gamification,
+						vault,
+						learning
+					}
 				})
 			);
 			await api('/v1/me/agent-settings', {
@@ -197,6 +215,48 @@
 					'Each item is a note with its fields in the front matter and its text in sections. Edit either side and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into Archive/ archives it. Health logs also need the health consent and are removed from the vault if you withdraw it.'
 				)}
 				<a href="/notes/templates">{t('See the templates')}</a>
+			</p>
+		</Section>
+
+		<Section id="learning" title={t('Learning')}>
+			<div class="grid">
+				<div class="field">
+					<label for="new-per-day">{t('New flashcards a day')}</label>
+					<input
+						id="new-per-day"
+						type="number"
+						min="0"
+						max="500"
+						bind:value={s.learning.new_per_day}
+						required
+					/>
+				</div>
+				<div class="field">
+					<label for="retention"
+						>{t('Retention to aim for')}: {Math.round(s.learning.retention * 100)}%</label
+					>
+					<input
+						id="retention"
+						type="range"
+						min="0.7"
+						max="0.97"
+						step="0.01"
+						bind:value={s.learning.retention}
+					/>
+				</div>
+			</div>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.learning.interleave} />
+				{t('Mix decks when reviewing everything (interleaving)')}</label
+			>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.learning.type_answer} />
+				{t('Write my answer before it is shown')}</label
+			>
+			<p class="muted small">
+				{t(
+					'A few new cards a day keep reviews steady. Higher retention means more reviews; 90% is a good balance. Mixing decks and writing answers make reviews harder, and memories stronger.'
+				)}
 			</p>
 		</Section>
 

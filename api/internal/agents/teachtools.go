@@ -14,6 +14,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/images"
 	"github.com/thoutmose/axon/api/internal/notes"
 )
 
@@ -25,10 +26,28 @@ import (
 var studyKinds = []string{"literature", "permanent"}
 
 type cardInput struct {
-	Front  string `json:"front"`
-	Back   string `json:"back"`
-	Deck   string `json:"deck"`
-	NoteID string `json:"note_id"`
+	Front        string `json:"front"`
+	Back         string `json:"back"`
+	Deck         string `json:"deck"`
+	NoteID       string `json:"note_id"`
+	Elaboration  string `json:"elaboration"`
+	Example      string `json:"example"`
+	Mnemonic     string `json:"mnemonic"`
+	Illustration string `json:"illustration"`
+}
+
+// illustrationField describes the SVG drawing an agent may attach (dual
+// coding: words and a picture of the same idea).
+var illustrationField = map[string]any{"type": "string", "maxLength": images.MaxSVG,
+	"description": "Optional: a simple, self-contained SVG drawing of the idea (shapes, arrows, short labels; viewBox about 400x300; no scripts, links, images, or styles, which are removed)."}
+
+type illustrateInput struct {
+	Cards []struct {
+		CardID       string `json:"card_id"`
+		Illustration string `json:"illustration"`
+		Mnemonic     string `json:"mnemonic"`
+	} `json:"cards"`
+	Reason string `json:"reason"`
 }
 
 type proposeCardsInput struct {
@@ -114,10 +133,14 @@ func init() {
 			"cards": map[string]any{"type": "array", "minItems": 1, "maxItems": 30, "items": map[string]any{
 				"type": "object",
 				"properties": map[string]any{
-					"front":   map[string]any{"type": "string", "description": "A question that makes the person recall, not recognise."},
-					"back":    map[string]any{"type": "string", "description": "The answer, short; add an example when it helps."},
-					"deck":    str,
-					"note_id": map[string]any{"type": "string", "description": "The literature or permanent note it comes from."},
+					"front":        map[string]any{"type": "string", "description": "A question that makes the person recall, not recognise."},
+					"back":         map[string]any{"type": "string", "description": "The answer, short."},
+					"deck":         str,
+					"note_id":      map[string]any{"type": "string", "description": "The literature or permanent note it comes from."},
+					"elaboration":  map[string]any{"type": "string", "maxLength": 2000, "description": "Why or how it is true, in a sentence or two (elaboration)."},
+					"example":      map[string]any{"type": "string", "maxLength": 2000, "description": "A concrete example from the note or everyday life."},
+					"mnemonic":     map[string]any{"type": "string", "maxLength": 2000, "description": "A vivid, surprising image that ties the question to the answer (Moonwalking with Einstein)."},
+					"illustration": illustrationField,
 				},
 				"required": []string{"front", "back", "note_id"},
 			}},
@@ -135,6 +158,15 @@ func init() {
 					break
 				}
 				fronts = append(fronts, "“"+truncate(c.Front, 80)+"”")
+			}
+			drawn := 0
+			for _, c := range in.Cards {
+				if strings.TrimSpace(c.Illustration) != "" {
+					drawn++
+				}
+			}
+			if drawn > 0 {
+				return fmt.Sprintf("Add %d flashcards (%d illustrated): %s", len(in.Cards), drawn, strings.Join(fronts, ", ")), nil
 			}
 			return fmt.Sprintf("Add %d flashcards: %s", len(in.Cards), strings.Join(fronts, ", ")), nil
 		},
@@ -162,16 +194,125 @@ func init() {
 				if deck == "" {
 					deck = n.Title
 				}
-				f := cards.Fields{Front: &c.Front, Back: &c.Back, Deck: &deck}
-				if _, err := cards.Create(ctx, tx, userID, actor, f, &nid, time.Now()); err != nil {
+				f := cards.Fields{Front: &c.Front, Back: &c.Back, Deck: &deck, Elaboration: &c.Elaboration, Example: &c.Example, Mnemonic: &c.Mnemonic}
+				card, err := cards.Create(ctx, tx, userID, actor, f, &nid, time.Now())
+				if err != nil {
 					var v cards.ValidationError
 					if errors.As(err, &v) {
 						return toolError{v.Msg}
 					}
 					return err
 				}
+				if err := illustrate(ctx, tx, userID, card.ID, c.Illustration); err != nil {
+					return err
+				}
 			}
 			return nil
 		},
 	}
+	registry["list_cards"] = Tool{
+		Name:        "list_cards",
+		Description: "List the person's flashcards (id, deck, front, back, whether it has a picture or a memory image, lapses), newest first.",
+		Properties:  map[string]any{"deck": str, "limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 200}},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			var in struct {
+				Deck  string `json:"deck"`
+				Limit int    `json:"limit"`
+			}
+			if err := decode(raw, &in); err != nil {
+				return nil, err
+			}
+			if in.Limit <= 0 || in.Limit > 200 {
+				in.Limit = 50
+			}
+			list, err := cards.List(ctx, q, userID, in.Deck)
+			if err != nil {
+				return nil, err
+			}
+			type row struct {
+				ID          uuid.UUID `json:"id"`
+				Deck        string    `json:"deck"`
+				Front       string    `json:"front"`
+				Back        string    `json:"back"`
+				HasImage    bool      `json:"has_image"`
+				HasMnemonic bool      `json:"has_mnemonic"`
+				Lapses      int       `json:"lapses"`
+			}
+			out := []row{}
+			for _, c := range list {
+				if len(out) == in.Limit {
+					break
+				}
+				out = append(out, row{c.ID, c.Deck, c.Front, c.Back, c.HasImage, c.Mnemonic != "", c.Lapses})
+			}
+			return out, nil
+		},
+	}
+	registry["illustrate_cards"] = Tool{
+		Name: "illustrate_cards",
+		Description: "Add a drawing (SVG) and/or a vivid memory image to existing flashcards, for dual coding. " +
+			"A card's current picture is replaced only when a drawing is given. Nothing changes until the person approves.",
+		Properties: map[string]any{
+			"cards": map[string]any{"type": "array", "minItems": 1, "maxItems": 20, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"card_id":      idField,
+					"illustration": illustrationField,
+					"mnemonic":     map[string]any{"type": "string", "maxLength": 2000, "description": "A vivid, surprising image tying the question to the answer."},
+				},
+				"required": []string{"card_id"},
+			}},
+			"reason": reason,
+		},
+		Required: []string{"cards", "reason"},
+		Write:    true,
+		Summary: func(_ context.Context, _ db.Querier, _ uuid.UUID, raw json.RawMessage) (string, error) {
+			var in illustrateInput
+			_ = json.Unmarshal(raw, &in)
+			return fmt.Sprintf("Illustrate %d flashcards", len(in.Cards)), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in illustrateInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			if len(in.Cards) == 0 || len(in.Cards) > 20 {
+				return toolErrorf("illustrate 1 to 20 cards")
+			}
+			for _, c := range in.Cards {
+				id, err := parseID(c.CardID, "card_id")
+				if err != nil {
+					return err
+				}
+				if strings.TrimSpace(c.Mnemonic) != "" {
+					m := c.Mnemonic
+					if _, err := cards.Update(ctx, tx, userID, id, actor, cards.Fields{Mnemonic: &m}); err != nil {
+						var v cards.ValidationError
+						if errors.As(err, &v) {
+							return toolError{v.Msg}
+						}
+						return notFound(err, "card")
+					}
+				} else if _, err := cards.Get(ctx, tx, userID, id); err != nil {
+					return notFound(err, "card")
+				}
+				if err := illustrate(ctx, tx, userID, id, c.Illustration); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	}
+}
+
+// illustrate stores a sanitised drawing on a card; an empty drawing is no change.
+func illustrate(ctx context.Context, tx pgx.Tx, userID, cardID uuid.UUID, svg string) error {
+	if strings.TrimSpace(svg) == "" {
+		return nil
+	}
+	clean, err := images.SanitizeSVG(svg)
+	if err != nil {
+		return toolErrorf("the illustration is not usable SVG: send one <svg> element with shapes and short text")
+	}
+	return cards.SetImage(ctx, tx, userID, cardID, clean, "image/svg+xml")
 }

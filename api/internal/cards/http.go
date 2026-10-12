@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -41,6 +42,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/flashcards", h.list)
 	r.Post("/v1/flashcards", h.create)
 	r.Get("/v1/flashcards/due", h.due)
+	r.Get("/v1/flashcards/practice", h.practice)
 	r.Get("/v1/flashcards/export.apkg", h.exportAPKG)
 	r.Get("/v1/flashcards/{id}", h.get)
 	r.Patch("/v1/flashcards/{id}", h.update)
@@ -97,6 +99,9 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	if r.URL.Query().Get("leech") == "true" {
+		items = slices.DeleteFunc(items, func(c Card) bool { return !c.Leech })
+	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
@@ -128,19 +133,55 @@ func (h *Handlers) due(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	prefs, err := LoadPrefs(r.Context(), h.db, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	items := make([]DueCard, len(list))
 	for i, c := range list {
-		items[i] = DueCard{c, Next(c, now)}
+		items[i] = DueCard{c, Next(c, now, prefs)}
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items, "due_total": total})
 }
 
+// practice returns cards for deliberate practice; rating them is up to the
+// page and does not change their schedule.
+func (h *Handlers) practice(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	limit := 20
+	if v := r.URL.Query().Get("limit"); v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 1 || n > 100 {
+			httpx.Problem(w, http.StatusBadRequest, "?limit= is 1 to 100.")
+			return
+		}
+		limit = n
+	}
+	items, err := Practice(r.Context(), h.db, who.UserID, h.now(), limit)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
 type body struct {
-	Deck      *string    `json:"deck"`
-	Front     *string    `json:"front"`
-	Back      *string    `json:"back"`
-	Suspended *bool      `json:"suspended"`
-	SourceID  *uuid.UUID `json:"source_id"`
+	Deck        *string    `json:"deck"`
+	Front       *string    `json:"front"`
+	Back        *string    `json:"back"`
+	Elaboration *string    `json:"elaboration"`
+	Example     *string    `json:"example"`
+	Mnemonic    *string    `json:"mnemonic"`
+	Suspended   *bool      `json:"suspended"`
+	PalaceID    *string    `json:"palace_id"`
+	Locus       *int       `json:"locus"`
+	SourceID    *uuid.UUID `json:"source_id"`
+}
+
+func (b body) fields() Fields {
+	return Fields{Deck: b.Deck, Front: b.Front, Back: b.Back, Elaboration: b.Elaboration, Example: b.Example, Mnemonic: b.Mnemonic,
+		Suspended: b.Suspended, Palace: b.PalaceID, Locus: b.Locus}
 }
 
 func (h *Handlers) create(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +194,7 @@ func (h *Handlers) create(w http.ResponseWriter, r *http.Request) {
 	var c Card
 	err := h.tx(r.Context(), func(tx pgx.Tx) error {
 		var err error
-		c, err = Create(r.Context(), tx, who.UserID, graph.UserActor, Fields{b.Deck, b.Front, b.Back, b.Suspended}, b.SourceID, h.now())
+		c, err = Create(r.Context(), tx, who.UserID, graph.UserActor, b.fields(), b.SourceID, h.now())
 		return err
 	})
 	if err != nil {
@@ -187,13 +228,13 @@ func (h *Handlers) update(w http.ResponseWriter, r *http.Request) {
 	}
 	var b body
 	if err := httpx.Decode(r, &b); err != nil || b.SourceID != nil {
-		httpx.Problem(w, http.StatusBadRequest, "Send deck, front, back, or suspended.")
+		httpx.Problem(w, http.StatusBadRequest, "Send the fields to change: deck, front, back, elaboration, example, mnemonic, suspended, palace_id, or locus.")
 		return
 	}
 	var c Card
 	err = h.tx(r.Context(), func(tx pgx.Tx) error {
 		var err error
-		c, err = Update(r.Context(), tx, who.UserID, id, graph.UserActor, Fields{b.Deck, b.Front, b.Back, b.Suspended})
+		c, err = Update(r.Context(), tx, who.UserID, id, graph.UserActor, b.fields())
 		return err
 	})
 	if err != nil {
@@ -258,7 +299,7 @@ func (h *Handlers) getImage(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	img, err := Image(r.Context(), h.db, who.UserID, id)
+	img, ct, err := Image(r.Context(), h.db, who.UserID, id)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -267,7 +308,10 @@ func (h *Handlers) getImage(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusNotFound, "This card has no picture.")
 		return
 	}
-	w.Header().Set("Content-Type", "image/png")
+	// A drawing is sanitised SVG; keep it inert even when opened on its own.
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Type", ct)
 	w.Header().Set("Cache-Control", "private, max-age=300")
 	_, _ = w.Write(img)
 }
@@ -331,7 +375,10 @@ func (h *Handlers) exportAPKG(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusNotFound, "There are no cards to export.")
 		return
 	}
-	data, err := APKG(r.Context(), list, func(id uuid.UUID) ([]byte, error) { return Image(r.Context(), h.db, who.UserID, id) }, h.now())
+	data, err := APKG(r.Context(), list, func(id uuid.UUID) ([]byte, error) {
+		img, _, err := Image(r.Context(), h.db, who.UserID, id)
+		return img, err
+	}, h.now())
 	if err != nil {
 		h.fail(w, err)
 		return
