@@ -20,6 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/reminders"
 )
@@ -202,6 +204,25 @@ func TestReminders(t *testing.T) {
 	bob.mustDo(404, "DELETE", "/v1/me/push-subscriptions/"+sub.ID, nil)
 	alice.mustDo(204, "DELETE", "/v1/me/push-subscriptions/"+sub.ID, nil)
 	alice.mustDo(422, "POST", "/v1/me/reminders/test", nil)
+
+	// From Friday to Sunday the digest suggests the weekly review, until it is done.
+	sat := time.Now().UTC()
+	for sat.Weekday() != time.Saturday {
+		sat = sat.AddDate(0, 0, 1)
+	}
+	var me struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me", nil), &me)
+	uid, _ := uuid.Parse(me.ID)
+	msg, err := reminders.Morning(context.Background(), pool, uid, sat)
+	if err != nil || !strings.Contains(msg.Body, "the weekly review") {
+		t.Fatalf("saturday digest = %+v, %v", msg, err)
+	}
+	alice.mustDo(200, "PUT", "/v1/checkins/weekly/"+sat.AddDate(0, 0, -5).Format(time.DateOnly), []byte(`{"note":"Focus: the shed."}`))
+	if msg, _ = reminders.Morning(context.Background(), pool, uid, sat); strings.Contains(msg.Body, "weekly review") {
+		t.Fatalf("review suggested after it was done: %+v", msg)
+	}
 
 	// Settings check the times and the address.
 	doc["reminders"] = map[string]any{"enabled": true, "morning": "8am", "evening": "", "email": ""}

@@ -68,6 +68,7 @@
 			id: 'reflect',
 			label: 'Reflect',
 			links: [
+				{ href: '/review', label: 'Weekly review' },
 				{ href: '/insights', label: 'Insights' },
 				{ href: '/agents', label: 'Agents' }
 			]

@@ -107,6 +107,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-56 | Reminders | A morning digest and an evening nudge by Web Push (encrypted end to end) and optional email, at local times, once a day, only with something to say. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-55 | Done |
 | EP-57 | Quick add for anything | One line in Capture becomes a task with a context and a day, a note with tags, a book, film, or series, a habit, a goal with a date, a project, or a flashcard; English and French. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-55 | Done |
 | EP-58 | Calendars in | Follow Google, CalDAV/Nextcloud, Outlook, or any ICS calendar, read only: events (repeats expanded, time zones kept) beside Axon's own in the month and agenda views. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-13 | Done |
+| EP-59 | Guided weekly review | A ten-step weekly review after Getting Things Done, on Axon's own data, ending in the weekly check-in; the weekend digest suggests it until it is done. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-20, EP-56 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1453,6 +1454,14 @@ Cross-cutting matrix:
 - [x] **EP-58/IS-58.02** · 2 pts · SHOULD — Calendar → Calendars you follow: name, colour, and an https:// or webcal:// address, fetched at once (a wrong address is said right away) and every 30 minutes; events kept from 60 days back to a year ahead; the secret address sealed with `AXON_ENCRYPTION_KEY` and shown only as its host; private network addresses refused at connection time (whatever the name resolves to) unless the operator sets `AXON_CALENDAR_PRIVATE=1`; up to 20 calendars, 5 MB each; shown in the month grid and the agenda with their colour, can be hidden, in the export (without addresses).
 
 **Tests.** ICS and RRULE unit tests (a Google-style weekly stand-up with an exception and a moved occurrence across the DST change, all-day ranges, durations, cancellations, "last Thursday", COUNT over short months, INTERVAL); `TestFollowedCalendars` (private and plain addresses refused, not a calendar, missing, events by date and multi-day ranges, the secret address never returned, refresh and kept failures, ownership, unfollow); e2e "follow another calendar by its ICS address and see its events beside your own" (Axon's own feed, through Caddy).
+
+### EP-59 — Guided weekly review
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: the weekly review of Getting Things Done, guided, with Axon's insights in it.
+
+- [x] **EP-59/IS-59.01** · 3 pts · SHOULD — Reflect → Weekly review, ten steps: get clear (empty your head with quick add; the task inbox to zero with next, waiting, someday, done, delete; fleeting notes to process), get current (the week's highlights from Insights; the next two weeks from Axon and followed calendars; waiting for; projects without a next action; goals, habits, and learning), get creative (someday/maybe), and into next week (what went well, what to change, what matters most, saved as the weekly check-in). From Friday to Sunday the morning digest suggests it until that check-in exists.
+
+**Tests.** `TestReminders` (the Saturday digest suggests the review, and stops once it is done); e2e "the weekly review walks from an empty head to next week".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
