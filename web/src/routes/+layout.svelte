@@ -19,6 +19,74 @@
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
 
+	// Eighteen pages in five groups (EP-54): what you do, what you think,
+	// how you grow, the rest of life, and reflecting. Today stays one click away.
+	type NavLink = { href: string; label: string; also?: string[] };
+	const groups: { id: string; label: string; links: NavLink[] }[] = [
+		{
+			id: 'do',
+			label: 'Do',
+			links: [
+				{ href: '/tasks', label: 'Tasks' },
+				{ href: '/projects', label: 'Projects' },
+				{ href: '/calendar', label: 'Calendar' },
+				{ href: '/focus', label: 'Focus' }
+			]
+		},
+		{
+			id: 'think',
+			label: 'Think',
+			links: [
+				{ href: '/notes', label: 'Notes' },
+				{ href: '/areas', label: 'Areas' },
+				{ href: '/resources', label: 'Resources' },
+				{ href: '/archive', label: 'Archive' }
+			]
+		},
+		{
+			id: 'grow',
+			label: 'Grow',
+			links: [
+				{ href: '/learn', label: 'Learn', also: ['/roadmaps', '/cards'] },
+				{ href: '/goals', label: 'Goals' },
+				{ href: '/habits', label: 'Habits' }
+			]
+		},
+		{
+			id: 'life',
+			label: 'Life',
+			links: [
+				{ href: '/health', label: 'Health' },
+				{ href: '/media', label: 'Media' },
+				{ href: '/budget', label: 'Budget' }
+			]
+		},
+		{
+			id: 'reflect',
+			label: 'Reflect',
+			links: [
+				{ href: '/insights', label: 'Insights' },
+				{ href: '/agents', label: 'Agents' }
+			]
+		}
+	];
+	const inSection = (l: NavLink) => current(l.href) || (l.also ?? []).some(current);
+	let openGroup = $state<string | null>(null);
+	// Narrow screens get one Menu button and every group in a sheet.
+	let sheet = $state(false);
+	// A menu closes when a page opens, on Escape, and on a click elsewhere.
+	$effect(() => {
+		void page.url.pathname;
+		openGroup = null;
+		sheet = false;
+	});
+	function closeMenus(e: Event) {
+		if (
+			e instanceof KeyboardEvent ? e.key === 'Escape' : !(e.target as Element).closest?.('.group')
+		)
+			openGroup = null;
+	}
+
 	// The area's scenery, and a scroll offset for its parallax.
 	$effect(() => {
 		const space = spaceFor(page.url.pathname);
@@ -55,6 +123,7 @@
 	}
 </script>
 
+<svelte:window onclick={closeMenus} onkeydown={closeMenus} />
 <div class="space-art" aria-hidden="true"></div>
 <a class="skip" href="#main">{t('Skip to content')}</a>
 <header>
@@ -89,35 +158,51 @@
 		>
 		<nav aria-label={t('Main')}>
 			<a href="/today" aria-current={current('/today') ? 'page' : undefined}>{t('Today')}</a>
-			<a href="/tasks" aria-current={current('/tasks') ? 'page' : undefined}>{t('Tasks')}</a>
-			<a href="/notes" aria-current={current('/notes') ? 'page' : undefined}>{t('Notes')}</a>
-			<a href="/goals" aria-current={current('/goals') ? 'page' : undefined}>{t('Goals')}</a>
-			<a href="/projects" aria-current={current('/projects') ? 'page' : undefined}
-				>{t('Projects')}</a
+			<button
+				type="button"
+				class="menu-toggle"
+				aria-expanded={sheet}
+				aria-controls="nav-sheet"
+				onclick={() => (sheet = !sheet)}>{t('Menu')}</button
 			>
-			<a href="/areas" aria-current={current('/areas') ? 'page' : undefined}>{t('Areas')}</a>
-			<a href="/resources" aria-current={current('/resources') ? 'page' : undefined}
-				>{t('Resources')}</a
-			>
-			<a href="/archive" aria-current={current('/archive') ? 'page' : undefined}>{t('Archive')}</a>
-			<a
-				href="/learn"
-				aria-current={current('/learn') || current('/roadmaps') || current('/cards')
-					? 'page'
-					: undefined}>{t('Learn')}</a
-			>
-			<a href="/habits" aria-current={current('/habits') ? 'page' : undefined}>{t('Habits')}</a>
-			<a href="/focus" aria-current={current('/focus') ? 'page' : undefined}>{t('Focus')}</a>
-			<a href="/calendar" aria-current={current('/calendar') ? 'page' : undefined}
-				>{t('Calendar')}</a
-			>
-			<a href="/health" aria-current={current('/health') ? 'page' : undefined}>{t('Health')}</a>
-			<a href="/media" aria-current={current('/media') ? 'page' : undefined}>{t('Media')}</a>
-			<a href="/budget" aria-current={current('/budget') ? 'page' : undefined}>{t('Budget')}</a>
-			<a href="/insights" aria-current={current('/insights') ? 'page' : undefined}
-				>{t('Insights')}</a
-			>
-			<a href="/agents" aria-current={current('/agents') ? 'page' : undefined}>{t('Agents')}</a>
+			<div class="sheet glass" id="nav-sheet" hidden={!sheet}>
+				{#each groups as g (g.id)}
+					<section aria-labelledby="sheet-{g.id}">
+						<h2 id="sheet-{g.id}">{t(g.label)}</h2>
+						<ul>
+							{#each g.links as l (l.href)}
+								<li>
+									<a href={l.href} aria-current={inSection(l) ? 'page' : undefined}>{t(l.label)}</a>
+								</li>
+							{/each}
+						</ul>
+					</section>
+				{/each}
+			</div>
+			<ul class="groups">
+				{#each groups as g (g.id)}
+					{@const here = g.links.some((l) => inSection(l))}
+					<li class="group">
+						<button
+							type="button"
+							class:here
+							aria-expanded={openGroup === g.id}
+							aria-controls="nav-{g.id}"
+							onclick={() => (openGroup = openGroup === g.id ? null : g.id)}
+							>{t(g.label)}{#if here}<span class="visually-hidden">
+									({t('current section')})</span
+								>{/if}<span class="caret" aria-hidden="true">▾</span></button
+						>
+						<ul class="menu glass" id="nav-{g.id}" hidden={openGroup !== g.id}>
+							{#each g.links as l (l.href)}
+								<li>
+									<a href={l.href} aria-current={inSection(l) ? 'page' : undefined}>{t(l.label)}</a>
+								</li>
+							{/each}
+						</ul>
+					</li>
+				{/each}
+			</ul>
 			<a href="/account" class="account" aria-current={current('/account') ? 'page' : undefined}
 				>{#if avatar.signedIn}<img
 						src={avatarSrc(avatar.version)}
@@ -204,10 +289,126 @@
 	nav {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		gap: var(--space-1);
 		min-width: 0;
-		overflow-x: auto; /* narrow screens scroll the menu, never the page */
-		scrollbar-width: none;
+	}
+	.groups {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.group {
+		position: relative;
+	}
+	.group > button {
+		font: inherit;
+		font-size: var(--text-sm);
+		color: var(--fg);
+		opacity: 0.8;
+		background: none;
+		border: none;
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-3);
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.group > button:hover,
+	.group > button[aria-expanded='true'] {
+		opacity: 1;
+		background: var(--accent-soft);
+	}
+	.group > button.here {
+		opacity: 1;
+		font-weight: 600;
+	}
+	.caret {
+		margin-left: var(--space-1);
+		font-size: 0.75em;
+	}
+	.menu {
+		position: absolute;
+		top: calc(100% + var(--space-1));
+		left: 0;
+		z-index: 30;
+		min-width: 11rem;
+		list-style: none;
+		margin: 0;
+		padding: var(--space-1);
+		display: grid;
+		gap: 2px;
+		background: var(--surface-solid);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow, 0 8px 24px rgb(0 0 0 / 0.18));
+	}
+	.menu[hidden] {
+		display: none;
+	}
+	.menu-toggle,
+	.sheet {
+		display: none;
+	}
+	@media (max-width: 760px) {
+		.bar {
+			gap: var(--space-2);
+		}
+		nav {
+			flex-wrap: nowrap;
+		}
+		.groups {
+			display: none;
+		}
+		.menu-toggle {
+			display: inline-block;
+			font: inherit;
+			font-size: var(--text-sm);
+			color: var(--fg);
+			background: none;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			padding: var(--space-1) var(--space-3);
+			cursor: pointer;
+		}
+		.sheet:not([hidden]) {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-3);
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			padding: var(--space-4) var(--gutter);
+			background: var(--surface-solid);
+			border-bottom: 1px solid var(--border);
+			box-shadow: var(--shadow, 0 8px 24px rgb(0 0 0 / 0.18));
+			max-height: calc(100vh - 4rem);
+			overflow-y: auto;
+		}
+		.sheet h2 {
+			font-size: var(--text-sm);
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			color: var(--muted);
+			margin: 0 0 var(--space-1);
+		}
+		.sheet ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+		.sheet a {
+			display: block;
+			padding: var(--space-2) var(--space-3);
+		}
+	}
+	.menu a {
+		display: block;
+		border-radius: var(--radius-sm);
 	}
 	nav a {
 		white-space: nowrap;

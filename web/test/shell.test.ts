@@ -919,6 +919,32 @@ test('paste a picture into a note: it is uploaded, embedded, and shown', async (
 	await noSeriousA11yViolations(page);
 });
 
+test('the menu groups pages: Do, Think, Grow, Life, Reflect', async () => {
+	await page.goto('/today');
+	const nav = page.getByRole('navigation', { name: 'Main' });
+	await expect(nav.getByRole('link', { name: 'Today' })).toBeVisible();
+	await expect(nav.getByRole('link', { name: 'Tasks' })).toBeHidden();
+	const doGroup = nav.getByRole('button', { name: 'Do' });
+	await doGroup.click();
+	await expect(doGroup).toHaveAttribute('aria-expanded', 'true');
+	await noSeriousA11yViolations(page);
+	await page.keyboard.press('Escape');
+	await expect(doGroup).toHaveAttribute('aria-expanded', 'false');
+	await nav.getByRole('button', { name: 'Life' }).click();
+	await nav.getByRole('link', { name: 'Budget' }).click();
+	await expect(page).toHaveURL(/\/budget/);
+	await expect(nav.getByRole('button', { name: 'Life (current section)' })).toBeVisible();
+	await expect(nav.getByRole('link', { name: 'Budget' })).toBeHidden();
+	// A phone gets one Menu button with every group.
+	await page.setViewportSize({ width: 390, height: 844 });
+	await nav.getByRole('button', { name: 'Menu' }).click();
+	await expect(nav.getByRole('heading', { name: 'Grow' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await nav.getByRole('link', { name: 'Habits' }).click();
+	await expect(page).toHaveURL(/\/habits/);
+	await page.setViewportSize({ width: 1280, height: 720 });
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
@@ -1213,7 +1239,9 @@ test('learn: cards from a note, free recall, a memory palace walk, and the day p
 	await noSeriousA11yViolations(page);
 
 	// The day's plan, and deliberate practice.
-	await page.getByRole('link', { name: 'Learn', exact: true }).first().click();
+	const nav = page.getByRole('navigation', { name: 'Main' });
+	await nav.getByRole('button', { name: 'Grow' }).click();
+	await nav.getByRole('link', { name: 'Learn', exact: true }).click();
 	await expect(page).toHaveURL(/\/learn$/);
 	await expect(page.getByRole('heading', { name: 'Flashcards' })).toBeVisible();
 	await expect(page.getByRole('heading', { name: 'Recall your notes' })).toBeVisible();
