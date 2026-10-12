@@ -26,6 +26,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/app"
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/demo"
 	"github.com/thoutmose/axon/api/internal/graph"
@@ -165,7 +166,8 @@ func demoEnabled() bool { return os.Getenv("AXON_DEMO") == "1" }
 
 // keepDemo creates the demo account once the database is migrated, then
 // resets it every night after 03:00 UTC, so visitors' changes never pile up.
-// pruneMedia drops expired catalogue data once a day (TMDB allows six months).
+// pruneMedia drops expired catalogue data once a day (TMDB allows six months),
+// purges the trash, and gives older card reviews their prediction (EP-77).
 func pruneMedia(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 	for {
 		if err := media.Prune(ctx, pool); err != nil && ctx.Err() == nil {
@@ -173,6 +175,9 @@ func pruneMedia(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 		}
 		if err := graph.PurgeTrash(ctx, pool, time.Now()); err != nil && ctx.Err() == nil {
 			log.Error("trash purge failed", "err", err)
+		}
+		if err := cards.ReplayPredictions(ctx, pool); err != nil && ctx.Err() == nil {
+			log.Error("review prediction replay failed", "err", err)
 		}
 		select {
 		case <-ctx.Done():

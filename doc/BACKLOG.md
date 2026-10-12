@@ -125,7 +125,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-74 | Compressed responses | Caddy compresses pages, scripts, and API answers (zstd or gzip); nothing was compressed before (the OpenAPI document: 324 kB → 48 kB). | SHOULD | 1 pt | EP-73 | Done |
 | EP-75 | Today and the page title in every browser | Owner report: Today stayed on "Loading your day…" and the page title showed as text at the top of the page (Firefox). Both fixed, with tests that fail without the fix. | MUST | 2 pts | EP-74 | Done |
 | EP-76 | Covers for every film, series, and book | Owner request: pictures of the books, series, and films, and a better media card. "Find missing covers" looks up items added by hand, imported, or from the demo; the shelf shows poster cards, with a cover made from the title when there is none. | SHOULD | 2 pts | EP-17 | Done |
-| EP-77 | Your memory, measured | Each review of a card in long-term memory keeps what the scheduler predicted; Learn shows predicted against remembered, by prediction, against the chosen retention, and says what to change. | SHOULD | 2 pts | EP-52 | Done |
+| EP-77 | Your memory, measured | Each review of a card in long-term memory keeps what the scheduler predicted (earlier ones by replaying the history); Learn shows predicted against remembered, by prediction, against the chosen retention, and says what to change. | SHOULD | 2 pts | EP-52 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1652,7 +1652,9 @@ Cross-cutting matrix:
 
 **Tests.** `TestCalibrateComparesPredictionWithRecall`, `TestCalibrateWithNoReviews`, and the `verdict` unit tests, written first; `TestFlashcardCalibration` (an Easy review moves the card to long-term memory, the next two reviews are predicted, one remembered: 2 reviews, 50%), red before the endpoint existed.
 
-**Later.** Earlier reviews have no prediction; replaying each card's history through the scheduler could give them one.
+- [x] **EP-77/IS-77.03** · 1 pt · SHOULD — Earlier reviews get their prediction by replaying each card's history through the scheduler (daily, with the other maintenance), so the measure starts from the person's whole past. Only cards whose whole history is in Axon are replayed (not imported cards with earlier reviews), and a history that does not fit the scheduler's states is left alone.
+
+**Replay test.** `TestReplayGivesEarlierReviewsTheirPrediction`: six reviews over 60 days, predictions erased, replayed: each equals what was recorded live (within 10⁻⁶); a card whose earlier reviews are missing stays without.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
