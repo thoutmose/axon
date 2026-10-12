@@ -13,6 +13,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/media"
+	"github.com/thoutmose/axon/api/internal/textx"
 )
 
 // Media tools (EP-17). The agent sees only the person's own list; catalogue
@@ -141,7 +142,7 @@ func init() {
 			if in.Creators != "" {
 				by = " by " + in.Creators
 			}
-			return fmt.Sprintf("Add the %s “%s”%s to your list: %s", in.Kind, in.Title, by, truncate(in.Reason, 200)), nil
+			return fmt.Sprintf("Add the %s “%s”%s to your list: %s", in.Kind, in.Title, by, textx.Cut(in.Reason, 200)), nil
 		},
 		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
 			f, err := mediaFields(raw)

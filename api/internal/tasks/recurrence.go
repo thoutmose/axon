@@ -69,12 +69,3 @@ func NextOccurrence(rule string, current time.Time) (next time.Time, ok bool, er
 func day(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }
-
-// Today is the user's current calendar date in their time zone.
-func Today(now time.Time, timezone string) time.Time {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		loc = time.UTC
-	}
-	return day(now.In(loc))
-}

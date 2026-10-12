@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/tasks"
@@ -171,15 +172,7 @@ func scan(row pgx.Row) (Habit, error) {
 
 // Today is the user's current date.
 func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (time.Time, *time.Location, error) {
-	var tz string
-	if err := q.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return time.Time{}, nil, err
-	}
-	loc, err := time.LoadLocation(tz)
-	if err != nil {
-		loc = time.UTC
-	}
-	return tasks.Today(now, tz), loc, nil
+	return clock.Today(ctx, q, userID, now)
 }
 
 // withState fills State for each habit from recent check-ins (one query).
@@ -284,7 +277,7 @@ type Fields struct {
 	ContractPartner, ContractPledge                            *string
 }
 
-var clock = regexp.MustCompile(`^(([01][0-9]|2[0-3]):[0-5][0-9])?$`)
+var hhmm = regexp.MustCompile(`^(([01][0-9]|2[0-3]):[0-5][0-9])?$`)
 
 func (f *Fields) validate() error {
 	if f.Title != nil {
@@ -312,7 +305,7 @@ func (f *Fields) validate() error {
 	switch {
 	case f.Kind != nil && *f.Kind != "build" && *f.Kind != "break":
 		return ValidationError{"Kind is build (a habit to start) or break (a habit to stop)."}
-	case f.IntentionTime != nil && !clock.MatchString(*f.IntentionTime):
+	case f.IntentionTime != nil && !hhmm.MatchString(*f.IntentionTime):
 		return ValidationError{"The time is HH:MM, like 07:30, or empty."}
 	case f.Identity != nil && len([]rune(*f.Identity)) > 500, f.IntentionPlace != nil && len([]rune(*f.IntentionPlace)) > 500:
 		return ValidationError{"Identity and place are limited to 500 characters each."}

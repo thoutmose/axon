@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
 )
@@ -188,7 +189,7 @@ type Occurrence struct {
 
 func (s *Store) events(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
-	loc := s.zone(r.Context(), who.UserID)
+	loc, _ := clock.Zone(r.Context(), s.db, who.UserID) // UTC when it cannot be read
 	from, err1 := time.ParseInLocation(time.DateOnly, r.URL.Query().Get("from"), loc)
 	to, err2 := time.ParseInLocation(time.DateOnly, r.URL.Query().Get("to"), loc)
 	if err1 != nil || err2 != nil || to.Before(from) || to.Sub(from) > 92*24*time.Hour {

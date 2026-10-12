@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
@@ -243,26 +244,14 @@ func (h *Handlers) id(r *http.Request) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (h *Handlers) tz(ctx context.Context, userID uuid.UUID) (string, *time.Location, error) {
-	var tz string
-	if err := h.db.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return "", nil, err
-	}
-	loc, err := time.LoadLocation(tz)
-	if err != nil {
-		loc = time.UTC
-	}
-	return tz, loc, nil
-}
-
 func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
-	tz, loc, err := h.tz(r.Context(), who.UserID)
+	day, loc, err := clock.Today(r.Context(), h.db, who.UserID, h.now())
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	now := h.now().In(loc)
+	tz, now := loc.String(), h.now().In(loc)
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	since := today.AddDate(0, 0, -6)
 	items, err := List(r.Context(), h.db, who.UserID, since, now.Add(time.Minute))
@@ -270,12 +259,12 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	week, err := GetStats(r.Context(), h.db, who.UserID, since, tz, time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC))
+	week, err := GetStats(r.Context(), h.db, who.UserID, since, tz, day)
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	todayStats, err := GetStats(r.Context(), h.db, who.UserID, today, tz, time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC))
+	todayStats, err := GetStats(r.Context(), h.db, who.UserID, today, tz, day)
 	if err != nil {
 		h.fail(w, err)
 		return

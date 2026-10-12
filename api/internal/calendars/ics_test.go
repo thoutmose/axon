@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 const sample = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Google Inc//Google Calendar 70.9054//EN\r\n" +
@@ -75,5 +76,19 @@ func TestExpandCountAndInterval(t *testing.T) {
 	every2 := expand(time.Date(2026, 10, 5, 9, 0, 0, 0, time.UTC), "FREQ=DAILY;INTERVAL=2", time.Date(2026, 10, 10, 0, 0, 0, 0, time.UTC), time.Date(2026, 10, 15, 0, 0, 0, 0, time.UTC))
 	if len(every2) != 2 || every2[0].Day() != 11 || every2[1].Day() != 13 {
 		t.Fatalf("every two days = %v", every2)
+	}
+}
+
+// A calendar must be UTF-8; one that is not still loads, with the bad bytes
+// replaced, instead of failing every refresh.
+func TestParseKeepsTextValidUTF8(t *testing.T) {
+	ics := "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:x\xff\r\nDTSTART:20261021T130000Z\r\nSUMMARY:Caf\xe9\r\nLOCATION:Salle \xe0 manger\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+	evs := Parse([]byte(ics), time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC), time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC), time.UTC)
+	if len(evs) != 1 {
+		t.Fatalf("got %d events", len(evs))
+	}
+	e := evs[0]
+	if !utf8.ValidString(e.Title) || !utf8.ValidString(e.Location) || !utf8.ValidString(e.UID) || e.Title != "Caf�" {
+		t.Errorf("event = %q / %q / %q", e.Title, e.Location, e.UID)
 	}
 }

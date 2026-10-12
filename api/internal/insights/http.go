@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/httpx"
 )
 
@@ -42,16 +43,8 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 
 // clock returns the person's time zone and today's date there.
 func (h *Handlers) clock(r *http.Request, user uuid.UUID) (string, time.Time, error) {
-	var tz string
-	if err := h.db.QueryRow(r.Context(), `SELECT timezone FROM users WHERE id = $1`, user).Scan(&tz); err != nil {
-		return "", time.Time{}, err
-	}
-	loc, err := time.LoadLocation(tz)
-	if err != nil {
-		tz, loc = "UTC", time.UTC
-	}
-	n := h.now().In(loc)
-	return tz, time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, time.UTC), nil
+	today, loc, err := clock.Today(r.Context(), h.db, user, h.now())
+	return loc.String(), today, err
 }
 
 // weeksParam reads ?weeks= (4 to 104).

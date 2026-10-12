@@ -193,6 +193,22 @@ func TestRegisterSignInAndFirstUserOnly(t *testing.T) {
 	}
 }
 
+// A browser's user agent is stored with the session and the audit event;
+// one that is long, cut inside a character, or not UTF-8 at all must not
+// stop the person signing in (PostgreSQL refuses invalid UTF-8).
+func TestSignInWithAnyUserAgent(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	for _, ua := range []string{strings.Repeat("a", 299) + "é", "Mozilla/5.0 \xff\xfe"} {
+		alice.signOut()
+		opts := alice.mustDo(200, "POST", "/v1/auth/login/begin", nil)
+		if code, out := alice.do("POST", "/v1/auth/login/finish", alice.key.get(opts), "User-Agent", ua); code != 200 {
+			t.Fatalf("sign-in with user agent %q = %d: %s", ua, code, out)
+		}
+	}
+}
+
 func TestPasskeyFromAnotherBrowserIsRejected(t *testing.T) {
 	e := newEnv(t, false)
 	e.client().register("Alice")

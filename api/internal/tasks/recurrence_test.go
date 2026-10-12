@@ -104,18 +104,6 @@ func TestNextOccurrenceProperties(t *testing.T) {
 	}
 }
 
-func TestTodayFollowsTheUsersTimeZone(t *testing.T) {
-	instant := time.Date(2026, 10, 10, 23, 30, 0, 0, time.UTC)
-	for tz, want := range map[string]string{
-		"UTC": "2026-10-10", "Pacific/Kiritimati": "2026-10-11", "Pacific/Pago_Pago": "2026-10-10",
-		"Europe/Paris": "2026-10-11", "America/Los_Angeles": "2026-10-10", "Not/AZone": "2026-10-10",
-	} {
-		if got := Today(instant, tz).Format("2006-01-02"); got != want {
-			t.Errorf("Today in %s = %s, want %s", tz, got, want)
-		}
-	}
-}
-
 func alignTo(t time.Time, wd time.Weekday) time.Time {
 	for t.Weekday() != wd {
 		t = t.AddDate(0, 0, 1)

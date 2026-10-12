@@ -19,6 +19,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
+
+	"golang.org/x/text/encoding/charmap"
 
 	"github.com/thoutmose/axon/api/internal/budget"
 )
@@ -51,8 +54,21 @@ type ErrFormat struct{ Msg string }
 func (e ErrFormat) Error() string { return e.Msg }
 
 // table reads a CSV with a header row into records keyed by column name.
+// utf8Text is data as UTF-8: exports that are not (older spreadsheet
+// software saves Windows-1252) are read as Windows-1252, so accents survive.
+func utf8Text(data []byte) []byte {
+	if utf8.Valid(data) {
+		return data
+	}
+	out, err := charmap.Windows1252.NewDecoder().Bytes(data)
+	if err != nil {
+		return bytes.ToValidUTF8(data, []byte("\uFFFD"))
+	}
+	return out
+}
+
 func table(data []byte, skipUntil string) ([]map[string]string, error) {
-	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf")) // a BOM
+	data = utf8Text(bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))) // a BOM
 	if skipUntil != "" {
 		// Some exports put a few lines of notes before the header.
 		if i := bytes.Index(data, []byte(skipUntil)); i > 0 {
@@ -359,7 +375,7 @@ var ofxTag = regexp.MustCompile(`(?is)<(DTPOSTED|TRNAMT|NAME|MEMO|PAYEE)>([^<\r\
 // OFX reads a bank's OFX or QFX statement (SGML or XML): each STMTTRN is a
 // transaction, with its date, signed amount, name, and memo.
 func OFX(data []byte) ([]budget.Row, error) {
-	text := string(data)
+	text := string(utf8Text(data))
 	if !strings.Contains(strings.ToUpper(text), "<OFX>") {
 		return nil, ErrFormat{"This is not an OFX or QFX statement."}
 	}
@@ -408,6 +424,9 @@ func cleanNotion(p string) string {
 	return strings.Join(parts, "/")
 }
 
+// mdLink is a Markdown link or picture target.
+var mdLink = regexp.MustCompile(`\]\(([^)]+)\)`)
+
 // Notion reads a Notion export (ZIP of Markdown and pictures) into notes
 // under Notion/: ids are dropped from names, links between pages become
 // [[wikilinks]], and pictures keep their place next to the pages.
@@ -441,12 +460,12 @@ func Notion(data []byte) ([]Note, []File, error) {
 		}
 		p := "Notion/" + cleanNotion(strings.TrimPrefix(f.Name, "/"))
 		if ext == ".md" {
-			content := notionLink.ReplaceAllStringFunc(string(b), func(m string) string {
+			content := notionLink.ReplaceAllStringFunc(string(utf8Text(b)), func(m string) string {
 				sub := notionLink.FindStringSubmatch(m)
 				return "[[" + sub[1] + "]]"
 			})
 			// Pictures are linked by their old, id-bearing, URL-encoded names.
-			content = regexp.MustCompile(`\]\(([^)]+)\)`).ReplaceAllStringFunc(content, func(m string) string {
+			content = mdLink.ReplaceAllStringFunc(content, func(m string) string {
 				inner := m[2 : len(m)-1]
 				if strings.Contains(inner, "://") {
 					return m
