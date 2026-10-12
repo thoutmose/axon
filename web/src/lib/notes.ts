@@ -93,12 +93,59 @@ function cells(row: string): string[] {
 /** Maps a lower-cased link target to a note id; unresolved targets are absent. */
 export type Resolver = (target: string) => string | undefined;
 
+/** Maps an embed target (a vault path or a file name) to the stored file. */
+export type FileResolver = (target: string) => { path: string; content_type: string } | undefined;
+
+const fileEmbed = /!\[\[([^[\]|\n]+\.(?:png|jpe?g|gif|webp|svg|pdf))(?:\|([^[\]\n]*))?\]\]/gi;
+const imageLink = /!\[([^\]\n]*)\]\(&lt;([^\n]+?)&gt;\)|!\[([^\]\n]*)\]\(([^\s)]+)\)/g;
+
+// Pictures embedded with ![[x.png|300]] (Obsidian) or ![alt](path). Text is
+// already escaped, so alt text and paths are safe in attributes; external
+// pictures become links, since the page only loads its own.
+// Each embed becomes a placeholder until the other inline rules have run, so
+// they never touch its markup.
+function embeds(s: string, held: string[], file?: FileResolver): string {
+	const unescape = (t: string) =>
+		t.replace(
+			/&(amp|lt|gt|quot|#39);/g,
+			(m) => Object.keys(escapes).find((k) => escapes[k] === m) ?? m
+		);
+	const show = (target: string, alt: string, width = '') => {
+		const f = file?.(unescape(target));
+		if (!f) {
+			return `<span class="embed missing" title="No file at ${target} yet">🖼 ${alt || target}</span>`;
+		}
+		const url = `/api/v1/notes/file?path=${encodeURIComponent(f.path)}`;
+		if (f.content_type === 'application/pdf') {
+			return `<a class="embed pdf" href="${url}" download>📄 ${alt || escape(f.path.replace(/^.*\//, ''))}</a>`;
+		}
+		const w = /^\d{1,4}(x\d{1,4})?$/.test(width) ? ` width="${width.split('x')[0]}"` : '';
+		return `<img class="embed" src="${url}" alt="${alt}"${w} loading="lazy">`;
+	};
+	const hold = (html: string) => `\u0001${held.push(html) - 1}\u0001`;
+	s = s.replace(fileEmbed, (_, target: string, opt = '') =>
+		hold(show(target, /^\d/.test(opt) ? '' : opt, opt))
+	);
+	return s.replace(imageLink, (_, alt1, target1, alt2, target2) => {
+		const alt = alt1 ?? alt2 ?? '';
+		const target = target1 ?? target2;
+		if (/^https?:/.test(target)) {
+			return hold(
+				`<a href="${target}" rel="noopener noreferrer" target="_blank">🖼 ${alt || 'picture'}</a>`
+			);
+		}
+		const [label, width] = alt.split('|');
+		return hold(show(target, label, width?.trim()));
+	});
+}
+
 // Inline Markdown on already-escaped text. Code spans are cut out first so
 // their content is never interpreted.
 function inline(
 	text: string,
 	resolve: Resolver,
-	titleOf?: (id: string) => string | undefined
+	titleOf?: (id: string) => string | undefined,
+	file?: FileResolver
 ): string {
 	return text
 		.split(/(`[^`]+`)/)
@@ -106,7 +153,9 @@ function inline(
 			if (part.startsWith('`') && part.endsWith('`') && part.length > 1) {
 				return `<code>${escape(part.slice(1, -1))}</code>`;
 			}
-			let s = escape(part);
+			const held: string[] = [];
+			let s = escape(part.replace(/\u0001/g, ''));
+			s = embeds(s, held, file);
 			s = s.replace(wikilink, (_, target: string, heading = '', alias = '') => {
 				const id = resolve(target.trim().toLowerCase());
 				// A plain [[file-name]] reads as the note's title; an alias wins.
@@ -127,7 +176,7 @@ function inline(
 			s = s.replace(tagPattern, (_, pre: string, tag: string) => {
 				return `${pre}<a class="tag" href="/notes?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`;
 			});
-			return s;
+			return s.replace(/\u0001(\d+)\u0001/g, (_, n) => held[Number(n)]);
 		})
 		.join('');
 }
@@ -140,7 +189,8 @@ function inline(
 export function render(
 	md: string,
 	resolve: Resolver,
-	titleOf?: (id: string) => string | undefined
+	titleOf?: (id: string) => string | undefined,
+	file?: FileResolver
 ): string {
 	const out: string[] = [];
 	const lines = md.replace(/\r\n?/g, '\n').split('\n');
@@ -157,9 +207,10 @@ export function render(
 								.trim()
 								.replace(/^"(.*)"$/, '$1'),
 							resolve,
-							titleOf
+							titleOf,
+							file
 						)}</dd>`
-					: `<dd>${inline(l, resolve, titleOf)}</dd>`;
+					: `<dd>${inline(l, resolve, titleOf, file)}</dd>`;
 			});
 			out.push(`<dl class="props">${props.join('')}</dl>`);
 			i = end + 1;
@@ -169,7 +220,7 @@ export function render(
 	let para: string[] = [];
 	const flush = () => {
 		if (para.length)
-			out.push(`<p>${para.map((l) => inline(l, resolve, titleOf)).join('<br>')}</p>`);
+			out.push(`<p>${para.map((l) => inline(l, resolve, titleOf, file)).join('<br>')}</p>`);
 		para = [];
 		if (list) out.push(`</${list}>`);
 		list = null;
@@ -192,7 +243,7 @@ export function render(
 			// The page title is the h1, so note headings start at h2.
 			const level = Math.min(heading[1].length + 1, 6);
 			out.push(
-				`<h${level} id="${anchor(heading[2])}">${inline(heading[2], resolve, titleOf)}</h${level}>`
+				`<h${level} id="${anchor(heading[2])}">${inline(heading[2], resolve, titleOf, file)}</h${level}>`
 			);
 		} else if (item) {
 			const kind = item[1] ? 'ul' : 'ol';
@@ -202,8 +253,8 @@ export function render(
 			const task = item[3].match(/^\[([ xX])\]\s+(.*)$/);
 			out.push(
 				task
-					? `<li>${task[1] === ' ' ? '☐' : '☑'} ${inline(task[2], resolve, titleOf)}</li>`
-					: `<li>${inline(item[3], resolve, titleOf)}</li>`
+					? `<li>${task[1] === ' ' ? '☐' : '☑'} ${inline(task[2], resolve, titleOf, file)}</li>`
+					: `<li>${inline(item[3], resolve, titleOf, file)}</li>`
 			);
 		} else if (quote) {
 			flush();
@@ -216,13 +267,13 @@ export function render(
 				const title = callout[2] || kind[0].toUpperCase() + kind.slice(1);
 				const rest = body.slice(1).filter((l) => l.trim() !== '');
 				out.push(
-					`<aside class="callout ${kind}"><p class="callout-title">${inline(title, resolve, titleOf)}</p>${rest
-						.map((l) => `<p>${inline(l, resolve, titleOf)}</p>`)
+					`<aside class="callout ${kind}"><p class="callout-title">${inline(title, resolve, titleOf, file)}</p>${rest
+						.map((l) => `<p>${inline(l, resolve, titleOf, file)}</p>`)
 						.join('')}</aside>`
 				);
 			} else {
 				out.push(
-					`<blockquote>${body.map((l) => inline(l, resolve, titleOf)).join('<br>')}</blockquote>`
+					`<blockquote>${body.map((l) => inline(l, resolve, titleOf, file)).join('<br>')}</blockquote>`
 				);
 			}
 		} else if (/^\s*\|/.test(line) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] ?? '')) {
@@ -235,7 +286,7 @@ export function render(
 			for (i += 2; i < lines.length && /^\s*\|/.test(lines[i]); i++) rows.push(cells(lines[i]));
 			i--;
 			const td = (tag: string, c: string, k: number) =>
-				`<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c, resolve, titleOf)}</${tag}>`;
+				`<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c, resolve, titleOf, file)}</${tag}>`;
 			out.push(
 				`<div class="table"><table><thead><tr>${head.map((c, k) => td('th', c, k)).join('')}</tr></thead><tbody>${rows
 					.map((r) => `<tr>${r.map((c, k) => td('td', c, k)).join('')}</tr>`)

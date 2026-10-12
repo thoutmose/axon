@@ -354,14 +354,18 @@ func export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (Note, error) { return scan(row, true) })
 }
 
-// Files returns every note as path → Markdown, for the export archive.
+// Files returns every note as path → Markdown, and the files they embed, for
+// the export archive.
 func Files(ctx context.Context, q db.Querier, userID uuid.UUID) (map[string][]byte, error) {
+	out, err := fileData(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := q.Query(ctx, `SELECT path, content FROM notes WHERE user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	out := map[string][]byte{}
 	for rows.Next() {
 		var p, c string
 		if err := rows.Scan(&p, &c); err != nil {

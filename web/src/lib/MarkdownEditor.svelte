@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { canUpload, upload } from './noteFiles.svelte';
 	import { noteIndex } from './noteIndex.svelte';
 	import { stem } from './notes';
 	import { handle, newVim, type Mode } from './vim';
@@ -10,6 +11,7 @@
 		label = 'Markdown',
 		rows = 20,
 		vim = false,
+		pictures = false,
 		onsave
 	}: {
 		value: string;
@@ -17,8 +19,57 @@
 		label?: string;
 		rows?: number;
 		vim?: boolean;
+		/** Paste, drop, or pick pictures and PDFs; they are uploaded and embedded. */
+		pictures?: boolean;
 		onsave?: () => void;
 	} = $props();
+
+	let picker = $state<HTMLInputElement>();
+	let uploading = $state(0);
+	let uploadError = $state('');
+
+	/** Uploads files and embeds each at the caret, one per line. */
+	async function addFiles(files: File[]) {
+		const usable = files.filter(canUpload);
+		if (!usable.length) {
+			if (files.length)
+				uploadError = 'Only PNG, JPEG, GIF, WebP, SVG pictures and PDFs can go in a note.';
+			return;
+		}
+		uploadError = '';
+		uploading += usable.length;
+		for (const f of usable) {
+			try {
+				const md = await upload(f);
+				const s = area.selectionStart;
+				const before = value.slice(0, s);
+				insert((before && !before.endsWith('\n') ? '\n' : '') + md + '\n');
+			} catch (err) {
+				uploadError = `${f.name}: ${err instanceof Error ? err.message : err}`;
+			} finally {
+				uploading--;
+			}
+		}
+	}
+
+	function onpaste(e: ClipboardEvent) {
+		if (!pictures) return;
+		const files = [...(e.clipboardData?.files ?? [])];
+		if (files.length) {
+			e.preventDefault();
+			addFiles(files);
+		}
+	}
+
+	function ondrop(e: DragEvent) {
+		if (!pictures) return;
+		const files = [...(e.dataTransfer?.files ?? [])];
+		if (files.length) {
+			e.preventDefault();
+			area.focus();
+			addFiles(files);
+		}
+	}
 
 	const vimState = newVim();
 	let mode = $state<Mode>('normal');
@@ -196,6 +247,25 @@
 				title={t.keys ? `${t.label} (${t.keys})` : t.label}>{t.icon}</button
 			>
 		{/each}
+		{#if pictures}
+			<button
+				type="button"
+				onclick={() => picker?.click()}
+				aria-label="Insert a picture or PDF"
+				title="Insert a picture or PDF (or paste, or drop it here)">🖼</button
+			>
+			<input
+				bind:this={picker}
+				type="file"
+				accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,application/pdf"
+				multiple
+				hidden
+				onchange={(e) => {
+					addFiles([...(e.currentTarget.files ?? [])]);
+					e.currentTarget.value = '';
+				}}
+			/>
+		{/if}
 	</div>
 	<label for={id} class="visually-hidden">{label}</label>
 	<textarea
@@ -210,9 +280,19 @@
 		oninput={detect}
 		onclick={detect}
 		{onkeydown}
+		{onpaste}
+		{ondrop}
+		ondragover={(e) => {
+			if (pictures && e.dataTransfer?.types.includes('Files')) e.preventDefault();
+		}}
 		class:vim-normal={vim && mode !== 'insert'}
 		aria-describedby={vim ? `${id}-vim` : undefined}
 	></textarea>
+	{#if uploading || uploadError}
+		<p class="upload-status" role={uploadError ? 'alert' : 'status'}>
+			{uploading ? `Uploading ${uploading} file${uploading > 1 ? 's' : ''}…` : uploadError}
+		</p>
+	{/if}
 	{#if vim}
 		<p class="vim-status" id="{id}-vim" aria-live="polite">
 			{command || `-- ${mode === 'visual-line' ? 'VISUAL LINE' : mode.toUpperCase()} --`}
@@ -246,6 +326,12 @@
 		border-radius: var(--radius-lg);
 		background: var(--surface);
 		overflow: visible;
+	}
+	.upload-status {
+		margin: 0;
+		padding: var(--space-1) var(--space-2);
+		font-size: var(--text-sm);
+		border-top: 1px solid var(--border);
 	}
 	.toolbar {
 		display: flex;

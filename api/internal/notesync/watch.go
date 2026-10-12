@@ -58,7 +58,7 @@ func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Lo
 	}
 }
 
-// fingerprint summarises the vault's Markdown files without reading them.
+// fingerprint summarises the vault's notes and attachments without reading them.
 func fingerprint(dir string) (string, error) {
 	var lines []string
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
@@ -72,7 +72,7 @@ func fingerprint(dir string) (string, error) {
 			}
 			return nil
 		}
-		if !strings.HasSuffix(name, ".md") {
+		if !strings.HasSuffix(name, ".md") && !isAttachment(name) {
 			return nil
 		}
 		info, err := d.Info()

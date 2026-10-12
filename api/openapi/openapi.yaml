@@ -1378,6 +1378,129 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/SyncConflict" }
 
+  /v1/notes/files:
+    get:
+      tags: [notes]
+      operationId: listNoteFiles
+      summary: Every picture and PDF notes embed, and the paths deleted in the last 30 days (for the editor and the vault sync)
+      responses:
+        "200":
+          description: The files, by path.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, tombstones]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/NoteFile" }
+                  tombstones:
+                    type: array
+                    items:
+                      type: object
+                      required: [path, deleted_at]
+                      properties:
+                        path: { type: string }
+                        deleted_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [notes]
+      operationId: uploadNoteFile
+      summary: Add a picture or PDF from the editor; it is stored under Attachments/ with a name made unique by its content. PNG and JPEG pictures (up to 20 MB) are scaled to fit 2400 px and re-encoded without metadata; other files are kept as sent (up to 10 MB)
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: The original file name; its extension must match the Content-Type.
+          schema: { type: string, maxLength: 200 }
+      requestBody:
+        required: true
+        content:
+          image/png: { schema: { type: string, format: binary } }
+          image/jpeg: { schema: { type: string, format: binary } }
+          image/gif: { schema: { type: string, format: binary } }
+          image/webp: { schema: { type: string, format: binary } }
+          image/svg+xml: { schema: { type: string, format: binary } }
+          application/pdf: { schema: { type: string, format: binary } }
+      responses:
+        "201":
+          description: Stored; embed it as ![](path).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NoteFile" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "415": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "507": { $ref: "#/components/responses/Problem" }
+
+  /v1/notes/file:
+    parameters:
+      - name: path
+        in: query
+        required: true
+        description: Vault path, such as Attachments/photo.png.
+        schema: { type: string, maxLength: 500 }
+    get:
+      tags: [notes]
+      operationId: getNoteFile
+      summary: One file's bytes; sandboxed so nothing in it can run, and PDFs download
+      responses:
+        "200":
+          description: The file.
+          content:
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/gif: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+            image/svg+xml: { schema: { type: string, format: binary } }
+            application/pdf: { schema: { type: string, format: binary } }
+        "304": { description: "Not modified." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [notes]
+      operationId: pushNoteFile
+      summary: Write a file from the vault sync, byte for byte, only if Axon still holds the version the client last synced
+      parameters:
+        - name: base_hash
+          in: query
+          description: The hash both sides last agreed on; empty or absent for a file new to Axon.
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        "200":
+          description: Stored, or already identical.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NoteFile" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/FileConflict" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "507": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [notes]
+      operationId: deleteNoteFile
+      summary: Delete a file; with base_hash (the vault sync), only if Axon still holds that version
+      parameters:
+        - name: base_hash
+          in: query
+          schema: { type: string }
+      responses:
+        "204": { description: "Deleted, or already gone." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/FileConflict" }
+        "422": { $ref: "#/components/responses/Problem" }
+
   /v1/areas:
     get:
       tags: [para]
@@ -5096,6 +5219,21 @@ components:
                       - $ref: "#/components/schemas/Note"
                       - type: "null"
                     description: Axon's version, or null when the note was deleted in Axon.
+    FileConflict:
+      description: The file changed in Axon since the client last synced; keep both versions.
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Problem"
+              - type: object
+                required: [current]
+                properties:
+                  current:
+                    oneOf:
+                      - $ref: "#/components/schemas/NoteFile"
+                      - type: "null"
+                    description: Axon's version, or null when the file was deleted in Axon.
     SignedIn:
       description: Signed in; the session cookie is set.
       content:
@@ -5107,6 +5245,15 @@ components:
               display_name: { type: string }
 
   schemas:
+    NoteFile:
+      type: object
+      required: [path, content_type, size, hash, updated_at]
+      properties:
+        path: { type: string, example: Attachments/whiteboard-1a2b3c4d.png }
+        content_type: { type: string, enum: [image/png, image/jpeg, image/gif, image/webp, image/svg+xml, application/pdf] }
+        size: { type: integer, description: Bytes. }
+        hash: { type: string, description: "SHA-256 of the bytes, for sync." }
+        updated_at: { type: string, format: date-time }
     Problem:
       type: object
       required: [type, title, status, detail]

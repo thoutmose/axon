@@ -128,6 +128,7 @@ docker run -d --name axon-notes-sync --restart unless-stopped \
 
 - Create, edit, rename, or delete a Markdown file and the note follows within seconds, and the other way round (tested within 10 s).
 - A note edited on both sides keeps both versions (`*.axon-conflict.md`).
+- Pictures and PDFs (`.png`, `.jpg`, `.gif`, `.webp`, `.svg`, `.pdf`, up to 10 MB each, 500 MB per person) sync the same way, byte for byte; a conflict keeps Axon's copy as `<name>.axon-conflict.<ext>`. A file that is not what its name says is reported as skipped and stays local.
 - Notes in `Templates/` appear as templates when you create a note in Axon; `{{title}}` and `{{date}}` are filled in.
 - `-watch` replaces `-git`: commit the vault on your own schedule, for example with a nightly cron `git -C ~/SecondBrain commit -am sync && git push`.
 - The service definition belongs to the fleet repository (ADR 0004); this command is what it should run.

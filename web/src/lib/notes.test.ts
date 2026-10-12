@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { highlight, render, stem, wikilinks } from './notes';
+import { resolveFile } from './noteFiles.svelte';
 
 const ids: Record<string, string> = { proofs: 'p-1', 'mit 6.042j': 'm-1' };
 const resolve = (t: string) => ids[t];
@@ -100,5 +101,38 @@ describe('wikilinks', () => {
 describe('stem', () => {
 	it('drops folders and the extension', () => {
 		expect(stem('Zettel/permanent/proofs.md')).toBe('proofs');
+	});
+});
+
+describe('pictures', () => {
+	const files = [
+		{ path: 'Attachments/beach-1a2b.png', content_type: 'image/png' },
+		{ path: 'Trips/map.svg', content_type: 'image/svg+xml' },
+		{ path: 'paper.pdf', content_type: 'application/pdf' }
+	];
+	const file = (t: string) => resolveFile(t, 'Trips/Rome.md', files as never);
+	const html = (md: string) => render(md, () => undefined, undefined, file);
+
+	it('embeds Obsidian and Markdown pictures', () => {
+		expect(html('![[beach-1a2b.png|300]]')).toContain(
+			'<img class="embed" src="/api/v1/notes/file?path=Attachments%2Fbeach-1a2b.png" alt="" width="300" loading="lazy">'
+		);
+		expect(html('![The sea](Attachments/beach-1a2b.png)')).toContain('alt="The sea"');
+		expect(html('![](map.svg)')).toContain('path=Trips%2Fmap.svg');
+		expect(html('![[paper.pdf]]')).toContain('class="embed pdf"');
+	});
+
+	it('marks missing files and links external pictures', () => {
+		expect(html('![[gone.png]]')).toContain('embed missing');
+		expect(html('![x](https://example.com/a.png)')).toContain(
+			'<a href="https://example.com/a.png"'
+		);
+		expect(html('![x](https://example.com/a.png)')).not.toContain('<img');
+	});
+
+	it('never lets alt text inject markup', () => {
+		const out = html('![a" onerror="alert(1) #tag *b*](Attachments/beach-1a2b.png)');
+		expect(out).toContain('alt="a&quot; onerror=&quot;alert(1) #tag *b*"');
+		expect(out).not.toContain('class="tag"');
 	});
 });

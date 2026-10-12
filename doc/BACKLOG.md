@@ -99,6 +99,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-48 | Everything in the vault, visible templates | Tasks, goals, milestones, projects, areas, archives, habits, health, and media as Markdown notes kept in step both ways; templates for every note type shown with their sections. Owner request. | MUST | 21 pts | EP-36, EP-43 | Done |
 | EP-49 | Audit: fixes and legacy removal | A whole-project audit: bugs fixed, unused code and services removed, documentation brought back to what runs. Owner request. | MUST | 8 pts | EP-48 | Done |
 | EP-50 | Diagrams GitHub can display | Every README diagram in Mermaid, up to date with what runs. Owner request. | MUST | 2 pts | EP-49 | Done |
+| EP-51 | Pictures in notes | Paste, drop, or pick pictures and PDFs in the editor; Markdown and Obsidian embeds render; files sync with the vault both ways and are exported. Owner request. | MUST | 8 pts | EP-11, EP-36 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -135,6 +136,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -1368,6 +1370,16 @@ Cross-cutting matrix:
 **Goal.** The owner could not see the UML diagrams: GitHub draws Mermaid but shows PlantUML as raw text (2026-10-12).
 
 - [x] **EP-50/IS-50.01** · 2 pts · MUST — the seven PlantUML diagrams and the two older Mermaid ones become eight Mermaid diagrams in both READMEs: system context, containers, deployment, data model and universal links, learning and memory loop, assessment and Tutor roadmaps, vault mirror both ways, daily streak and freezes; each rendered with the Mermaid CLI before committing.
+
+### EP-51 — Pictures in notes
+
+**Goal.** "Ensure I can put pictures within notes" (owner, 2026-10-12), and see them in Axon and in the vault alike.
+
+- [x] **EP-51/IS-51.01** · 3 pts · MUST — files notes embed: `note_files` keyed by vault path (PNG, JPEG, GIF, WebP, SVG, PDF; 10 MB each, 500 MB per person) with tombstones. `POST /v1/notes/files` stores an editor upload under `Attachments/<name>-<hash>.<ext>`; PNG and JPEG are re-encoded (no EXIF or location) and scaled to 2400 px. `GET /v1/notes/file` serves with `nosniff` and a sandboxing CSP, PDFs as downloads. Bytes are checked against the extension.
+- [x] **EP-51/IS-51.02** · 2 pts · MUST — the editor takes pictures by paste, drop, or the 🖼 button and embeds them as `![name](Attachments/…)`; the preview and reading view render `![alt](path)`, `![alt|300](path)`, and Obsidian `![[file.png|300]]`, resolved like Obsidian (exact path, then relative to the note, then by name). External pictures become links (the page loads only its own); missing files say so.
+- [x] **EP-51/IS-51.03** · 3 pts · MUST — `axon notes-sync` carries attachments both ways (`GET /v1/notes/files`, `PUT`/`DELETE /v1/notes/file` with `base_hash`), byte for byte, with the same conflict rule as notes (`<name>.axon-conflict.<ext>`); the watch wakes on them; the ZIP import and the account export include them.
+
+**Tests.** `TestNoteFiles` (upload, re-encoding, sandbox headers, ownership, path escapes, type checks, vault sync both ways, conflicts, deletions, export); render tests for embeds and alt-text escaping; e2e "paste a picture into a note".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

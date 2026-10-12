@@ -338,7 +338,10 @@ func notesSync(args []string) error {
 	fmt.Printf("pushed %d, pulled %d, deleted %d, unchanged %d, conflicts %d\n",
 		rep.Pushed, rep.Pulled, rep.Deleted, rep.Unchanged, len(rep.Conflicts))
 	for _, c := range rep.Conflicts {
-		fmt.Printf("conflict: %s (Axon's version is next to it as *%s)\n", c, notesync.ConflictSuffix)
+		fmt.Printf("conflict: %s (Axon's version is next to it, named *.axon-conflict.*)\n", c)
+	}
+	for _, s := range rep.Skipped {
+		fmt.Printf("skipped: %s (not a picture or PDF of the kind its name says, or too large)\n", s)
 	}
 	if *useGit && (rep.Pulled > 0 || rep.Deleted > 0 || len(rep.Conflicts) > 0) {
 		if err := git("add", "-A"); err != nil {
