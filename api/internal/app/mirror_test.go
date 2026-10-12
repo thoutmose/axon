@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -256,4 +257,78 @@ func keys(m map[string]vaultNote) []string {
 		out = append(out, k)
 	}
 	return out
+}
+
+// Editing a habit's or a film's note in the vault changes the habit or the
+// film; a value the note cannot hold leaves the item as it was. Workouts are
+// notes too, once health is mirrored.
+func TestVaultEditsReachHabitsMediaAndWorkouts(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	w := mirror.New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	step := func() {
+		t.Helper()
+		for range 3 {
+			if err := w.Step(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	var habit, film struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Read one page","identity":"I am a reader"}`)), &habit)
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/media", []byte(`{"title":"Arrival","kind":"film","status":"done","rating":9}`)), &film)
+	step()
+
+	edit := func(path string, from, to *regexp.Regexp, with string) {
+		t.Helper()
+		n, ok := alice.vault()[path]
+		if !ok || !from.MatchString(n.Content) {
+			t.Fatalf("%s has no %s:\n%s", path, from, n.Content)
+		}
+		alice.editNote(n, n.Path, to.ReplaceAllString(n.Content, with))
+		step()
+	}
+	line := func(key string) *regexp.Regexp { return regexp.MustCompile(`(?m)^` + key + `:.*$`) }
+	edit("Axon/Habits/Read one page.md", line("days"), line("days"), "days: [1, 3, 5]")
+	ident := regexp.MustCompile(`I am a reader`)
+	edit("Axon/Habits/Read one page.md", ident, ident, "I am someone who reads every day")
+	if out := alice.mustDo(200, "GET", "/v1/habits/"+habit.ID, nil); !bytes.Contains(out, []byte(`"days":[1,3,5]`)) ||
+		!bytes.Contains(out, []byte("I am someone who reads every day")) {
+		t.Fatalf("habit after the vault edit = %s", out)
+	}
+	edit("Axon/Media/Films/Arrival.md", line("rating"), line("rating"), "rating: 7")
+	edit("Axon/Media/Films/Arrival.md", line("genres"), line("genres"), "genres: [Science fiction, Drama]")
+	if out := alice.mustDo(200, "GET", "/v1/media/"+film.ID, nil); !bytes.Contains(out, []byte(`"rating":7`)) ||
+		!bytes.Contains(out, []byte(`"genres":["Science fiction","Drama"]`)) {
+		t.Fatalf("film after the vault edit = %s", out)
+	}
+	// Days must be weekday numbers: the habit keeps the ones it had.
+	edit("Axon/Habits/Read one page.md", line("days"), line("days"), "days: [monday]")
+	if out := alice.mustDo(200, "GET", "/v1/habits/"+habit.ID, nil); !bytes.Contains(out, []byte(`"days":[1,3,5]`)) {
+		t.Fatalf("a bad vault edit changed the habit: %s", out)
+	}
+
+	// A workout becomes a note under Health/Training once health is mirrored.
+	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))
+	var doc map[string]any
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+	delete(doc, "ai")
+	doc["vault"] = map[string]any{"mirror": true, "folder": "Axon", "health": true}
+	body, _ := json.Marshal(doc)
+	alice.mustDo(200, "PUT", "/v1/me/settings", body)
+	alice.mustDo(201, "POST", "/v1/health/workouts", []byte(`{"done_on":"2026-10-10","kind":"strength","title":"Full body","minutes":45,"effort":7,
+		"sets":[{"exercise":"Squat","reps":5,"weight_kg":60}]}`))
+	step()
+	n, ok := alice.vault()["Axon/Health/Training/2026-10-10 Full body.md"]
+	if !ok {
+		t.Fatalf("no workout note; have %v", keys(alice.vault()))
+	}
+	for _, s := range []string{"type: workout", "minutes: 45", "effort: 7", "| Squat | 5 | 60 |"} {
+		if !strings.Contains(n.Content, s) {
+			t.Fatalf("workout note lacks %q:\n%s", s, n.Content)
+		}
+	}
 }

@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
-	import { addDays, localDate, mondayOf } from '$lib/dates';
+	import { addDays, formatDate, localDate, mondayOf } from '$lib/dates';
 	import { describe, parse } from '$lib/quickAdd';
 	import { addParsed } from '$lib/quickAddApi';
 	import type { Task } from '$lib/tasks';
@@ -300,11 +300,7 @@
 				{#each ahead as a, i (i)}
 					<li>
 						<span class="date"
-							>{new Date(`${a.date}T00:00:00`).toLocaleDateString(undefined, {
-								weekday: 'short',
-								day: 'numeric',
-								month: 'short'
-							})}</span
+							>{formatDate(a.date, { weekday: 'short', day: 'numeric', month: 'short' })}</span
 						>
 						<span class="grow">{a.title}</span><span class="muted small">{a.what}</span>
 					</li>

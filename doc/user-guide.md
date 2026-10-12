@@ -4,7 +4,7 @@ Axon keeps your notes, tasks, goals, habits, learning, focus, money, media, heal
 
 ## Getting in
 
-- **Create your account** with a passkey (your device's fingerprint, face, or PIN, or a security key). Save the recovery codes: each works once if you lose your devices. Add more passkeys and an authenticator app under **Account → Security**.
+- **Create your account** with a passkey (your device's fingerprint, face, or PIN, or a security key). Save the recovery codes: each works once if you lose your devices. The account starts in your device's time zone, which decides what "today" means; change it under **Account**. Add more passkeys and an authenticator app under **Account → Security**.
 - **Try the demo** (when offered) opens a shared account with sample data that resets every night.
 
 ## Today

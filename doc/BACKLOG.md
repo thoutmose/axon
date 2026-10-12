@@ -117,6 +117,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-66 | Trash and undo | Every deletion goes to a 30-day trash with what was deleted along with it; Undo after each deletion, and Account → Trash to restore or forget. Owner request: essential functionality. | MUST | 5 pts | EP-03 | Done |
 | EP-67 | Share to Axon | The installed app in the phone's share sheet, a "Save to Axon" bookmarklet, and a clipper that keeps a page's readable text as a literature note. Owner request: essential functionality. | SHOULD | 3 pts | EP-55 | Done |
 | EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
+| EP-69 | Clean code and the person's day | Duplicated helpers become one tested module each (time zone and "today", dates, text that reaches the database, editor text changes); the bugs the copies had are fixed; tests written first, including a browser suite run in a far time zone. Owner request: fix, refactor, clean code, TDD, documentation. | MUST | 5 pts | EP-68 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -153,7 +154,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -1560,6 +1561,20 @@ Cross-cutting matrix:
 - [x] **EP-68/IS-68.02** · 1 pt · SHOULD — "Remind me at" in the task editor; quick add reads "at 15:00", "at 3pm", "à 18h30" (a time already gone today, without a day said, means tomorrow); tasks show 🔔 and the time.
 
 **Tests.** `TestReminders` (a task's reminder sent once with the daily reminders off, a new time reminds again, a two-day-old one is not sent); quick-add unit tests for times; e2e "a task can carry a reminder at a time, set by quick add or in the task".
+
+### EP-69 — Clean code and the person's day
+
+**Goal.** The owner asked to fix and refactor everything, with clean code, tests first, and documentation. The audit looked for code written more than once, since each copy can go wrong on its own, and for logic no test reached.
+
+- [x] **EP-69/IS-69.01** · 1 pt · MUST — API `clock` package: the person's time zone and "today" were looked up in twelve places; now one tested function. Progress and focus passed a zone name Go had refused straight to PostgreSQL; every caller now passes the zone Go resolved.
+- [x] **EP-69/IS-69.02** · 1 pt · MUST — Text is always UTF-8 before PostgreSQL sees it (`textx.Cut`): a user agent cut inside an accent, or not UTF-8 at all, failed sign-in with a 500. Imports read Windows-1252 exports as such (accents survive), the clipper decodes a page's declared encoding, and a calendar with a bad byte still loads.
+- [x] **EP-69/IS-69.03** · 1 pt · MUST — New accounts start in the browser's time zone instead of UTC; before, "today" (tasks, habits, reminders, Today) was yesterday's for part of every night outside UTC.
+- [x] **EP-69/IS-69.04** · 1 pt · MUST — Web `lib/dates` replaces six copies of date arithmetic and the `'sv'` locale trick. Fixed on the way: the recall history showed the next date a day early west of UTC; workouts dated after the account's today (a device a day ahead) vanished from the list. Calendar events over several days (`spreadEvents`) and the editor's text changes (`lib/markdownEdit`) moved out of their pages into tested modules; a list numbered "1)" now continues "2)", not "2.".
+- [x] **EP-69/IS-69.05** · 1 pt · SHOULD — Tests where none reached: account balances from SQL checked against the property-tested model over random movements; vault edits reaching habits and films, and workouts as notes; a Notion export's pictures. `CONTRIBUTING.md` lists the shared helpers to use.
+
+**Kept as they are.** The 150 `catch` blocks that show an error toast: a helper would save a line each and hide the error path, against "simple, explicit code".
+
+**Tests.** `clock`, `textx`, `dates`, `markdownEdit`, `spreadEvents`, and encoding unit tests, each written before its code; `TestSignInWithAnyUserAgent` (failed with a 500 before the fix), `TestRegistrationTakesTheBrowsersTimeZone`, `TestAccountBalancesMatchTheModel` (fails when the SQL is broken on purpose), `TestVaultEditsReachHabitsMediaAndWorkouts`, a workout dated tomorrow in `TestHealth…`, Notion pictures in `TestImports`. The e2e suite now runs the browser at UTC+14 or UTC−11, whichever has a different date from UTC's at the time; it found the workout and calendar test bugs.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -1761,6 +1776,8 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-12 | Owner request: "fix everything, refactor everything, clean code, TDD, documentation". Added EP-69. |
+| 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
 | 2026-10-12 | Owner request: EP-49 audit; fixes and legacy removal delivered. |
 | 2026-10-12 | Owner request: EP-48 puts every item in the vault as a note, both ways, and shows every template with its sections. Delivered. |
