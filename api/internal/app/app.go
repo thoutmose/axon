@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/calendars"
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/clip"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/focus"
 	"github.com/thoutmose/axon/api/internal/goals"
@@ -160,6 +161,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				calendarsAPI.Routes(r)
 				householdAPI.Routes(r)
 				semanticAPI.Routes(r)
+				clip.Routes(log)(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)

@@ -2497,6 +2497,41 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/clip:
+    post:
+      tags: [notes]
+      operationId: clipPage
+      summary: "A web page's readable text as Markdown, for a literature note: the article without menus, headers, footers, scripts, or forms; public HTTPS pages only, unless the operator allows private networks"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              additionalProperties: false
+              properties:
+                url: { type: string, maxLength: 2000 }
+      responses:
+        "200":
+          description: The clipped page.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, title, site, markdown]
+                properties:
+                  url: { type: string }
+                  title: { type: string }
+                  site: { type: string }
+                  markdown: { type: string }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+
   /v1/areas:
     get:
       tags: [para]

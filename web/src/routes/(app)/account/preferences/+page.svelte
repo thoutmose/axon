@@ -257,6 +257,9 @@
 		</Section>
 
 		<Section id="app" title={t('App')}>
+			<p class="small">
+				<a href="/share">{t('Save to Axon from other apps and any web page')}</a>
+			</p>
 			{#if install.installed}
 				<p>{t('Axon is installed on this device.')}</p>
 			{:else if install.offer}

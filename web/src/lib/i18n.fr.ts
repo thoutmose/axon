@@ -334,6 +334,8 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	'Save to Axon from other apps and any web page':
+		'Enregistrer dans Axon depuis d’autres applications et toute page web',
 	Trash: 'Corbeille',
 	'Learning today': 'Apprendre aujourd’hui',
 	'Habits today': 'Habitudes du jour',

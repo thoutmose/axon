@@ -115,6 +115,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-64 | Bulk actions, drag onto the calendar | Select tasks and change them all at once (status, context, due date, delete); drag tasks between days and undated next actions onto a day, with a date field for the keyboard. Owner decision on the EP-49 proposals. | COULD | 3 pts | EP-07, EP-13 | Done |
 | EP-65 | Audit 2: fixes | A review of EP-50 to EP-64: vault templates honour the mirror folder, learning days follow the person's time zone, unpacked imports are capped, form controls are styled everywhere, unused exports removed. Owner request. | MUST | 3 pts | EP-64 | Done |
 | EP-66 | Trash and undo | Every deletion goes to a 30-day trash with what was deleted along with it; Undo after each deletion, and Account → Trash to restore or forget. Owner request: essential functionality. | MUST | 5 pts | EP-03 | Done |
+| EP-67 | Share to Axon | The installed app in the phone's share sheet, a "Save to Axon" bookmarklet, and a clipper that keeps a page's readable text as a literature note. Owner request: essential functionality. | SHOULD | 3 pts | EP-55 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1539,6 +1540,16 @@ Cross-cutting matrix:
 - [x] **EP-66/IS-66.02** · 2 pts · MUST — `GET /v1/trash`, `POST /v1/trash/undo` (an entity's latest deletion), `POST /v1/trash/{id}/restore`, `DELETE /v1/trash/{id}`, `DELETE /v1/trash`; toasts with **Undo** after deleting a note, task (one or in bulk), goal, milestone, habit, card, film, series or book, project, or memory palace; Account → Trash.
 
 **Tests.** `TestTrash` (undo of a note with its links and the sync seeing it again, a goal with its milestones as one deletion, a habit's check-ins and a card's reviews restored, a taken path refused with nothing half-restored, a bulk deletion as one line, ownership, forget, empty); the full suite with the hook on every deletion; e2e "a deleted note can be undone, and restored from the trash".
+
+### EP-67 — Share to Axon
+
+**Goal.** Capture where reading happens: from any app on a phone, and any page on a computer.
+
+- [x] **EP-67/IS-67.01** · 1 pt · SHOULD — the manifest's `share_target`: the installed app appears in the share sheet and opens `/share` with the title, text, and link (a link inside the text is taken out); a "Save to Axon" bookmarklet sends the page's title, address, and selected text there; sign-in keeps the whole address, so a share survives it. Save as a fleeting note or a task, offline too.
+- [x] **EP-67/IS-67.02** · 2 pts · SHOULD — `POST /v1/clip`: the page's readable part (its article, main, or body without scripts, menus, headers, footers, forms) as Markdown with headings, lists, quotes, code, and absolute links; HTML only, 5 MB, through `netsafe`, the private-network-safe client now shared with followed calendars. "Save the page's text" makes a literature note with source, site, and date, opened for annotation.
+- [x] Fixed on the way: a capture waiting offline was dropped when another tab was still creating it (the server's "still being processed" answer); it now waits and is sent once.
+
+**Tests.** Clipper unit test (what is kept and left out); `TestClip` (private and non-HTTP addresses refused, a page clipped, a PDF refused); followed calendars still pass on `netsafe`; e2e "share to Axon: a shared link becomes a note, or the page's text a literature note".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
