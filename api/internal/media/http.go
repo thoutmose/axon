@@ -157,12 +157,12 @@ func (h *Handlers) findCovers(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	checked, found, err := h.catalogs.FindCovers(r.Context(), who.UserID, func() bool { return h.allow(who.UserID) })
+	checked, found, more, err := h.catalogs.FindCovers(r.Context(), who.UserID, func() bool { return h.allow(who.UserID) })
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	httpx.JSON(w, http.StatusOK, map[string]any{"checked": checked, "found": found, "films_and_series": h.catalogs.TMDBEnabled()})
+	httpx.JSON(w, http.StatusOK, map[string]any{"checked": checked, "found": found, "more": more, "films_and_series": h.catalogs.TMDBEnabled()})
 }
 
 func (h *Handlers) recommendations(w http.ResponseWriter, r *http.Request) {

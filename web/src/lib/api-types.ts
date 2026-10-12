@@ -2787,7 +2787,7 @@ export interface paths {
 		put?: never;
 		/**
 		 * Give covers to items that have none
-		 * @description Looks up to 20 of the person's items without a cover, oldest first, in Open Library (books) and TMDB (films and series, when set up), and copies the cover of the same work: same title, and the same author or year when both are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included.
+		 * @description Looks up to 20 of the person's items without a cover, oldest first, in Open Library (books) and TMDB (films and series, when set up), and copies the cover of the same work: same title, and the same author or year when both are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included. A run takes at most about 12 seconds.
 		 */
 		post: operations['findMediaCovers'];
 		delete?: never;
@@ -11699,6 +11699,8 @@ export interface operations {
 					'application/json': {
 						checked: number;
 						found: number;
+						/** @description The run stopped at its time budget or the lookup quota; run it again for the rest. */
+						more: boolean;
 						/** @description Whether films and series can be looked up (TMDB set up). */
 						films_and_series: boolean;
 					};

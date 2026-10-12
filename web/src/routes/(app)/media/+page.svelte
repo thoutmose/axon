@@ -218,14 +218,14 @@
 	async function findCovers() {
 		finding = true;
 		try {
-			const r = await api<{ checked: number; found: number }>('/v1/media/covers/find', {
-				method: 'POST'
-			});
-			toast(
-				r.found
-					? t('{found} covers found ({checked} looked up).', r)
-					: t('No cover found for the {checked} looked up.', r)
+			const r = await api<{ checked: number; found: number; more: boolean }>(
+				'/v1/media/covers/find',
+				{ method: 'POST' }
 			);
+			const said = r.found
+				? t('{found} covers found ({checked} looked up).', { found: r.found, checked: r.checked })
+				: t('No cover found for the {checked} looked up.', { checked: r.checked });
+			toast(r.more ? `${said} ${t('Press again for the rest.')}` : said);
 			if (r.found) await load();
 		} catch (err) {
 			toast(message(err), 'error');
