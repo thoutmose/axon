@@ -119,6 +119,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
 | EP-69 | Clean code and the person's day | Duplicated helpers become one tested module each (time zone and "today", dates, text that reaches the database, editor text changes); the bugs the copies had are fixed; tests written first, including a browser suite run in a far time zone. Owner request: fix, refactor, clean code, TDD, documentation. | MUST | 5 pts | EP-68 | Done |
 | EP-70 | Every foreign key indexed | Twenty foreign keys had no index, so deletes and lookups by them scanned whole tables (every calendar refresh, the recall queue); one migration, and a test that keeps it so. | SHOULD | 1 pt | EP-69 | Done |
+| EP-71 | Scripts checked | ShellCheck (warnings and errors) runs in `make check` and CI on every shell script; the deploy and backup scripts pass. | SHOULD | 1 pt | EP-70 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1584,6 +1585,14 @@ Cross-cutting matrix:
 - [x] **EP-70/IS-70.01** · 1 pt · SHOULD — Migration `00046` indexes all twenty; `note_recalls (note_id, recalled_at DESC)` serves the recall queue's lateral lookup without a sort. `TestEveryForeignKeyIsIndexed` fails for any foreign key added later without an index.
 
 **Tests.** `TestEveryForeignKeyIsIndexed` (red with the twenty listed, then green); `TestMigrateUpDown`; `EXPLAIN` of the recall queue and the calendar refresh delete now shows index scans.
+
+### EP-71 — Scripts checked
+
+**Goal.** The deploy, backup, and check scripts run as root on servers and touch backups; nothing linted them.
+
+- [x] **EP-71/IS-71.01** · 1 pt · SHOULD — `make check-scripts` (ShellCheck 0.11.0, pinned) and a CI step in the small `spec` job lint every tracked `*.sh` at warning level. All pass; the remaining notes are intentional client-side expansions in `deploy.sh`. The same audit ran govulncheck (no reachable vulnerability) and `npm audit --omit=dev` (none).
+
+**Tests.** The gate reports SC2115 on `rm -rf $DIR/*`; `actionlint` passes on `ci.yml`.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
