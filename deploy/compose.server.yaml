@@ -13,8 +13,6 @@ services:
     restart: unless-stopped
   db:
     restart: unless-stopped
-  valkey:
-    restart: unless-stopped
   anki:
     build: !reset null
     restart: unless-stopped
