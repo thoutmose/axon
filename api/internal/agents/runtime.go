@@ -59,7 +59,6 @@ type Runner struct {
 	newOpenAI    func(baseURL, key, maxTokensField string) Provider
 	now          func() time.Time
 	replies      replies
-	wg           sync.WaitGroup
 	// OnApproved runs after a proposal is applied, outside its transaction
 	// (EP-42 uses it to sync approved flashcards to Anki).
 	OnApproved func(userID uuid.UUID, tool string)
@@ -75,9 +74,6 @@ func NewRunner(pool *pgxpool.Pool, log *slog.Logger, provider Provider, sealer *
 	return &Runner{db: pool, log: log, provider: provider, sealer: sealer, Skills: skills, now: time.Now,
 		replies: replies{m: map[uuid.UUID]reply{}}, newAnthropic: NewAnthropic, newOpenAI: newOpenAICompatible}, nil
 }
-
-// Wait blocks until background runs finish (tests and shutdown).
-func (r *Runner) Wait() { r.wg.Wait() }
 
 // Status says whether a user can run agents now, and their budget.
 type Status struct {
@@ -203,11 +199,9 @@ func (r *Runner) begin(ctx context.Context, userID uuid.UUID, skill Skill, instr
 		return uuid.Nil, err
 	}
 	budget := int64(st.BudgetCents)*10_000 - st.SpentMicros
-	r.wg.Add(1)
 	// The run outlives the request that started it, but not its own timeout.
 	bg := context.WithoutCancel(ctx)
 	go func() {
-		defer r.wg.Done()
 		ctx, cancel := context.WithTimeout(withFetchBudget(repos.WithSealer(bg, r.sealer)), runTimeout)
 		defer cancel()
 		r.execute(ctx, id, userID, skill, res, instruction, history, budget)
@@ -296,7 +290,7 @@ func (r *Runner) loop(ctx context.Context, userID uuid.UUID, skill Skill, res *r
 		tools = append(tools, anthropic.BetaToolUnionParam{OfTool: &tool})
 	}
 	params := anthropic.BetaMessageNewParams{
-		Model:     anthropic.Model(res.model),
+		Model:     res.model,
 		MaxTokens: maxTokens,
 		System:    []anthropic.BetaTextBlockParam{{Text: system}},
 		Tools:     tools,

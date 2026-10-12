@@ -62,7 +62,7 @@ func counts(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, w wi
 		SELECT
 			(SELECT count(*) FROM tasks t JOIN entities e ON e.id = t.id
 			 WHERE e.user_id = $1 AND t.status = 'done' AND (t.completed_at AT TIME ZONE $2)::date BETWEEN $3 AND $4),
-			(SELECT count(*) FROM entities WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4),
+			(SELECT count(*) FROM entities ne WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = ne.id)),
 			(SELECT count(*) FROM skills s JOIN entities e ON e.id = s.id
 			 WHERE e.user_id = $1 AND s.status = 'done' AND (s.updated_at AT TIME ZONE $2)::date BETWEEN $3 AND $4),
 			(SELECT count(*) FROM sched JOIN habit_checkins c ON c.habit_id = sched.id AND c.day = sched.day AND c.status IN ('done', 'two_minute')),
@@ -221,8 +221,8 @@ func (h *Handlers) series(ctx context.Context, userID uuid.UUID, tz string, w wi
 			AND $2::text IS NOT NULL GROUP BY d`}, // check-in days are already local; $2 keeps the parameters uniform
 		{"focus_minutes", "Focus minutes", `SELECT (f.started_at AT TIME ZONE $2)::date AS d, sum(f.worked_minutes)::int FROM focus_sessions f JOIN entities e ON e.id = f.id
 			WHERE e.user_id = $1 AND (f.started_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
-		{"notes_written", "Notes written", `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM entities
-			WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
+		{"notes_written", "Notes written", `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM entities ne
+			WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = ne.id) GROUP BY d`},
 	}
 	out := []Series{}
 	for _, d := range defs {

@@ -989,6 +989,10 @@ paths:
           in: query
           description: Only the note at exactly this path (e.g. a daily note).
           schema: { type: string }
+        - name: mirrored
+          in: query
+          description: "false leaves out the notes the vault mirror keeps for tasks, goals, habits, and other items."
+          schema: { type: string, enum: ["false"] }
         - name: folder
           in: query
           description: "Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note)."

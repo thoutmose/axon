@@ -32,6 +32,10 @@ type Metric struct {
 // local turns a timestamp column into the person's local date.
 func local(col string) string { return "(" + col + " AT TIME ZONE $2)::date" }
 
+// notMirrored leaves out the notes the vault mirror keeps for items (EP-48):
+// they would count every task as a note written.
+const notMirrored = ` AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = ne.id)`
+
 func week(day string) string { return "date_trunc('week', " + day + ")::date" }
 
 // Metrics are the definitions, in display order.
@@ -79,11 +83,11 @@ var Metrics = []Metric{
 	},
 	{
 		ID: "notes_written", Title: "Notes written", Unit: "count",
-		Formula: "Notes created in the week (synced vault files count when they first arrive).", Source: "entities.created_at (type note)",
-		weekly: `SELECT ` + week(local("created_at")) + `, count(*) FROM entities
-			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4 GROUP BY 1`,
-		items: `SELECT id, type, title, created_at FROM entities
-			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4 ORDER BY created_at DESC`,
+		Formula: "Notes created in the week (synced vault files count when they first arrive; the notes Axon keeps for items do not).", Source: "entities.created_at (type note)",
+		weekly: `SELECT ` + week(local("created_at")) + `, count(*) FROM entities ne
+			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4` + notMirrored + ` GROUP BY 1`,
+		items: `SELECT id, type, title, created_at FROM entities ne
+			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4` + notMirrored + ` ORDER BY created_at DESC`,
 	},
 	{
 		ID: "cards_reviewed", Title: "Flashcards reviewed", Unit: "count",
