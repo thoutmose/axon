@@ -4678,7 +4678,7 @@ paths:
       description: >-
         Looks up to 20 of the person's items without a cover, oldest first, in Open Library (books) and TMDB (films and
         series, when set up), and copies the cover of the same work: same title, and the same author or year when both
-        are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included.
+        are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included. A run takes at most about 12 seconds.
       responses:
         "200":
           description: How many items were looked up and how many got a cover.
@@ -4686,11 +4686,12 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [checked, found, films_and_series]
+                required: [checked, found, more, films_and_series]
                 additionalProperties: false
                 properties:
                   checked: { type: integer, minimum: 0 }
                   found: { type: integer, minimum: 0 }
+                  more: { type: boolean, description: The run stopped at its time budget or the lookup quota; run it again for the rest. }
                   films_and_series: { type: boolean, description: Whether films and series can be looked up (TMDB set up). }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }

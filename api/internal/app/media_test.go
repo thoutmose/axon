@@ -9,14 +9,17 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/thoutmose/axon/api/internal/media"
 )
 
 // fakeCatalog stands in for Open Library, its covers, TMDB, and TMDB images.
 type fakeCatalog struct {
-	mu    sync.Mutex
-	calls []string
+	mu         sync.Mutex
+	calls      []string
+	failCovers int           // cover downloads to fail first, as a slow archive.org does
+	slowCovers time.Duration // how long each cover download takes
 }
 
 var jpeg = append([]byte{0xFF, 0xD8, 0xFF, 0xE0}, bytes.Repeat([]byte{1}, 64)...)
@@ -33,6 +36,15 @@ func (f *fakeCatalog) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/ol/search.json":
 		_, _ = w.Write([]byte(`{"docs":[{"key":"/works/OL1W","title":"Dune","author_name":["Frank Herbert"],"first_publish_year":1965,"cover_i":123},{"key":"/books/OL9M","title":"Not a work"}]}`))
 	case r.URL.Path == "/olc/b/id/123-M.jpg", r.URL.Path == "/img/poster.jpg":
+		f.mu.Lock()
+		fail, slow := f.failCovers > 0, f.slowCovers
+		f.failCovers--
+		f.mu.Unlock()
+		time.Sleep(slow)
+		if fail {
+			http.Error(w, "timeout", http.StatusGatewayTimeout)
+			return
+		}
 		_, _ = w.Write(jpeg)
 	case r.URL.Path == "/tmdb/search/movie":
 		_, _ = w.Write([]byte(`{"results":[{"id":603,"title":"The Matrix","release_date":"1999-03-30","overview":"A hacker learns the truth.","poster_path":"/poster.jpg"}]}`))
@@ -295,7 +307,16 @@ func TestFindMissingCovers(t *testing.T) {
 	var res struct {
 		Checked        int  `json:"checked"`
 		Found          int  `json:"found"`
+		More           bool `json:"more"`
 		FilmsAndSeries bool `json:"films_and_series"`
+	}
+	// The first download fails; the next run, from cached lookups, gets it.
+	fake.mu.Lock()
+	fake.failCovers = 1
+	fake.mu.Unlock()
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
+	if res.Checked != 2 || res.Found != 0 {
+		t.Fatalf("with the download failing = %+v", res)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
 	if res.Checked != 2 || res.Found != 1 || res.FilmsAndSeries {
@@ -312,6 +333,26 @@ func TestFindMissingCovers(t *testing.T) {
 		if got.CoverID != nil {
 			t.Fatalf("%s got a cover that is not its own", got.Title)
 		}
+	}
+	// Slow covers: a run stops at its time budget, answers in time, and says
+	// there is more; the next run finishes.
+	again := alice.addMedia(`{"title":"Dune","kind":"book","creators":"Frank Herbert","status":"done"}`)
+	fake.mu.Lock()
+	fake.slowCovers = 300 * time.Millisecond
+	fake.mu.Unlock()
+	saved := media.CoverBudget
+	media.CoverBudget = 100 * time.Millisecond
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
+	media.CoverBudget = saved
+	if !res.More || res.Found != 0 {
+		t.Fatalf("over budget = %+v; want more to do and nothing found yet", res)
+	}
+	fake.mu.Lock()
+	fake.slowCovers = 0
+	fake.mu.Unlock()
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
+	if _ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/media/"+again.ID, nil), &got); got.CoverID == nil || res.More {
+		t.Fatalf("the next run = %+v; the second Dune has no cover", res)
 	}
 	// Again: the one without a match is checked from the cache.
 	searches := fake.count("/ol/search.json")
