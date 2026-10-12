@@ -224,6 +224,36 @@ func TestReminders(t *testing.T) {
 		t.Fatalf("review suggested after it was done: %+v", msg)
 	}
 
+	// A task's own reminder goes out at its time, once, even with the daily
+	// reminders off; a new time means a new reminder; a stale one is not sent.
+	alice.mustDo(201, "POST", "/v1/me/push-subscriptions", push.subscription("/send/alice2"))
+	doc["reminders"] = map[string]any{"enabled": false, "morning": "08:00", "evening": "20:00", "email": ""}
+	body, _ = json.Marshal(doc)
+	alice.mustDo(200, "PUT", "/v1/me/settings", body)
+	at3 := time.Now().Add(-time.Minute).UTC().Format(time.RFC3339)
+	call := alice.createTask(`{"title":"Call the bank","status":"next","remind_at":"` + at3 + `"}`)
+	alice.createTask(`{"title":"Long ago","status":"next","remind_at":"` + time.Now().Add(-48*time.Hour).UTC().Format(time.RFC3339) + `"}`)
+	before := len(push.received())
+	for range 2 {
+		if err := w.Step(context.Background(), time.Now()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got = push.received()[before:]
+	if len(got) != 1 || got[0].msg.Title != "Reminder" || got[0].msg.Body != "Call the bank" || !strings.Contains(got[0].msg.URL, call.ID) {
+		t.Fatalf("task reminders = %+v", got)
+	}
+	in := time.Now().Add(-30 * time.Second).UTC().Format(time.RFC3339)
+	if code, out := alice.do("PATCH", "/v1/tasks/"+call.ID, []byte(`{"remind_at":"`+in+`"}`), "If-Match", alice.etag("/v1/tasks/"+call.ID)); code != 200 {
+		t.Fatalf("new reminder time = %d %s", code, out)
+	}
+	if err := w.Step(context.Background(), time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if len(push.received()) != before+2 {
+		t.Fatalf("a new time did not remind again: %d", len(push.received())-before)
+	}
+
 	// Settings check the times and the address.
 	doc["reminders"] = map[string]any{"enabled": true, "morning": "8am", "evening": "", "email": ""}
 	body, _ = json.Marshal(doc)

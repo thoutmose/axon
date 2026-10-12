@@ -69,18 +69,19 @@ type Task struct {
 	SeriesID     *uuid.UUID `json:"series_id"`
 	OccurrenceOn *Date      `json:"occurrence_on"`
 	CompletedAt  *time.Time `json:"completed_at"`
+	RemindAt     *time.Time `json:"remind_at"` // a reminder is sent then, once (EP-68)
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 const columns = `t.id, e.title, t.notes, t.status, t.context, t.scheduled_on, t.due_on, t.recurrence,
-	t.series_id, t.occurrence_on, t.completed_at, e.created_at, t.updated_at`
+	t.series_id, t.occurrence_on, t.completed_at, e.created_at, t.updated_at, t.remind_at`
 
 func scan(row pgx.Row) (Task, error) {
 	var t Task
 	var scheduled, due, occurrence *time.Time
 	err := row.Scan(&t.ID, &t.Title, &t.Notes, &t.Status, &t.Context, &scheduled, &due, &t.Recurrence,
-		&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt)
+		&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt)
 	t.ScheduledOn, t.DueOn, t.OccurrenceOn = datePtr(scheduled), datePtr(due), datePtr(occurrence)
 	return t, err
 }
@@ -105,8 +106,9 @@ type Fields struct {
 	ScheduledOn *time.Time
 	DueOn       *time.Time
 	Recurrence  *string
+	RemindAt    *time.Time
 
-	ClearContext, ClearScheduled, ClearDue, ClearRecurrence bool
+	ClearContext, ClearScheduled, ClearDue, ClearRecurrence, ClearRemind bool
 }
 
 // ValidationError carries a message safe to show to people.
@@ -205,9 +207,9 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 		now := time.Now()
 		completed = &now
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO tasks (id, status, notes, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-		id, status, notes, f.Context, f.ScheduledOn, f.DueOn, f.Recurrence, series, occurrence, completed)
+	_, err = tx.Exec(ctx, `INSERT INTO tasks (id, status, notes, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, remind_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+		id, status, notes, f.Context, f.ScheduledOn, f.DueOn, f.Recurrence, series, occurrence, completed, f.RemindAt)
 	if err != nil {
 		return Task{}, err
 	}
@@ -254,6 +256,8 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	set("scheduled_on", f.ScheduledOn != nil || (f.ClearScheduled && cur.ScheduledOn != nil), func() { next.ScheduledOn = datePtr(f.ScheduledOn) })
 	set("due_on", f.DueOn != nil || (f.ClearDue && cur.DueOn != nil), func() { next.DueOn = datePtr(f.DueOn) })
 	set("recurrence", f.Recurrence != nil || (f.ClearRecurrence && cur.Recurrence != nil), func() { next.Recurrence = f.Recurrence })
+	set("remind_at", (f.RemindAt != nil && (cur.RemindAt == nil || !f.RemindAt.Equal(*cur.RemindAt))) || (f.ClearRemind && cur.RemindAt != nil),
+		func() { next.RemindAt = f.RemindAt })
 	if len(changed) == 0 {
 		return cur, nil
 	}
@@ -279,10 +283,13 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	if err := graph.UpdateEntity(ctx, tx, userID, id, actor, next.Title, next.Notes, changed); err != nil {
 		return Task{}, err
 	}
+	// A new reminder time means a new reminder.
 	_, err = tx.Exec(ctx, `UPDATE tasks SET status = $2, notes = $3, context = $4, scheduled_on = $5, due_on = $6,
-		recurrence = $7, series_id = $8, occurrence_on = $9, completed_at = $10, updated_at = clock_timestamp() WHERE id = $1`,
+		recurrence = $7, series_id = $8, occurrence_on = $9, completed_at = $10,
+		reminded_at = CASE WHEN remind_at IS DISTINCT FROM $11 THEN NULL ELSE reminded_at END, remind_at = $11,
+		updated_at = clock_timestamp() WHERE id = $1`,
 		id, next.Status, next.Notes, next.Context, unwrap(next.ScheduledOn), unwrap(next.DueOn), next.Recurrence,
-		series, occurrence, completedAt)
+		series, occurrence, completedAt, next.RemindAt)
 	if err != nil {
 		return Task{}, err
 	}
@@ -336,9 +343,14 @@ func createNextOccurrence(ctx context.Context, tx pgx.Tx, userID uuid.UUID, acto
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO tasks (id, status, notes, context, scheduled_on, due_on, recurrence, series_id, occurrence_on)
-		VALUES ($1, 'next', $2, $3, $4, $5, $6, $7, $8)`,
-		id, done.Notes, done.Context, moved(done.ScheduledOn), moved(done.DueOn), done.Recurrence, series, nextDay)
+	var remind *time.Time
+	if done.RemindAt != nil { // the next one is reminded at the same time of its day
+		r := done.RemindAt.Add(shift)
+		remind = &r
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO tasks (id, status, notes, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, remind_at)
+		VALUES ($1, 'next', $2, $3, $4, $5, $6, $7, $8, $9)`,
+		id, done.Notes, done.Context, moved(done.ScheduledOn), moved(done.DueOn), done.Recurrence, series, nextDay, remind)
 	return err
 }
 

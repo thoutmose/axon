@@ -3962,6 +3962,8 @@ export interface components {
 			/** Format: date-time */
 			completed_at: string | null;
 			/** Format: date-time */
+			remind_at: string | null;
+			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
@@ -3980,6 +3982,11 @@ export interface components {
 			due_on?: string | null;
 			/** @example FREQ=WEEKLY;BYDAY=MO,TH */
 			recurrence?: string | null;
+			/**
+			 * Format: date-time
+			 * @description A reminder is pushed (and emailed when set up) at this time, once; a new time means a new reminder.
+			 */
+			remind_at?: string | null;
 		};
 		Checkin: {
 			/** @enum {unknown} */

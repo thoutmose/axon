@@ -105,6 +105,18 @@ func fieldsFrom(raw map[string]json.RawMessage) (Fields, error) {
 		*dst = &t
 		return nil
 	}
+	stamp := func(key string, dst **time.Time, clear *bool) error {
+		var s *string
+		if err := str(key, &s, clear); err != nil || s == nil {
+			return err
+		}
+		t, err := time.Parse(time.RFC3339, *s)
+		if err != nil {
+			return ValidationError{fmt.Sprintf("%s must be a time like 2026-10-14T15:00:00+02:00.", key)}
+		}
+		*dst = &t
+		return nil
+	}
 	for _, step := range []error{
 		str("title", &f.Title, nil),
 		str("notes", &f.Notes, nil),
@@ -113,6 +125,7 @@ func fieldsFrom(raw map[string]json.RawMessage) (Fields, error) {
 		str("recurrence", &f.Recurrence, &f.ClearRecurrence),
 		date("scheduled_on", &f.ScheduledOn, &f.ClearScheduled),
 		date("due_on", &f.DueOn, &f.ClearDue),
+		stamp("remind_at", &f.RemindAt, &f.ClearRemind),
 	} {
 		if step != nil {
 			return Fields{}, step
@@ -358,7 +371,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		var scheduled, due, occurrence *time.Time
 		var key string // the sort key as PostgreSQL text, which parses back losslessly
 		err := row.Scan(&t.ID, &t.Title, &t.Notes, &t.Status, &t.Context, &scheduled, &due, &t.Recurrence,
-			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &key)
+			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt, &key)
 		t.ScheduledOn, t.DueOn, t.OccurrenceOn = datePtr(scheduled), datePtr(due), datePtr(occurrence)
 		keys = append(keys, key)
 		return t, err

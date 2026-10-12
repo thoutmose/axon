@@ -19,6 +19,7 @@
 		context: '',
 		scheduled_on: '',
 		due_on: '',
+		remind_at: '', // local "YYYY-MM-DDTHH:MM" for the input
 		repeat: '' // a preset rule, "custom", or "" for none
 	});
 	let customRule = $state('');
@@ -29,6 +30,12 @@
 	$effect(() => {
 		if (!open) id = null;
 	});
+
+	/** A time as the datetime-local input shows it, in this browser's time zone. */
+	function localInput(d: Date): string {
+		const p = (n: number) => String(n).padStart(2, '0');
+		return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+	}
 
 	async function load(taskID: string) {
 		try {
@@ -43,6 +50,7 @@
 				context: t.context ?? '',
 				scheduled_on: t.scheduled_on ?? '',
 				due_on: t.due_on ?? '',
+				remind_at: t.remind_at ? localInput(new Date(t.remind_at)) : '',
 				repeat: t.recurrence ? (preset ? (preset.rule ?? '') : 'custom') : ''
 			};
 			customRule = preset ? '' : (t.recurrence ?? '');
@@ -68,6 +76,7 @@
 					context: form.context || null,
 					scheduled_on: form.scheduled_on || null,
 					due_on: form.due_on || null,
+					remind_at: form.remind_at ? new Date(form.remind_at).toISOString() : null,
 					recurrence
 				}
 			});
@@ -120,6 +129,13 @@
 			<TextField id="task-context" label="Context" placeholder="@home" bind:value={form.context} />
 			<TextField id="task-scheduled" label="Do on" type="date" bind:value={form.scheduled_on} />
 			<TextField id="task-due" label="Due" type="date" bind:value={form.due_on} />
+			<TextField
+				id="task-remind"
+				label="Remind me at"
+				type="datetime-local"
+				hint="A notification on your devices, and an email if set up, at that time."
+				bind:value={form.remind_at}
+			/>
 		</div>
 		<div class="field">
 			<label for="task-repeat">Repeat</label>

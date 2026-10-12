@@ -1299,6 +1299,26 @@ test("share to Axon: a shared link becomes a note, or the page's text a literatu
 	await expect(page.getByLabel('Markdown')).toHaveValue(/source: "http:\/\/caddy:3000\/signin"/);
 });
 
+test('a task can carry a reminder at a time, set by quick add or in the task', async () => {
+	await page.goto('/today');
+	await expect(page.locator('#today-title')).toBeVisible();
+	await page.keyboard.press('n');
+	const dialog = page.getByRole('dialog', { name: 'Capture' });
+	await dialog.getByLabel("What's on your mind?").fill('Call the bank tomorrow at 15:00');
+	await expect(dialog.getByText(/^remind .* 15:00$/)).toBeVisible();
+	await dialog.getByRole('button', { name: 'Capture task' }).click();
+	await expect(page.getByText('Captured to your inbox.')).toBeVisible();
+	await page.goto('/tasks?view=inbox');
+	await expect(page.getByText(/🔔/).first()).toBeVisible();
+	await page.getByRole('button', { name: 'Call the bank' }).click();
+	const remind = page.getByLabel('Remind me at');
+	await expect(remind).toHaveValue(/T15:00$/);
+	await noSeriousA11yViolations(page);
+	await remind.fill('');
+	await page.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Saved.')).toBeVisible();
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

@@ -20,7 +20,8 @@ export async function addParsed(p: Parsed): Promise<string> {
 			await capture(p.title, {
 				...(p.context ? { context: p.context } : {}),
 				...(p.due ? { due_on: p.due } : {}),
-				...(p.status ? { status: p.status } : {})
+				...(p.status ? { status: p.status } : {}),
+				...(p.remind ? { remind_at: p.remind.toISOString() } : {})
 			});
 			return p.status ? 'Saved for someday.' : 'Captured to your inbox.';
 		case 'note':
