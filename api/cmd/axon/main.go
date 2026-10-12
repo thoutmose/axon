@@ -123,6 +123,10 @@ func serve() error {
 	if err != nil {
 		return err
 	}
+	index, err := app.Semantic(cfg, pool, log)
+	if err != nil {
+		return err
+	}
 	if demoEnabled() {
 		go keepDemo(ctx, pool, log)
 	}
@@ -131,6 +135,7 @@ func serve() error {
 	if !demoEnabled() { // the shared demo sends and fetches nothing
 		go reminders.Run(ctx)
 		go cals.Run(ctx)
+		go index.Run(ctx)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))

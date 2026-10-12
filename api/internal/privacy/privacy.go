@@ -31,6 +31,7 @@ var Purposes = []Purpose{
 	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data."},
 	{"health_ai", "Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you."},
 	{"food_lookups", "Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them."},
+	{"ai_embeddings", "Send the text of your notes to the embedding service you chose, to search them by meaning. Turning it off deletes the stored embeddings."},
 }
 
 // onWithdraw holds what must happen when a consent is withdrawn, such as

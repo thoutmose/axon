@@ -6,6 +6,7 @@
 	import { onDestroy } from 'svelte';
 	import { ApiError, api, apiResponse, message } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
+	import SimilarNotes from '$lib/SimilarNotes.svelte';
 	import MarkdownEditor from '$lib/MarkdownEditor.svelte';
 	import { noteFiles, refreshFiles, resolveFile } from '$lib/noteFiles.svelte';
 	import { noteIndex, refreshNotes } from '$lib/noteIndex.svelte';
@@ -410,6 +411,7 @@
 	{/if}
 
 	<NoteAnalysis id={note.id} />
+	<SimilarNotes id={note.id} />
 	<Connections id={note.id} type="note" />
 {/if}
 

@@ -1448,6 +1448,61 @@ export interface paths {
 		patch: operations['updateHouseholdItem'];
 		trace?: never;
 	};
+	'/v1/me/embeddings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Search by meaning: your embedding service (without its key), your consent, and how many notes are indexed */
+		get: operations['getEmbeddings'];
+		/** Choose the embedding service: a local model server (OpenAI-style /v1/embeddings), OpenAI, or Voyage AI; notes are embedded once the ai_embeddings consent is given */
+		put: operations['setEmbeddings'];
+		post?: never;
+		/** Turn search by meaning off; the service and every stored vector are deleted */
+		delete: operations['deleteEmbeddings'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/semantic': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The ten notes closest in meaning to a question or phrase */
+		get: operations['searchNotesByMeaning'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/similar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The ten notes closest in meaning to this one */
+		get: operations['similarNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -3500,6 +3555,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		EmbeddingStatus: {
+			settings: {
+				/** @enum {unknown} */
+				provider: 'local' | 'openai' | 'voyage';
+				base_url: string | null;
+				model: string;
+				has_key: boolean;
+				/** @description Why the last indexing failed; empty when it worked. */
+				error: string;
+			} | null;
+			/** @description The ai_embeddings consent. */
+			consent: boolean;
+			indexed: number;
+			notes: number;
+		};
 		Household: {
 			/** Format: uuid */
 			id: string;
@@ -8169,6 +8239,159 @@ export interface operations {
 			404: components['responses']['Problem'];
 			409: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['EmbeddingStatus'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	setEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					provider: 'local' | 'openai' | 'voyage';
+					/** @description The local server, like http://ollama:11434. */
+					base_url?: string;
+					/** @description Default: nomic-embed-text, text-embedding-3-small, or voyage-3.5-lite. */
+					model?: string;
+					/** @description Left out keeps the stored key. */
+					api_key?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['EmbeddingStatus'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Off. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	searchNotesByMeaning: {
+		parameters: {
+			query: {
+				q: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Notes by meaning. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description false when the note has no embedding yet. */
+						indexed: boolean;
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** @description Cosine similarity; 1 is the same meaning. */
+							score: number;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+		};
+	};
+	similarNotes: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Notes by meaning. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description false when the note has no embedding yet. */
+						indexed: boolean;
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** @description Cosine similarity; 1 is the same meaning. */
+							score: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
 		};
 	};
 	listAreas: {

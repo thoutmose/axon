@@ -2258,6 +2258,116 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/me/embeddings:
+    get:
+      tags: [notes]
+      operationId: getEmbeddings
+      summary: "Search by meaning: your embedding service (without its key), your consent, and how many notes are indexed"
+      responses:
+        "200":
+          description: The status.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EmbeddingStatus" }
+        "401": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [notes]
+      operationId: setEmbeddings
+      summary: "Choose the embedding service: a local model server (OpenAI-style /v1/embeddings), OpenAI, or Voyage AI; notes are embedded once the ai_embeddings consent is given"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider]
+              additionalProperties: false
+              properties:
+                provider: { enum: [local, openai, voyage] }
+                base_url: { type: string, maxLength: 300, description: "The local server, like http://ollama:11434." }
+                model: { type: string, maxLength: 100, description: "Default: nomic-embed-text, text-embedding-3-small, or voyage-3.5-lite." }
+                api_key: { type: string, maxLength: 500, writeOnly: true, description: Left out keeps the stored key. }
+      responses:
+        "200":
+          description: The status.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EmbeddingStatus" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [notes]
+      operationId: deleteEmbeddings
+      summary: Turn search by meaning off; the service and every stored vector are deleted
+      responses:
+        "204": { description: Off. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/notes/semantic:
+    get:
+      tags: [notes]
+      operationId: searchNotesByMeaning
+      summary: The ten notes closest in meaning to a question or phrase
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, maxLength: 500 } }
+      responses:
+        "200":
+          description: Notes by meaning.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, indexed]
+                properties:
+                  indexed: { type: boolean, description: "false when the note has no embedding yet." }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, path, score]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        path: { type: string }
+                        score: { type: number, description: "Cosine similarity; 1 is the same meaning." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+  /v1/notes/{id}/similar:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [notes]
+      operationId: similarNotes
+      summary: The ten notes closest in meaning to this one
+      responses:
+        "200":
+          description: Notes by meaning.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, indexed]
+                properties:
+                  indexed: { type: boolean, description: "false when the note has no embedding yet." }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, path, score]
+                      properties:
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        path: { type: string }
+                        score: { type: number, description: "Cosine similarity; 1 is the same meaning." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+
   /v1/areas:
     get:
       tags: [para]
@@ -6034,6 +6144,24 @@ components:
               display_name: { type: string }
 
   schemas:
+    EmbeddingStatus:
+      type: object
+      required: [settings, consent, indexed, notes]
+      properties:
+        settings:
+          oneOf:
+            - type: object
+              required: [provider, base_url, model, has_key, error]
+              properties:
+                provider: { enum: [local, openai, voyage] }
+                base_url: { type: [string, "null"] }
+                model: { type: string }
+                has_key: { type: boolean }
+                error: { type: string, description: "Why the last indexing failed; empty when it worked." }
+            - type: "null"
+        consent: { type: boolean, description: The ai_embeddings consent. }
+        indexed: { type: integer }
+        notes: { type: integer }
     Household:
       type: object
       required: [id, name, members, lists]
