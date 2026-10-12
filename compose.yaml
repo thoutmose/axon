@@ -8,6 +8,9 @@ services:
       - "127.0.0.1:3000:3000"
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    security_opt: [no-new-privileges:true] # no setuid escalation inside the container
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE] # the caddy binary carries this file capability; without it, it cannot start
     depends_on: [api, web]
 
   api:
@@ -35,6 +38,8 @@ services:
       AXON_SMTP_URL: ${AXON_SMTP_URL:-} # reminder emails (EP-56): smtp://user:pass@host:587 or smtps://…:465
       AXON_SMTP_FROM: ${AXON_SMTP_FROM:-} # the sender address of reminder emails
       AXON_CALENDAR_PRIVATE: ${AXON_CALENDAR_PRIVATE:-} # "1": followed calendars may be on your own network (EP-58)
+    security_opt: [no-new-privileges:true] # no setuid escalation inside the container
+    cap_drop: [ALL] # needs no Linux capability
     depends_on:
       db:
         condition: service_healthy
@@ -49,6 +54,8 @@ services:
       network: ${AXON_BUILD_NETWORK:-default}
     volumes:
       - ankidata:/data
+    security_opt: [no-new-privileges:true] # no setuid escalation inside the container
+    cap_drop: [ALL] # needs no Linux capability
 
   web:
     image: axon-web:${AXON_VERSION:-dev}
@@ -58,6 +65,8 @@ services:
     environment:
       API_URL: http://api:8080
       ORIGIN: ${AXON_BASE_URL:?set AXON_BASE_URL in .env}
+    security_opt: [no-new-privileges:true] # no setuid escalation inside the container
+    cap_drop: [ALL] # needs no Linux capability
 
   db:
     image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a

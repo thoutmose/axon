@@ -129,6 +129,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-78 | Topics at scale | Grouping notes into topics compared every pair of notes (4.4 s for 3,000); an inverted index compares only notes that share a term (151 ms). | SHOULD | 1 pt | EP-46 | Done |
 | EP-79 | Key phrases kept | The key phrases of each note (TextRank, a third of the Notes page graph and analysis time) are kept by the hash of its text: at 1,500 notes, the analysis went from 1.84 s to 0.70 s and a repeat visit to the Zettelkasten graph from 2.85 s to 1.68 s. | SHOULD | 1 pt | EP-78 | Done |
 | EP-80 | Other sites kept out | Measured over HTTPS: session cookie, CSP, HSTS, and origin checks were right; two isolation headers were missing and are added. axe found no serious issue on 30 pages in Firefox or Chromium. | SHOULD | 1 pt | EP-79 | Done |
+| EP-81 | Containers without privileges | Every service but PostgreSQL runs with no Linux capability (Caddy keeps only the one its binary carries) and cannot gain privileges; images were already non-root and pinned by digest. | SHOULD | 1 pt | EP-80 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1686,6 +1687,14 @@ Cross-cutting matrix:
 - [x] **EP-80/IS-80.01** · 1 pt · SHOULD — Caddy sends `Cross-Origin-Opener-Policy: same-origin` (a page another site opened gets no handle on Axon's window) and `Cross-Origin-Resource-Policy: same-origin` (no other site can embed Axon's responses, pictures and JSON included). Calendar feeds are read by servers, not browsers, so they are not affected.
 
 **Tests.** e2e "responses keep other sites out: no framing, opening, or embedding" (red before); the whole e2e suite (passkeys, pictures, the offline service worker) and covers in Firefox through the preview still pass.
+
+### EP-81 — Containers without privileges
+
+**Goal.** The images were already right: every one runs as a non-root user (distroless `nonroot` for the API) and is pinned by digest. At run time, though, each container kept Docker's default Linux capabilities and could gain more through a setuid binary.
+
+- [x] **EP-81/IS-81.01** · 1 pt · SHOULD — `no-new-privileges` and `cap_drop: [ALL]` for Caddy, the API, the web server, the Anki bridge, and the backup job. Caddy keeps `NET_BIND_SERVICE` alone: its binary carries that file capability, and without it the kernel refuses to start it (found by trying). PostgreSQL keeps its defaults: its entrypoint changes file ownership.
+
+**Tests.** The whole e2e suite on the hardened stack; `docker inspect` shows the dropped capabilities; the backup image's tools (`pg_dump`, `age` encryption, `ssh`, `rsync`) run under the same restrictions as user `backup`.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
