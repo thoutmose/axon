@@ -816,6 +816,12 @@ test('track films by hand, rate them, and see recommendations that say why', asy
 		'By Denis Villeneuve, like Arrival, which you rated 9/10.'
 	);
 	await expect(page.getByText('Rated 9/10', { exact: true })).toBeVisible();
+	// Without a cover, a generated one carries the title; the rating sits on the poster.
+	const arrival = page.locator('.item', { hasText: 'Arrival' }).first();
+	await expect(arrival.locator('.generated')).toContainText('Arrival');
+	await expect(arrival.locator('.badge.rating')).toContainText('9');
+	// Finding covers sends titles away, so it waits for lookups to be allowed.
+	await expect(page.getByRole('button', { name: 'Find missing covers' })).toHaveCount(0);
 	await noSeriousA11yViolations(page);
 });
 

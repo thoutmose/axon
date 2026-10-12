@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
+	import { coverHue } from '$lib/media';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -208,6 +209,31 @@
 		}
 	}
 
+	// Items added by hand, imported, or from the demo have no cover until looked up.
+	const missing = $derived(
+		(items ?? []).filter((i) => !i.cover_id && (i.kind === 'book' || catalogs.films_and_series))
+			.length
+	);
+	let finding = $state(false);
+	async function findCovers() {
+		finding = true;
+		try {
+			const r = await api<{ checked: number; found: number }>('/v1/media/covers/find', {
+				method: 'POST'
+			});
+			toast(
+				r.found
+					? t('{found} covers found ({checked} looked up).', r)
+					: t('No cover found for the {checked} looked up.', r)
+			);
+			if (r.found) await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			finding = false;
+		}
+	}
+
 	async function setStatus(it: Item, status: Item['status']) {
 		try {
 			await api(`/v1/media/${it.id}`, { method: 'PATCH', body: { status } });
@@ -317,6 +343,14 @@
 		</section>
 	{/if}
 
+	{#if catalogs.consented && missing > 0}
+		<p class="covers-hint small">
+			{t('{n} items have no cover yet.', { n: missing })}
+			<Button variant="secondary" busy={finding} onclick={findCovers}
+				>{t('Find missing covers')}</Button
+			>
+		</p>
+	{/if}
 	{#if items.length === 0}
 		<Status
 			kind="empty"
@@ -331,27 +365,42 @@
 				<ul class="shelf">
 					{#each list as it (it.id)}
 						<li class="item">
-							<button class="cover" onclick={() => edit(it)} aria-label="{t('Edit')} {it.title}">
-								{#if it.cover_id}
-									<img src="/api/v1/media/covers/{it.cover_id}" alt="" loading="lazy" />
-								{:else}
-									<span class="initial" aria-hidden="true">{it.title.slice(0, 1)}</span>
+							<div class="poster">
+								<button class="cover" onclick={() => edit(it)} aria-label="{t('Edit')} {it.title}">
+									{#if it.cover_id}
+										<img src="/api/v1/media/covers/{it.cover_id}" alt="" loading="lazy" />
+									{:else}
+										<span class="generated" style:--hue={coverHue(it.title)} aria-hidden="true">
+											<span class="g-kind">{t(kindName[it.kind])}</span>
+											<span class="g-title">{it.title}</span>
+											{#if it.creators}<span class="g-by">{it.creators}</span>{/if}
+										</span>
+									{/if}
+								</button>
+								{#if it.rating}
+									<span class="badge rating"
+										><span aria-hidden="true">★ {it.rating}</span><span class="visually-hidden"
+											>{t('Rated')} {it.rating}/10</span
+										></span
+									>
 								{/if}
-							</button>
+							</div>
 							<div class="meta">
-								<strong>{it.title}</strong>
-								<span class="small muted"
+								<strong class="title">{it.title}</strong>
+								<span class="small muted line"
 									>{t(kindName[it.kind])}{it.year ? ` · ${it.year}` : ''}{it.creators
 										? ` · ${it.creators}`
 										: ''}</span
 								>
-								{#if it.rating}<span class="small">{t('Rated')} {it.rating}/10</span>{/if}
 								{#if it.total && it.status === 'doing'}
 									<progress
 										max={it.total}
 										value={it.progress}
 										aria-label="{it.title}: {it.progress} {t('of')} {it.total} {t(unit[it.kind])}"
 									></progress>
+									<span class="small muted" aria-hidden="true"
+										>{it.progress} / {it.total} {t(unit[it.kind])}</span
+									>
 								{/if}
 								{#if it.status === 'want'}
 									<button class="link small" onclick={() => setStatus(it, 'doing')}
@@ -502,18 +551,20 @@
 		list-style: none;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-		gap: var(--space-4);
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+		gap: var(--space-6) var(--space-4);
 		margin-bottom: var(--space-6);
 	}
 	.item {
 		display: grid;
-		grid-template-columns: 4.5rem 1fr;
-		gap: var(--space-3);
-		align-items: start;
+		gap: var(--space-2);
+		align-content: start;
+	}
+	.poster {
+		position: relative;
 	}
 	.cover {
-		width: 4.5rem;
+		width: 100%;
 		aspect-ratio: 2 / 3;
 		padding: 0;
 		border: 1px solid var(--border);
@@ -521,25 +572,96 @@
 		background: var(--accent-soft);
 		overflow: hidden;
 		cursor: pointer;
-		display: grid;
-		place-items: center;
+		display: block;
+		box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+		transition:
+			transform 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+	.cover:hover,
+	.cover:focus-visible {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgb(0 0 0 / 0.35);
 	}
 	.cover img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		display: block;
 	}
-	.initial {
-		font-size: var(--text-2xl);
+	/* A cover made from the title, for items the catalogues do not know. */
+	.generated {
+		height: 100%;
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		text-align: left;
+		color: #fff;
+		background: linear-gradient(
+			160deg,
+			hsl(var(--hue) 45% 30%),
+			hsl(calc(var(--hue) + 40) 50% 16%)
+		);
+	}
+	.g-kind {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		opacity: 0.85;
+	}
+	.g-title {
 		font-weight: 700;
-		color: var(--fg);
+		font-size: var(--text-lg);
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+		display: -webkit-box;
+		-webkit-line-clamp: 5;
+		line-clamp: 5;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.g-by {
+		font-size: var(--text-sm);
+		opacity: 0.9;
+	}
+	.badge {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-2);
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+		background: rgb(0 0 0 / 0.75);
+		color: #fff;
+		font-size: var(--text-sm);
+		font-weight: 600;
+		pointer-events: none;
 	}
 	.meta {
 		display: grid;
 		gap: var(--space-1);
+		min-width: 0;
+	}
+	.meta .title {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.meta .line {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.meta progress {
 		width: 100%;
+	}
+	.covers-hint {
+		display: flex;
+		gap: var(--space-3);
+		align-items: center;
+		flex-wrap: wrap;
 	}
 	.grid {
 		display: grid;

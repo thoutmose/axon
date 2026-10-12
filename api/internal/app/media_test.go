@@ -272,3 +272,49 @@ func TestMediaAgentReadsTheListAndProposes(t *testing.T) {
 		t.Fatalf("after approval: %s", out)
 	}
 }
+
+// Items added by hand, imported, or from the demo have no cover: "Find
+// missing covers" looks each one up (with the person's consent), takes a
+// cover only from the same work, and remembers the lookups.
+func TestFindMissingCovers(t *testing.T) {
+	fake := useFakeCatalog(t)
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	dune := alice.addMedia(`{"title":"Dune","kind":"book","creators":"Frank Herbert"}`)
+	other := alice.addMedia(`{"title":"Dune","kind":"book","creators":"Someone Else"}`)
+	film := alice.addMedia(`{"title":"The Matrix","kind":"film"}`)
+	if dune.CoverID != nil {
+		t.Fatal("a hand-made item came with a cover")
+	}
+	alice.mustDo(403, "POST", "/v1/media/covers/find", nil)
+
+	alice.mustDo(204, "PUT", "/v1/me/consents/external_metadata", []byte(`{"granted":true}`))
+	var res struct {
+		Checked        int  `json:"checked"`
+		Found          int  `json:"found"`
+		FilmsAndSeries bool `json:"films_and_series"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
+	if res.Checked != 2 || res.Found != 1 || res.FilmsAndSeries {
+		t.Fatalf("find covers = %+v; want 2 books checked, 1 found, films need TMDB", res)
+	}
+	var got mediaJSON
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/media/"+dune.ID, nil), &got)
+	if got.CoverID == nil {
+		t.Fatal("Dune by Frank Herbert got no cover")
+	}
+	alice.mustDo(200, "GET", "/v1/media/covers/"+*got.CoverID, nil)
+	for _, id := range []string{other.ID, film.ID} {
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/media/"+id, nil), &got)
+		if got.CoverID != nil {
+			t.Fatalf("%s got a cover that is not its own", got.Title)
+		}
+	}
+	// Again: the one without a match is checked from the cache.
+	searches := fake.count("/ol/search.json")
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/media/covers/find", nil), &res)
+	if res.Checked != 1 || res.Found != 0 || fake.count("/ol/search.json") != searches {
+		t.Fatalf("again = %+v, %d new searches", res, fake.count("/ol/search.json")-searches)
+	}
+}
