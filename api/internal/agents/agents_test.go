@@ -49,9 +49,3 @@ func TestCost(t *testing.T) {
 		t.Error("worst case")
 	}
 }
-
-func TestTruncateKeepsUTF8(t *testing.T) {
-	if got := truncate("héllo", 2); got != "h" {
-		t.Errorf("truncate = %q", got)
-	}
-}

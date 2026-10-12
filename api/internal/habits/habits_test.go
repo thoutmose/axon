@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/thoutmose/axon/api/internal/tasks"
+	"github.com/thoutmose/axon/api/internal/clock"
 )
 
 var everyDay = []int{1, 2, 3, 4, 5, 6, 7}
@@ -82,10 +82,10 @@ func TestDaylightSavingNeverShiftsDays(t *testing.T) {
 		var today time.Time
 		for i := range 300 {
 			now := start.AddDate(0, 0, i) // 23:30 local every evening
-			today = tasks.Today(now, tz)
+			today = clock.Day(now, loc)
 			c[today.Format(time.DateOnly)] = "done"
 		}
-		st := Compute(everyDay, c, today, tasks.Today(start, tz))
+		st := Compute(everyDay, c, today, clock.Day(start, loc))
 		if st.Streak != 300 || st.Recovery != nil {
 			t.Errorf("%s: streak %d, recovery %+v", tz, st.Streak, st.Recovery)
 		}
@@ -97,9 +97,10 @@ func TestDaylightSavingNeverShiftsDays(t *testing.T) {
 func TestTravelAcrossTimeZones(t *testing.T) {
 	paris, _ := time.LoadLocation("Europe/Paris")
 	checkedAt := time.Date(2026, 10, 9, 23, 30, 0, 0, paris)
-	day := tasks.Today(checkedAt, "Europe/Paris")
+	tokyo, _ := time.LoadLocation("Asia/Tokyo")
+	day := clock.Day(checkedAt, paris)
 	later := checkedAt.Add(30 * time.Minute)
-	todayTokyo := tasks.Today(later, "Asia/Tokyo")
+	todayTokyo := clock.Day(later, tokyo)
 	if !todayTokyo.Equal(day.AddDate(0, 0, 1)) {
 		t.Fatalf("Tokyo date = %s", todayTokyo)
 	}
@@ -108,7 +109,7 @@ func TestTravelAcrossTimeZones(t *testing.T) {
 		t.Fatalf("after travel: %+v", st)
 	}
 	// Flying back west the same instant is still the Paris day: no double count.
-	if st := Compute(everyDay, checks(day.Format(time.DateOnly)), tasks.Today(later.Add(-time.Hour), "Europe/Paris"), d("2026-09-01")); st.CheckedIn == nil {
+	if st := Compute(everyDay, checks(day.Format(time.DateOnly)), clock.Day(later.Add(-time.Hour), paris), d("2026-09-01")); st.CheckedIn == nil {
 		t.Fatalf("back home: %+v", st)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
@@ -251,9 +252,6 @@ func RunRecurring(ctx context.Context, q db.Querier, userID uuid.UUID, today tim
 
 // Today is the user's calendar date in their time zone.
 func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (time.Time, error) {
-	var tz string
-	if err := q.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return time.Time{}, err
-	}
-	return tasks.Today(now, tz), nil
+	day, _, err := clock.Today(ctx, q, userID, now)
+	return day, err
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/textx"
 )
 
 // Actions recorded in the audit log.
@@ -52,7 +53,7 @@ func Record(ctx context.Context, q db.Querier, userID uuid.UUID, action, ip, use
 	}
 	_, err := q.Exec(ctx,
 		`INSERT INTO audit_events (id, user_id, action, ip, user_agent, details) VALUES ($1, $2, $3, $4, $5, $6)`,
-		uuid.Must(uuid.NewV7()), userID, action, ip, truncate(userAgent, 300), details)
+		uuid.Must(uuid.NewV7()), userID, action, ip, textx.Cut(userAgent, 300), details)
 	return err
 }
 
@@ -69,11 +70,4 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, limit int) ([]Eve
 		err := row.Scan(&e.ID, &e.Action, &e.IP, &e.UserAgent, &e.Details, &e.CreatedAt)
 		return e, err
 	})
-}
-
-func truncate(s string, n int) string {
-	if len(s) > n {
-		return s[:n]
-	}
-	return s
 }

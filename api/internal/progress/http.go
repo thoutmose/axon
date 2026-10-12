@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/settings"
@@ -83,16 +84,8 @@ func message(st Streak) string {
 }
 
 func (h *Handlers) zone(ctx context.Context, userID uuid.UUID) (string, time.Time, error) {
-	var tz string
-	if err := h.db.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return "", time.Time{}, err
-	}
-	loc, err := time.LoadLocation(tz)
-	if err != nil {
-		loc = time.UTC
-	}
-	now := h.now().In(loc)
-	return tz, time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC), nil
+	today, loc, err := clock.Today(ctx, h.db, userID, h.now())
+	return loc.String(), today, err
 }
 
 // Compute builds the summary and saves the freezes the streak consumed.

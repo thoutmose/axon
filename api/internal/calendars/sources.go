@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/netsafe"
 )
 
@@ -131,16 +132,6 @@ func (s *Store) open(b []byte) (*url.URL, error) {
 	return url.Parse(string(raw))
 }
 
-func (s *Store) zone(ctx context.Context, userID uuid.UUID) *time.Location {
-	var tz string
-	if err := s.db.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err == nil {
-		if loc, err := time.LoadLocation(tz); err == nil {
-			return loc
-		}
-	}
-	return time.UTC
-}
-
 // Refresh fetches one source and replaces its events; a failure is kept on
 // the source for the person to see, and the old events stay.
 func (s *Store) Refresh(ctx context.Context, id uuid.UUID) error {
@@ -153,7 +144,8 @@ func (s *Store) Refresh(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	evs, ferr := Fetch(ctx, u, s.now(), s.zone(ctx, userID))
+	loc, _ := clock.Zone(ctx, s.db, userID) // UTC when it cannot be read
+	evs, ferr := Fetch(ctx, u, s.now(), loc)
 	if ferr != nil {
 		_, err := s.db.Exec(ctx, `UPDATE calendar_sources SET fetched_at = now(), error = $2 WHERE id = $1`, id, ferr.Error())
 		if err != nil {
