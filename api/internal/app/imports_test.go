@@ -73,18 +73,40 @@ func TestImports(t *testing.T) {
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
 	for name, body := range map[string]string{
-		"Export/Garden 0123456789abcdef0123456789abcdef.md":                                          "# Garden\n\nSee [Compost](Garden%200123456789abcdef0123456789abcdef/Compost%20fedcba9876543210fedcba9876543210.md).\n",
+		"Export/Garden 0123456789abcdef0123456789abcdef.md": "# Garden\n\nSee [Compost](Garden%200123456789abcdef0123456789abcdef/Compost%20fedcba9876543210fedcba9876543210.md).\n\n" +
+			"![The shed](Garden%200123456789abcdef0123456789abcdef/shed.png)\n",
 		"Export/Garden 0123456789abcdef0123456789abcdef/Compost fedcba9876543210fedcba9876543210.md": "# Compost\n",
+		"Export/Garden 0123456789abcdef0123456789abcdef/shed.png":                                    string(pngOf(4, 4)),
 	} {
 		w, _ := zw.Create(name)
 		_, _ = w.Write([]byte(body))
 	}
 	_ = zw.Close()
-	if r := alice.importFrom("notion", "", buf.Bytes()); r.Created != 2 {
+	if r := alice.importFrom("notion", "", buf.Bytes()); r.Created != 3 {
 		t.Fatalf("notion = %+v", r)
 	}
 	if out := alice.mustDo(200, "GET", "/v1/notes?folder=Notion", nil); !strings.Contains(string(out), `"path":"Notion/Export/Garden.md"`) {
 		t.Fatalf("notion notes = %s", out)
+	}
+	// The picture comes along, and the page links it by its new name.
+	if out := alice.mustDo(200, "GET", "/v1/notes/files", nil); !strings.Contains(string(out), `"path":"Notion/Export/Garden/shed.png"`) {
+		t.Fatalf("notion pictures = %s", out)
+	}
+	var list struct {
+		Items []struct {
+			ID   string `json:"id"`
+			Path string `json:"path"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/notes?folder=Notion", nil), &list)
+	for _, n := range list.Items {
+		if out := alice.mustDo(200, "GET", "/v1/notes/"+n.ID, nil); n.Path == "Notion/Export/Garden.md" && !strings.Contains(string(out), "![The shed](Garden/shed.png)") {
+			t.Fatalf("the page does not link its picture: %s", out)
+		}
+	}
+	// Imported again: nothing twice.
+	if r := alice.importFrom("notion", "", buf.Bytes()); r.Created != 0 {
+		t.Fatalf("notion again = %+v", r)
 	}
 
 	// Not the right file: said clearly.

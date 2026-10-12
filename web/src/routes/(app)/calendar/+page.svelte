@@ -2,8 +2,17 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
-	import { addDays, localDate } from '$lib/dates';
-	import { byDay, monthGrid, monthLabel, monthRange, shiftMonth } from '$lib/calendar';
+	import { formatDate, localDate } from '$lib/dates';
+	import {
+		byDay,
+		monthGrid,
+		monthLabel,
+		monthRange,
+		shiftMonth,
+		spreadEvents,
+		type External,
+		type Occurrence
+	} from '$lib/calendar';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
@@ -11,29 +20,6 @@
 
 	type Own = Schemas['CalendarEvent'];
 	type Source = Schemas['CalendarSource'];
-	type Occurrence = {
-		source_id: string;
-		title: string;
-		location: string;
-		start: string;
-		end: string;
-		all_day: boolean;
-		date: string;
-		last_date: string;
-	};
-	// Events of followed calendars (EP-58) sit in the grid beside Axon's own, read only.
-	type External = {
-		type: 'external';
-		kind: 'external';
-		id: string;
-		date: string;
-		title: string;
-		done: false;
-		color: string;
-		time: string;
-		location: string;
-		calendar: string;
-	};
 	type Event = Own | External;
 	type Feed = Schemas['CalendarFeed'];
 	type Kind = 'task' | 'goal' | 'milestone';
@@ -56,14 +42,7 @@
 	// The month grid is the default; the agenda lists the same events by day.
 	const layout = $derived(page.url.searchParams.get('layout') === 'agenda' ? 'agenda' : 'month');
 	const weeks = $derived(monthGrid(month));
-	const weekdays = $derived(
-		weeks[0].map((d) =>
-			new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, {
-				weekday: 'short',
-				timeZone: 'UTC'
-			})
-		)
-	);
+	const weekdays = $derived(weeks[0].map((d) => formatDate(d, { weekday: 'short' })));
 	const query = (changes: Record<string, string | null>) => {
 		const u = new URLSearchParams(page.url.searchParams);
 		for (const [k, v] of Object.entries(changes)) {
@@ -80,33 +59,13 @@
 	let sources = $state<Source[]>([]);
 	let showFollowed = $state(true);
 	let error = $state('');
-	const external = $derived.by<External[]>(() => {
-		if (!showFollowed) return [];
-		const byId = new Map(sources.map((src) => [src.id, src]));
-		const out: External[] = [];
-		for (const o of occurrences) {
-			const src = byId.get(o.source_id);
-			const time = o.all_day
-				? ''
-				: new Date(o.start).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-			// An event over several days shows on each of them.
-			for (let d = o.date; d <= o.last_date; d = addDays(d, 1)) {
-				out.push({
-					type: 'external',
-					kind: 'external',
-					id: `${o.source_id}-${o.start}-${d}`,
-					date: d,
-					title: o.title,
-					done: false,
-					color: src?.color ?? '#5aa9ff',
-					time,
-					location: o.location,
-					calendar: src?.name ?? ''
-				});
-			}
-		}
-		return out;
-	});
+	const external = $derived(
+		showFollowed
+			? spreadEvents(occurrences, sources, (iso) =>
+					new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+				)
+			: []
+	);
 	const events = $derived<Event[] | null>(own ? [...external, ...own] : null);
 	const byDate = $derived(new Map(byDay(events ?? [])));
 	// Drag and drop (EP-64): a task moves to another day, keeping what the
@@ -271,12 +230,7 @@
 	}
 
 	function dayLabel(iso: string): string {
-		return new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, {
-			weekday: 'long',
-			day: 'numeric',
-			month: 'long',
-			timeZone: 'UTC'
-		});
+		return formatDate(iso, { weekday: 'long', day: 'numeric', month: 'long' });
 	}
 
 	async function createFeed(e: SubmitEvent) {

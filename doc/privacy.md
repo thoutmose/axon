@@ -22,11 +22,11 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | TOTP secret (AES-256-GCM sealed) | `users.totp_secret` | Security | Second factor for recovery | Until turned off or erasure |
 | Audit events (action, IP, user agent, time) | `audit_events` | Personal, security | Let the owner review account activity | Until erasure |
 | Consent records | `consents` | Personal | Prove and honour the owner's choices | Until erasure |
-| WebAuthn challenges | `webauthn_ceremonies` | Transient | Complete a passkey ceremony | 5 minutes |
+| WebAuthn challenges (and, while registering, the browser's time zone) | `webauthn_ceremonies` | Transient | Complete a passkey ceremony | 5 minutes |
 | Personal access tokens (SHA-256 hashes, names, use times) | `api_tokens` | Security | Script and sync access | Until expiry (≤ 365 days) or revocation |
 | Idempotency records (stored responses) | `idempotency_keys` | Personal (copies of responses) | Safe retries | 24 hours |
 | Tasks (titles, notes, dates, contexts, recurrence) and check-ins | `tasks`, `checkins` | Personal | Planning and doing | Until deleted or erasure |
-| Account time zone | `users.timezone` | Personal | Decide what “today” means | Until changed or erasure |
+| Account time zone (from the browser that created the account, then as the owner sets it) | `users.timezone` | Personal | Decide what “today” means | Until changed or erasure |
 | Notes (Markdown exactly as written, path, derived title/type/PARA folder) | `notes` | Personal | Knowledge capture and vault sync | Until deleted or erasure |
 | Goals (title, outcome, status, target date, measure) and milestones | `goals`, `milestones` | Personal | Planning towards outcomes | Until deleted or erasure |
 | Calendar feeds (name, chosen types, SHA-256 of the URL token, last use) | `calendar_feeds` | Security | Let a calendar app read dated items | Until revoked or erasure |

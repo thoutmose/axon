@@ -3,6 +3,10 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/thoutmose/axon/api/internal/budget"
+	"math/rand/v2"
 	"testing"
 	"time"
 )
@@ -180,4 +184,55 @@ func TestFinanceAccountsRecurringRulesAndImport(t *testing.T) {
 	}
 	empty := post("/v1/budget/accounts", `{"name":"Unused","type":"asset"}`)
 	alice.mustDo(204, "DELETE", "/v1/budget/accounts/"+empty, nil)
+}
+
+// The balances the API shows (computed in SQL) agree with budget.Balances,
+// the property-tested model, over random income, expenses, and transfers.
+func TestAccountBalancesMatchTheModel(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	r := rand.New(rand.NewPCG(7, 69)) //nolint:gosec // deterministic test data, not security
+	ids := make([]uuid.UUID, 3)
+	opening := map[uuid.UUID]int64{}
+	for i := range ids {
+		cents := r.Int64N(200_000) - 50_000
+		var a struct {
+			ID uuid.UUID `json:"id"`
+		}
+		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/budget/accounts",
+			[]byte(fmt.Sprintf(`{"name":"Account %d","type":"asset","opening_cents":%d}`, i, cents))), &a)
+		ids[i], opening[a.ID] = a.ID, cents
+	}
+	var moves []budget.Movement
+	for range 60 {
+		from, to := &ids[r.IntN(3)], &ids[r.IntN(3)]
+		m := budget.Movement{Kind: []string{"income", "expense", "transfer"}[r.IntN(3)], AmountCents: 1 + r.Int64N(100_000), From: from}
+		body := fmt.Sprintf(`{"occurred_on":"2026-10-01","kind":"%s","amount_cents":%d,"account_id":"%s"`, m.Kind, m.AmountCents, *from)
+		if m.Kind == "transfer" {
+			if *from == *to {
+				continue
+			}
+			m.To = to
+			body += fmt.Sprintf(`,"to_account_id":"%s"`, *to)
+		}
+		alice.mustDo(201, "POST", "/v1/budget/transactions", []byte(body+"}"))
+		moves = append(moves, m)
+	}
+	var list struct {
+		Items []struct {
+			ID           uuid.UUID `json:"id"`
+			BalanceCents int64     `json:"balance_cents"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/budget/accounts", nil), &list)
+	want := budget.Balances(opening, moves)
+	if len(list.Items) != len(ids) {
+		t.Fatalf("got %d accounts", len(list.Items))
+	}
+	for _, a := range list.Items {
+		if a.BalanceCents != want[a.ID] {
+			t.Errorf("account %s: API says %d, the model %d", a.ID, a.BalanceCents, want[a.ID])
+		}
+	}
 }

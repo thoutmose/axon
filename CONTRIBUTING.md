@@ -11,6 +11,20 @@ Contributions are welcome when they improve user agency, accessibility, privacy,
 5. Record significant decisions as ADRs in [doc/adr/](doc/adr/).
 6. Open a PR titled `<type>(<area>): <imperative outcome> [EP-xx/IS-xx.xx]`.
 
+## Shared helpers
+
+Use these instead of writing your own; each one fixed a bug that its copies had.
+
+| Need | API (Go) | Web (TypeScript) |
+|---|---|---|
+| The person's time zone, and their "today" | `clock.Zone`, `clock.Today`, `clock.Day` | the API's `today`, or `localDate(new Date())` from `$lib/dates` |
+| Date arithmetic on `YYYY-MM-DD` | `time.Time` at UTC midnight | `addDays`, `daysBetween`, `mondayOf`, `isoWeekday` from `$lib/dates` |
+| Showing a `YYYY-MM-DD` date | — | `formatDate` from `$lib/dates`, never `new Date(day).toLocaleDateString()` (it shows the day before, west of UTC) |
+| Storing text from outside (headers, files, pages) | `textx.Cut`, or `strings.ToValidUTF8`: PostgreSQL refuses invalid UTF-8 | — |
+| Fetching an address a person gave | `netsafe.Client` (refuses private networks) | — |
+
+The e2e suite runs the browser in a time zone whose date is not UTC's, so code that mixes the two fails there.
+
 ## Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), for example `feat(tasks): add recurring task schedule`. Put the issue ID in the body.
