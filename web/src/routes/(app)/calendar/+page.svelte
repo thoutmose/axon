@@ -360,8 +360,7 @@
 	<p class="legend">
 		<span class="ev task">Task</span><span class="ev goal">Goal target</span><span
 			class="ev milestone">Milestone</span
-		>{#each sources as src (src.id)}<span class="ev external" style="--c: {src.color}"
-				>{src.name}</span
+		>{#each sources as src (src.id)}<span class="ev external" style:--c={src.color}>{src.name}</span
 			>{/each}
 	</p>
 {:else if events.length === 0}
@@ -378,7 +377,7 @@
 					{#each items as e (e.id + e.kind)}
 						<li class:done={e.done}>
 							{#if e.type === 'external'}
-								<span class="chip external" style="--c: {e.color}">{e.calendar}</span>
+								<span class="chip external" style:--c={e.color}>{e.calendar}</span>
 								{#if e.time}<span class="time">{e.time}</span>{/if}
 							{:else}
 								<span class="chip {e.type}">{prefix[e.kind] || 'Task'}</span>
@@ -426,7 +425,7 @@
 		<ul class="feeds">
 			{#each sources as src (src.id)}
 				<li>
-					<span class="swatch" style="background: {src.color}" aria-hidden="true"></span>
+					<span class="swatch" style:background={src.color} aria-hidden="true"></span>
 					<span class="grow"
 						><strong>{src.name}</strong>
 						<span class="muted small"

@@ -261,11 +261,21 @@ func Get(ctx context.Context, q db.Querier, userID uuid.UUID) (Doc, error) {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Defaults(), nil
 	}
+	d.normalize()
 	return d, err
+}
+
+// normalize fills what a stored or sent document left null: a missing list
+// of Today's sections means the default ones (an empty list is a choice).
+func (d *Doc) normalize() {
+	if d.Today.Sections == nil {
+		d.Today.Sections = Defaults().Today.Sections
+	}
 }
 
 // Put validates and stores the settings.
 func Put(ctx context.Context, q db.Querier, userID uuid.UUID, d Doc) error {
+	d.normalize()
 	if err := d.Validate(); err != nil {
 		return err
 	}

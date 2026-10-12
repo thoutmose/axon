@@ -55,9 +55,10 @@
 	let household = $state<Household | null>(null);
 	let me = $state('');
 
-	api<{ today?: { sections: string[] } }>('/v1/me/settings')
+	api<{ today?: { sections: string[] | null } }>('/v1/me/settings')
 		.then((s) => {
-			if (s.today) sections = s.today.sections;
+			// Without a list (an older document), the defaults stay.
+			if (Array.isArray(s.today?.sections)) sections = s.today.sections;
 		})
 		.catch(() => {});
 	api<{ id: string }>('/v1/me')

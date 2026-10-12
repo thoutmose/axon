@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -117,4 +118,31 @@ func TestTodaySections(t *testing.T) {
 	}
 	put(`["tasks","tasks"]`, 422)
 	put(`["weather"]`, 422)
+}
+
+// Today's sections are never null: a document stored that way (as the
+// staging demo's was) reads back with the default sections, so Today never
+// fails on them. (The API refuses null in a request.)
+func TestTodaySectionsAreNeverNull(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	defaults := `"today":{"sections":["kpis","tasks","milestones","goals","notes","overview"]}`
+	var doc map[string]any
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+	delete(doc, "ai")
+	body, _ := json.Marshal(doc)
+	alice.mustDo(200, "PUT", "/v1/me/settings", body)
+	if _, err := pool.Exec(context.Background(), `UPDATE user_settings SET doc = jsonb_set(doc, '{today}', '{"sections": null}')`); err != nil {
+		t.Fatal(err)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/me/settings", nil); !bytes.Contains(out, []byte(defaults)) {
+		t.Fatalf("stored with null sections: %s", out)
+	}
+	// An empty list is a choice: Today shows only what is always there.
+	doc["today"] = map[string]any{"sections": []string{}}
+	body, _ = json.Marshal(doc)
+	if out := alice.mustDo(200, "PUT", "/v1/me/settings", body); !bytes.Contains(out, []byte(`"today":{"sections":[]}`)) {
+		t.Fatalf("saved with no sections: %s", out)
+	}
 }

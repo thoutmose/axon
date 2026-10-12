@@ -227,7 +227,16 @@ code {
 .muted {
 	color: var(--muted);
 }
-.visually-hidden {
+/* The page wrapper in app.html (styles there would be blocked by the CSP too). */
+.app-root {
+	display: contents;
+}
+
+.visually-hidden,
+/* SvelteKit's page-title announcer for screen readers hides itself with an
+   inline style, which the CSP (style-src 'self') blocks in Firefox; without
+   this rule its text showed on every page after the first navigation. */
+#svelte-announcer {
 	position: absolute;
 	width: 1px;
 	height: 1px;
