@@ -461,6 +461,9 @@ func CheckIn(ctx context.Context, q db.Querier, userID, id uuid.UUID, day time.T
 	c := Checkin{Day: tasks.Date{Time: day}, Status: status, Note: note}
 	err = q.QueryRow(ctx, `INSERT INTO habit_checkins (habit_id, day, status, note) VALUES ($1, $2, $3, $4)
 		ON CONFLICT (habit_id, day) DO UPDATE SET status = $3, note = $4 RETURNING created_at`, id, day, status, note).Scan(&c.CreatedAt)
+	if err == nil && OnCheckin != nil {
+		OnCheckin(ctx, q, userID, id)
+	}
 	return c, err
 }
 
@@ -470,8 +473,15 @@ func Uncheck(ctx context.Context, q db.Querier, userID, id uuid.UUID, day time.T
 		return err
 	}
 	_, err := q.Exec(ctx, `DELETE FROM habit_checkins WHERE habit_id = $1 AND day = $2`, id, day)
+	if err == nil && OnCheckin != nil {
+		OnCheckin(ctx, q, userID, id)
+	}
 	return err
 }
+
+// OnCheckin, when set, hears about every check-in change (the vault mirror
+// refreshes the habit's note). Its errors never fail the check-in.
+var OnCheckin func(ctx context.Context, q db.Querier, userID, habitID uuid.UUID)
 
 // History returns check-ins between from and to, newest first.
 func History(ctx context.Context, q db.Querier, userID, id uuid.UUID, from, to time.Time, now time.Time) ([]Checkin, error) {

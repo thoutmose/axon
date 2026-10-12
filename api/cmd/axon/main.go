@@ -31,6 +31,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/instance"
 	"github.com/thoutmose/axon/api/internal/media"
+	"github.com/thoutmose/axon/api/internal/mirror"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -117,6 +118,7 @@ func serve() error {
 		go keepDemo(ctx, pool, log)
 	}
 	go pruneMedia(ctx, pool, log)
+	go mirror.New(pool, log).Run(ctx)
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 

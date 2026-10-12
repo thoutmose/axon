@@ -365,6 +365,8 @@ func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, o
 			SELECT e.*, query, ts_rank(search, query) + CASE WHEN $5::text IS NOT NULL AND title ILIKE $5 THEN 0.01 ELSE 0 END AS rank
 			FROM entities e, websearch_to_tsquery('simple', $2) AS query
 			WHERE user_id = $1 AND ($6::text IS NULL OR type = $6) AND (search @@ query OR ($5::text IS NOT NULL AND title ILIKE $5))
+				-- A note the vault mirror keeps for an item would only repeat that item (EP-48).
+				AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = e.id)
 			ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4
 		) hits ORDER BY rank DESC, id DESC`, userID, query, offset, Page{Limit: limit}.limit(), like, typ)
 	if err != nil {

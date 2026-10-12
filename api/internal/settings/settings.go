@@ -87,6 +87,18 @@ type Doc struct {
 	Keyboard     Keyboard     `json:"keyboard" yaml:"keyboard"`
 	Focus        Focus        `json:"focus" yaml:"focus"`
 	Gamification Gamification `json:"gamification" yaml:"gamification"`
+	Vault        Vault        `json:"vault" yaml:"vault"`
+}
+
+// Vault controls the vault mirror (EP-48): every task, goal, milestone,
+// project, area, resource, habit, and film, series, or book is also a
+// Markdown note under Folder, kept in step both ways. Health logs are
+// special-category data, so they are mirrored only when Health is on (and
+// the health consent is given), one way, from Axon to the vault.
+type Vault struct {
+	Mirror bool   `json:"mirror" yaml:"mirror"`
+	Folder string `json:"folder" yaml:"folder"`
+	Health bool   `json:"health" yaml:"health"`
 }
 
 // Defaults are what a new account starts with.
@@ -100,6 +112,7 @@ func Defaults() Doc {
 			Resource: ResourceTemplate{Kind: "hard"},
 		},
 		Keyboard: Keyboard{Shortcuts: true},
+		Vault:    Vault{Mirror: true, Folder: "Axon"},
 		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
@@ -161,6 +174,9 @@ func (d Doc) Validate() error {
 		if u, err := url.Parse(m.URL); err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || len(m.URL) > 1000 || len([]rune(m.Activity)) > 100 {
 			return FieldError{"focus.music", "links are http(s) addresses with an activity up to 100 characters"}
 		}
+	}
+	if v := d.Vault.Folder; v == "" || len([]rune(v)) > 100 || strings.ContainsAny(v, "/\\") || strings.HasPrefix(v, ".") || strings.Contains(v, "..") {
+		return FieldError{"vault.folder", "is one folder name up to 100 characters, without slashes or a leading dot"}
 	}
 	switch {
 	case len(d.Templates.Note) > 20000:
