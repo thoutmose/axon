@@ -991,6 +991,15 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
 	await page.reload(); // now under the service worker
 	await expect(page.locator('#today-title')).toBeVisible(); // loaded before the connection drops
+	// The app is kept for offline use; the API reference (1.8 MB) is not.
+	const cached = await page.evaluate(async () => {
+		const out: string[] = [];
+		for (const name of await caches.keys())
+			for (const r of await (await caches.open(name)).keys()) out.push(new URL(r.url).pathname);
+		return out;
+	});
+	expect(cached).toContain('/offline');
+	expect(cached.filter((p) => p.startsWith('/api-docs/'))).toEqual([]);
 
 	await page.context().setOffline(true);
 	await page.keyboard.press('n');

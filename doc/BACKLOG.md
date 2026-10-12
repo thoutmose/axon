@@ -120,6 +120,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-69 | Clean code and the person's day | Duplicated helpers become one tested module each (time zone and "today", dates, text that reaches the database, editor text changes); the bugs the copies had are fixed; tests written first, including a browser suite run in a far time zone. Owner request: fix, refactor, clean code, TDD, documentation. | MUST | 5 pts | EP-68 | Done |
 | EP-70 | Every foreign key indexed | Twenty foreign keys had no index, so deletes and lookups by them scanned whole tables (every calendar refresh, the recall queue); one migration, and a test that keeps it so. | SHOULD | 1 pt | EP-69 | Done |
 | EP-71 | Scripts checked | ShellCheck (warnings and errors) runs in `make check` and CI on every shell script; the deploy and backup scripts pass. | SHOULD | 1 pt | EP-70 | Done |
+| EP-72 | Lighter offline install | The service worker no longer keeps the API reference (Swagger UI, 1.8 MB) for offline use: each device downloads about half as much when Axon is installed or updated. | SHOULD | 1 pt | EP-55 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1593,6 +1594,14 @@ Cross-cutting matrix:
 - [x] **EP-71/IS-71.01** · 1 pt · SHOULD — `make check-scripts` (ShellCheck 0.11.0, pinned) and a CI step in the small `spec` job lint every tracked `*.sh` at warning level. All pass; the remaining notes are intentional client-side expansions in `deploy.sh`. The same audit ran govulncheck (no reachable vulnerability) and `npm audit --omit=dev` (none).
 
 **Tests.** The gate reports SC2115 on `rm -rf $DIR/*`; `actionlint` passes on `ci.yml`.
+
+### EP-72 — Lighter offline install
+
+**Goal.** Measured: the app's own code is small (no page over 14 kB gzipped), but the service worker kept every static file for offline use, including Swagger UI for the API reference (1.8 MB of about 3.5 MB). Each update changes the cache name, so every installed phone downloaded it again after each deploy.
+
+- [x] **EP-72/IS-72.01** · 1 pt · SHOULD — `lib/offlineShell` leaves `/api-docs/` out of the offline shell; the API reference still works online.
+
+**Tests.** `offlineShell` unit tests; the e2e "installable…" test reads the browser's caches: the offline page is there, nothing under `/api-docs/`.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
