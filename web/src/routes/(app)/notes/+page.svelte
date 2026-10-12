@@ -118,6 +118,14 @@
 	<Button type="submit" variant="secondary">Create</Button>
 </form>
 
+<nav class="starters" aria-label="Start from a template">
+	<span class="small muted">Start from a template:</span>
+	{#each [['fleeting', 'Fleeting'], ['literature', 'Literature'], ['permanent', 'Permanent'], ['project', 'Project note'], ['area', 'Area note'], ['resource', 'Resource note'], ['archive', 'Archive note'], ['item-task', 'Task'], ['item-goal', 'Goal'], ['item-milestone', 'Milestone'], ['item-habit', 'Habit'], ['item-book', 'Book'], ['item-film', 'Film']] as [id, label] (id)}
+		<a href="?new={id}">{label}</a>
+	{/each}
+	<a href="/notes/templates" class="all">All templates and their sections →</a>
+</nav>
+
 {#if para === 'all' && !tag}
 	<ZettelGraph />
 {/if}
@@ -189,6 +197,27 @@
 </details>
 
 <style>
+	.starters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+		margin: var(--space-3) 0;
+	}
+	.starters a {
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-3);
+		font-size: var(--text-sm);
+		text-decoration: none;
+	}
+	.starters a.all {
+		border: 0;
+		text-decoration: underline;
+	}
+	.small {
+		font-size: var(--text-sm);
+	}
 	.head {
 		display: flex;
 		justify-content: space-between;

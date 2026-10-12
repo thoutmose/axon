@@ -122,7 +122,8 @@ test('layout fits a 360 px screen without horizontal scrolling', async () => {
 		'/health',
 		'/budget/pots',
 		'/notes/analysis',
-		'/insights'
+		'/insights',
+		'/notes/templates'
 	]) {
 		await page.goto(path);
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -178,7 +179,7 @@ test('capture with the n shortcut, plan, and complete tasks', async () => {
 
 test('write notes, link them with wikilinks, and follow backlinks', async () => {
 	await page.goto('/notes');
-	await expect(page.getByText('No notes yet.').first()).toBeVisible();
+	await expect(page.getByRole('heading', { level: 1, name: 'Notes' })).toBeVisible(); // tasks are already mirrored as notes
 	await page.getByLabel('New note title').fill('Spaced repetition');
 	await page.keyboard.press('Enter');
 	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
@@ -592,7 +593,7 @@ test('note templates live in the vault and fill their placeholders', async () =>
 	const dialog = page.getByRole('dialog', { name: 'New note' });
 	await dialog.getByRole('button', { name: 'copy these built-in ones there' }).click();
 	await expect(page.getByText(/The templates are in Templates\//)).toBeVisible();
-	await dialog.getByLabel('Title').fill('Raft consensus');
+	await dialog.getByLabel('Title', { exact: true }).fill('Raft consensus');
 	await dialog
 		.getByRole('radio', { name: /Literature note Templates\/Literature note\.md/ })
 		.check();
@@ -853,6 +854,35 @@ test('the Notes page shows a knowledge graph of literature and permanent notes t
 	await expect(graph.getByRole('heading', { name: 'Why it connects' })).toBeVisible();
 	await graph.getByText('Show the connections as a table').click();
 	await expect(graph.getByRole('table')).toBeVisible();
+});
+
+test('templates show their sections, and a task note in the vault becomes a task', async () => {
+	await page.goto('/notes/templates');
+	await expect(page.getByRole('heading', { level: 1, name: 'Templates' })).toBeVisible();
+	await expect(page.getByRole('list', { name: 'Sections of Literature note' })).toContainText(
+		'Key ideas'
+	);
+	await expect(page.getByRole('list', { name: 'Sections of Habit' })).toContainText(
+		'Make it easy (two-minute version)'
+	);
+	await noSeriousA11yViolations(page);
+	await page.getByRole('link', { name: 'Use the Task template' }).click();
+	const dialog = page.getByRole('dialog', { name: 'New note' });
+	await expect(dialog.getByRole('radio', { name: /^Task/ })).toBeChecked();
+	await expect(dialog).toContainText('Sections: Notes');
+	await dialog.getByLabel('Title', { exact: true }).fill('Water the plants from the vault');
+	await dialog.getByRole('button', { name: 'Create' }).click();
+	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
+	// The vault mirror turns the note into a task within a few seconds.
+	await expect
+		.poll(
+			async () => {
+				await page.goto('/tasks?view=inbox');
+				return page.getByText('Water the plants from the vault').count();
+			},
+			{ timeout: 20000 }
+		)
+		.toBeGreaterThan(0);
 });
 
 test('without an AI provider agents say so, and a local model can be chosen', async () => {

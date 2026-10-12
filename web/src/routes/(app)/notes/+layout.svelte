@@ -11,13 +11,16 @@
 
 	let { children } = $props();
 	let creating = $state(false);
+	let newKind = $state('permanent');
 	let query = $state('');
 	let tags = $state<{ tag: string; count: number }[]>([]);
 	const groups = $derived(tree(noteIndex.notes));
 
-	// The command center opens "New note" with ?new=1.
+	// The command center opens "New note" with ?new=1; ?new=<template> picks one.
 	$effect(() => {
-		if (page.url.searchParams.get('new') === '1') {
+		const wanted = page.url.searchParams.get('new');
+		if (wanted) {
+			if (wanted !== '1') newKind = wanted;
 			creating = true;
 			const u = new URL(page.url);
 			u.searchParams.delete('new');
@@ -58,6 +61,7 @@
 		</form>
 		<a class="explore" href="/notes/explore">🕸 Explore and knowledge graph</a>
 		<a class="explore" href="/notes/analysis">🔬 Analysis: topics and concepts</a>
+		<a class="explore" href="/notes/templates">🧩 Templates</a>
 		<nav aria-label="Folders">
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}
@@ -91,7 +95,7 @@
 	</div>
 </div>
 
-<NewNoteDialog bind:open={creating} />
+<NewNoteDialog bind:open={creating} bind:kind={newKind} />
 
 <style>
 	.workspace {
