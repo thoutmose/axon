@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -224,6 +226,7 @@
 <svelte:head><title>{t('Media')} · Axon</title></svelte:head>
 
 <h1>{t('Films, series, and books')}</h1>
+<AgentDock {...pageAgents.media} onapplied={() => load()} />
 
 <nav class="tabs" aria-label={t('Show')}>
 	{#each kinds as k (k.value)}

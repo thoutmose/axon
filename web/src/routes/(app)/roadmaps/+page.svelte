@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
@@ -81,6 +83,7 @@
 
 <h1>Roadmaps</h1>
 <LearnTabs />
+<AgentDock {...pageAgents.roadmaps} onapplied={() => load()} />
 <p class="muted hint">
 	Plan what to learn as skills with prerequisites, and watch the graph fill in.
 </p>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
@@ -97,6 +99,8 @@
 		{importing ? 'Importing…' : 'Import ZIP'}
 	</label>
 </div>
+
+<AgentDock {...pageAgents.notes} onapplied={() => load()} />
 <p class="muted hint">
 	Markdown, stored exactly as you write it. Link notes with <code>[[note name]]</code>; folders like
 	<code>1-Projects/</code> sort them into PARA.

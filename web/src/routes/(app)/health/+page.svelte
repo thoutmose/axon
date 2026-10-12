@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
@@ -245,6 +247,7 @@
 <svelte:head><title>{t('Health')} · Axon</title></svelte:head>
 
 <h1>{t('Food and training')}</h1>
+<AgentDock {...pageAgents.health} />
 
 {#if error}
 	<Status kind="error" message={error} retry={loadStatus} />

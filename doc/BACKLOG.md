@@ -101,6 +101,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-50 | Diagrams GitHub can display | Every README diagram in Mermaid, up to date with what runs. Owner request. | MUST | 2 pts | EP-49 | Done |
 | EP-51 | Pictures in notes | Paste, drop, or pick pictures and PDFs in the editor; Markdown and Obsidian embeds render; files sync with the vault both ways and are exported. Owner request. | MUST | 8 pts | EP-11, EP-36 | Done |
 | EP-52 | Learning and memory engine | Spaced, interleaved, retrieval-first reviews with a daily plan; free recall of notes; memory palaces; cards with the why, an example, a vivid image, and AI drawings; cards drafted from notes; deliberate practice. Owner request. | MUST | 21 pts | EP-16, EP-46, EP-51 | Done |
+| EP-53 | Agents on every page | Each page offers the agents whose skills fit it, with ready-made requests, the page's context, and approvals in place. Owner request. | SHOULD | 5 pts | EP-19, EP-52 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1395,6 +1396,15 @@ Cross-cutting matrix:
 - [x] **EP-52/IS-52.07** · 2 pts · MUST — Learn → Today: cards due with minutes from the person's pace, retention against the aim, leeches, notes to recall, weekly mixed test (results recorded), fleeting notes, palaces, streak, and the principles explained where they are used. The demo shows an illustrated card, a palace, and a note due for recall.
 
 **Tests.** `TestLearningEngineCards` (pacing, interleaving, enriched cards, palaces with ownership and shrinking, leeches, practice), `TestLearningEngineNotes` (recall scoring and intervals, drafts, plan, tests, export), `illustrate_cards` in the every-write-tool approval test, SVG sanitiser unit test; e2e "learn: cards from a note, free recall, a memory palace walk, and the day plan".
+
+### EP-53 — Agents on every page
+
+**Goal.** "Why not dispatch the agents around each page following their skills?" (owner, 2026-10-12).
+
+- [x] **EP-53/IS-53.01** · 3 pts · SHOULD — an agent panel on Today, Tasks, Goals, Habits, Notes, a note, Learn, Flashcards, Roadmaps, Media, Health, and Projects: the page's agents first (one map, `pageAgents.ts`), ready-made requests from each skill, the page's context (a note's title, id, type, and path) sent with the request, the reply, follow-up questions, and approve or reject in place; when agents cannot run, it says why and links to their setup.
+- [x] **EP-53/IS-53.02** · 2 pts · SHOULD — other pages hand a request to the Agents page (`/agents?agent=…&ask=…`), as Flashcards and Make cards do for the Teacher.
+
+**Tests.** A unit test checks that every page names existing agents and suggests only for them; e2e "each page offers its own agents, and says when none can run yet".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

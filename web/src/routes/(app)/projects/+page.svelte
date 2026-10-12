@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { slug } from '$lib/noteTemplates';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -84,6 +86,7 @@
 <svelte:head><title>Projects · Axon</title></svelte:head>
 
 <h1>Projects</h1>
+<AgentDock {...pageAgents.projects} />
 <p class="muted hint">
 	Outcomes with a finish line: a board of epics, issues, and sub-tasks, with their docs.
 </p>

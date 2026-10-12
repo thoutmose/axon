@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { t } from '$lib/i18n.svelte';
 	import Overview from '$lib/Overview.svelte';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
@@ -95,6 +97,8 @@
 		{/if}
 	</div>
 </section>
+
+<AgentDock {...pageAgents.today} onapplied={() => load()} />
 
 <div class="body">
 	{#if error}

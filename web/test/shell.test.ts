@@ -919,6 +919,24 @@ test('paste a picture into a note: it is uploaded, embedded, and shown', async (
 	await noSeriousA11yViolations(page);
 });
 
+test('each page offers its own agents, and says when none can run yet', async () => {
+	await page.goto('/tasks');
+	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
+	const dock = page.getByRole('region', { name: 'Agents for this page' });
+	await expect(dock.getByRole('radio', { name: 'Task Manager' })).toBeChecked();
+	await expect(dock.getByText('No AI provider is set up yet.')).toBeVisible();
+	await expect(dock.getByRole('link', { name: 'Set up agents' })).toHaveAttribute(
+		'href',
+		'/agents'
+	);
+	await dock.getByText('Goals', { exact: true }).click();
+	await expect(dock.getByRole('radio', { name: 'Goals' })).toBeChecked();
+	await noSeriousA11yViolations(page);
+	await page.goto('/habits');
+	await page.getByRole('button', { name: '✨ Ask the agent' }).click();
+	await expect(page.getByRole('region', { name: 'Agents for this page' })).toContainText('Habits');
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();

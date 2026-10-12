@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
@@ -143,6 +145,7 @@
 
 <h1>Flashcards</h1>
 <LearnTabs />
+<AgentDock {...pageAgents.learn} onapplied={() => load()} />
 <p class="muted hint">
 	Retrieval practice with spaced repetition: cards come back just before you would forget them
 	(FSRS, the scheduler Anki uses), a few new ones a day, with decks mixed. Give a card the why, an
