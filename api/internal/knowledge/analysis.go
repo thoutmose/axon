@@ -360,23 +360,61 @@ func Analyse(ctx context.Context, q db.Querier, userID uuid.UUID, kinds []string
 	return a, nil
 }
 
+// neighbour is a similar note and how similar it is.
+type neighbour struct {
+	j int
+	w float64
+}
+
+// similarPairs lists, for each note, the notes whose cosine similarity with
+// it is at least min, in ascending order. Only notes that share a term can
+// score above zero, so an inverted index (term → notes) compares those
+// alone: linear in the shared terms rather than quadratic in the notes
+// (EP-78; 3,000 notes took 4.4 s comparing every pair).
+func similarPairs(docs []*analysed, min float64) [][]neighbour {
+	type posting struct {
+		doc int
+		w   float64
+	}
+	index := map[string][]posting{}
+	for i, d := range docs {
+		for t, w := range d.vec {
+			index[t] = append(index[t], posting{i, w})
+		}
+	}
+	adj := make([][]neighbour, len(docs))
+	dot := make([]float64, len(docs)) // reused: only the touched entries are reset
+	var touched []int
+	for i, d := range docs {
+		for t, w := range d.vec {
+			for _, p := range index[t] {
+				if p.doc <= i {
+					continue
+				}
+				if dot[p.doc] == 0 {
+					touched = append(touched, p.doc)
+				}
+				dot[p.doc] += w * p.w
+			}
+		}
+		slices.Sort(touched)
+		for _, j := range touched {
+			if dot[j] >= min {
+				adj[i] = append(adj[i], neighbour{j, dot[j]})
+				adj[j] = append(adj[j], neighbour{i, dot[j]})
+			}
+			dot[j] = 0
+		}
+		touched = touched[:0]
+	}
+	return adj
+}
+
 // topics groups notes by label propagation over the similarity graph
 // (cosine of TF-IDF vectors), in a fixed order so results are stable.
 func topics(docs []*analysed) []Topic {
 	n := len(docs)
-	type nb struct {
-		j int
-		w float64
-	}
-	adj := make([][]nb, n)
-	for i := range n {
-		for j := i + 1; j < n; j++ {
-			if s := Cosine(docs[i].vec, docs[j].vec); s >= topicSimilarity {
-				adj[i] = append(adj[i], nb{j, s})
-				adj[j] = append(adj[j], nb{i, s})
-			}
-		}
-	}
+	adj := similarPairs(docs, topicSimilarity)
 	label := make([]int, n)
 	for i := range label {
 		label[i] = i

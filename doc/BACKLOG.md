@@ -126,6 +126,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-75 | Today and the page title in every browser | Owner report: Today stayed on "Loading your day…" and the page title showed as text at the top of the page (Firefox). Both fixed, with tests that fail without the fix. | MUST | 2 pts | EP-74 | Done |
 | EP-76 | Covers for every film, series, and book | Owner request: pictures of the books, series, and films, and a better media card. "Find missing covers" looks up items added by hand, imported, or from the demo; the shelf shows poster cards, with a cover made from the title when there is none. | SHOULD | 2 pts | EP-17 | Done |
 | EP-77 | Your memory, measured | Each review of a card in long-term memory keeps what the scheduler predicted (earlier ones by replaying the history); Learn shows predicted against remembered, by prediction, against the chosen retention, and says what to change. | SHOULD | 2 pts | EP-52 | Done |
+| EP-78 | Topics at scale | Grouping notes into topics compared every pair of notes (4.4 s for 3,000); an inverted index compares only notes that share a term (151 ms). | SHOULD | 1 pt | EP-46 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1655,6 +1656,16 @@ Cross-cutting matrix:
 - [x] **EP-77/IS-77.03** · 1 pt · SHOULD — Earlier reviews get their prediction by replaying each card's history through the scheduler (daily, with the other maintenance), so the measure starts from the person's whole past. Only cards whose whole history is in Axon are replayed (not imported cards with earlier reviews), and a history that does not fit the scheduler's states is left alone.
 
 **Replay test.** `TestReplayGivesEarlierReviewsTheirPrediction`: six reviews over 60 days, predictions erased, replayed: each equals what was recorded live (within 10⁻⁶); a card whose earlier reviews are missing stays without.
+
+### EP-78 — Topics at scale
+
+**Goal.** Measured, not guessed: every simple GET answers in under 30 ms on the demo, so the question is how pages scale with years of notes. The notes analysis groups notes into topics by comparing every pair (up to 1,500 notes of each kind): a benchmark on synthetic notes (60 terms each, 5,000-word vocabulary) took 114 ms for 500 notes, 1.0 s for 1,500, and 4.4 s for 3,000.
+
+- [x] **EP-78/IS-78.01** · 1 pt · SHOULD — `similarPairs` builds an inverted index (term → notes) and accumulates dot products only for notes that share a term: 11 ms, 56 ms, and 151 ms (10×, 19×, 29×), the same neighbours in the same order.
+
+**Tests.** `TestSimilarPairsMatchesEveryPair` (the every-pair comparison as oracle on 300 notes: same neighbours, scores within 10⁻¹², ascending order), written first; `BenchmarkTopics`; the knowledge tests unchanged.
+
+**Measured next.** The explorer graph (up to 1,500 notes) and the Zettelkasten graph (up to 600) also compare every pair, with keyword synonyms that a term index does not catch; they need their own benchmark before a change.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
