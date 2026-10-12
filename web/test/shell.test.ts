@@ -51,6 +51,15 @@ test.beforeAll(async ({ browser }) => {
 	});
 });
 
+test('responses keep other sites out: no framing, opening, or embedding', async () => {
+	for (const url of ['/', '/api/v1/openapi.yaml']) {
+		const h = (await page.request.get(url)).headers();
+		if (url === '/') expect(h['content-security-policy']).toContain("frame-ancestors 'none'");
+		expect(h['cross-origin-opener-policy'], url).toBe('same-origin');
+		expect(h['cross-origin-resource-policy'], url).toBe('same-origin');
+	}
+});
+
 test('pages, scripts, and the API are sent compressed', async () => {
 	const accept = { 'Accept-Encoding': 'gzip, zstd' };
 	await page.goto('/');
