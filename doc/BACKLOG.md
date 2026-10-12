@@ -125,6 +125,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-74 | Compressed responses | Caddy compresses pages, scripts, and API answers (zstd or gzip); nothing was compressed before (the OpenAPI document: 324 kB → 48 kB). | SHOULD | 1 pt | EP-73 | Done |
 | EP-75 | Today and the page title in every browser | Owner report: Today stayed on "Loading your day…" and the page title showed as text at the top of the page (Firefox). Both fixed, with tests that fail without the fix. | MUST | 2 pts | EP-74 | Done |
 | EP-76 | Covers for every film, series, and book | Owner request: pictures of the books, series, and films, and a better media card. "Find missing covers" looks up items added by hand, imported, or from the demo; the shelf shows poster cards, with a cover made from the title when there is none. | SHOULD | 2 pts | EP-17 | Done |
+| EP-77 | Your memory, measured | Each review of a card in long-term memory keeps what the scheduler predicted; Learn shows predicted against remembered, by prediction, against the chosen retention, and says what to change. | SHOULD | 2 pts | EP-52 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1641,6 +1642,17 @@ Cross-cutting matrix:
 - [x] **EP-76/IS-76.02** · 1 pt · SHOULD — The shelf is a grid of poster cards: the cover fills the card, the rating is a badge on it, and the title, kind, year, and creators sit below, with "210 / 611 pages" under the progress bar. An item without a cover gets one made from its title, in a colour of its own (`coverHue`). "Find missing covers" appears when lookups are allowed and some item has none. French included.
 
 **Tests.** `TestBestMatchTakesOnlyTheSameWork` (written first); `TestFindMissingCovers` against the fake catalogue (refused without consent; Dune by Frank Herbert gets its cover, Dune by someone else and a film without TMDB do not; a second run uses the cache); `coverHue` unit test; the media e2e test checks the generated cover, the rating badge, and that the button waits for consent. Checked in Firefox. Run against the real Open Library and TMDB on the demo: 5 of 6 items got their cover (searching by title alone, since title and author together found nothing for *Designing Data-Intensive Applications*); *Dune: Part One* stays without one, since TMDB calls it "Dune" and nothing confirms it is the 2021 film rather than the 1984 one. Two faults found that way are fixed: cached searches left out the cover's key, so a cover whose download failed once (archive.org, which serves Open Library covers, fails now and then) could never be found again — the work's details now supply it; and a run with slow covers outlasted the server's 15-second limit (a 502) — a run now stops at 12 seconds and says to press again.
+
+### EP-77 — Your memory, measured
+
+**Goal.** Learning is the owner's priority, and the schedule's promise is measurable: FSRS predicts the chance of recalling each card at each review. Whether that holds for this person was never checked, so neither they nor Axon could tell if the chosen retention (90% by default) was what they got.
+
+- [x] **EP-77/IS-77.01** · 1 pt · SHOULD — Migration `00047` adds `card_reviews.predicted`: the scheduler's predicted recall at reviews of cards in long-term memory (learning steps have none). `GET /v1/flashcards/calibration`: the last year's reviews, overall and by prediction (0–50, 50–70, 70–80, 80–90, 90–95, 95–100%), predicted against remembered (anything but Again), with the target.
+- [x] **EP-77/IS-77.02** · 1 pt · SHOULD — Learn shows "Your memory, measured" and a verdict: too early under 20 reviews; below the target by more than 5 points (reviews come late: raise the retention, or fewer new cards a day); above it (reviews could come later); or on target. A table by prediction backs it.
+
+**Tests.** `TestCalibrateComparesPredictionWithRecall`, `TestCalibrateWithNoReviews`, and the `verdict` unit tests, written first; `TestFlashcardCalibration` (an Easy review moves the card to long-term memory, the next two reviews are predicted, one remembered: 2 reviews, 50%), red before the endpoint existed.
+
+**Later.** Earlier reviews have no prediction; replaying each card's history through the scheduler could give them one.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

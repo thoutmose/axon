@@ -44,6 +44,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/flashcards/due", h.due)
 	r.Get("/v1/flashcards/practice", h.practice)
 	r.Get("/v1/flashcards/export.apkg", h.exportAPKG)
+	r.Get("/v1/flashcards/calibration", h.calibration)
 	r.Get("/v1/flashcards/{id}", h.get)
 	r.Patch("/v1/flashcards/{id}", h.update)
 	r.Delete("/v1/flashcards/{id}", h.delete)
@@ -419,4 +420,15 @@ func ExportReviews(ctx context.Context, q db.Querier, userID uuid.UUID) (any, er
 		return nil, err
 	}
 	return pgx.CollectRows(rows, pgx.RowToStructByPos[row])
+}
+
+// calibration shows whether the scheduler's predictions hold for the person.
+func (h *Handlers) calibration(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	c, err := GetCalibration(r.Context(), h.db, who.UserID, h.now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, c)
 }

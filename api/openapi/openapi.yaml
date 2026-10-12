@@ -4288,6 +4288,42 @@ paths:
                   items: { type: array, items: { $ref: "#/components/schemas/Flashcard" } }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
+  /v1/flashcards/calibration:
+    get:
+      tags: [cards]
+      operationId: getFlashcardCalibration
+      summary: Whether the scheduler's predictions hold for this person
+      description: >-
+        At each review of a card in long-term memory, FSRS predicts the chance of recalling it; a review counts as
+        remembered unless rated Again. Reviews of the last year, overall and grouped by prediction (empty groups left
+        out), against the retention the person chose.
+      responses:
+        "200":
+          description: The calibration.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [reviews, predicted, remembered, target, buckets]
+                additionalProperties: false
+                properties:
+                  reviews: { type: integer, minimum: 0 }
+                  predicted: { type: number, minimum: 0, maximum: 1 }
+                  remembered: { type: number, minimum: 0, maximum: 1 }
+                  target: { type: number, minimum: 0, maximum: 1 }
+                  buckets:
+                    type: array
+                    items:
+                      type: object
+                      required: [from, to, reviews, predicted, remembered]
+                      additionalProperties: false
+                      properties:
+                        from: { type: number, minimum: 0, maximum: 1 }
+                        to: { type: number, minimum: 0, maximum: 1 }
+                        reviews: { type: integer, minimum: 1 }
+                        predicted: { type: number, minimum: 0, maximum: 1 }
+                        remembered: { type: number, minimum: 0, maximum: 1 }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/flashcards/export.apkg:
     get:
       tags: [cards]

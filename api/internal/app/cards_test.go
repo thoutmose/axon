@@ -188,3 +188,33 @@ func TestTeacherReadsOnlyStudyNotesAndProposesCards(t *testing.T) {
 		t.Fatal("approved card not in a deck named after its note")
 	}
 }
+
+// Reviews of cards in long-term memory keep the scheduler's prediction, so
+// the person can see whether it holds for them.
+func TestFlashcardCalibration(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	var cal struct {
+		Reviews    int        `json:"reviews"`
+		Predicted  float64    `json:"predicted"`
+		Remembered float64    `json:"remembered"`
+		Target     float64    `json:"target"`
+		Buckets    []struct{} `json:"buckets"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/flashcards/calibration", nil), &cal)
+	if cal.Reviews != 0 || cal.Target != 0.9 || cal.Buckets == nil {
+		t.Fatalf("no reviews yet = %+v", cal)
+	}
+	var c struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/flashcards", []byte(`{"front":"Capital of Peru?","back":"Lima"}`)), &c)
+	for _, rating := range []string{"4", "3", "1"} { // Easy: into long-term memory; then two predicted reviews
+		alice.mustDo(200, "POST", "/v1/flashcards/"+c.ID+"/review", []byte(`{"rating":`+rating+`}`))
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/flashcards/calibration", nil), &cal)
+	if cal.Reviews != 2 || cal.Remembered != 0.5 || cal.Predicted <= 0.9 || len(cal.Buckets) != 1 {
+		t.Fatalf("after two predicted reviews = %+v", cal)
+	}
+}

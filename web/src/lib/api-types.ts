@@ -2544,6 +2544,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/flashcards/calibration': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Whether the scheduler's predictions hold for this person
+		 * @description At each review of a card in long-term memory, FSRS predicts the chance of recalling it; a review counts as remembered unless rated Again. Reviews of the last year, overall and grouped by prediction (empty groups left out), against the retention the person chose.
+		 */
+		get: operations['getFlashcardCalibration'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/flashcards/export.apkg': {
 		parameters: {
 			query?: never;
@@ -11123,6 +11143,39 @@ export interface operations {
 				};
 			};
 			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getFlashcardCalibration: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The calibration. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						reviews: number;
+						predicted: number;
+						remembered: number;
+						target: number;
+						buckets: {
+							from: number;
+							to: number;
+							reviews: number;
+							predicted: number;
+							remembered: number;
+						}[];
+					};
+				};
+			};
 			401: components['responses']['Problem'];
 		};
 	};
