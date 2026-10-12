@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -32,6 +33,36 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/notes/graph", h.graph)
 	r.Get("/v1/notes/analysis", h.analysis)
 	r.Get("/v1/notes/{id}/analysis", h.noteAnalysis)
+	r.Get("/v1/notes/zettelkasten-graph", h.zettelGraph)
+}
+
+func (h *Handlers) zettelGraph(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	kinds := AnalysedKinds
+	switch k := r.URL.Query().Get("kind"); k {
+	case "":
+	case "literature", "permanent":
+		kinds = []string{k}
+	default:
+		httpx.Problem(w, http.StatusBadRequest, "kind is literature or permanent.")
+		return
+	}
+	minScore := 0.0
+	if v := r.URL.Query().Get("min"); v != "" {
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil || f < 0 || f > 1 {
+			httpx.Problem(w, http.StatusBadRequest, "min is a score from 0 to 1.")
+			return
+		}
+		minScore = f
+	}
+	g, err := BuildZettelGraph(r.Context(), h.db, who.UserID, kinds, minScore)
+	if err != nil {
+		h.log.Error("zettelkasten graph failed", "err", err)
+		httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
+		return
+	}
+	httpx.JSON(w, http.StatusOK, g)
 }
 
 func (h *Handlers) analysis(w http.ResponseWriter, r *http.Request) {

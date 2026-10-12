@@ -295,23 +295,43 @@ type analysed struct {
 	read    Readability
 }
 
-func analyseKinds(ctx context.Context, q db.Querier, userID uuid.UUID, kinds []string) ([]*analysed, bool, error) {
+func analyseKinds(ctx context.Context, q db.Querier, userID uuid.UUID, kinds []string) ([]*analysed, Words, bool, error) {
 	var docs []*doc
 	truncated := false
 	for _, k := range kinds {
 		d, t, err := load(ctx, q, userID, Filter{Kind: k})
 		if err != nil {
-			return nil, false, err
+			return nil, nil, false, err
 		}
 		docs, truncated = append(docs, d...), truncated || t
 	}
-	analyse(docs)
+	words := analyse(docs)
 	out := make([]*analysed, len(docs))
+	df := map[string]int{}
 	for i, d := range docs {
 		text := Clean(d.content)
-		out[i] = &analysed{doc: d, phrases: KeyPhrases(d.info.Title+".\n"+text, phrasesPerNote), read: Read(text)}
+		out[i] = &analysed{doc: d, phrases: KeyPhrases(d.info.Title+".\n"+text, phrasesPerNote*2), read: Read(text)}
+		for _, p := range out[i].phrases {
+			df[p.key]++
+		}
 	}
-	return out, truncated, nil
+	// A phrase that recurs across notes is more likely a concept than an
+	// accident of wording ("spaced repetition" rather than "recall feels"):
+	// weigh each note's phrases by 1 + ln(document frequency) in the corpus.
+	for _, a := range out {
+		for j := range a.phrases {
+			a.phrases[j].Score *= 1 + math.Log(float64(df[a.phrases[j].key]))
+		}
+		slices.SortStableFunc(a.phrases, func(x, y Phrase) int { return cmp.Compare(y.Score, x.Score) })
+		a.phrases = a.phrases[:min(phrasesPerNote, len(a.phrases))]
+		if len(a.phrases) > 0 {
+			top := a.phrases[0].Score
+			for j := range a.phrases {
+				a.phrases[j].Score = math.Round(a.phrases[j].Score/top*100) / 100
+			}
+		}
+	}
+	return out, words, truncated, nil
 }
 
 func brief(d *analysed) NoteBrief {
@@ -321,7 +341,7 @@ func brief(d *analysed) NoteBrief {
 // Analyse builds topics and the concept graph of the person's literature
 // and permanent notes (or one of those kinds).
 func Analyse(ctx context.Context, q db.Querier, userID uuid.UUID, kinds []string) (Analysis, error) {
-	docs, truncated, err := analyseKinds(ctx, q, userID, kinds)
+	docs, _, truncated, err := analyseKinds(ctx, q, userID, kinds)
 	if err != nil {
 		return Analysis{}, err
 	}
@@ -540,7 +560,7 @@ type NoteAnalysis struct {
 // AnalyseNote analyses one note: its key phrases, readability, topic, and
 // the five closest literature or permanent notes, each with reasons.
 func AnalyseNote(ctx context.Context, q db.Querier, userID, noteID uuid.UUID) (NoteAnalysis, error) {
-	docs, _, err := analyseKinds(ctx, q, userID, AnalysedKinds)
+	docs, _, _, err := analyseKinds(ctx, q, userID, AnalysedKinds)
 	if err != nil {
 		return NoteAnalysis{}, err
 	}
