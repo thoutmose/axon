@@ -83,6 +83,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### 📚 Learning and media
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
 - ✅ A learning and memory engine after *Understanding How We Learn* and *Moonwalking with Einstein*: Learn → Today plans the day (cards due with the minutes they take, notes due for recall, a weekly mixed test, fleeting notes to process, leeches to practise); a few new cards a day and decks mixed (interleaving); write your answer before you see it; every card can carry the why, a concrete example, a vivid memory image, and a picture or an AI drawing (dual coding); free recall of whole notes on a blank page, compared with their key ideas and spaced further each time; memory palaces you walk place by place; cards drafted from what a note marks (`question :: answer`, `==term==`, `**Term**: definition`); and the Teacher writes illustrated cards for your approval.
+- ✅ Your other calendars in Axon, read only: follow Google, Nextcloud or any CalDAV server, Outlook, or any ICS address; repeating events, time zones, and exceptions handled; shown in the month and agenda views with their colour.
 - ✅ Quick add for anything: press n and type `Call the plumber @phone tomorrow`, `book: Atomic Habits`, `habit: Read one page`, `goal: Run 10 km by 2027-05-01`, or `card: question :: answer #Deck`; Capture shows what it will add.
 - ✅ Reminders: a morning digest (tasks, cards to review with the minutes they take, notes to recall, habits, the weekly test) and an evening nudge (habits still open, with their two-minute version), as notifications on your devices, encrypted end to end, and by email if your server can send it; once a day, only with something to say, off by default.
 - ✅ Installable on phones and desktops; offline, Capture keeps tasks and notes on the device and sends them, once, when you are back online.
@@ -372,6 +373,7 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
 | `TMDB_API_KEY` | Optional | secret | Film and series lookups (your own non-commercial TMDB key, v3 key or v4 read token). |
 | `USDA_API_KEY` | Optional | secret | USDA FoodData Central food search (a free data.gov key). |
+| `AXON_CALENDAR_PRIVATE` | Optional | value | `1` lets followed calendars live on your own network (a Nextcloud on the LAN or tailnet); off, only public HTTPS addresses are fetched. |
 | `AXON_SMTP_URL` | Optional | secret | Reminder emails through your mail server: `smtp://user:pass@host:587` or `smtps://user:pass@host:465`. |
 | `AXON_SMTP_FROM` | Optional | value | The sender address of reminder emails. |
 | `AXON_CONTACT` | Optional | `you@example.org` | How Open Library can reach the operator (sent in the User-Agent); defaults to `AXON_BASE_URL`. |

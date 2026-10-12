@@ -8,7 +8,32 @@
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	type Event = Schemas['CalendarEvent'];
+	type Own = Schemas['CalendarEvent'];
+	type Source = Schemas['CalendarSource'];
+	type Occurrence = {
+		source_id: string;
+		title: string;
+		location: string;
+		start: string;
+		end: string;
+		all_day: boolean;
+		date: string;
+		last_date: string;
+	};
+	// Events of followed calendars (EP-58) sit in the grid beside Axon's own, read only.
+	type External = {
+		type: 'external';
+		kind: 'external';
+		id: string;
+		date: string;
+		title: string;
+		done: false;
+		color: string;
+		time: string;
+		location: string;
+		calendar: string;
+	};
+	type Event = Own | External;
 	type Feed = Schemas['CalendarFeed'];
 	type Kind = 'task' | 'goal' | 'milestone';
 
@@ -49,9 +74,49 @@
 	const shown = $derived(
 		(page.url.searchParams.get('types') ?? 'task,goal,milestone').split(',') as Kind[]
 	);
-	let events = $state<Event[] | null>(null);
+	let own = $state<Own[] | null>(null);
+	let occurrences = $state<Occurrence[]>([]);
+	let sources = $state<Source[]>([]);
+	let showFollowed = $state(true);
 	let error = $state('');
+	const external = $derived.by<External[]>(() => {
+		if (!showFollowed) return [];
+		const byId = new Map(sources.map((src) => [src.id, src]));
+		const out: External[] = [];
+		for (const o of occurrences) {
+			const src = byId.get(o.source_id);
+			const time = o.all_day
+				? ''
+				: new Date(o.start).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+			// An event over several days shows on each of them.
+			for (let d = o.date; d <= o.last_date; d = nextDay(d)) {
+				out.push({
+					type: 'external',
+					kind: 'external',
+					id: `${o.source_id}-${o.start}-${d}`,
+					date: d,
+					title: o.title,
+					done: false,
+					color: src?.color ?? '#5aa9ff',
+					time,
+					location: o.location,
+					calendar: src?.name ?? ''
+				});
+			}
+		}
+		return out;
+	});
+	const events = $derived<Event[] | null>(own ? [...external, ...own] : null);
 	const byDate = $derived(new Map(byDay(events ?? [])));
+	function nextDay(iso: string): string {
+		const d = new Date(`${iso}T00:00:00Z`);
+		d.setUTCDate(d.getUTCDate() + 1);
+		return d.toISOString().slice(0, 10);
+	}
+	let sourceName = $state('');
+	let sourceUrl = $state('');
+	let sourceColor = $state('#22aa66');
+	let adding = $state(false);
 	let feeds = $state<Feed[]>([]);
 	let feedName = $state('');
 	let feedTypes = $state<Kind[]>(['task', 'milestone']);
@@ -63,7 +128,12 @@
 			layout === 'month' ? { from: weeks[0][0], to: weeks.at(-1)!.at(-1)! } : monthRange(month);
 		try {
 			const params = new URLSearchParams({ from, to, types: shown.join(',') });
-			events = shown.length ? (await api<{ items: Event[] }>(`/v1/calendar?${params}`)).items : [];
+			const [mine, theirs] = await Promise.all([
+				shown.length ? api<{ items: Own[] }>(`/v1/calendar?${params}`) : { items: [] },
+				api<{ items: Occurrence[] }>(`/v1/calendar/events?${new URLSearchParams({ from, to })}`)
+			]);
+			own = mine.items;
+			occurrences = theirs.items;
 		} catch (err) {
 			error = message(err);
 		}
@@ -81,12 +151,60 @@
 		void month;
 		void shown;
 		void layout;
-		events = null;
+		own = null;
 		load();
 	});
 	$effect(() => {
 		loadFeeds();
+		loadSources();
 	});
+
+	async function loadSources() {
+		try {
+			sources = (await api<{ items: Source[] }>('/v1/calendar/sources')).items;
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	async function follow(e: SubmitEvent) {
+		e.preventDefault();
+		adding = true;
+		try {
+			const src = await api<Source>('/v1/calendar/sources', {
+				method: 'POST',
+				body: { name: sourceName, url: sourceUrl, color: sourceColor }
+			});
+			toast(`Following “${src.name}”: ${src.events} events.`);
+			sourceName = '';
+			sourceUrl = '';
+			await Promise.all([loadSources(), load()]);
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			adding = false;
+		}
+	}
+
+	async function refreshSource(src: Source) {
+		try {
+			const after = await api<Source>(`/v1/calendar/sources/${src.id}/refresh`, { method: 'POST' });
+			toast(after.error ? after.error : `Updated “${after.name}”.`, after.error ? 'error' : 'ok');
+			await Promise.all([loadSources(), load()]);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	async function unfollow(src: Source) {
+		try {
+			await api(`/v1/calendar/sources/${src.id}`, { method: 'DELETE' });
+			toast(`No longer following “${src.name}”.`);
+			await Promise.all([loadSources(), load()]);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
 
 	function setTypes(id: Kind, on: boolean) {
 		const next = on ? [...shown, id] : shown.filter((t) => t !== id);
@@ -102,6 +220,7 @@
 	}
 
 	function href(e: Event): string | null {
+		if (e.type === 'external') return null;
 		if (e.type === 'goal') return `/goals/${e.id}`;
 		if (e.type === 'milestone' && e.goal_id) return `/goals/${e.goal_id}`;
 		if (e.type === 'task') return `/tasks/${e.id}`;
@@ -179,6 +298,9 @@
 				{k.label}
 			</label>
 		{/each}
+		{#if sources.length}
+			<label><input type="checkbox" bind:checked={showFollowed} /> Calendars you follow</label>
+		{/if}
 	</fieldset>
 </div>
 
@@ -203,8 +325,15 @@
 							{#if byDate.get(d)}
 								<ul>
 									{#each byDate.get(d) ?? [] as e (e.id + e.kind)}
-										<li class="ev {e.type}" class:done={e.done}>
-											{#if prefix[e.kind]}<span class="visually-hidden">{prefix[e.kind]}:</span
+										<li
+											class="ev {e.type}"
+											class:done={e.done}
+											style={e.type === 'external' ? `--c: ${e.color}` : undefined}
+										>
+											{#if e.type === 'external'}<span class="visually-hidden">{e.calendar}:</span
+												>{#if e.time}<span class="time">{e.time}</span
+													>{/if}{:else if prefix[e.kind]}<span class="visually-hidden"
+													>{prefix[e.kind]}:</span
 												>{/if}
 											{#if href(e)}<a href={href(e)} title={e.title}>{e.title}</a>{:else}<span
 													title={e.title}>{e.title}</span
@@ -223,7 +352,9 @@
 	<p class="legend">
 		<span class="ev task">Task</span><span class="ev goal">Goal target</span><span
 			class="ev milestone">Milestone</span
-		>
+		>{#each sources as src (src.id)}<span class="ev external" style="--c: {src.color}"
+				>{src.name}</span
+			>{/each}
 	</p>
 {:else if events.length === 0}
 	<Status
@@ -238,7 +369,12 @@
 				<ul>
 					{#each items as e (e.id + e.kind)}
 						<li class:done={e.done}>
-							<span class="chip {e.type}">{prefix[e.kind] || 'Task'}</span>
+							{#if e.type === 'external'}
+								<span class="chip external" style="--c: {e.color}">{e.calendar}</span>
+								{#if e.time}<span class="time">{e.time}</span>{/if}
+							{:else}
+								<span class="chip {e.type}">{prefix[e.kind] || 'Task'}</span>
+							{/if}
 							{#if href(e)}<a href={href(e)}>{e.title}</a>{:else}<span>{e.title}</span>{/if}
 							{#if e.done}<span class="visually-hidden">(done)</span>{/if}
 						</li>
@@ -248,6 +384,71 @@
 		{/each}
 	</ol>
 {/if}
+
+<section class="card" aria-labelledby="follow-title">
+	<h2 id="follow-title">Calendars you follow</h2>
+	<p class="muted">
+		See your other calendars here, read only: Google Calendar (Settings → your calendar → “Secret
+		address in iCal format”), Nextcloud or any CalDAV server (“Copy subscription link”), Outlook
+		(“Publish calendar” → ICS), or any webcal:// or .ics address. Axon checks them every 30 minutes
+		and never changes them.
+	</p>
+	{#if sources.length}
+		<ul class="feeds">
+			{#each sources as src (src.id)}
+				<li>
+					<span class="swatch" style="background: {src.color}" aria-hidden="true"></span>
+					<span class="grow"
+						><strong>{src.name}</strong>
+						<span class="muted small"
+							>{src.host} · {src.events} events{#if src.fetched_at}
+								· checked {new Date(src.fetched_at).toLocaleString()}{/if}</span
+						>
+						{#if src.error}<span class="small bad" role="status">{src.error}</span>{/if}</span
+					>
+					<Button
+						variant="ghost"
+						onclick={() => refreshSource(src)}
+						aria-label="Check {src.name} now">Check now</Button
+					>
+					<Button
+						variant="danger"
+						onclick={() => unfollow(src)}
+						aria-label="Stop following {src.name}">Remove</Button
+					>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	<form onsubmit={follow}>
+		<div class="row">
+			<TextField
+				id="source-name"
+				label="Name"
+				placeholder="Work"
+				bind:value={sourceName}
+				maxlength={100}
+				required
+			/>
+			<div class="field">
+				<label for="source-color">Colour</label>
+				<input id="source-color" type="color" bind:value={sourceColor} />
+			</div>
+		</div>
+		<TextField
+			id="source-url"
+			label="Calendar address (iCal / ICS)"
+			placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+			bind:value={sourceUrl}
+			maxlength={2000}
+			required
+		/>
+		<p class="muted small">
+			The address is a secret link: Axon keeps it encrypted and shows only its host.
+		</p>
+		<Button type="submit" variant="secondary" busy={adding}>Follow</Button>
+	</form>
+</section>
 
 <section class="card" aria-labelledby="feeds-title">
 	<h2 id="feeds-title">Subscribe in your calendar app</h2>
@@ -304,6 +505,27 @@
 </section>
 
 <style>
+	.ev.external {
+		border-left: 3px solid var(--c);
+	}
+	.chip.external {
+		border: 1px solid var(--c);
+	}
+	.time {
+		font-variant-numeric: tabular-nums;
+		margin-right: var(--space-1);
+		opacity: 0.8;
+	}
+	.swatch {
+		width: 0.9rem;
+		height: 0.9rem;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.bad {
+		display: block;
+		color: var(--bad);
+	}
 	.toolbar {
 		display: flex;
 		justify-content: space-between;

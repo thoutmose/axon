@@ -1191,6 +1191,79 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/calendar/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Calendars you follow (Google, CalDAV, Outlook, any ICS address), without their addresses */
+		get: operations['listCalendarSources'];
+		put?: never;
+		/** Follow a calendar by its iCal (ICS) address, read only; it is fetched at once, so a wrong address is said right away, then every 30 minutes */
+		post: operations['addCalendarSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/sources/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Stop following a calendar; its events go too */
+		delete: operations['deleteCalendarSource'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/sources/{id}/refresh': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Fetch a followed calendar now; a failure is kept on it and shown */
+		post: operations['refreshCalendarSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/events': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Events of the calendars you follow between two dates (at most 92 days), repeating events expanded */
+		get: operations['listCalendarEvents'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -3243,6 +3316,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		CalendarSource: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			color: string;
+			/** @description Where the calendar lives; the full address is a secret and never shown again. */
+			host: string;
+			/** Format: date-time */
+			fetched_at: string | null;
+			/** @description Why the last fetch failed; empty when it worked. */
+			error: string;
+			events: number;
+		};
 		LearningPlan: {
 			cards: {
 				/** @description What a review now would offer. */
@@ -7250,6 +7336,165 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listCalendarSources: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Followed calendars. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarSource'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	addCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Work */
+					name: string;
+					/** @description https:// or webcal://; private network addresses only when the operator allows them (AXON_CALENDAR_PRIVATE=1). */
+					url: string;
+					/** @example #5aa9ff */
+					color?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Followed, with its events. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['CalendarSource'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	refreshCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The calendar after the fetch. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['CalendarSource'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listCalendarEvents: {
+		parameters: {
+			query: {
+				from: string;
+				to: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Occurrences, by start. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							source_id: string;
+							title: string;
+							location: string;
+							/** Format: date-time */
+							start: string;
+							/** Format: date-time */
+							end: string;
+							all_day: boolean;
+							/**
+							 * Format: date
+							 * @description The first day, in your time zone.
+							 */
+							date: string;
+							/**
+							 * Format: date
+							 * @description The last day it covers.
+							 */
+							last_date: string;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	listAreas: {

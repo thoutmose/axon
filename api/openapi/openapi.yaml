@@ -46,6 +46,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: calendar
+    description: "Calendars you follow (EP-58): any iCal (ICS) address, read only."
   - name: reminders
     description: "Reminders (EP-56): Web Push to your devices and an optional email digest."
   - name: learning
@@ -1827,6 +1829,112 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+
+  /v1/calendar/sources:
+    get:
+      tags: [calendar]
+      operationId: listCalendarSources
+      summary: Calendars you follow (Google, CalDAV, Outlook, any ICS address), without their addresses
+      responses:
+        "200":
+          description: Followed calendars.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/CalendarSource" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [calendar]
+      operationId: addCalendarSource
+      summary: "Follow a calendar by its iCal (ICS) address, read only; it is fetched at once, so a wrong address is said right away, then every 30 minutes"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, url]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100, example: Work }
+                url: { type: string, maxLength: 2000, description: "https:// or webcal://; private network addresses only when the operator allows them (AXON_CALENDAR_PRIVATE=1)." }
+                color: { type: string, pattern: "^#[0-9a-fA-F]{6}$", example: "#5aa9ff" }
+      responses:
+        "201":
+          description: Followed, with its events.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarSource" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/calendar/sources/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [calendar]
+      operationId: deleteCalendarSource
+      summary: Stop following a calendar; its events go too
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/calendar/sources/{id}/refresh:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [calendar]
+      operationId: refreshCalendarSource
+      summary: Fetch a followed calendar now; a failure is kept on it and shown
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: The calendar after the fetch.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarSource" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/calendar/events:
+    get:
+      tags: [calendar]
+      operationId: listCalendarEvents
+      summary: Events of the calendars you follow between two dates (at most 92 days), repeating events expanded
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Occurrences, by start.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [source_id, title, location, start, end, all_day, date, last_date]
+                      properties:
+                        source_id: { type: string, format: uuid }
+                        title: { type: string }
+                        location: { type: string }
+                        start: { type: string, format: date-time }
+                        end: { type: string, format: date-time }
+                        all_day: { type: boolean }
+                        date: { type: string, format: date, description: "The first day, in your time zone." }
+                        last_date: { type: string, format: date, description: "The last day it covers." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
 
   /v1/areas:
     get:
@@ -5604,6 +5712,17 @@ components:
               display_name: { type: string }
 
   schemas:
+    CalendarSource:
+      type: object
+      required: [id, name, color, host, fetched_at, error, events]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        color: { type: string }
+        host: { type: string, description: "Where the calendar lives; the full address is a secret and never shown again." }
+        fetched_at: { type: [string, "null"], format: date-time }
+        error: { type: string, description: "Why the last fetch failed; empty when it worked." }
+        events: { type: integer }
     LearningPlan:
       type: object
       required: [cards, recall, test, fleeting, palaces, streak_days]

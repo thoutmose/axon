@@ -51,6 +51,7 @@ Optional settings (each feature works without them; see the README's configurati
 | `TMDB_API_KEY` | Film and series lookups (your own free, non-commercial TMDB key). |
 | `USDA_API_KEY` | USDA FoodData Central food search (a free data.gov key). |
 | `ANKI_SYNC_URL` | The address of your own `anki-sync-server`. |
+| `AXON_CALENDAR_PRIVATE=1` | Followed calendars may be on your own network (a Nextcloud on the LAN or tailnet), over HTTP too. Off, only public HTTPS addresses are fetched. |
 | `AXON_SMTP_URL`, `AXON_SMTP_FROM` | Reminder emails, through your own mail server (`smtp://user:pass@host:587` or `smtps://user:pass@host:465`). Push notifications to phones and browsers need no setting. |
 | `AXON_DEMO=1` | A shared demo account with sample data, reset every night. Do not use it on an instance with real people. |
 

@@ -119,13 +119,18 @@ func serve() error {
 	if err != nil {
 		return err
 	}
+	cals, err := app.Calendars(cfg, pool, log)
+	if err != nil {
+		return err
+	}
 	if demoEnabled() {
 		go keepDemo(ctx, pool, log)
 	}
 	go pruneMedia(ctx, pool, log)
 	go mirror.New(pool, log).Run(ctx)
-	if !demoEnabled() { // the shared demo sends nothing
+	if !demoEnabled() { // the shared demo sends and fetches nothing
 		go reminders.Run(ctx)
+		go cals.Run(ctx)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))

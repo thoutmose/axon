@@ -101,6 +101,7 @@ jobs:
         run: |
           cp .env.example .env
           echo AXON_DEMO=1 >> .env
+          echo AXON_CALENDAR_PRIVATE=1 >> .env # the test follows Axon's own feed through Caddy
           docker compose up -d --build --wait
           docker compose exec -T api axon migrate up
           docker compose exec -T api axon demo reset
