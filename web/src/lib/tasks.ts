@@ -1,4 +1,5 @@
 import { api, type Schemas } from './api';
+import { daysBetween, formatDate } from './dates';
 
 export type Task = Schemas['Task'];
 export type TaskFields = Schemas['TaskFields'];
@@ -19,18 +20,15 @@ export function capture(title: string, extra: TaskFields = {}): Promise<Task> {
 
 /** Human date relative to today ("Today", "Tomorrow", "Mon 12 Oct"). */
 export function relativeDay(iso: string, today: string): string {
-	const d = new Date(`${iso}T00:00:00Z`);
-	const t = new Date(`${today}T00:00:00Z`);
-	const diff = Math.round((d.getTime() - t.getTime()) / 86_400_000);
+	const diff = daysBetween(today, iso);
 	if (diff === 0) return 'Today';
 	if (diff === 1) return 'Tomorrow';
 	if (diff === -1) return 'Yesterday';
-	return d.toLocaleDateString(undefined, {
+	return formatDate(iso, {
 		weekday: 'short',
 		day: 'numeric',
 		month: 'short',
-		timeZone: 'UTC',
-		...(d.getUTCFullYear() !== t.getUTCFullYear() ? { year: 'numeric' } : {})
+		...(iso.slice(0, 4) !== today.slice(0, 4) ? { year: 'numeric' } : {})
 	});
 }
 

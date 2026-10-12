@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
+	import { addDays, localDate } from '$lib/dates';
 	import { byDay, monthGrid, monthLabel, monthRange, shiftMonth } from '$lib/calendar';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -49,7 +50,7 @@
 		milestone: 'Milestone'
 	};
 
-	const todayISO = new Date().toLocaleDateString('sv'); // YYYY-MM-DD in local time
+	const todayISO = localDate(new Date());
 	const thisMonth = todayISO.slice(0, 7);
 	const month = $derived(page.url.searchParams.get('month') ?? thisMonth);
 	// The month grid is the default; the agenda lists the same events by day.
@@ -89,7 +90,7 @@
 				? ''
 				: new Date(o.start).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 			// An event over several days shows on each of them.
-			for (let d = o.date; d <= o.last_date; d = nextDay(d)) {
+			for (let d = o.date; d <= o.last_date; d = addDays(d, 1)) {
 				out.push({
 					type: 'external',
 					kind: 'external',
@@ -108,11 +109,6 @@
 	});
 	const events = $derived<Event[] | null>(own ? [...external, ...own] : null);
 	const byDate = $derived(new Map(byDay(events ?? [])));
-	function nextDay(iso: string): string {
-		const d = new Date(`${iso}T00:00:00Z`);
-		d.setUTCDate(d.getUTCDate() + 1);
-		return d.toISOString().slice(0, 10);
-	}
 	// Drag and drop (EP-64): a task moves to another day, keeping what the
 	// date means (scheduled or due); undated next actions can be dropped on a
 	// day to schedule them. Each has a date field too, for the keyboard.

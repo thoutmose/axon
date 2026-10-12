@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localDate } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
@@ -41,7 +42,7 @@
 		null
 	);
 	let error = $state('');
-	const today = new Date().toLocaleDateString('en-CA');
+	const today = localDate(new Date());
 
 	async function loadStatus() {
 		try {

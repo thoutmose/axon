@@ -3,15 +3,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
+	import { isoWeekday } from '$lib/dates';
 	import Connections from '$lib/Connections.svelte';
-	import {
-		isoWeekday,
-		lastDays,
-		scheduleLabel,
-		weekdays,
-		type Habit,
-		type HabitCheckin
-	} from '$lib/habits';
+	import { lastDays, scheduleLabel, weekdays, type Habit, type HabitCheckin } from '$lib/habits';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';

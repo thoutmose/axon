@@ -1,3 +1,5 @@
+import { addDays, isoWeekday, mondayOf } from './dates';
+
 /** First and last day of the month containing an ISO date or "YYYY-MM". */
 export function monthRange(month: string): { from: string; to: string } {
 	const [y, m] = month.split('-').map(Number);
@@ -32,15 +34,10 @@ export function byDay<T extends { date: string }>(items: T[]): [string, T[]][] {
 /** Weeks (Monday first) covering a "YYYY-MM" month, as ISO dates, padded with the neighbouring months' days. */
 export function monthGrid(month: string): string[][] {
 	const { from, to } = monthRange(month);
-	const day = (iso: string) => new Date(`${iso}T00:00:00Z`);
-	const start = day(from);
-	start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
-	const end = day(to);
-	end.setUTCDate(end.getUTCDate() + ((7 - end.getUTCDay()) % 7));
 	const weeks: string[][] = [];
-	for (const d = start; d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
-		if ((d.getUTCDay() + 6) % 7 === 0) weeks.push([]);
-		weeks[weeks.length - 1].push(d.toISOString().slice(0, 10));
+	for (let d = mondayOf(from); d <= addDays(mondayOf(to), 6); d = addDays(d, 1)) {
+		if (isoWeekday(d) === 1) weeks.push([]);
+		weeks[weeks.length - 1].push(d);
 	}
 	return weeks;
 }

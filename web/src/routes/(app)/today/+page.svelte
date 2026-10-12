@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localDate } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { t } from '$lib/i18n.svelte';
@@ -66,7 +67,7 @@
 	// Each optional card loads its own data, only when shown.
 	$effect(() => {
 		void capturing.count;
-		const today = new Date().toLocaleDateString('sv');
+		const today = localDate(new Date());
 		if (sections.includes('learning'))
 			api<Plan>('/v1/learning/plan')
 				.then((p) => (plan = p))

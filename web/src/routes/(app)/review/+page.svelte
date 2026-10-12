@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
+	import { addDays, localDate, mondayOf } from '$lib/dates';
 	import { describe, parse } from '$lib/quickAdd';
 	import { addParsed } from '$lib/quickAddApi';
 	import type { Task } from '$lib/tasks';
@@ -44,18 +45,9 @@
 	const current = $derived(steps[step]);
 	const go = (n: number) => goto(`?step=${n}`, { noScroll: false, keepFocus: false });
 
-	const today = new Date();
-	const iso = (d: Date) => d.toLocaleDateString('sv');
-	const monday = (() => {
-		const d = new Date(today);
-		d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-		return iso(d);
-	})();
-	const inDays = (n: number) => {
-		const d = new Date(today);
-		d.setDate(d.getDate() + n);
-		return iso(d);
-	};
+	const todayISO = localDate(new Date());
+	const monday = mondayOf(todayISO);
+	const inDays = (n: number) => addDays(todayISO, n);
 
 	let error = $state('');
 	let loading = $state(false);
@@ -92,7 +84,7 @@
 					review = await api<Review>('/v1/insights/review');
 					break;
 				case 'ahead': {
-					const q = new URLSearchParams({ from: iso(today), to: inDays(14) });
+					const q = new URLSearchParams({ from: todayISO, to: inDays(14) });
 					const [mine, theirs] = await Promise.all([
 						api<{ items: Own[] }>(`/v1/calendar?${q}`),
 						api<{ items: Occurrence[] }>(`/v1/calendar/events?${q}`)
