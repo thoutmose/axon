@@ -117,7 +117,7 @@ Grande typographie, espaces généreux, mode sombre, verre translucide sur des p
 
 ## Architecture
 
-Axon est d’abord un monolithe modulaire en Go, avec PostgreSQL 16 + pgvector comme source de vérité, Redis/Valkey pour la coordination éphémère, et SvelteKit + TypeScript pour l’application web. Les agents appellent des outils bornés via une couche d’orchestration qui respecte l’approbation.
+Axon est d’abord un monolithe modulaire en Go, avec PostgreSQL 16 + pgvector comme source de vérité (le travail de fond tourne dans le processus, coordonné par PostgreSQL), et SvelteKit + TypeScript pour l’application web. Les agents appellent des outils bornés via une couche d’orchestration qui respecte l’approbation.
 
 ### PlantUML — contexte C4
 
@@ -146,12 +146,10 @@ System_Boundary(axon, "Axon") {
   Container(api, "API", "Go/chi", "REST/OpenAPI 3.1")
   Container(agents, "Agent runtime", "Go workers + Claude tools", "Bounded workflows")
   ContainerDb(db, "PostgreSQL", "Postgres 16 + pgvector", "System of record")
-  Container(cache, "Redis/Valkey", "Cache/queues", "Ephemeral coordination")
 }
 Rel(user, web, "HTTPS")
 Rel(web, api, "JSON/REST")
 Rel(api, db, "SQL")
-Rel(api, cache, "Jobs and cache")
 Rel(agents, api, "Approved tools")
 Rel(agents, db, "Read/write through policy")
 @enduml
@@ -161,20 +159,21 @@ Rel(agents, db, "Read/write through policy")
 
 ```plantuml
 @startuml
-node "srv-dev" as dev { artifact "Axon dev" as d }
-node "srv-staging" as stg { artifact "Axon staging" as s }
-node "srv-prod" as prod { artifact "Axon production" as p }
-node "srv-db" as db {
-  database "PostgreSQL 16 + pgvector" as pg
-  artifact "Redis/Valkey" as rv
+node "Your machine" as dev { artifact "Compose stack (make up)" as d }
+node "srv-staging" as stg {
+  artifact "Axon: Caddy, API, web, Anki bridge" as s
+  database "PostgreSQL 16 + pgvector" as spg
 }
-node "srv-services" as svc { artifact "anki-sync-server" as anki }
-node "srv-second-brain" as sb { artifact "~/SecondBrain Markdown" as notes }
-dev ..> stg : GitOps promotion
-stg ..> prod : approved promotion
-prod --> db : private WireGuard/Tailscale
-prod --> svc : Anki sync
-prod <--> sb : Git + watcher
+node "srv-prod" as prod {
+  artifact "Axon: Caddy, API, web, Anki bridge" as p
+  database "PostgreSQL 16 + pgvector" as ppg
+}
+node "srv-services" as svc { artifact "anki-sync-server; encrypted backups" as anki }
+node "srv-secondbrain" as sb { artifact "~/SecondBrain Markdown vault" as notes }
+dev ..> stg : deploy.sh staging (green CI)
+stg ..> prod : deploy.sh prod (what staging serves)
+prod --> svc : Anki sync, backups (tailnet)
+prod <--> sb : notes-sync -watch (tailnet)
 @enduml
 ```
 
@@ -273,10 +272,9 @@ Active --> [*] : archive habit
 
 ```mermaid
 flowchart LR
-  dev[srv-dev] -->|promote| staging[srv-staging] -->|approve| prod[srv-prod]
-  prod --> db[(srv-db: PostgreSQL + pgvector)]
-  prod --> services[srv-services: Anki sync]
-  prod <--> brain[srv-second-brain: Markdown + Git]
+  dev[Your machine] -->|deploy.sh staging| staging[srv-staging: Axon + PostgreSQL] -->|deploy.sh prod| prod[srv-prod: Axon + PostgreSQL]
+  prod --> services[srv-services: anki-sync-server, backups]
+  prod <--> brain[srv-secondbrain: Markdown vault]
 ```
 
 ### Mermaid — modèle entité-relation et liens
@@ -315,7 +313,7 @@ erDiagram
 | API | REST + OpenAPI 3.1 ; GraphQL éventuellement plus tard | Cache, observabilité, clients générés ; pas de flexibilité prématurée. |
 | Frontend | SvelteKit + TypeScript, jetons de design + CSS limité aux composants ([ADR 0007](doc/adr/0007-styling-without-tailwind.md)) | Une interface petite et rapide, accessible, en amélioration progressive. |
 | Données | PostgreSQL 16 + pgvector | Un cœur relationnel durable : texte intégral, vecteurs, contraintes, extensions. |
-| Tâches de fond | Redis/Valkey + idempotence en base | Des files pratiques sans cacher la source de vérité. |
+| Travail de fond | Workers dans le processus, lisant PostgreSQL (curseur du journal d’événements, tables de file) | Aucun service de plus ; la base reste l’unique source de vérité ([ADR 0022](doc/adr/0022-no-valkey-yet.md)). |
 | Vue graphe | D3 ou Sigma.js | Visualisation interactive des compétences et des relations, qui passe à l’échelle. |
 | Authentification | WebAuthn + TOTP intégrés | Clés d’accès, MFA, contrôle auto-hébergé. |
 | Entrée réseau | Caddy ou Traefik | TLS automatique et routage clair. |
@@ -331,14 +329,12 @@ Là où le tableau laisse un choix, l’[ADR 0002](doc/adr/0002-initial-technolo
 
 | Hôte | Minimum | Confortable | Charge |
 |---|---:|---:|---|
-| `srv-dev` | 2 vCPU / 4 Go / 60 Go SSD | 4 / 8 Go / 120 Go | Compilation, intégration locale, déploiements de prévisualisation. |
-| `srv-staging` | 2 vCPU / 4 Go / 80 Go SSD | 4 / 8 Go / 160 Go | Vérification proche de la production et migrations. |
-| `srv-prod` | 4 vCPU / 8 Go / 120 Go SSD | 8 / 16 Go / 300 Go | Web/API, workers, cache, files des agents. |
-| `srv-db` | 4 vCPU / 8 Go / 200 Go SSD | 8 / 32 Go / 1 To NVMe | PostgreSQL, pgvector, WAL, sauvegardes ; privilégier les IOPS. |
-| `srv-services` | 1 vCPU / 1 Go / 20 Go | 2 / 2 Go / 50 Go | Service de synchronisation Anki existant. |
-| `srv-second-brain` | 1 vCPU / 1 Go / 50 Go | 2 / 2 Go / 100 Go | Markdown, miroir Git, surveillance des fichiers. |
+| `srv-staging` | 2 vCPU / 4 Go / 40 Go SSD | 4 / 8 Go / 80 Go | La version avant la production : même pile, migrations répétées. |
+| `srv-prod` | 2 vCPU / 4 Go / 60 Go SSD | 4 / 8 Go / 160 Go | Caddy, API et ses workers, web, PostgreSQL + pgvector, passerelle Anki, sauvegardes. |
+| `srv-services` | 1 vCPU / 1 Go / 20 Go | 2 / 2 Go / 50 Go | Service de synchronisation Anki existant ; reçoit les sauvegardes chiffrées. |
+| `srv-secondbrain` | 1 vCPU / 1 Go / 50 Go | 2 / 2 Go / 100 Go | Le coffre Markdown, synchronisé par `notes-sync -watch`. |
 
-Ce tableau décrit la cible. Tant que les mesures ne justifient pas de séparer, Axon tourne seul sur `srv-prod`, avec la préproduction comme second projet Compose, à côté des `srv-services` et `srv-second-brain` existants ([ADR 0003](doc/adr/0003-single-host-first.md)).
+Chaque environnement tient sur un hôte ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)) ; mesurée le 11 octobre 2026, toute la pile utilise environ 300 Mo de mémoire et sert 700 requêtes par seconde ([ADR 0021](doc/adr/0021-single-host-measured.md)). Un hôte de base de données séparé ne se justifie que si une mesure le montre.
 
 > [!NOTE]
 > Les petites configurations supposent des workers bornés, un pool de connexions, la pagination et aucune inférence de modèle locale. Les appels aux modèles externes sont limités en débit et en budget.
@@ -379,9 +375,7 @@ Ouvrez ensuite <http://localhost:3000>. L’API est servie sous `/api` (par exem
 | Variable | Obligatoire | Exemple | Rôle |
 |---|---|---|---|
 | `AXON_BASE_URL` | Oui | `https://axon.example` | URL canonique et origine des retours. |
-| `AXON_ENV` | Oui | `development` | Comportement et garde-fous de l’environnement. |
 | `DATABASE_URL` | Oui | `postgres://...` | Connexion PostgreSQL ; à stocker comme secret. |
-| `REDIS_URL` | Oui | `redis://...` | Connexion aux files et au cache. |
 | `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Chiffre les secrets TOTP au repos ; ne jamais la committer. |
 | `AXON_REGISTRATION` | Non | `first-user` | `first-user` : seul le premier compte peut s’inscrire ; `open` : toute personne qui atteint Axon. |
 | `AXON_DEMO` | Non | `1` | Propose un compte de démonstration partagé, avec des données d’exemple remises à zéro chaque nuit. |
@@ -392,8 +386,6 @@ Ouvrez ensuite <http://localhost:3000>. L’API est servie sous `/api` (par exem
 | `USDA_API_KEY` | Facultatif | secret | Recherche d’aliments dans USDA FoodData Central (clé data.gov gratuite). |
 | `AXON_CONTACT` | Facultatif | `vous@example.org` | Comment Open Library peut joindre l’opérateur (envoyé dans le User-Agent) ; par défaut `AXON_BASE_URL`. |
 | `ANKI_SYNC_URL` | Facultatif | URL privée | Adresse suggérée du serveur anki-sync-server pour le pont Anki (chacun saisit son propre compte). |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Facultatif | URL privée | Export des traces. |
-| `S3_BACKUP_BUCKET` | Facultatif | bucket | Destination des sauvegardes chiffrées. |
 
 Ne mettez jamais de secrets dans du Markdown, des tickets, des prompts, des captures d’écran ou des journaux. Utilisez SOPS/age et un gestionnaire de secrets adapté au déploiement.
 
@@ -455,7 +447,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, EP-21, EP-47 et EP-48 terminés ; la 1.0 attend la revue de sécurité externe et une installation observée.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, EP-21, EP-47, EP-48 et EP-49 terminés ; la 1.0 attend la revue de sécurité externe et une installation observée.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
