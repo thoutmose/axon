@@ -82,6 +82,26 @@ func TestHousehold(t *testing.T) {
 		t.Fatalf("after ticking = %+v", h.Lists[0])
 	}
 
+	// Rename, delete an item, add and remove a list.
+	if h = bob.household(200, "PATCH", "/v1/household", `{"name":"The Lilacs"}`); h.Name != "The Lilacs" {
+		t.Fatalf("renamed = %+v", h)
+	}
+	h = bob.household(201, "POST", "/v1/household/lists/"+list+"/items", `{"title":"Bread"}`)
+	bread := ""
+	for _, it := range h.Lists[0].Items {
+		if it.Title == "Bread" {
+			bread = it.ID
+		}
+	}
+	bob.mustDo(204, "DELETE", "/v1/household/items/"+bread, nil)
+	h = bob.household(201, "POST", "/v1/household/lists", `{"title":"Chores","kind":"chores"}`)
+	chores := h.Lists[1].ID
+	if h = bob.household(200, "PATCH", "/v1/household/lists/"+chores, `{"title":"Weekly chores"}`); h.Lists[1].Title != "Weekly chores" {
+		t.Fatalf("list renamed = %+v", h.Lists)
+	}
+	carol.mustDo(404, "DELETE", "/v1/household/lists/"+chores, nil)
+	bob.mustDo(204, "DELETE", "/v1/household/lists/"+chores, nil)
+
 	// Nothing personal is shared.
 	alice.createTask(`{"title":"Alice's private task"}`)
 	if out := bob.mustDo(200, "GET", "/v1/tasks?view=all", nil); bytes.Contains(out, []byte("private task")) {
