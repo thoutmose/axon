@@ -88,6 +88,17 @@ func Morning(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time)
 	if plan.Test.Due {
 		parts = append(parts, "the weekly test")
 	}
+	// From Friday to Sunday, until it is done: the weekly review (EP-59).
+	if wd := day.Weekday(); wd == time.Friday || wd == time.Saturday || wd == time.Sunday {
+		monday := day.AddDate(0, 0, -((int(wd) + 6) % 7))
+		var done bool
+		if err := q.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM checkins WHERE user_id = $1 AND kind = 'weekly' AND day = $2)`, userID, monday).Scan(&done); err != nil {
+			return Message{}, err
+		}
+		if !done {
+			parts = append(parts, "the weekly review, about 20 min")
+		}
+	}
 	if len(parts) == 0 {
 		return Message{}, nil
 	}

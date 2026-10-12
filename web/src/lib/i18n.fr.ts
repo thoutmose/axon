@@ -334,6 +334,7 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	'Weekly review': 'Revue hebdomadaire',
 	Reminders: 'Rappels',
 	'Send me a morning digest and an evening nudge':
 		'M’envoyer un résumé le matin et un rappel le soir',

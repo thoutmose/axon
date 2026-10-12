@@ -981,6 +981,7 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	expect(manifest.icons.some((i: { sizes: string }) => i.sizes === '512x512')).toBe(true);
 	await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
 	await page.reload(); // now under the service worker
+	await expect(page.locator('#today-title')).toBeVisible(); // loaded before the connection drops
 
 	await page.context().setOffline(true);
 	await page.keyboard.press('n');
@@ -1048,6 +1049,40 @@ test('quick add: one line becomes a task with a context and a day, a book, a hab
 	await expect(page.getByText('The Art of Learning').first()).toBeVisible();
 	await page.goto('/habits');
 	await expect(page.getByText('Stretch for two minutes').first()).toBeVisible();
+});
+
+test('the weekly review walks from an empty head to next week', async () => {
+	await page.goto('/today');
+	const nav = page.getByRole('navigation', { name: 'Main' });
+	await nav.getByRole('button', { name: 'Reflect' }).click();
+	await nav.getByRole('link', { name: 'Weekly review' }).click();
+	await expect(page.getByRole('heading', { level: 2, name: 'Empty your head' })).toBeVisible();
+	await page.getByLabel('One thing on your mind').fill('Return the library books @errand');
+	await page.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.getByText('Task: Return the library books')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Next step' }).click();
+	await expect(page.getByRole('heading', { level: 2, name: 'Process your inbox' })).toBeVisible();
+	await page.getByRole('button', { name: 'Next action: Return the library books' }).click();
+	await expect(page.getByText('A next action.')).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Return the library books' })).toHaveCount(0);
+	for (const title of [
+		'Process your fleeting notes',
+		'Look back at the week',
+		'Look at the next two weeks',
+		'Waiting for',
+		'Projects',
+		'Goals, habits, and learning',
+		'Someday, maybe'
+	]) {
+		await page.getByRole('button', { name: 'Next step' }).click();
+		await expect(page.getByRole('heading', { level: 2, name: title })).toBeVisible();
+	}
+	await page.getByRole('button', { name: 'Next step' }).click();
+	await page.getByLabel('What matters most next week?').fill('Finish the garden shed.');
+	await page.getByRole('button', { name: 'Finish the review' }).click();
+	await expect(page.getByText('Weekly review done. Enjoy the week.')).toBeVisible();
+	await expect(page).toHaveURL(/\/today$/);
 });
 
 test('each page offers its own agents, and says when none can run yet', async () => {

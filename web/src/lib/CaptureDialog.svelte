@@ -2,9 +2,8 @@
 	import { api, message } from './api';
 	import { keep, unreachable } from './outbox.svelte';
 	import { refreshNotes } from './noteIndex.svelte';
-	import { templates } from './noteTemplates';
 	import { action, describe, parse, type Parsed } from './quickAdd';
-	import { capture } from './tasks';
+	import { addParsed, fleeting } from './quickAddApi';
 	import Button from './ui/Button.svelte';
 	import Dialog from './ui/Dialog.svelte';
 	import TextField from './ui/TextField.svelte';
@@ -17,16 +16,6 @@
 
 	const parsed = $derived(parse(title));
 	const preview = $derived(title.trim() ? describe(parsed) : []);
-
-	/** A fleeting note in the inbox, with the tags typed as #tags. */
-	function fleeting(text: string, tags: string[]) {
-		const t = templates.find((x) => x.id === 'fleeting')!;
-		const now = new Date();
-		let content = t.content(text, now);
-		if (tags.length)
-			content = content.replace('type: fleeting\n', `type: fleeting\ntags: [${tags.join(', ')}]\n`);
-		return { path: t.path(text, now), content };
-	}
 
 	/** Saves the thought as a fleeting note in the notes inbox instead. */
 	async function asNote() {
@@ -47,53 +36,9 @@
 			open = false;
 		};
 		try {
-			switch (p.kind) {
-				case 'task':
-					await capture(p.title, {
-						...(p.context ? { context: p.context } : {}),
-						...(p.due ? { due_on: p.due } : {}),
-						...(p.status ? { status: p.status } : {})
-					});
-					done(p.status ? 'Saved for someday.' : 'Captured to your inbox.');
-					oncaptured?.();
-					break;
-				case 'note':
-					await api('/v1/notes', { method: 'POST', body: fleeting(p.title, p.tags) });
-					done('Saved as a note in your inbox.');
-					refreshNotes().catch(() => {});
-					break;
-				case 'book':
-				case 'film':
-				case 'series':
-					await api('/v1/media', {
-						method: 'POST',
-						body: { kind: p.kind, title: p.title, status: 'want' }
-					});
-					done(`Added to ${p.kind === 'book' ? 'books to read' : 'films and series to watch'}.`);
-					break;
-				case 'habit':
-					await api('/v1/habits', { method: 'POST', body: { title: p.title } });
-					done('Habit added. Give it a two-minute version on the Habits page.');
-					break;
-				case 'goal':
-					await api('/v1/goals', {
-						method: 'POST',
-						body: { title: p.title, ...(p.due ? { target_date: p.due } : {}) }
-					});
-					done('Goal added.');
-					break;
-				case 'project':
-					await api('/v1/projects', { method: 'POST', body: { title: p.title } });
-					done('Project added.');
-					break;
-				case 'card':
-					await api('/v1/flashcards', {
-						method: 'POST',
-						body: { front: p.title, back: p.back ?? '', deck: p.tags[0] ?? 'Default' }
-					});
-					done(`Card added to ${p.tags[0] ?? 'Default'}.`);
-					break;
-			}
+			done(await addParsed(p));
+			if (p.kind === 'task') oncaptured?.();
+			if (p.kind === 'note') refreshNotes().catch(() => {});
 		} catch (err) {
 			if (unreachable(err)) {
 				// Offline, it waits on the device: a note stays a note, anything else becomes a task to sort later.
