@@ -838,6 +838,23 @@ test('insights: weekly metrics that explain themselves, and the weekly review', 
 	await expect(page.getByRole('link', { name: /^\d{4}-W\d{2} →$/ })).toBeVisible();
 });
 
+test('the Notes page shows a knowledge graph of literature and permanent notes that says why', async () => {
+	await page.goto('/notes');
+	const graph = page.getByRole('region', { name: 'Knowledge graph' });
+	await expect(graph.getByLabel('Graph summary')).toContainText(
+		/\d+ notes · \d+ connections · \d+ communities/
+	);
+	await noSeriousA11yViolations(page);
+	const note = graph
+		.getByRole('button', { name: /interleaving|peak|literature note|permanent note/i })
+		.first();
+	await note.focus();
+	await page.keyboard.press('Enter');
+	await expect(graph.getByRole('heading', { name: 'Why it connects' })).toBeVisible();
+	await graph.getByText('Show the connections as a table').click();
+	await expect(graph.getByRole('table')).toBeVisible();
+});
+
 test('without an AI provider agents say so, and a local model can be chosen', async () => {
 	await page.goto('/agents');
 	await expect(page.getByRole('heading', { level: 1, name: 'Agents' })).toBeVisible();

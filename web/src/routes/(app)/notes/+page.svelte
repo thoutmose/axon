@@ -5,6 +5,7 @@
 	import { createNote, paraViews, type Note } from '$lib/notes';
 	import { refreshNotes } from '$lib/noteIndex.svelte';
 	import Button from '$lib/ui/Button.svelte';
+	import ZettelGraph from '$lib/ZettelGraph.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
@@ -116,6 +117,10 @@
 	/>
 	<Button type="submit" variant="secondary">Create</Button>
 </form>
+
+{#if para === 'all' && !tag}
+	<ZettelGraph />
+{/if}
 
 {#if report}
 	<div class="report" role="status">
