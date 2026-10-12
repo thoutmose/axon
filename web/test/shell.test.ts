@@ -1134,6 +1134,37 @@ test('a household: start it, invite with a code, share a list, tick an item, and
 	await expect(page.getByRole('heading', { name: 'Start a household' })).toBeVisible();
 });
 
+test('search by meaning is off until a service and the consent are given', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Search by meaning' });
+	await expect(section.getByLabel('Embedding service')).toHaveValue('off');
+	await section.getByLabel('Embedding service').selectOption('local');
+	await section.getByLabel('Server address').fill('http://127.0.0.1:9');
+	await section.getByRole('button', { name: 'Save the embedding service' }).click();
+	await expect(
+		page.getByText('Saved. Notes are embedded within a few minutes once you consent.')
+	).toBeVisible();
+	const consent = section.getByRole('checkbox', {
+		name: 'Send the text of my notes to this service to search them by meaning'
+	});
+	await expect(consent).not.toBeChecked();
+	await consent.check();
+	await expect(consent).toBeChecked();
+	await noSeriousA11yViolations(page);
+	// The command center still answers when the service does not.
+	await page.keyboard.press('Control+k');
+	await page.getByLabel('Search or type a command').fill('learning');
+	await expect(
+		page.getByRole('listbox', { name: 'Results' }).getByRole('option').first()
+	).toBeVisible();
+	await page.keyboard.press('Escape');
+	await section.getByLabel('Embedding service').selectOption('off');
+	await section.getByRole('button', { name: 'Save the embedding service' }).click();
+	await expect(
+		page.getByText('Search by meaning is off; stored embeddings were deleted.')
+	).toBeVisible();
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

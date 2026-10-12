@@ -334,6 +334,21 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	'Search by meaning': 'Recherche par le sens',
+	'Embedding service': 'Service de plongements (embeddings)',
+	'A local model server (Ollama, LM Studio)': 'Un serveur de modèles local (Ollama, LM Studio)',
+	'API key': 'Clé d’API',
+	'saved; leave empty to keep it': 'enregistrée ; laissez vide pour la garder',
+	'Save the embedding service': 'Enregistrer le service',
+	'Send the text of my notes to this service to search them by meaning':
+		'Envoyer le texte de mes notes à ce service pour les rechercher par le sens',
+	'notes embedded': 'notes traitées',
+	'Search by meaning is off; stored embeddings were deleted.':
+		'La recherche par le sens est désactivée ; les plongements enregistrés ont été supprimés.',
+	'Saved. Notes are embedded within a few minutes once you consent.':
+		'Enregistré. Les notes sont traitées en quelques minutes une fois votre consentement donné.',
+	'Off, Axon finds related notes with its own local word statistics. On, notes are compared by meaning: in the command center (Ctrl+K) and under “Close in meaning” on each note. A local model server keeps your notes on your network; OpenAI and Voyage AI receive their text.':
+		'Désactivée, Axon trouve les notes liées avec ses propres statistiques de mots, en local. Activée, les notes sont comparées par le sens : dans le centre de commandes (Ctrl+K) et sous « Proche par le sens » sur chaque note. Un serveur de modèles local garde vos notes sur votre réseau ; OpenAI et Voyage AI reçoivent leur texte.',
 	Household: 'Foyer',
 	Import: 'Importer',
 	'Weekly review': 'Revue hebdomadaire',

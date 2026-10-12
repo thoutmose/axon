@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { install, promptInstall } from '$lib/install.svelte';
 	import { disablePush, enablePush } from '$lib/reminders';
+	import EmbeddingSettings from '$lib/EmbeddingSettings.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
@@ -329,6 +330,10 @@
 					</div>
 				{/if}
 			{/if}
+		</Section>
+
+		<Section id="meaning" title={t('Search by meaning')}>
+			<EmbeddingSettings />
 		</Section>
 
 		<Section id="vault" title={t('Markdown vault')}>

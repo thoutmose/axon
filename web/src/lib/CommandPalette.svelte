@@ -55,13 +55,27 @@
 				snippet: h.snippet,
 				run: () => goto(href(h)!)
 			}));
-		return [...found, ...cmds].slice(0, 12);
+		// Notes close in meaning (EP-62), when search by meaning is set up; not
+		// repeated when the word search already found them.
+		const seen = new Set(found.map((f) => f.id));
+		const meant = meaning
+			.filter((m) => !seen.has(m.id))
+			.slice(0, 4)
+			.map((m) => ({
+				id: `meaning-${m.id}`,
+				label: m.title,
+				detail: 'Close in meaning',
+				snippet: '',
+				run: () => goto(`/notes/${m.id}`)
+			}));
+		return [...found, ...meant, ...cmds].slice(0, 14);
 	});
 
 	$effect(() => {
 		if (open && !dialog.open) {
 			query = '';
 			hits = [];
+			meaning = [];
 			active = 0;
 			dialog.showModal();
 			input?.focus();
@@ -69,12 +83,15 @@
 		if (!open && dialog.open) dialog.close();
 	});
 
+	let meaning = $state<{ id: string; title: string; score: number }[]>([]);
+	let meaningOn = true; // off for this session once the API says it is not set up
 	function search() {
 		active = 0;
 		clearTimeout(timer);
 		const q = query.trim();
 		if (!q) {
 			hits = [];
+			meaning = [];
 			return;
 		}
 		timer = setTimeout(async () => {
@@ -83,7 +100,17 @@
 					items: []
 				}))
 			).items;
-		}, 150);
+			if (meaningOn && q.length >= 3) {
+				meaning = await api<{ items: { id: string; title: string; score: number }[] }>(
+					`/v1/notes/semantic?q=${encodeURIComponent(q)}`
+				)
+					.then((r) => r.items.filter((m) => m.score >= 0.3))
+					.catch(() => {
+						meaningOn = false;
+						return [];
+					});
+			}
+		}, 250);
 	}
 
 	async function run(i: number) {

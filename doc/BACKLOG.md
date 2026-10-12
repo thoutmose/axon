@@ -110,6 +110,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-59 | Guided weekly review | A ten-step weekly review after Getting Things Done, on Axon's own data, ending in the weekly check-in; the weekend digest suggests it until it is done. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-20, EP-56 | Done |
 | EP-60 | Imports | Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX money, Notion pages; preview first, nothing twice. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-11, EP-17, EP-38 | Done |
 | EP-61 | Household sharing | People on the same Axon join a household by a one-time code and share lists (shopping, chores, anything), with items given to members; nothing personal is shared. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-02, EP-56 | Done |
+| EP-62 | Search by meaning | Embeddings from the person's own service (local, OpenAI, or Voyage AI) behind their own consent, in pgvector: notes found by meaning in the command center and "Close in meaning" on each note. Closes IS-37.04. Owner decision on the EP-49 proposals. | COULD | 5 pts | EP-37 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1022,7 +1023,7 @@ Cross-cutting matrix:
 - [x] **EP-37/IS-37.01 — Filters and charts** · 8 pts · SHOULD — `GET /v1/notes/explore` filters by PARA, Zettelkasten type, tag, text, creation date, or unconnected notes, and returns counts for notes per month, PARA, type, tags, and shared keywords.
 - [x] **EP-37/IS-37.02 — Keyword and entity extraction** · 8 pts · SHOULD — Markdown cleaning, English and French stopwords and stemming, TF-IDF keywords, and entity spotting, unit-tested in `internal/knowledge`.
 - [x] **EP-37/IS-37.03 — Thesaurus** · 5 pts · SHOULD — a bundled English/French synonym list (`thesaurus.txt`), small and hand-made rather than WordNet, to keep the image light and the licence clear.
-- [ ] **EP-37/IS-37.04 — Embeddings** · 8 pts · COULD — not done: Axon has no embedding provider or pgvector column yet, so similarity uses local TF-IDF cosine. It needs its own consent and provider settings.
+- [x] **EP-37/IS-37.04 — Embeddings** · 8 pts · COULD — delivered by EP-62: each person may choose an embedding service behind the `ai_embeddings` consent; vectors in pgvector. Without it, similarity stays local TF-IDF cosine.
 - [x] **EP-37/IS-37.05 — Graph view** · 5 pts · SHOULD — `GET /v1/notes/graph` keeps wikilinks and connections, then the strongest local reason per pair (entity, keywords, synonym, or similarity), at most six NLP edges per note and 600 notes; `/notes/explore` shows the graph coloured by PARA, toggles per kind, the reasons for the focused note, and a table version.
 
 **Notes**
@@ -1482,6 +1483,15 @@ Cross-cutting matrix:
 - [x] **EP-61/IS-61.02** · 2 pts · SHOULD — Life → Household: start or join, members, invite code shown once, shared lists with ticks and assignees, refreshed every 15 seconds while open; the morning digest counts household items given to you; the export holds your items, not other members' names.
 
 **Tests.** `TestHousehold` (codes used once and refused when wrong, members, shared lists, assignees limited to members, outsiders refused, ticks, nothing personal shared, owner-only removal, hand-over on leaving, the last one out); e2e "a household: start it, invite with a code, share a list, tick an item, and leave".
+
+### EP-62 — Search by meaning
+
+**Goal.** Proposed in the EP-49 audit (IS-37.04, left open) and approved by the owner. Decisions in [ADR 0026](adr/0026-embeddings-are-opt-in.md).
+
+- [x] **EP-62/IS-62.01** · 3 pts · COULD — per-person embedding service (local OpenAI-style server, OpenAI, Voyage AI; model defaults nomic-embed-text, text-embedding-3-small, voyage-3.5-lite; key sealed and never returned), the `ai_embeddings` consent (withdrawing deletes the vectors), and a background indexer: new and changed notes by content hash, 32 per request, 256 per minute per person, mirror notes left out, failures shown; vectors in pgvector, one space per service and model.
+- [x] **EP-62/IS-62.02** · 2 pts · COULD — `GET /v1/notes/semantic?q=` and `GET /v1/notes/{id}/similar` by cosine distance; the command center adds notes close in meaning (not already found by words); notes show "Close in meaning"; Preferences → Search by meaning sets the service, the consent, and shows progress.
+
+**Tests.** `TestSearchByMeaning` with a fake service that embeds by concept (off until set up, keys refused or kept, nothing sent without consent, unchanged notes not re-embedded, "my car" finds the note about an automobile, similar notes, other people's notes never returned, withdrawal deletes the vectors, off forgets the service); e2e "search by meaning is off until a service and the consent are given".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

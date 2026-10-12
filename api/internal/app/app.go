@@ -41,6 +41,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/reminders"
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
+	"github.com/thoutmose/axon/api/internal/semantic"
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
@@ -102,6 +103,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	calendarsAPI := calendars.NewStore(pool, log, sealer)
 	importsAPI := imports.NewHandlers(pool, log)
 	householdAPI := household.NewHandlers(pool, log)
+	semanticAPI := semantic.NewHandlers(pool, log, sealer)
 	priv.Register("household", household.Export)
 	priv.Register("calendar_sources", calendars.Export)
 	priv.Register("learning", learning.Export)
@@ -156,6 +158,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				remindersAPI.Routes(r)
 				calendarsAPI.Routes(r)
 				householdAPI.Routes(r)
+				semanticAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)
@@ -181,6 +184,19 @@ func Calendars(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*calendar
 		}
 	}
 	return calendars.NewStore(pool, log, sealer), nil
+}
+
+// Semantic returns the indexer that embeds notes for search by meaning
+// (EP-62); the process runs it.
+func Semantic(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*semantic.Indexer, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	return semantic.NewIndexer(pool, log, sealer), nil
 }
 
 // Reminders returns the reminders worker (EP-56); the API serves its
