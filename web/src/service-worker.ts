@@ -7,10 +7,11 @@
 // the offline page, so Axon opens without a connection and captures wait on
 // the device. Nothing personal is cached: the API always goes to the network.
 import { build, files, prerendered, version } from '$service-worker';
+import { offlineShell } from '$lib/offlineShell';
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 const cache = `axon-${version}`;
-const shell = new Set([...build, ...files, ...prerendered]);
+const shell = new Set(offlineShell([...build, ...files, ...prerendered]));
 
 sw.addEventListener('install', (event) => {
 	event.waitUntil(
