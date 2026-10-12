@@ -4778,6 +4778,21 @@ export interface components {
 				interleave: boolean;
 				type_answer: boolean;
 			};
+			/** @description The sections Today shows, in order (counts stay at the top, progress at the bottom). Default: kpis, tasks, milestones, goals, notes, overview. */
+			today?: {
+				sections: (
+					| 'kpis'
+					| 'tasks'
+					| 'milestones'
+					| 'goals'
+					| 'notes'
+					| 'learning'
+					| 'habits'
+					| 'calendar'
+					| 'household'
+					| 'overview'
+				)[];
+			};
 			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
 			reminders?: {
 				enabled: boolean;

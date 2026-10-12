@@ -111,6 +111,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-60 | Imports | Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX money, Notion pages; preview first, nothing twice. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-11, EP-17, EP-38 | Done |
 | EP-61 | Household sharing | People on the same Axon join a household by a one-time code and share lists (shopping, chores, anything), with items given to members; nothing personal is shared. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-02, EP-56 | Done |
 | EP-62 | Search by meaning | Embeddings from the person's own service (local, OpenAI, or Voyage AI) behind their own consent, in pgvector: notes found by meaning in the command center and "Close in meaning" on each note. Closes IS-37.04. Owner decision on the EP-49 proposals. | COULD | 5 pts | EP-37 | Done |
+| EP-63 | Customisable Today | Choose and order Today's cards, with new ones for learning, habits, today's calendar, and the household. Owner decision on the EP-49 proposals. | COULD | 2 pts | EP-30, EP-52, EP-58, EP-61 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1492,6 +1493,14 @@ Cross-cutting matrix:
 - [x] **EP-62/IS-62.02** · 2 pts · COULD — `GET /v1/notes/semantic?q=` and `GET /v1/notes/{id}/similar` by cosine distance; the command center adds notes close in meaning (not already found by words); notes show "Close in meaning"; Preferences → Search by meaning sets the service, the consent, and shows progress.
 
 **Tests.** `TestSearchByMeaning` with a fake service that embeds by concept (off until set up, keys refused or kept, nothing sent without consent, unchanged notes not re-embedded, "my car" finds the note about an automobile, similar notes, other people's notes never returned, withdrawal deletes the vectors, off forgets the service); e2e "search by meaning is off until a service and the consent are given".
+
+### EP-63 — Customisable Today
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: a Today that shows what each person looks at first.
+
+- [x] **EP-63/IS-63.01** · 2 pts · COULD — `today.sections` in the settings (known sections, each once): counts at the top and progress at the bottom when shown; the cards between (today's tasks, coming up, goals, recent notes, and new ones: learning today, habits today, calendar today from followed calendars, household items for you) in the chosen order, each loading its data only when shown; Customise Today chooses and orders them.
+
+**Tests.** `TestTodaySections` (saved in order, repeats and unknown sections refused); e2e "Today can be customised: cards chosen and ordered".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

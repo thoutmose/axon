@@ -7322,6 +7322,17 @@ components:
             retention: { type: number, minimum: 0.7, maximum: 0.97 }
             interleave: { type: boolean }
             type_answer: { type: boolean }
+        today:
+          type: object
+          required: [sections]
+          additionalProperties: false
+          description: "The sections Today shows, in order (counts stay at the top, progress at the bottom). Default: kpis, tasks, milestones, goals, notes, overview."
+          properties:
+            sections:
+              type: array
+              maxItems: 10
+              uniqueItems: true
+              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, overview] }
         reminders:
           type: object
           required: [enabled, morning, evening, email]
