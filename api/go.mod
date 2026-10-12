@@ -18,6 +18,7 @@ require (
 	github.com/prometheus/client_golang v1.25.0
 	github.com/teambition/rrule-go v1.8.2
 	go.yaml.in/yaml/v4 v4.0.0-rc.2
+	golang.org/x/net v0.61.0
 	golang.org/x/time v0.16.0
 	modernc.org/sqlite v1.60.1
 )
@@ -64,10 +65,10 @@ require (
 	github.com/tinylib/msgp v1.6.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/sync v0.23.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	modernc.org/libc v1.77.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

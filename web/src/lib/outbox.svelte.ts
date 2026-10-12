@@ -75,7 +75,13 @@ async function send(): Promise<number> {
 					});
 				}
 			} catch (err) {
-				if (unreachable(err) || (err instanceof ApiError && err.status === 401)) break;
+				// No connection, signed out, or the same capture still being created by another
+				// tab: keep it and try again later, never drop it.
+				const busy =
+					err instanceof ApiError &&
+					err.status === 409 &&
+					/still being processed/.test(err.message);
+				if (unreachable(err) || busy || (err instanceof ApiError && err.status === 401)) break;
 				// Refused for good (for example a path taken): drop it rather than block the rest.
 			}
 			outbox.items = outbox.items.slice(1);

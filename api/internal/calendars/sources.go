@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/netsafe"
 )
 
 // Limits: the size of one calendar, how many events are kept from it, and
@@ -34,50 +32,11 @@ type ErrAddress struct{ Msg string }
 
 func (e ErrAddress) Error() string { return e.Msg }
 
-// allowPrivate lets an instance reach calendars on its own network, such as
-// a Nextcloud on the LAN or the tailnet (AXON_CALENDAR_PRIVATE=1).
-func allowPrivate() bool { return os.Getenv("AXON_CALENDAR_PRIVATE") == "1" }
+func allowPrivate() bool { return netsafe.AllowPrivate() }
 
-var cgnat = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
-
-func private(ip net.IP) bool {
-	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
-		ip.IsUnspecified() || ip.IsMulticast() || cgnat.Contains(ip)
-}
-
-// Client fetches calendars. Unless private addresses are allowed, it
-// refuses to connect to them, whatever the name resolves to, so an address
-// cannot point Axon at its own network. Tests replace it.
-var Client = &http.Client{
-	Timeout: 20 * time.Second,
-	Transport: &http.Transport{
-		Proxy: nil,
-		DialContext: (&net.Dialer{
-			Timeout: 10 * time.Second,
-			Control: func(_, address string, _ syscall.RawConn) error {
-				host, _, err := net.SplitHostPort(address)
-				if err != nil {
-					return err
-				}
-				if ip := net.ParseIP(host); ip != nil && private(ip) && !allowPrivate() {
-					return ErrAddress{"That address is on a private network. The operator can allow it with AXON_CALENDAR_PRIVATE=1."}
-				}
-				return nil
-			},
-		}).DialContext,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ResponseHeaderTimeout: 15 * time.Second,
-	},
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 3 {
-			return errors.New("too many redirects")
-		}
-		if req.URL.Scheme != "https" && !allowPrivate() {
-			return ErrAddress{"The calendar redirected to an address that is not HTTPS."}
-		}
-		return nil
-	},
-}
+// Client fetches calendars, never on private networks unless the operator
+// allows them (package netsafe). Tests replace it.
+var Client = netsafe.Client(20 * time.Second)
 
 // Clean checks a calendar address: webcal:// becomes https://; it must be
 // HTTPS (or HTTP when private addresses are allowed).
@@ -109,9 +68,8 @@ func Fetch(ctx context.Context, u *url.URL, now time.Time, loc *time.Location) (
 	req.Header.Set("User-Agent", "Axon calendar reader (self-hosted)")
 	res, err := Client.Do(req)
 	if err != nil {
-		var ea ErrAddress
-		if errors.As(err, &ea) {
-			return nil, ea
+		if errors.Is(err, netsafe.ErrPrivate) {
+			return nil, ErrAddress{"That address is on a private network. The operator can allow it with AXON_CALENDAR_PRIVATE=1."}
 		}
 		return nil, fmt.Errorf("could not reach the calendar: %w", err)
 	}

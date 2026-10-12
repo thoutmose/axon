@@ -1593,6 +1593,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/clip': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A web page's readable text as Markdown, for a literature note: the article without menus, headers, footers, scripts, or forms; public HTTPS pages only, unless the operator allows private networks */
+		post: operations['clipPage'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -8684,6 +8701,44 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	clipPage: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					url: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The clipped page. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						url: string;
+						title: string;
+						site: string;
+						markdown: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listAreas: {

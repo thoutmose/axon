@@ -1280,6 +1280,25 @@ test('a deleted note can be undone, and restored from the trash', async () => {
 	await expect(page.getByText('To keep', { exact: true })).toHaveCount(0);
 });
 
+test("share to Axon: a shared link becomes a note, or the page's text a literature note", async () => {
+	await page.goto(
+		'/share?title=Spacing&text=' + encodeURIComponent('Worth reading https://example.org/spacing')
+	);
+	await expect(page.getByLabel('Link')).toHaveValue('https://example.org/spacing');
+	await expect(page.getByLabel('Text')).toHaveValue('Worth reading');
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Save as a note' }).click();
+	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+$/);
+	await expect(page.getByRole('link', { name: 'https://example.org/spacing' })).toHaveCount(0); // plain text in the note
+	await expect(page.getByText('https://example.org/spacing')).toBeVisible();
+	// The page's own text: Axon's sign-in page, reached as the API reaches Caddy.
+	await page.goto('/share?url=' + encodeURIComponent('http://caddy:3000/signin'));
+	await page.getByRole('button', { name: "Save the page's text as a literature note" }).click();
+	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1$/);
+	await expect(page.getByLabel('Markdown')).toHaveValue(/## The page/);
+	await expect(page.getByLabel('Markdown')).toHaveValue(/source: "http:\/\/caddy:3000\/signin"/);
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
