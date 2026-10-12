@@ -118,6 +118,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-67 | Share to Axon | The installed app in the phone's share sheet, a "Save to Axon" bookmarklet, and a clipper that keeps a page's readable text as a literature note. Owner request: essential functionality. | SHOULD | 3 pts | EP-55 | Done |
 | EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
 | EP-69 | Clean code and the person's day | Duplicated helpers become one tested module each (time zone and "today", dates, text that reaches the database, editor text changes); the bugs the copies had are fixed; tests written first, including a browser suite run in a far time zone. Owner request: fix, refactor, clean code, TDD, documentation. | MUST | 5 pts | EP-68 | Done |
+| EP-70 | Every foreign key indexed | Twenty foreign keys had no index, so deletes and lookups by them scanned whole tables (every calendar refresh, the recall queue); one migration, and a test that keeps it so. | SHOULD | 1 pt | EP-69 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -154,7 +155,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -1575,6 +1576,14 @@ Cross-cutting matrix:
 **Kept as they are.** The 150 `catch` blocks that show an error toast: a helper would save a line each and hide the error path, against "simple, explicit code".
 
 **Tests.** `clock`, `textx`, `dates`, `markdownEdit`, `spreadEvents`, and encoding unit tests, each written before its code; `TestSignInWithAnyUserAgent` (failed with a 500 before the fix), `TestRegistrationTakesTheBrowsersTimeZone`, `TestAccountBalancesMatchTheModel` (fails when the SQL is broken on purpose), `TestVaultEditsReachHabitsMediaAndWorkouts`, a workout dated tomorrow in `TestHealth…`, Notion pictures in `TestImports`. The e2e suite now runs the browser at UTC+14 or UTC−11, whichever has a different date from UTC's at the time; it found the workout and calendar test bugs.
+
+### EP-70 — Every foreign key indexed
+
+**Goal.** Measured, not guessed: a catalogue query found twenty foreign keys without an index starting with their columns. Deleting a parent row (an erasure, a deleted note or category) or looking up by the key then scans the whole child table, for every user. Two are on hot paths: each calendar refresh deletes its events by `source_id` every 30 minutes, and the recall queue reads each note's latest attempt by `note_id`.
+
+- [x] **EP-70/IS-70.01** · 1 pt · SHOULD — Migration `00046` indexes all twenty; `note_recalls (note_id, recalled_at DESC)` serves the recall queue's lateral lookup without a sort. `TestEveryForeignKeyIsIndexed` fails for any foreign key added later without an index.
+
+**Tests.** `TestEveryForeignKeyIsIndexed` (red with the twenty listed, then green); `TestMigrateUpDown`; `EXPLAIN` of the recall queue and the calendar refresh delete now shows index scans.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
