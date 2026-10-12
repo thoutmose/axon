@@ -1121,6 +1121,76 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/reminders': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** What reminders need: the key browsers subscribe with, whether this Axon can send email, and your devices that receive them */
+		get: operations['getReminderStatus'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/push-subscriptions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Receive reminders on this device: the browser's push subscription (only browser push services are accepted) */
+		post: operations['addPushSubscription'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/push-subscriptions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Stop reminders on one device */
+		delete: operations['deletePushSubscription'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/reminders/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send today's digest now (or a short hello when nothing is due) to your devices and email */
+		post: operations['testReminders'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -4327,6 +4397,15 @@ export interface components {
 				interleave: boolean;
 				type_answer: boolean;
 			};
+			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
+			reminders?: {
+				enabled: boolean;
+				/** @example 08:00 */
+				morning: string;
+				/** @example 20:00 */
+				evening: string;
+				email: string;
+			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
 				/** @description Single-key and g-chord shortcuts; turn off if they get in the way (WCAG 2.1.4). */
@@ -7038,6 +7117,139 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	getReminderStatus: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Reminder status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description VAPID public key (applicationServerKey), base64url. */
+						public_key: string;
+						/** @description true when the instance has a mail server (AXON_SMTP_URL). */
+						email: boolean;
+						devices: {
+							/** Format: uuid */
+							id: string;
+							device: string;
+							/** Format: date-time */
+							created_at: string;
+							/** Format: date-time */
+							last_sent_at: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	addPushSubscription: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					endpoint: string;
+					p256dh: string;
+					auth: string;
+					/** @example Firefox on Linux */
+					device?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Subscribed. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: uuid */
+						id: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deletePushSubscription: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	testReminders: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What was sent, and where. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						message: {
+							title: string;
+							body: string;
+							url: string;
+							tag: string;
+						};
+						devices: number;
+						email: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listAreas: {

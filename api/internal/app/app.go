@@ -35,6 +35,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
+	"github.com/thoutmose/axon/api/internal/reminders"
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/server"
@@ -91,6 +92,10 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	focusAPI := focus.NewHandlers(pool, log)
 	cardsAPI := cards.NewHandlers(pool, log)
 	learningAPI := learning.NewHandlers(pool, log)
+	remindersAPI, err := Reminders(cfg, pool, log)
+	if err != nil {
+		return nil, err
+	}
 	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)
 	priv.Register("streak_freezes", progress.Export)
@@ -139,6 +144,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				focusAPI.Routes(r)
 				cardsAPI.Routes(r)
 				learningAPI.Routes(r)
+				remindersAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)
@@ -151,6 +157,27 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			})
 		})
 	}), nil
+}
+
+// Reminders returns the reminders worker (EP-56); the API serves its
+// endpoints, and the process runs one to send reminders on time.
+func Reminders(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*reminders.Worker, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	mailer, err := reminders.NewMailer(os.Getenv("AXON_SMTP_URL"), os.Getenv("AXON_SMTP_FROM"), cfg.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	contact := os.Getenv("AXON_CONTACT")
+	if contact == "" {
+		contact = cfg.BaseURL
+	}
+	return reminders.NewWorker(pool, log, sealer, mailer, contact), nil
 }
 
 func limitBody(n int64) func(http.Handler) http.Handler {

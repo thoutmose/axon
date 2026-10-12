@@ -46,6 +46,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: reminders
+    description: "Reminders (EP-56): Web Push to your devices and an optional email digest."
   - name: learning
     description: "The learning and memory engine (EP-52): the day's plan, free recall of notes, cards drafted from notes, practice tests, and memory palaces."
   - name: progress
@@ -1723,6 +1725,108 @@ paths:
                         exists: { type: boolean, description: "Already a card made from this note." }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+
+  /v1/me/reminders:
+    get:
+      tags: [reminders]
+      operationId: getReminderStatus
+      summary: "What reminders need: the key browsers subscribe with, whether this Axon can send email, and your devices that receive them"
+      responses:
+        "200":
+          description: Reminder status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [public_key, email, devices]
+                properties:
+                  public_key: { type: string, description: "VAPID public key (applicationServerKey), base64url." }
+                  email: { type: boolean, description: "true when the instance has a mail server (AXON_SMTP_URL)." }
+                  devices:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, device, created_at, last_sent_at]
+                      properties:
+                        id: { type: string, format: uuid }
+                        device: { type: string }
+                        created_at: { type: string, format: date-time }
+                        last_sent_at: { type: [string, "null"], format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/me/push-subscriptions:
+    post:
+      tags: [reminders]
+      operationId: addPushSubscription
+      summary: "Receive reminders on this device: the browser's push subscription (only browser push services are accepted)"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, p256dh, auth]
+              additionalProperties: false
+              properties:
+                endpoint: { type: string, maxLength: 2000 }
+                p256dh: { type: string }
+                auth: { type: string }
+                device: { type: string, maxLength: 100, example: Firefox on Linux }
+      responses:
+        "201":
+          description: Subscribed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id: { type: string, format: uuid }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/push-subscriptions/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [reminders]
+      operationId: deletePushSubscription
+      summary: Stop reminders on one device
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/me/reminders/test:
+    post:
+      tags: [reminders]
+      operationId: testReminders
+      summary: "Send today's digest now (or a short hello when nothing is due) to your devices and email"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: What was sent, and where.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, devices, email]
+                properties:
+                  message:
+                    type: object
+                    required: [title, body, url, tag]
+                    properties:
+                      title: { type: string }
+                      body: { type: string }
+                      url: { type: string }
+                      tag: { type: string }
+                  devices: { type: integer }
+                  email: { type: boolean }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
 
   /v1/areas:
     get:
@@ -6608,6 +6712,16 @@ components:
             retention: { type: number, minimum: 0.7, maximum: 0.97 }
             interleave: { type: boolean }
             type_answer: { type: boolean }
+        reminders:
+          type: object
+          required: [enabled, morning, evening, email]
+          additionalProperties: false
+          description: "Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default."
+          properties:
+            enabled: { type: boolean }
+            morning: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "08:00" }
+            evening: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "20:00" }
+            email: { type: string, maxLength: 254 }
         keyboard:
           type: object
           required: [shortcuts, vim]

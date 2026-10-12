@@ -104,13 +104,18 @@ func serve() error {
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
-	handler, err := app.Handler(version, auth.Config{
+	cfg := auth.Config{
 		BaseURL:          os.Getenv("AXON_BASE_URL"),
 		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
 		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
 		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
 		Demo:             demoEnabled(),
-	}, pool, log, metrics, provider(log))
+	}
+	handler, err := app.Handler(version, cfg, pool, log, metrics, provider(log))
+	if err != nil {
+		return err
+	}
+	reminders, err := app.Reminders(cfg, pool, log)
 	if err != nil {
 		return err
 	}
@@ -119,6 +124,9 @@ func serve() error {
 	}
 	go pruneMedia(ctx, pool, log)
 	go mirror.New(pool, log).Run(ctx)
+	if !demoEnabled() { // the shared demo sends nothing
+		go reminders.Run(ctx)
+	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 

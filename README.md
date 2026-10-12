@@ -83,6 +83,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### 📚 Learning and media
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
 - ✅ A learning and memory engine after *Understanding How We Learn* and *Moonwalking with Einstein*: Learn → Today plans the day (cards due with the minutes they take, notes due for recall, a weekly mixed test, fleeting notes to process, leeches to practise); a few new cards a day and decks mixed (interleaving); write your answer before you see it; every card can carry the why, a concrete example, a vivid memory image, and a picture or an AI drawing (dual coding); free recall of whole notes on a blank page, compared with their key ideas and spaced further each time; memory palaces you walk place by place; cards drafted from what a note marks (`question :: answer`, `==term==`, `**Term**: definition`); and the Teacher writes illustrated cards for your approval.
+- ✅ Reminders: a morning digest (tasks, cards to review with the minutes they take, notes to recall, habits, the weekly test) and an evening nudge (habits still open, with their two-minute version), as notifications on your devices, encrypted end to end, and by email if your server can send it; once a day, only with something to say, off by default.
 - ✅ Installable on phones and desktops; offline, Capture keeps tasks and notes on the device and sends them, once, when you are back online.
 - ✅ A menu in five groups (Do, Think, Grow, Life, Reflect) plus Today, and one Menu sheet on phones.
 - ✅ Agents where you work: every page offers the agents whose skills fit it (Task Manager on Tasks and Today, Goals, Habits, the Teacher on Notes, a note, Learn, and Flashcards, the Tutor and Resources on Roadmaps, Media, the Personal Trainer and Nutritionist on Health, Side-Projects and Code Review on Projects), with ready-made requests and what the page shows sent along; proposals are approved right there.
@@ -370,6 +371,8 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
 | `TMDB_API_KEY` | Optional | secret | Film and series lookups (your own non-commercial TMDB key, v3 key or v4 read token). |
 | `USDA_API_KEY` | Optional | secret | USDA FoodData Central food search (a free data.gov key). |
+| `AXON_SMTP_URL` | Optional | secret | Reminder emails through your mail server: `smtp://user:pass@host:587` or `smtps://user:pass@host:465`. |
+| `AXON_SMTP_FROM` | Optional | value | The sender address of reminder emails. |
 | `AXON_CONTACT` | Optional | `you@example.org` | How Open Library can reach the operator (sent in the User-Agent); defaults to `AXON_BASE_URL`. |
 | `ANKI_SYNC_URL` | Optional | private URL | Suggested anki-sync-server address for the Anki bridge (each person enters their own account). |
 

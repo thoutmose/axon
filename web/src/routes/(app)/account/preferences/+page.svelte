@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { install, promptInstall } from '$lib/install.svelte';
+	import { disablePush, enablePush } from '$lib/reminders';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
@@ -25,7 +26,52 @@
 		gamification: { enabled: boolean };
 		vault: { mirror: boolean; folder: string; health: boolean };
 		learning: { new_per_day: number; retention: number; interleave: boolean; type_answer: boolean };
+		reminders: { enabled: boolean; morning: string; evening: string; email: string };
 	};
+	const remindersDefaults = { enabled: false, morning: '08:00', evening: '20:00', email: '' };
+	type ReminderStatus = {
+		public_key: string;
+		email: boolean;
+		devices: { id: string; device: string; created_at: string; last_sent_at: string | null }[];
+	};
+	let reminderStatus = $state<ReminderStatus | null>(null);
+	async function loadReminders() {
+		reminderStatus = await api<ReminderStatus>('/v1/me/reminders').catch(() => null);
+	}
+	loadReminders();
+	async function pushOn() {
+		try {
+			await enablePush(reminderStatus!.public_key);
+			if (s && !s.reminders.enabled) s.reminders.enabled = true;
+			toast(t('Notifications are on for this device. Save to keep the times.'));
+			await loadReminders();
+		} catch (err) {
+			toast(err instanceof Error ? err.message : message(err), 'error');
+		}
+	}
+	async function pushOff(id: string) {
+		try {
+			await disablePush(id);
+			await loadReminders();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+	async function testReminder() {
+		try {
+			const r = await api<{ devices: number; email: boolean }>('/v1/me/reminders/test', {
+				method: 'POST'
+			});
+			toast(
+				t('Sent to {devices} device(s){email}.', {
+					devices: String(r.devices),
+					email: r.email ? t(' and by email') : ''
+				})
+			);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
 	const learningDefaults = {
 		new_per_day: 20,
 		retention: 0.9,
@@ -58,7 +104,8 @@
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
 				gamification: loaded.gamification ?? { enabled: false },
 				vault: loaded.vault ?? { mirror: true, folder: 'Axon', health: false },
-				learning: loaded.learning ?? learningDefaults
+				learning: loaded.learning ?? learningDefaults,
+				reminders: loaded.reminders ?? remindersDefaults
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -75,7 +122,8 @@
 			focus: (saved.focus as Focus | undefined) ?? focusDefaults,
 			gamification: saved.gamification ?? { enabled: false },
 			vault: saved.vault ?? { mirror: true, folder: 'Axon', health: false },
-			learning: saved.learning ?? learningDefaults
+			learning: saved.learning ?? learningDefaults,
+			reminders: saved.reminders ?? remindersDefaults
 		};
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
@@ -87,7 +135,17 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates, keyboard, focus, gamification, vault, learning } = s;
+			const {
+				language,
+				appearance,
+				templates,
+				keyboard,
+				focus,
+				gamification,
+				vault,
+				learning,
+				reminders
+			} = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
@@ -99,7 +157,8 @@
 						focus,
 						gamification,
 						vault,
-						learning
+						learning,
+						reminders
 					}
 				})
 			);
@@ -209,6 +268,66 @@
 						'Install Axon to open it like an app, even offline to capture a thought: on iPhone or iPad, Safari → Share → Add to Home Screen; in Chrome or Edge, the install icon in the address bar.'
 					)}
 				</p>
+			{/if}
+		</Section>
+
+		<Section id="reminders" title={t('Reminders')}>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.reminders.enabled} />
+				{t('Send me a morning digest and an evening nudge')}</label
+			>
+			<div class="grid">
+				<div class="field">
+					<label for="rem-morning">{t('Morning digest at')}</label>
+					<input id="rem-morning" type="time" bind:value={s.reminders.morning} />
+				</div>
+				<div class="field">
+					<label for="rem-evening">{t('Evening nudge at')}</label>
+					<input id="rem-evening" type="time" bind:value={s.reminders.evening} />
+				</div>
+			</div>
+			<p class="muted small">
+				{t(
+					'The digest says what today holds: tasks, cards to review, notes to recall, habits. The nudge names the habits still open, with their two-minute version. Nothing is sent on days with nothing to say. Clear a time to skip it.'
+				)}
+			</p>
+			{#if reminderStatus}
+				<h3 class="sub">{t('Devices')}</h3>
+				{#if reminderStatus.devices.length}
+					<ul class="devices">
+						{#each reminderStatus.devices as d (d.id)}
+							<li>
+								{d.device || t('A device')}
+								<Button
+									variant="ghost"
+									onclick={() => pushOff(d.id)}
+									aria-label="{t('Stop on')} {d.device}">{t('Stop')}</Button
+								>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+				<div class="row">
+					<Button variant="secondary" onclick={pushOn}>{t('Notify me on this device')}</Button>
+					<Button variant="ghost" onclick={testReminder}>{t('Send a test')}</Button>
+				</div>
+				<p class="muted small">
+					{t(
+						'Notifications are encrypted for your device; your browser’s push service (Google, Mozilla, Apple, or Microsoft) passes them on without being able to read them. On iPhone and iPad, install Axon first.'
+					)}
+				</p>
+				{#if reminderStatus.email}
+					<div class="field">
+						<label for="rem-email">{t('Also by email to')}</label>
+						<input
+							id="rem-email"
+							type="email"
+							maxlength="254"
+							autocomplete="email"
+							bind:value={s.reminders.email}
+						/>
+					</div>
+				{/if}
 			{/if}
 		</Section>
 
@@ -463,6 +582,21 @@
 	}
 	.actions {
 		margin: var(--space-4) 0 var(--space-6);
+	}
+	.sub {
+		font-size: var(--text-base);
+		margin: var(--space-3) 0 var(--space-1);
+	}
+	.devices {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.devices li {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
 	}
 	.row {
 		display: flex;

@@ -32,6 +32,8 @@ services:
       AXON_CONTACT: ${AXON_CONTACT:-} # sent to Open Library and Open Food Facts, as they ask
       TMDB_API_KEY: ${TMDB_API_KEY:-} # film and series lookups (EP-17)
       USDA_API_KEY: ${USDA_API_KEY:-} # USDA FoodData Central search (EP-18)
+      AXON_SMTP_URL: ${AXON_SMTP_URL:-} # reminder emails (EP-56): smtp://user:pass@host:587 or smtps://…:465
+      AXON_SMTP_FROM: ${AXON_SMTP_FROM:-} # the sender address of reminder emails
     depends_on:
       db:
         condition: service_healthy
