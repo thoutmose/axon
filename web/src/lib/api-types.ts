@@ -877,6 +877,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes/zettelkasten-graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * A knowledge graph of your literature and permanent notes, with communities, importance, and bridges
+		 * @description All local. Edge score = 0.45 × TF-IDF cosine + 0.30 × key-phrase overlap weighted by IDF + 0.15 × WordNet synonyms + 0.10 × shared named entities (+0.5 for your own links, always kept), sparsified to each note's strongest neighbours. Communities by Louvain modularity, labelled by class-based TF-IDF; importance by weighted PageRank; bridges by the participation coefficient.
+		 */
+		get: operations['zettelkastenGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/notes/graph': {
 		parameters: {
 			query?: never;
@@ -3268,6 +3288,46 @@ export interface components {
 				similarity: number;
 				reasons: string[];
 			})[];
+		};
+		ZettelGraph: {
+			nodes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				kind: string;
+				community: number;
+				/** @description 0 to 1, relative to the most central note. */
+				pagerank: number;
+				degree: number;
+				bridge: boolean;
+				participation: number;
+				phrases: string[];
+			}[];
+			edges: {
+				/** Format: uuid */
+				from: string;
+				/** Format: uuid */
+				to: string;
+				score: number;
+				kinds: ('link' | 'phrases' | 'synonyms' | 'entities' | 'wording')[];
+				reasons: string[];
+			}[];
+			communities: {
+				id: number;
+				label: string;
+				terms: string[];
+				size: number;
+				core: components['schemas']['NoteBrief'][];
+			}[];
+			stats: {
+				notes: number;
+				edges: number;
+				communities: number;
+				modularity: number;
+				density: number;
+				isolated: number;
+			};
+			truncated: boolean;
 		};
 		KnowledgeGraph: {
 			truncated: boolean;
@@ -6015,6 +6075,33 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	zettelkastenGraph: {
+		parameters: {
+			query?: {
+				/** @description Both kinds when omitted. */
+				kind?: 'literature' | 'permanent';
+				/** @description Minimum score for NLP edges (at least 0.08). */
+				min?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The graph. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ZettelGraph'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	noteKnowledgeGraph: {
