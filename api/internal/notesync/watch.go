@@ -42,13 +42,10 @@ func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Lo
 			if onRun != nil && (rep.Pushed+rep.Pulled+rep.Deleted > 0 || len(rep.Conflicts) > 0) {
 				onRun(rep)
 			}
-			// Our own writes changed both sides: remember the state after them.
-			if lastLocal, err = fingerprint(cfg.Dir); err != nil {
-				lastLocal = ""
-			}
-			if lastRemote, err = c.version(ctx); err != nil {
-				lastRemote = ""
-			}
+			// Remember the state from before the run: a change made on either
+			// side while it ran is then seen next time. Our own writes cost one
+			// extra run that finds nothing to do.
+			lastLocal, lastRemote = local, remote
 		}
 		select {
 		case <-ctx.Done():
