@@ -3,10 +3,16 @@ package app
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/fsrs"
 	"image"
 	"image/png"
+	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -216,5 +222,84 @@ func TestFlashcardCalibration(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/flashcards/calibration", nil), &cal)
 	if cal.Reviews != 2 || cal.Remembered != 0.5 || cal.Predicted <= 0.9 || len(cal.Buckets) != 1 {
 		t.Fatalf("after two predicted reviews = %+v", cal)
+	}
+}
+
+// Reviews from before predictions were kept get them by replaying each
+// card's history through the scheduler: the replay must give exactly what
+// was predicted live. A card whose history is not all here (imported with
+// earlier reviews) is left alone.
+func TestReplayGivesEarlierReviewsTheirPrediction(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	var me struct {
+		ID uuid.UUID `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me", nil), &me)
+	ctx := context.Background()
+	newCard := func(front string) uuid.UUID {
+		var c struct {
+			ID uuid.UUID `json:"id"`
+		}
+		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/flashcards", []byte(`{"front":"`+front+`","back":"x"}`)), &c)
+		return c.ID
+	}
+	full, partial := newCard("Whole history"), newCard("Imported")
+	start := time.Now().Add(-60 * 24 * time.Hour)
+	for _, id := range []uuid.UUID{full, partial} {
+		for _, step := range []struct {
+			after  time.Duration
+			rating fsrs.Rating
+		}{{0, fsrs.Good}, {10 * time.Minute, fsrs.Good}, {3 * 24 * time.Hour, fsrs.Good}, {13 * 24 * time.Hour, fsrs.Again}, {14 * 24 * time.Hour, fsrs.Good}, {30 * 24 * time.Hour, fsrs.Hard}} {
+			if err := pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
+				_, err := cards.Review(ctx, tx, me.ID, id, step.rating, nil, start.Add(step.after))
+				return err
+			}); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	predictions := func(id uuid.UUID) []*float64 {
+		rows, _ := pool.Query(ctx, `SELECT predicted FROM card_reviews WHERE card_id = $1 ORDER BY reviewed_at`, id)
+		out, err := pgx.CollectRows(rows, pgx.RowTo[*float64])
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	live := predictions(full)
+	known := 0
+	for _, p := range live {
+		if p != nil {
+			known++
+		}
+	}
+	if known < 2 {
+		t.Fatalf("the history should have predicted reviews: %v", live)
+	}
+	// As before EP-77: no predictions; the imported card had earlier reviews.
+	if _, err := pool.Exec(ctx, `UPDATE card_reviews SET predicted = NULL`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE cards SET reps = reps + 5 WHERE id = $1`, partial); err != nil {
+		t.Fatal(err)
+	}
+	if err := cards.ReplayPredictions(ctx, pool); err != nil {
+		t.Fatal(err)
+	}
+	got := predictions(full)
+	for i := range live {
+		switch {
+		case (live[i] == nil) != (got[i] == nil):
+			t.Fatalf("review %d: live %v, replayed %v", i, live[i], got[i])
+		case live[i] != nil && math.Abs(*live[i]-*got[i]) > 1e-6:
+			t.Errorf("review %d: live %.6f, replayed %.6f", i, *live[i], *got[i])
+		}
+	}
+	for _, p := range predictions(partial) {
+		if p != nil {
+			t.Fatal("a card without its whole history got predictions")
+		}
 	}
 }
