@@ -362,13 +362,19 @@ func Review(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, rating fsrs.Ra
 	if err != nil {
 		return c, err
 	}
-	next := p.scheduler().Review(c.schedule(), rating, now)
+	s := p.scheduler()
+	next := s.Review(c.schedule(), rating, now)
 	lapse := 0
-	if rating == fsrs.Again && c.State == fsrs.Review {
-		lapse = 1
+	var predicted *float64 // only cards in long-term memory have a meaningful prediction
+	if c.State == fsrs.Review {
+		r := s.Retrievability(c.schedule(), now)
+		predicted = &r
+		if rating == fsrs.Again {
+			lapse = 1
+		}
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO card_reviews (id, card_id, rating, reviewed_at, state, duration_ms) VALUES ($1, $2, $3, $4, $5, $6)`,
-		uuid.Must(uuid.NewV7()), id, rating, now, c.State, duration); err != nil {
+	if _, err := tx.Exec(ctx, `INSERT INTO card_reviews (id, card_id, rating, reviewed_at, state, duration_ms, predicted) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		uuid.Must(uuid.NewV7()), id, rating, now, c.State, duration, predicted); err != nil {
 		return c, err
 	}
 	if _, err := tx.Exec(ctx, `UPDATE cards SET state = $2, step = $3, stability = $4, difficulty = $5, due = $6, last_review = $7,

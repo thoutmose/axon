@@ -2,13 +2,18 @@
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { api, message, type Schemas } from '$lib/api';
+	import type { paths } from '$lib/api-types';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
+	import { verdict } from '$lib/calibration';
 
 	type Plan = Schemas['LearningPlan'];
 	type RecallNote = Schemas['RecallNote'];
+	type Calibration =
+		paths['/v1/flashcards/calibration']['get']['responses']['200']['content']['application/json'];
 	let plan = $state<Plan | null>(null);
+	let cal = $state<Calibration | null>(null);
 	let error = $state('');
 
 	async function load() {
@@ -20,6 +25,9 @@
 		}
 	}
 	load();
+	api<Calibration>('/v1/flashcards/calibration')
+		.then((c) => (cal = c))
+		.catch(() => {});
 
 	const pct = (x: number) => `${Math.round(x * 100)}%`;
 	const nothing = $derived(
@@ -160,6 +168,52 @@
 			>
 		</section>
 	</div>
+
+	{#if cal && cal.reviews > 0}
+		{@const v = verdict(cal)}
+		<section class="card glass" aria-labelledby="measured-title">
+			<h2 id="measured-title">Your memory, measured</h2>
+			<p>
+				Over your last {cal.reviews} reviews of cards you know, Axon predicted you would remember
+				<strong>{pct(cal.predicted)}</strong>; you remembered
+				<strong>{pct(cal.remembered)}</strong>. Your target is {pct(cal.target)}.
+			</p>
+			<p class="small">
+				{#if v === 'few'}
+					It is too early to judge: after 20 reviews, this says whether the schedule fits you.
+				{:else if v === 'below'}
+					Below your target: reviews come a little late for you. Raise the retention in Preferences,
+					or take fewer new cards a day.
+				{:else if v === 'above'}
+					Above your target: you could space reviews further (a lower retention) and spend less time
+					for the same result.
+				{:else}
+					On target: the schedule fits how you remember.
+				{/if}
+			</p>
+			{#if v !== 'few'}
+				<table class="small">
+					<caption class="visually-hidden">Predicted against remembered, by prediction</caption>
+					<thead
+						><tr
+							><th scope="col">Predicted</th><th scope="col">Reviews</th><th scope="col"
+								>Remembered</th
+							></tr
+						></thead
+					>
+					<tbody>
+						{#each cal.buckets as b (b.from)}
+							<tr>
+								<td>{pct(b.from)}–{pct(b.to)}</td>
+								<td>{b.reviews}</td>
+								<td>{pct(b.remembered)}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		</section>
+	{/if}
 
 	<details class="card glass why">
 		<summary>How Axon helps you remember</summary>
