@@ -40,8 +40,12 @@ func TestMain(m *testing.M) {
 	if err := db.Migrate(ctx, dsn, "up", io.Discard); err != nil {
 		panic(err)
 	}
-	var err error
-	if pool, err = pgxpool.New(ctx, dsn); err != nil {
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		panic(err)
+	}
+	cfg.ConnConfig.Tracer = &queries
+	if pool, err = pgxpool.NewWithConfig(ctx, cfg); err != nil {
 		panic(err)
 	}
 	for _, t := range []string{"test_notes", "test_goals"} {

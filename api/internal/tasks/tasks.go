@@ -96,6 +96,22 @@ func Get(ctx context.Context, q db.Querier, userID, id uuid.UUID) (Task, error) 
 	return t, err
 }
 
+// DueBy lists up to limit open tasks scheduled or due by day, overdue first,
+// then by date: what Today shows (someday tasks wait).
+func DueBy(ctx context.Context, q db.Querier, userID uuid.UUID, day time.Time, limit int) ([]Task, error) {
+	rows, err := q.Query(ctx, `SELECT `+columns+` FROM tasks t JOIN entities e ON e.id = t.id
+		WHERE e.user_id = $1 AND t.status NOT IN ('done', 'cancelled', 'someday') AND (t.scheduled_on <= $2 OR t.due_on <= $2)
+		ORDER BY coalesce(t.due_on < $2, false) DESC, coalesce(t.due_on, t.scheduled_on), t.id LIMIT $3`, userID, day, limit)
+	if err != nil {
+		return nil, err
+	}
+	out, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Task, error) { return scan(row) })
+	if out == nil {
+		out = []Task{}
+	}
+	return out, err
+}
+
 // Fields are the editable parts of a task. Nil means "not provided"; for the
 // nullable fields, Clear* removes the value.
 type Fields struct {
