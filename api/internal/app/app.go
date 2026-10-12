@@ -26,6 +26,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/health"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
+	"github.com/thoutmose/axon/api/internal/imports"
 	"github.com/thoutmose/axon/api/internal/insights"
 	"github.com/thoutmose/axon/api/internal/knowledge"
 	"github.com/thoutmose/axon/api/internal/learning"
@@ -98,6 +99,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 		return nil, err
 	}
 	calendarsAPI := calendars.NewStore(pool, log, sealer)
+	importsAPI := imports.NewHandlers(pool, log)
 	priv.Register("calendar_sources", calendars.Export)
 	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)
@@ -121,6 +123,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))
 			notesAPI.Routes(r)
+			importsAPI.Routes(r)
 		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(httpx.MaxBody), authn.SameOrigin)

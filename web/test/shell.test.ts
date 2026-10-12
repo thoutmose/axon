@@ -1021,6 +1021,7 @@ test('reminders: times saved, and a test says when no device can receive it', as
 
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
 	await page.goto('/today');
+	await expect(page.locator('#today-title')).toBeVisible(); // shortcuts work once the page has loaded
 	const add = async (line: string, button: string, toast: string) => {
 		await expect(page.getByRole('dialog', { name: 'Capture' })).toBeHidden();
 		await page.locator('#today-title').click();
@@ -1083,6 +1084,29 @@ test('the weekly review walks from an empty head to next week', async () => {
 	await page.getByRole('button', { name: 'Finish the review' }).click();
 	await expect(page.getByText('Weekly review done. Enjoy the week.')).toBeVisible();
 	await expect(page).toHaveURL(/\/today$/);
+});
+
+test('import from another app: preview, import, and nothing twice', async () => {
+	await page.goto('/account/import');
+	const card = page
+		.getByRole('listitem')
+		.filter({ has: page.getByRole('heading', { name: 'Goodreads' }) });
+	const csv =
+		'Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Average Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf\n' +
+		'9,Ultralearning,Scott Young,,,,,4,4.1,,,,2019,2019,2025/05/01,2025/01/01,,,read\n';
+	await card.getByLabel('Goodreads export').setInputFiles({
+		name: 'goodreads_library_export.csv',
+		mimeType: 'text/csv',
+		buffer: (globalThis as unknown as { Buffer: { from(s: string): never } }).Buffer.from(csv)
+	});
+	await card.getByRole('button', { name: 'Preview' }).click();
+	await expect(card.getByText('Ultralearning')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await card.getByRole('button', { name: 'Import' }).click();
+	await expect(card.getByText(/1\s+added/)).toBeVisible();
+	await card.getByRole('button', { name: 'Preview' }).click();
+	await card.getByRole('button', { name: 'Import' }).click();
+	await expect(card.getByText(/0\s+added, 1 already in Axon/)).toBeVisible();
 });
 
 test('each page offers its own agents, and says when none can run yet', async () => {

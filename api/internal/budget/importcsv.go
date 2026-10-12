@@ -128,11 +128,7 @@ func Import(ctx context.Context, q db.Querier, userID uuid.UUID, spec ImportSpec
 		}
 		r.Comma = d[0]
 	}
-	account := "none"
-	if spec.AccountID != nil {
-		account = spec.AccountID.String()
-	}
-	seen := map[string]int{}
+	var rows []Row
 	for line := 1; ; line++ {
 		rec, err := r.Read()
 		if errors.Is(err, io.EOF) {
@@ -160,15 +156,51 @@ func Import(ctx context.Context, q db.Querier, userID uuid.UUID, spec ImportSpec
 			continue
 		}
 		cents, err := ParseCents(col(&amountCol))
-		if err != nil || cents == 0 || cents > MaxCents || cents < -MaxCents {
+		if err != nil {
 			res.Problems = append(res.Problems, fmt.Sprintf("Line %d: %q is not an amount.", line, col(&amountCol)))
+			continue
+		}
+		rows = append(rows, Row{Line: line, On: day.Format(time.DateOnly), Cents: cents, Payee: col(spec.Payee), Note: col(spec.Note)})
+	}
+	got, err := ImportRows(ctx, q, userID, spec.AccountID, rows)
+	got.Problems = append(res.Problems, got.Problems...)
+	return got, err
+}
+
+// Row is one transaction read from an export; Cents is signed (negative:
+// money out).
+type Row struct {
+	Line        int
+	On          string // YYYY-MM-DD
+	Cents       int64
+	Payee, Note string
+}
+
+// ImportRows records each row once. A row's identity is a hash of the
+// account, date, amount, payee, note, and how many identical rows came
+// before it, so re-importing the same or an overlapping export creates
+// nothing twice. Rules categorise imported rows.
+func ImportRows(ctx context.Context, q db.Querier, userID uuid.UUID, accountID *uuid.UUID, rows []Row) (ImportResult, error) {
+	res := ImportResult{Problems: []string{}}
+	if len(rows) > maxImportRows {
+		return res, ValidationError{fmt.Sprintf("Import at most %d rows at a time.", maxImportRows)}
+	}
+	account := "none"
+	if accountID != nil {
+		account = accountID.String()
+	}
+	seen := map[string]int{}
+	for _, row := range rows {
+		cents := row.Cents
+		if cents == 0 || cents > MaxCents || cents < -MaxCents {
+			res.Problems = append(res.Problems, fmt.Sprintf("Line %d: the amount is zero or too large.", row.Line))
 			continue
 		}
 		kind := "income"
 		if cents < 0 {
 			kind, cents = "expense", -cents
 		}
-		on, payee, note := day.Format(time.DateOnly), col(spec.Payee), col(spec.Note)
+		on, payee, note := row.On, row.Payee, row.Note
 		if len([]rune(payee)) > 200 {
 			payee = string([]rune(payee)[:200])
 		}
@@ -176,7 +208,7 @@ func Import(ctx context.Context, q db.Querier, userID uuid.UUID, spec ImportSpec
 		sum := sha256.Sum256([]byte(key + "\x1f" + strconv.Itoa(seen[key])))
 		seen[key]++
 		hash := hex.EncodeToString(sum[:])
-		f := TransactionFields{OccurredOn: &on, Kind: &kind, AmountCents: &cents, AccountID: spec.AccountID, Payee: &payee, Note: &note}
+		f := TransactionFields{OccurredOn: &on, Kind: &kind, AmountCents: &cents, AccountID: accountID, Payee: &payee, Note: &note}
 		switch _, err := createTransaction(ctx, q, userID, f, nil, &hash); {
 		case err == nil:
 			res.Created++
@@ -185,7 +217,7 @@ func Import(ctx context.Context, q db.Querier, userID uuid.UUID, spec ImportSpec
 		default:
 			var v ValidationError
 			if errors.As(err, &v) {
-				res.Problems = append(res.Problems, fmt.Sprintf("Line %d: %s", line, v.Msg))
+				res.Problems = append(res.Problems, fmt.Sprintf("Line %d: %s", row.Line, v.Msg))
 				continue
 			}
 			return res, err

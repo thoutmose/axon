@@ -8,6 +8,7 @@
 		{ href: '/account/security', label: 'Sign-in & security' },
 		{ href: '/account/tokens', label: 'Access tokens' },
 		{ href: '/account/privacy', label: 'Privacy & data' },
+		{ href: '/account/import', label: 'Import' },
 		{ href: '/account/preferences', label: 'Preferences' },
 		{ href: '/account/activity', label: 'Activity' }
 	];
