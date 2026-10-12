@@ -58,6 +58,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Live sync with your Markdown vault: add, edit, rename, or delete a file and the note follows within seconds, and the other way round; vault templates appear in Axon.
 - ✅ A knowledge explorer (Notes → Explore): filter by PARA, Zettelkasten type, tag, text, date, or unconnected notes; charts of notes over time, by PARA and type, tags, and shared keywords; and a knowledge graph that adds local NLP edges to your links (shared entities, distinctive keywords, English and French synonyms, similar wording), each saying why it exists. No AI provider involved.
 - ✅ Analysis of literature and permanent notes (Notes → Analysis): English and French Snowball stemming, key phrases by TextRank, readability, topics found from similar wording, a concept graph whose links say why (together more than chance by NPMI, or synonyms from Open English WordNet), and on every note its key phrases, topic, and related ideas with reasons. All local.
+- ✅ A Zettelkasten knowledge graph on the Notes page: literature and permanent notes linked by combined evidence (IDF-weighted key phrases, WordNet synonyms, shared names, similar wording, your own links), communities found by Louvain modularity and named by class-based TF-IDF, centrality by PageRank, and bridge notes between communities; select a note to see why it connects.
 
 ### ✅ Action and execution
 - ✅ Tasks with Today, week, and GTD views (inbox, next, waiting, someday), contexts, recurrence, one-key capture, and daily check-ins.
@@ -452,7 +453,7 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 | Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
 
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, and EP-21 done; 1.0 awaits the external security review and an observed install.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, EP-21, and EP-47 done; 1.0 awaits the external security review and an observed install.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contributing
 

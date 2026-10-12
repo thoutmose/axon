@@ -24,6 +24,7 @@ Your day at a glance: overdue and today's tasks, your inbox, active goals, recen
 - **New note** offers templates: fleeting, literature, permanent, project, area, resource, archive, and daily. They live as files in your vault's `Templates/` folder, so edit them there.
 - With **vault sync**, notes stay in step with a Markdown folder (for example Obsidian on your SecondBrain server): add, edit, rename, or delete on either side and it reaches the other.
 - **Explore** filters notes by PARA, type, tag, date, or unconnected notes, charts them, and draws a knowledge graph where every link says why.
+- The **knowledge graph** at the top of Notes connects your literature and permanent notes by what they say, groups them into communities with names, and marks central notes and bridges; select a note to see why it connects.
 - **Analysis** looks at your literature and permanent notes: key phrases, readability, topics, and a concept graph. Each note has an **Analysis** panel with related ideas and why.
 - **Vim mode** for the editor is in **Preferences → Keyboard**.
 
