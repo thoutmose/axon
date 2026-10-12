@@ -989,6 +989,38 @@ test('reminders: times saved, and a test says when no device can receive it', as
 	await noSeriousA11yViolations(page);
 });
 
+test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
+	await page.goto('/today');
+	const add = async (line: string, button: string, toast: string) => {
+		await expect(page.getByRole('dialog', { name: 'Capture' })).toBeHidden();
+		await page.locator('#today-title').click();
+		await page.keyboard.press('n');
+		const dialog = page.getByRole('dialog', { name: 'Capture' });
+		await dialog.getByLabel("What's on your mind?").fill(line);
+		await dialog.getByRole('button', { name: button }).click();
+		await expect(page.getByText(toast)).toBeVisible();
+	};
+	await page.keyboard.press('n');
+	const dialog = page.getByRole('dialog', { name: 'Capture' });
+	await dialog.getByLabel("What's on your mind?").fill('Call the plumber @phone tomorrow');
+	await expect(dialog.getByText('@phone', { exact: true })).toBeVisible();
+	await expect(dialog.getByText(/^due \d{4}-\d{2}-\d{2}$/)).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await dialog.getByRole('button', { name: 'Capture task' }).click();
+	await expect(page.getByText('Captured to your inbox.')).toBeVisible();
+	await add('book: The Art of Learning', 'Add book', 'Added to books to read.');
+	await add('habit: Stretch for two minutes', 'Add habit', 'Habit added.');
+	await add(
+		'card: What is interleaving? :: Mixing topics in practice #Quick',
+		'Add card',
+		'Card added to Quick.'
+	);
+	await page.goto('/media');
+	await expect(page.getByText('The Art of Learning').first()).toBeVisible();
+	await page.goto('/habits');
+	await expect(page.getByText('Stretch for two minutes').first()).toBeVisible();
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
