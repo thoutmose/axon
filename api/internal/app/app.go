@@ -24,6 +24,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/health"
+	"github.com/thoutmose/axon/api/internal/household"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/imports"
@@ -100,6 +101,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	}
 	calendarsAPI := calendars.NewStore(pool, log, sealer)
 	importsAPI := imports.NewHandlers(pool, log)
+	householdAPI := household.NewHandlers(pool, log)
+	priv.Register("household", household.Export)
 	priv.Register("calendar_sources", calendars.Export)
 	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)
@@ -152,6 +155,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				learningAPI.Routes(r)
 				remindersAPI.Routes(r)
 				calendarsAPI.Routes(r)
+				householdAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)

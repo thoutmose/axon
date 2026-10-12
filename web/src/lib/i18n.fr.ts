@@ -334,6 +334,7 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	Household: 'Foyer',
 	Import: 'Importer',
 	'Weekly review': 'Revue hebdomadaire',
 	Reminders: 'Rappels',

@@ -46,6 +46,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: household
+    description: "Household sharing (EP-61): shared lists among people who joined with an invite code; nothing personal is shared."
   - name: imports
     description: "Imports from other apps (EP-60)."
   - name: calendar
@@ -1977,6 +1979,284 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "413": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+
+  /v1/household:
+    get:
+      tags: [household]
+      operationId: getHousehold
+      summary: Your household, its members, and its shared lists (done items stay a week)
+      responses:
+        "200":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [household]
+      operationId: createHousehold
+      summary: Start a household; you are its owner
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        "201":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [household]
+      operationId: renameHousehold
+      summary: Rename the household (any member)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        "200":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/household/me:
+    delete:
+      tags: [household]
+      operationId: leaveHousehold
+      summary: Leave the household; the last one out deletes it, and an owner who leaves hands it to the longest-standing member
+      responses:
+        "204": { description: Left. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/household/invites:
+    post:
+      tags: [household]
+      operationId: inviteToHousehold
+      summary: A one-time invite code, valid for a week and shown only now
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          description: The code.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, expires_at]
+                properties:
+                  code: { type: string, example: ABCD-EFGH-JKLM-NPQR }
+                  expires_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/household/join:
+    post:
+      tags: [household]
+      operationId: joinHousehold
+      summary: Join a household with an invite code; members then see your display name and share its lists
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              additionalProperties: false
+              properties:
+                code: { type: string, maxLength: 40 }
+      responses:
+        "200":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/household/members/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    delete:
+      tags: [household]
+      operationId: removeHouseholdMember
+      summary: Remove a member (the owner only); what they were given to do is unassigned
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/household/lists:
+    post:
+      tags: [household]
+      operationId: createHouseholdList
+      summary: Add a shared list (up to 50)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 100, example: Groceries }
+                kind: { enum: [shopping, chores, other], default: other }
+      responses:
+        "201":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/household/lists/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [household]
+      operationId: renameHouseholdList
+      summary: Rename a list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        "200":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [household]
+      operationId: deleteHouseholdList
+      summary: Delete a list and its items
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/household/lists/{id}/items:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [household]
+      operationId: addHouseholdItem
+      summary: Add an item (up to 500 open per list), optionally due and given to a member
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 300 }
+                due_on: { type: string, description: "YYYY-MM-DD, or empty to clear." }
+                assignee: { type: string, description: "A member's user id, or empty to clear." }
+                done: { type: boolean }
+      responses:
+        "201":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/household/items/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [household]
+      operationId: updateHouseholdItem
+      summary: Change, tick, or untick an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 300 }
+                due_on: { type: string, description: "YYYY-MM-DD, or empty to clear." }
+                assignee: { type: string, description: "A member's user id, or empty to clear." }
+                done: { type: boolean }
+      responses:
+        "200":
+          description: The household, its members, and its lists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Household" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [household]
+      operationId: deleteHouseholdItem
+      summary: Delete an item
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
 
   /v1/areas:
     get:
@@ -5754,6 +6034,47 @@ components:
               display_name: { type: string }
 
   schemas:
+    Household:
+      type: object
+      required: [id, name, members, lists]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        members:
+          type: array
+          items:
+            type: object
+            required: [user_id, name, owner, joined_at]
+            properties:
+              user_id: { type: string, format: uuid }
+              name: { type: string, description: The member's display name. }
+              owner: { type: boolean }
+              joined_at: { type: string, format: date-time }
+        lists:
+          type: array
+          items:
+            type: object
+            required: [id, title, kind, open, items]
+            properties:
+              id: { type: string, format: uuid }
+              title: { type: string }
+              kind: { enum: [shopping, chores, other] }
+              open: { type: integer }
+              items:
+                type: array
+                items:
+                  type: object
+                  required: [id, list_id, title, due_on, assignee, created_by, done_by, done_at, created_at]
+                  properties:
+                    id: { type: string, format: uuid }
+                    list_id: { type: string, format: uuid }
+                    title: { type: string }
+                    due_on: { type: [string, "null"], format: date }
+                    assignee: { type: [string, "null"], format: uuid }
+                    created_by: { type: [string, "null"], format: uuid }
+                    done_by: { type: [string, "null"], format: uuid }
+                    done_at: { type: [string, "null"], format: date-time }
+                    created_at: { type: string, format: date-time }
     CalendarSource:
       type: object
       required: [id, name, color, host, fetched_at, error, events]

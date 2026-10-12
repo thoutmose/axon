@@ -1109,6 +1109,31 @@ test('import from another app: preview, import, and nothing twice', async () => 
 	await expect(card.getByText(/0\s+added, 1 already in Axon/)).toBeVisible();
 });
 
+test('a household: start it, invite with a code, share a list, tick an item, and leave', async () => {
+	await page.goto('/household');
+	await page.getByLabel('Name', { exact: true }).fill('Home');
+	await page.getByRole('button', { name: 'Start', exact: true }).click();
+	await expect(page.getByRole('heading', { level: 2, name: 'Home' })).toBeVisible();
+	await page.getByRole('button', { name: 'Invite someone' }).click();
+	await expect(page.locator('.invite code')).toHaveText(
+		/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/
+	);
+	await page.getByLabel('List', { exact: true }).fill('Groceries');
+	await page.getByRole('button', { name: 'Create' }).click();
+	await page.getByLabel('Add to Groceries').fill('Oat milk');
+	await page.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.getByText('1 to do')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('checkbox', { name: 'Oat milk' }).check();
+	await expect(page.getByText('0 to do')).toBeVisible();
+	await page.getByRole('button', { name: 'Leave the household' }).click();
+	await page
+		.getByRole('dialog', { name: 'Leave the household?' })
+		.getByRole('button', { name: 'Leave' })
+		.click();
+	await expect(page.getByRole('heading', { name: 'Start a household' })).toBeVisible();
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
