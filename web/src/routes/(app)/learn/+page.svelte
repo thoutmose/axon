@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { api, message, type Schemas } from '$lib/api';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -37,6 +39,7 @@
 
 <h1>Learn</h1>
 <LearnTabs />
+<AgentDock {...pageAgents.learn} onapplied={() => load()} />
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />

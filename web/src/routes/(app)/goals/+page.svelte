@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
@@ -113,6 +115,7 @@
 <svelte:head><title>Goals · Axon</title></svelte:head>
 
 <h1>Goals</h1>
+<AgentDock {...pageAgents.goals} onapplied={() => load()} />
 <p class="muted hint">
 	Name an outcome, then connect the milestones, tasks, and notes that move it. Every figure shows
 	how it was worked out.

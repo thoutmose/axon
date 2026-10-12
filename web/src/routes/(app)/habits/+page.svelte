@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import { habitTemplates } from '$lib/entityTemplates';
@@ -115,6 +117,7 @@
 <svelte:head><title>Habits · Axon</title></svelte:head>
 
 <h1>Habits</h1>
+<AgentDock {...pageAgents.habits} onapplied={() => load()} />
 <p class="muted hint">
 	Make it obvious, easy, and satisfying. Missing a day is normal; the next small step is what
 	counts.

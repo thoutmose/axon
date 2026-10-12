@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
@@ -207,6 +209,8 @@
 		</Button>
 	{/if}
 </div>
+
+<AgentDock {...pageAgents.tasks} onapplied={() => load()} />
 <p class="muted hint">Press <kbd>n</kbd> anywhere to capture a thought to your inbox.</p>
 
 <nav aria-label="Task views" class="tabs">

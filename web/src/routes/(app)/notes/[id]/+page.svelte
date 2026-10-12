@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AgentDock from '$lib/AgentDock.svelte';
 	import NoteAnalysis from '$lib/NoteAnalysis.svelte';
 	import { page } from '$app/state';
 	import { beforeNavigate, goto } from '$app/navigation';
@@ -304,6 +305,17 @@
 			<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
 		</div>
 	</div>
+
+	<AgentDock
+		agents={study ? ['teacher', 'resource'] : ['resource']}
+		context="the note “{note.title}” (id {note.id}, type {note.kind}, path {note.path})"
+		suggestions={{
+			teacher: [
+				'Write illustrated flashcards from this note, with the why, an example, and a vivid memory image.'
+			],
+			resource: ['Find good free resources to go deeper on this note.']
+		}}
+	/>
 
 	{#if conflict}
 		<div class="conflict" role="alert">
