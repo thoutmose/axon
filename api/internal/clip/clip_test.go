@@ -1,6 +1,9 @@
 package clip
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -38,5 +41,27 @@ schedule()</pre><form><input name="email"><button>Subscribe</button></form></art
 	}
 	if _, err := Read(`<html><body><script>x()</script></body></html>`, base); err == nil {
 		t.Error("an empty page was clipped")
+	}
+}
+
+// A page in another encoding, said in its header or its <meta>, is read as
+// such, so its accents survive.
+func TestFetchDecodesThePagesEncoding(t *testing.T) {
+	for name, page := range map[string]struct{ ctype, body string }{
+		"header": {"text/html; charset=iso-8859-1", "<html><body><p>Caf\xe9 cr\xe8me</p></body></html>"},
+		"meta":   {"text/html", `<html><head><meta charset="windows-1252"></head><body><p>Caf` + "\xe9 cr\xe8me</p></body></html>"},
+	} {
+		srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", page.ctype)
+			_, _ = w.Write([]byte(page.body))
+		}))
+		old := Client
+		Client = srv.Client()
+		p, err := Fetch(context.Background(), srv.URL)
+		Client = old
+		srv.Close()
+		if err != nil || p.Markdown != "Café crème" {
+			t.Errorf("%s: Fetch = %q, %v; want Café crème", name, p.Markdown, err)
+		}
 	}
 }

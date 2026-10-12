@@ -146,3 +146,25 @@ func TestNotion(t *testing.T) {
 		t.Errorf("picture at %s", files[0].Path)
 	}
 }
+
+// Exports saved by older spreadsheet software are often Windows-1252, not
+// UTF-8; they are read as such, so accents survive (PostgreSQL would refuse
+// the bytes as they are).
+func TestNonUTF8ExportsAreReadAsWindows1252(t *testing.T) {
+	data := []byte("TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE\n" +
+		"task,Caf\xe9 \x80 5 with Zo\xeb,\x93quoted\x94,1,1,,,,en,UTC\n")
+	got, err := Todoist(data)
+	if err != nil || len(got) != 1 {
+		t.Fatalf("Todoist = %+v, %v", got, err)
+	}
+	if got[0].Title != "Café € 5 with Zoë" || got[0].Notes != "“quoted”" {
+		t.Errorf("task = %q / %q", got[0].Title, got[0].Notes)
+	}
+}
+
+func TestUTF8ExportsAreKeptAsTheyAre(t *testing.T) {
+	data := []byte("TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE\ntask,Café 日本,,1,1,,,,en,UTC\n")
+	if got, err := Todoist(data); err != nil || got[0].Title != "Café 日本" {
+		t.Errorf("Todoist = %+v, %v", got, err)
+	}
+}

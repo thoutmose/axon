@@ -2,6 +2,8 @@
 // Picking one only fills in or creates a draft you then edit; nothing is
 // hidden in the template.
 
+import { addDays, daysBetween } from './dates';
+
 export type GoalTemplate = {
 	title: string;
 	outcome: string;
@@ -85,15 +87,7 @@ export const goalTemplates: GoalTemplate[] = [
 
 /** ISO date `share` of the way from `from` to `to` (both YYYY-MM-DD). */
 export function between(from: string, to: string, share: number): string {
-	const a = Date.parse(`${from}T00:00:00Z`);
-	const b = Date.parse(`${to}T00:00:00Z`);
-	return new Date(a + Math.round(((b - a) * share) / 86_400_000) * 86_400_000)
-		.toISOString()
-		.slice(0, 10);
-}
-
-export function addDays(day: string, days: number): string {
-	return new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+	return addDays(from, Math.round(daysBetween(from, to) * share));
 }
 
 /** Milestone sets for an existing goal, spread up to its target date. */

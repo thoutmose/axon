@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
 )
@@ -301,11 +302,8 @@ var views = map[string]view{
 }
 
 func (h *Handlers) today(r *http.Request, userID uuid.UUID) (time.Time, error) {
-	var tz string
-	if err := h.db.QueryRow(r.Context(), `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return time.Time{}, err
-	}
-	return Today(h.now(), tz), nil
+	day, _, err := clock.Today(r.Context(), h.db, userID, h.now())
+	return day, err
 }
 
 func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {

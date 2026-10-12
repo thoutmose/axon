@@ -2917,7 +2917,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Workouts in a date range (the last 30 days by default) and this week's totals */
+		/** Workouts in a date range (by default the last 30 days, and any dated later) and this week's totals */
 		get: operations['listWorkouts'];
 		put?: never;
 		/** Log a workout with its sets */
@@ -5539,6 +5539,8 @@ export interface operations {
 			content: {
 				'application/json': {
 					display_name: components['schemas']['Name'];
+					/** @description The browser's IANA time zone, such as Europe/Paris. The account starts in it; one the server does not know leaves UTC. */
+					timezone?: string;
 				};
 			};
 		};

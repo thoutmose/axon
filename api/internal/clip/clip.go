@@ -7,6 +7,7 @@
 package clip
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -19,6 +20,7 @@ import (
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
+	"golang.org/x/net/html/charset"
 
 	"github.com/thoutmose/axon/api/internal/netsafe"
 )
@@ -74,7 +76,13 @@ func Fetch(ctx context.Context, raw string) (Page, error) {
 	if err != nil {
 		return Page{}, ErrPage{"The page could not be read."}
 	}
-	p, err := Read(string(data), res.Request.URL)
+	// The page's encoding, from its header or its <meta>, read as UTF-8.
+	if dec, err := charset.NewReader(bytes.NewReader(data), res.Header.Get("Content-Type")); err == nil {
+		if utf, err := io.ReadAll(dec); err == nil {
+			data = utf
+		}
+	}
+	p, err := Read(strings.ToValidUTF8(string(data), "\uFFFD"), res.Request.URL)
 	if err != nil {
 		return Page{}, err
 	}

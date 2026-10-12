@@ -1,5 +1,6 @@
 /** Note templates for Zettelkasten, PARA, and a daily note. They only write
  * plain Markdown with front matter, so vault sync stays byte for byte. */
+import { localDate as isoDate } from './dates';
 import { stem } from './notes';
 
 export type Group = 'zettelkasten' | 'para' | 'items' | 'other' | 'vault';
@@ -25,11 +26,6 @@ export function slug(title: string): string {
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
-
-/** Local date as YYYY-MM-DD. */
-function isoDate(d: Date): string {
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 /** Zettelkasten id: local YYYYMMDDHHmm. */
 export function zettelId(d: Date): string {

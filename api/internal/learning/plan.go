@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 )
 
@@ -98,7 +99,7 @@ func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (
 	default:
 		return p, err
 	}
-	loc := zone(ctx, q, userID)
+	loc, _ := clock.Zone(ctx, q, userID) // UTC when it cannot be read
 	rows, err := q.Query(ctx, `SELECT DISTINCT d FROM (
 			SELECT (r.reviewed_at AT TIME ZONE $3)::date AS d FROM card_reviews r JOIN entities e ON e.id = r.card_id WHERE e.user_id = $1 AND r.reviewed_at > $2
 			UNION SELECT (recalled_at AT TIME ZONE $3)::date FROM note_recalls WHERE user_id = $1 AND recalled_at > $2
@@ -111,7 +112,7 @@ func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (
 	if err != nil {
 		return p, err
 	}
-	p.StreakDays = streak(days, day(now, loc))
+	p.StreakDays = streak(days, clock.Day(now, loc))
 	return p, nil
 }
 

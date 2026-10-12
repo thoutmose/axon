@@ -15,6 +15,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/textx"
 )
 
 const (
@@ -65,7 +66,7 @@ func (s *Service) startSessionFor(ctx context.Context, q db.Querier, w http.Resp
 	expires := time.Now().Add(ttl)
 	_, err := q.Exec(ctx,
 		`INSERT INTO sessions (id, user_id, token_hash, user_agent, expires_at) VALUES ($1, $2, $3, $4, $5)`,
-		uuid.Must(uuid.NewV7()), userID, hash, truncate(r.UserAgent(), 300), expires)
+		uuid.Must(uuid.NewV7()), userID, hash, textx.Cut(r.UserAgent(), 300), expires)
 	if err != nil {
 		return err
 	}
@@ -207,11 +208,4 @@ func (s *Service) SameOrigin(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func truncate(s string, n int) string {
-	if len(s) > n {
-		return s[:n]
-	}
-	return s
 }
