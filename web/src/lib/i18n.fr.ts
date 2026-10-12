@@ -222,6 +222,7 @@ export const fr: Record<string, string> = {
 	'No cover found for the {checked} looked up.':
 		'Aucune couverture trouvée pour les {checked} recherchés.',
 	'{n} items have no cover yet.': '{n} éléments n’ont pas encore de couverture.',
+	'One item has no cover yet.': 'Un élément n’a pas encore de couverture.',
 	'Find missing covers': 'Trouver les couvertures manquantes',
 	of: 'sur',
 	minutes: 'minutes',

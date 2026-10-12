@@ -36,11 +36,9 @@ func (c *Catalogs) FindCovers(ctx context.Context, userID uuid.UUID, allow func(
 		if !allow() {
 			break
 		}
-		query := it.Title
-		if it.Kind == "book" && it.Creators != "" {
-			query += " " + it.Creators
-		}
-		cands, err := c.Search(ctx, it.Kind, query)
+		// The title alone: with its author, Open Library often finds nothing;
+		// bestMatch checks the author.
+		cands, err := c.Search(ctx, it.Kind, it.Title)
 		if err != nil {
 			return checked, found, err
 		}
