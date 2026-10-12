@@ -87,7 +87,7 @@ remote '
   set -e
   if [ -f .env ]; then grep "^AXON_VERSION=" .env | cut -d= -f2 > previous-version; fi
   mv .env.next .env
-  docker compose up -d --wait db valkey
+  docker compose up -d --wait db
   docker compose run --rm --no-deps api migrate up
   docker compose run --rm --no-deps api integrity
   docker compose up -d --wait --remove-orphans

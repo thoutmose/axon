@@ -1,4 +1,4 @@
-# Local development stack. Production hardening (TLS, secrets, backups) is EP-01.
+# Local stack; servers add deploy/compose.server.yaml (restart policies, backups, metrics).
 name: axon
 
 services:
@@ -18,9 +18,7 @@ services:
       args:
         VERSION: ${AXON_VERSION:-dev}
     environment:
-      AXON_ENV: ${AXON_ENV:?set AXON_ENV in .env}
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
-      REDIS_URL: ${REDIS_URL:?set REDIS_URL in .env}
       AXON_BASE_URL: ${AXON_BASE_URL:?set AXON_BASE_URL in .env}
       WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:?set WEBAUTHN_RP_ID in .env}
       AXON_ENCRYPTION_KEY: ${AXON_ENCRYPTION_KEY:-}
@@ -31,6 +29,9 @@ services:
       ANTHROPIC_CONFIG_DIR: ${ANTHROPIC_CONFIG_DIR:-}
       AXON_ANKI_BRIDGE_URL: http://anki:8090 # the Anki bridge below (EP-42)
       ANKI_SYNC_URL: ${ANKI_SYNC_URL:-} # suggested anki-sync-server address, e.g. on srv-services
+      AXON_CONTACT: ${AXON_CONTACT:-} # sent to Open Library and Open Food Facts, as they ask
+      TMDB_API_KEY: ${TMDB_API_KEY:-} # film and series lookups (EP-17)
+      USDA_API_KEY: ${USDA_API_KEY:-} # USDA FoodData Central search (EP-18)
     depends_on:
       db:
         condition: service_healthy
@@ -68,9 +69,6 @@ services:
       interval: 2s
       timeout: 3s
       retries: 15
-
-  valkey:
-    image: valkey/valkey:8-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507
 
 volumes:
   pgdata:
