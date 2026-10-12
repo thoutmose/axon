@@ -116,7 +116,49 @@ func (w *Worker) Step(ctx context.Context, now time.Time) error {
 			w.log.Error("reminders for one person failed", "user", p.id, "err", err)
 		}
 	}
+	if err := w.tasks(ctx, now); err != nil && ctx.Err() == nil {
+		w.log.Error("task reminders failed", "err", err)
+	}
 	return ctx.Err()
+}
+
+// tasks sends the reminders set on tasks (EP-68), once each, whether or not
+// the daily reminders are on: the person asked for this one. One that is
+// more than 12 hours late (the server was down) is marked, not sent.
+func (w *Worker) tasks(ctx context.Context, now time.Time) error {
+	rows, err := w.db.Query(ctx, `UPDATE tasks t SET reminded_at = $1 FROM entities e
+		WHERE e.id = t.id AND t.remind_at <= $1 AND t.reminded_at IS NULL
+		RETURNING t.id, e.user_id, e.title, t.remind_at > $2 AND t.status NOT IN ('done', 'cancelled')`, now, now.Add(-12*time.Hour))
+	if err != nil {
+		return err
+	}
+	type due struct {
+		id, user uuid.UUID
+		title    string
+		send     bool
+	}
+	list, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (due, error) {
+		var d due
+		err := r.Scan(&d.id, &d.user, &d.title, &d.send)
+		return d, err
+	})
+	if err != nil {
+		return err
+	}
+	for _, d := range list {
+		if !d.send {
+			continue
+		}
+		doc, err := settings.Get(ctx, w.db, d.user)
+		if err != nil {
+			return err
+		}
+		msg := Message{Title: "Reminder", Body: d.title, URL: "/tasks?open=" + d.id.String(), Tag: "task-" + d.id.String()}
+		if _, err := w.Deliver(ctx, d.user, doc.Reminders.Email, msg); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (w *Worker) person(ctx context.Context, userID uuid.UUID, tz string, now time.Time) error {

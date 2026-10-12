@@ -6594,7 +6594,7 @@ components:
         created_at: { type: string, format: date-time }
     Task:
       type: object
-      required: [id, title, notes, status, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, created_at, updated_at]
+      required: [id, title, notes, status, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, remind_at, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -6607,6 +6607,7 @@ components:
         series_id: { type: [string, "null"], format: uuid }
         occurrence_on: { type: [string, "null"], format: date }
         completed_at: { type: [string, "null"], format: date-time }
+        remind_at: { type: [string, "null"], format: date-time }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     TaskStatus:
@@ -6622,6 +6623,7 @@ components:
         scheduled_on: { type: [string, "null"], format: date }
         due_on: { type: [string, "null"], format: date }
         recurrence: { type: [string, "null"], example: "FREQ=WEEKLY;BYDAY=MO,TH" }
+        remind_at: { type: [string, "null"], format: date-time, description: "A reminder is pushed (and emailed when set up) at this time, once; a new time means a new reminder." }
     Checkin:
       type: object
       required: [kind, day, note, created_at]

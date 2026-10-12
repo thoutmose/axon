@@ -2,6 +2,7 @@
  * Quick add (EP-57): one line in Capture becomes the right thing.
  *
  *   Call the plumber @phone tomorrow        a task, context and due date
+ *   Call the bank friday at 15:00           …and a reminder then ("à 15h" too)
  *   note: idea for the garden #ideas        a fleeting note, tagged
  *   book: Atomic Habits                     a book to read
  *   film: / series:                         a film or series to watch
@@ -23,6 +24,7 @@ export type Parsed = {
 	context?: string; // tasks: "@phone"
 	due?: string; // tasks: due date; goals: target date (YYYY-MM-DD)
 	status?: 'someday';
+	remind?: Date; // tasks: a reminder at this time (EP-68)
 	tags: string[]; // notes: tags; cards: the deck
 	back?: string; // cards: the answer
 };
@@ -128,11 +130,30 @@ export function parse(input: string, today = new Date()): Parsed {
 			out.context = ctx;
 			return pre;
 		});
+		// A time at the end, "at 15:00", "at 3pm", "à 15h30": a reminder.
+		const time = text.match(/\s+(?:at|à)\s+(\d{1,2})(?:[:h](\d{2}))?\s*(am|pm|h)?$/i);
+		let hour: number | undefined,
+			minute = 0;
+		if (time) {
+			hour = Number(time[1]) % 24;
+			minute = Number(time[2] ?? 0);
+			if (time[3]?.toLowerCase() === 'pm' && hour < 12) hour += 12;
+			if (time[3]?.toLowerCase() === 'am' && hour === 12) hour = 0;
+			if (minute > 59) hour = undefined;
+			else text = text.slice(0, time.index).trimEnd();
+		}
 		if (/(^|\s)(someday|un jour)$/i.test(text)) {
 			out.status = 'someday';
 			text = text.replace(/\s*(someday|un jour)$/i, '');
 		}
 		[text, out.due] = takeDate(text.trim(), today);
+		if (hour !== undefined) {
+			const d = out.due ? new Date(`${out.due}T00:00:00`) : new Date(today);
+			d.setHours(hour, minute, 0, 0);
+			// Today's hour already gone, without a day said: the next one.
+			if (!out.due && d.getTime() < today.getTime()) d.setDate(d.getDate() + 1);
+			out.remind = d;
+		}
 	}
 	if (kind === 'goal') {
 		const by = text.match(/\s+(?:by|d'ici|d’ici|avant)\s+(.+)$/i);
@@ -165,6 +186,10 @@ export function describe(p: Parsed): string[] {
 	if (p.context) out.push(p.context);
 	if (p.due) out.push(`${p.kind === 'goal' ? 'by' : 'due'} ${p.due}`);
 	if (p.status) out.push('someday');
+	if (p.remind)
+		out.push(
+			`remind ${p.remind.toLocaleDateString(undefined, { weekday: 'short' })} ${String(p.remind.getHours()).padStart(2, '0')}:${String(p.remind.getMinutes()).padStart(2, '0')}`
+		);
 	if (p.tags.length)
 		out.push(p.kind === 'card' ? `deck ${p.tags[0]}` : p.tags.map((t) => `#${t}`).join(' '));
 	if (p.kind === 'card' && !p.back) out.push('add “ :: answer”');

@@ -199,6 +199,12 @@
 		goto(u, { keepFocus: true, noScroll: true });
 	}
 
+	// A reminder's notification opens its task (EP-68).
+	$effect(() => {
+		const open = page.url.searchParams.get('open');
+		if (open) editing = open;
+	});
+
 	// Bulk actions (EP-64): select tasks, then change them all at once.
 	let selecting = $state(false);
 	let picked = $state<string[]>([]);
@@ -371,6 +377,13 @@
 				<button class="title" onclick={() => (editing = t.id)}>{t.title}</button>
 				<span class="meta">
 					{#if t.recurrence}<span title="Repeats" aria-label="Repeats">↻</span>{/if}
+					{#if t.remind_at && new Date(t.remind_at).getTime() > Date.now()}<span title="Reminder"
+							>🔔 {new Date(t.remind_at).toLocaleString(undefined, {
+								weekday: 'short',
+								hour: '2-digit',
+								minute: '2-digit'
+							})}</span
+						>{/if}
 					{#if t.context}<span class="chip">{t.context}</span>{/if}
 					{#if t.due_on}<span class:overdue={overdue(t, today)}
 							>Due {relativeDay(t.due_on, today)}</span

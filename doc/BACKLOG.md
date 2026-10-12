@@ -116,6 +116,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-65 | Audit 2: fixes | A review of EP-50 to EP-64: vault templates honour the mirror folder, learning days follow the person's time zone, unpacked imports are capped, form controls are styled everywhere, unused exports removed. Owner request. | MUST | 3 pts | EP-64 | Done |
 | EP-66 | Trash and undo | Every deletion goes to a 30-day trash with what was deleted along with it; Undo after each deletion, and Account → Trash to restore or forget. Owner request: essential functionality. | MUST | 5 pts | EP-03 | Done |
 | EP-67 | Share to Axon | The installed app in the phone's share sheet, a "Save to Axon" bookmarklet, and a clipper that keeps a page's readable text as a literature note. Owner request: essential functionality. | SHOULD | 3 pts | EP-55 | Done |
+| EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1550,6 +1551,15 @@ Cross-cutting matrix:
 - [x] Fixed on the way: a capture waiting offline was dropped when another tab was still creating it (the server's "still being processed" answer); it now waits and is sent once.
 
 **Tests.** Clipper unit test (what is kept and left out); `TestClip` (private and non-HTTP addresses refused, a page clipped, a PDF refused); followed calendars still pass on `netsafe`; e2e "share to Axon: a shared link becomes a note, or the page's text a literature note".
+
+### EP-68 — Task reminders at a time
+
+**Goal.** Tasks had days, not times: "remind me at 3 pm" is a to-do list's most basic promise.
+
+- [x] **EP-68/IS-68.01** · 1 pt · SHOULD — `tasks.remind_at` and `reminded_at`: the reminders worker sends "Reminder: <task>" at that time, once, to the person's devices and email, even with the daily reminders off (this one was asked for); a new time means a new reminder; one more than 12 hours late is marked, not sent; a repeating task's next occurrence is reminded at the same time of its day; the notification opens the task.
+- [x] **EP-68/IS-68.02** · 1 pt · SHOULD — "Remind me at" in the task editor; quick add reads "at 15:00", "at 3pm", "à 18h30" (a time already gone today, without a day said, means tomorrow); tasks show 🔔 and the time.
+
+**Tests.** `TestReminders` (a task's reminder sent once with the daily reminders off, a new time reminds again, a two-day-old one is not sent); quick-add unit tests for times; e2e "a task can carry a reminder at a time, set by quick add or in the task".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
