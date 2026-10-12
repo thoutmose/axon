@@ -2,14 +2,18 @@
 WEB_RUN ?= docker run --rm --network host -u $(shell id -u):$(shell id -g) -e HOME=/tmp -v $(CURDIR):/repo -w /repo/web node:24-alpine
 TEST_DB_URL = postgres://axon:local-dev-only@db:5432/axon_test?sslmode=disable
 
-.PHONY: check check-docs check-api check-web test-integration up down
+.PHONY: check check-docs check-scripts check-api check-web test-integration up down
 
 ## check: formatting, linting, and unit tests for API and web
-check: check-docs check-api check-web
+check: check-docs check-scripts check-api check-web
 
 ## check-docs: the French README keeps the English one's structure
 check-docs:
 	@sh scripts/check-readme.sh
+
+## check-scripts: shell scripts pass ShellCheck (warnings and errors)
+check-scripts:
+	docker run --rm -v $(CURDIR):/mnt -w /mnt koalaman/shellcheck:v0.11.0 -S warning $$(git ls-files '*.sh') # no spaces in script names
 
 check-api:
 	@cd api && unformatted="$$(gofmt -l .)" && if [ -n "$$unformatted" ]; then echo "gofmt needed:"; echo "$$unformatted"; exit 1; fi
