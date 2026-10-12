@@ -334,6 +334,26 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	Reminders: 'Rappels',
+	'Send me a morning digest and an evening nudge':
+		'M’envoyer un résumé le matin et un rappel le soir',
+	'Morning digest at': 'Résumé du matin à',
+	'Evening nudge at': 'Rappel du soir à',
+	'The digest says what today holds: tasks, cards to review, notes to recall, habits. The nudge names the habits still open, with their two-minute version. Nothing is sent on days with nothing to say. Clear a time to skip it.':
+		'Le résumé dit ce que contient la journée : tâches, cartes à réviser, notes à se remémorer, habitudes. Le rappel nomme les habitudes encore ouvertes, avec leur version de deux minutes. Rien n’est envoyé les jours sans rien à dire. Videz une heure pour l’ignorer.',
+	Devices: 'Appareils',
+	'A device': 'Un appareil',
+	'Stop on': 'Arrêter sur',
+	Stop: 'Arrêter',
+	'Notify me on this device': 'M’avertir sur cet appareil',
+	'Send a test': 'Envoyer un essai',
+	'Notifications are encrypted for your device; your browser’s push service (Google, Mozilla, Apple, or Microsoft) passes them on without being able to read them. On iPhone and iPad, install Axon first.':
+		'Les notifications sont chiffrées pour votre appareil ; le service de notification de votre navigateur (Google, Mozilla, Apple ou Microsoft) les transmet sans pouvoir les lire. Sur iPhone et iPad, installez d’abord Axon.',
+	'Also by email to': 'Aussi par e-mail à',
+	'Notifications are on for this device. Save to keep the times.':
+		'Les notifications sont activées sur cet appareil. Enregistrez pour garder les heures.',
+	'Sent to {devices} device(s){email}.': 'Envoyé à {devices} appareil(s){email}.',
+	' and by email': ' et par e-mail',
 	App: 'Application',
 	'Axon is installed on this device.': 'Axon est installé sur cet appareil.',
 	'Install Axon on this device': 'Installer Axon sur cet appareil',

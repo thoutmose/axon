@@ -104,6 +104,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-53 | Agents on every page | Each page offers the agents whose skills fit it, with ready-made requests, the page's context, and approvals in place. Owner request. | SHOULD | 5 pts | EP-19, EP-52 | Done |
 | EP-54 | Navigation groups | Eighteen menu links become Today and five groups (Do, Think, Grow, Life, Reflect); one Menu sheet on phones. Owner decision on the EP-49 proposals. | SHOULD | 2 pts | EP-53 | Done |
 | EP-55 | Installable app, offline capture | A web app manifest, icons, and a service worker: Axon installs on phones and desktops, opens offline, and captures made offline are sent once, later. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-54 | Done |
+| EP-56 | Reminders | A morning digest and an evening nudge by Web Push (encrypted end to end) and optional email, at local times, once a day, only with something to say. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-55 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1424,6 +1425,15 @@ Cross-cutting matrix:
 - [x] **EP-55/IS-55.02** · 2 pts · SHOULD — a service worker keeps the app's code and a prerendered offline page; nothing personal is cached (the API always goes to the network). Offline, Capture keeps a task or a fleeting note on the device (localStorage) and the offline page lists what waits; back online, every page sends them in order, once: each carries an Idempotency-Key and tabs take turns (Web Locks), so two tabs cannot create it twice.
 
 **Tests.** e2e "installable, and a capture made offline is kept on the device and sent later" (manifest, service worker, offline capture, offline page, sent once on reconnect).
+
+### EP-56 — Reminders
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: Axon says what today holds without being opened. Decisions in [ADR 0024](adr/0024-web-push-in-house.md).
+
+- [x] **EP-56/IS-56.01** · 3 pts · SHOULD — Web Push with the standard library: RFC 8291 encryption (checked against the RFC's example) and RFC 8292 VAPID signing with an instance key made on first use and sealed when `AXON_ENCRYPTION_KEY` is set; subscriptions only to browser push services; dropped ones forgotten; the service worker shows them and opens the right page.
+- [x] **EP-56/IS-56.02** · 2 pts · SHOULD — the morning digest (tasks and overdue ones, cards with minutes, notes to recall, habits, the weekly test) and the evening nudge (habits still open with their two-minute version, cards still due) at the person's local times, once a day (`reminders_sent`), skipped when more than three hours late or when there is nothing to say; Preferences → Reminders turns them on, sets the times, adds this device, removes devices, sends a test, and an email address when the instance has `AXON_SMTP_URL`/`AXON_SMTP_FROM`. The shared demo sends nothing.
+
+**Tests.** RFC 8291 vector and VAPID token tests; `TestReminders` with a fake TLS push service that decrypts as a browser (off until enabled, once a day at local time, the digest and the nudge, a dropped device forgotten, the endpoint allowlist, ownership, the test button, settings validation); mailer composition and header-injection test; e2e "reminders: times saved, and a test says when no device can receive it".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

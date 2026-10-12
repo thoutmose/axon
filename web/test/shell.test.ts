@@ -970,6 +970,25 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	await expect(page.getByText('Buy batteries while offline')).toBeVisible();
 });
 
+test('reminders: times saved, and a test says when no device can receive it', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Reminders' });
+	await section.getByLabel('Send me a morning digest and an evening nudge').check();
+	await section.getByLabel('Morning digest at').fill('07:30');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
+	await page.reload();
+	await expect(
+		page.getByRole('region', { name: 'Reminders' }).getByLabel('Morning digest at')
+	).toHaveValue('07:30');
+	await page
+		.getByRole('region', { name: 'Reminders' })
+		.getByRole('button', { name: 'Send a test' })
+		.click();
+	await expect(page.getByText('No device or email received it')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

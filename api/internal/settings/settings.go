@@ -9,8 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -89,6 +91,17 @@ type Doc struct {
 	Gamification Gamification `json:"gamification" yaml:"gamification"`
 	Vault        Vault        `json:"vault" yaml:"vault"`
 	Learning     Learning     `json:"learning" yaml:"learning"`
+	Reminders    Reminders    `json:"reminders" yaml:"reminders"`
+}
+
+// Reminders (EP-56): a morning digest and an evening nudge at local times
+// ("08:00"; empty for none), pushed to the devices the person turned them
+// on for, and emailed to Email when set and the instance can send mail.
+type Reminders struct {
+	Enabled bool   `json:"enabled" yaml:"enabled"`
+	Morning string `json:"morning" yaml:"morning"`
+	Evening string `json:"evening" yaml:"evening"`
+	Email   string `json:"email" yaml:"email"`
 }
 
 // Learning tunes the review engine (EP-52); package cards reads the same
@@ -124,10 +137,11 @@ func Defaults() Doc {
 			Project:  ProjectTemplate{DocsFolder: "1-Projects/{slug}"},
 			Resource: ResourceTemplate{Kind: "hard"},
 		},
-		Keyboard: Keyboard{Shortcuts: true},
-		Vault:    Vault{Mirror: true, Folder: "Axon"},
-		Learning: Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
-		Focus:    Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
+		Keyboard:  Keyboard{Shortcuts: true},
+		Vault:     Vault{Mirror: true, Folder: "Axon"},
+		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
+		Reminders: Reminders{Morning: "08:00", Evening: "20:00"},
+		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
 
@@ -195,6 +209,14 @@ func (d Doc) Validate() error {
 	case d.Learning.Retention < 0.7 || d.Learning.Retention > 0.97:
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
+	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening}} {
+		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
+			return FieldError{t.path, "is a time like 08:00, or empty for none"}
+		}
+	}
+	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
+		return FieldError{"reminders.email", "is an email address, or empty"}
+	}
 	if v := d.Vault.Folder; v == "" || len([]rune(v)) > 100 || strings.ContainsAny(v, "/\\") || strings.HasPrefix(v, ".") || strings.Contains(v, "..") {
 		return FieldError{"vault.folder", "is one folder name up to 100 characters, without slashes or a leading dot"}
 	}
@@ -212,6 +234,8 @@ func (d Doc) Validate() error {
 	}
 	return nil
 }
+
+var emailRe = regexp.MustCompile(`^[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+$`)
 
 // Get returns the person's settings, filled with defaults.
 func Get(ctx context.Context, q db.Querier, userID uuid.UUID) (Doc, error) {
