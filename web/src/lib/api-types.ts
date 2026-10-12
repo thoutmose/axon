@@ -5754,6 +5754,8 @@ export interface operations {
 				tag?: string;
 				/** @description Only the note at exactly this path (e.g. a daily note). */
 				path?: string;
+				/** @description false leaves out the notes the vault mirror keeps for tasks, goals, habits, and other items. */
+				mirrored?: 'false';
 				/** @description Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note). */
 				folder?: string;
 				/** @description next_cursor from the previous page (the last path). */

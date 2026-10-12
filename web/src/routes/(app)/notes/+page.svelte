@@ -27,7 +27,7 @@
 
 	async function load(more = false) {
 		error = '';
-		const params = new URLSearchParams({ limit: '100' });
+		const params = new URLSearchParams({ limit: '100', mirrored: 'false' }); // item notes live in the Axon folder
 		if (para !== 'all') params.set('para', para);
 		if (tag) params.set('tag', tag);
 		if (more && cursor) params.set('after', cursor);
