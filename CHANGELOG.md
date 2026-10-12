@@ -2,6 +2,28 @@
 
 All notable changes to Axon. Versions follow [Semantic Versioning](https://semver.org/); the support and deprecation policy is in [doc/support.md](doc/support.md).
 
+## Unreleased (1.1)
+
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #78.
+
+### Added
+
+- **Notes and learning**: a Zettelkasten knowledge graph, every item (tasks, goals, habits, media, health) as a note in the vault both ways with visible templates, diagrams GitHub can display, pictures in notes, and a learning and memory engine (free recall, memory palaces, illustrated flashcards, an automatic day plan) (EP-47, EP-48, EP-50, EP-51, EP-52).
+- **Everyday use**: agents on every page, navigation groups, an installable app with offline capture, reminders by push and email, quick add for anything, task reminders at a time of day, bulk actions and dragging tasks onto the calendar, and a customisable Today (EP-53 to EP-57, EP-63, EP-64, EP-68).
+- **Connections**: follow other calendars (ICS, CalDAV), imports from Todoist, TickTick, Goodreads, Letterboxd, Firefly III, OFX, and Notion, household lists shared with others, search by meaning with a chosen embedding service, and share to Axon from any app or page (EP-58, EP-60, EP-61, EP-62, EP-67).
+- **Safety nets**: a guided weekly review, and a trash: every deletion can be undone for 30 days (EP-59, EP-66).
+
+### Fixed
+
+- New accounts start in the browser's time zone instead of UTC, so "today" is right from the first night (EP-69).
+- Sign-in no longer fails on a user agent that is not valid UTF-8; imports, clipped pages, and calendars in other encodings keep their accents (EP-69).
+- Dates no longer show a day early west of UTC; workouts dated after the account's today stay listed (EP-69).
+- Two audits' fixes: vault templates follow the mirror folder, learning days follow the time zone, imports are size-capped, and legacy code is removed (EP-49, EP-65).
+
+### Changed
+
+- Shared, tested helpers for the person's day, dates, and stored text replace their copies; see "Shared helpers" in [CONTRIBUTING.md](CONTRIBUTING.md) (EP-69).
+
 ## 1.0.0 (release candidate)
 
 The first release meant for someone other than its author to install, operate, upgrade, and recover. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)).
