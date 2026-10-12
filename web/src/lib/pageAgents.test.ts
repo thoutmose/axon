@@ -1,9 +1,10 @@
-import { readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { pageAgents } from './pageAgents';
 
 // The agents a page offers must exist, and every suggestion must belong to one of them.
-const skills = readdirSync(new URL('../../../api/internal/agents/skills', import.meta.url));
+const skills = Object.keys(import.meta.glob('../../../api/internal/agents/skills/*/SKILL.md')).map(
+	(p) => p.split('/').at(-2)
+);
 
 describe('page agents', () => {
 	it('names only agents that exist, and suggests only for them', () => {
