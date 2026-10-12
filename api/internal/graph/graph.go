@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -150,13 +151,24 @@ func UpdateEntity(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor Ac
 }
 
 // DeleteEntity removes the entity; its domain row and links go with it.
+// What it removes goes to the trash first (EP-66).
 func DeleteEntity(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor Actor) error {
-	var typ string
-	err := tx.QueryRow(ctx, `DELETE FROM entities WHERE id = $1 AND user_id = $2 RETURNING type`, id, userID).Scan(&typ)
+	var typ, title string
+	err := tx.QueryRow(ctx, `SELECT type, title FROM entities WHERE id = $1 AND user_id = $2`, id, userID).Scan(&typ, &title)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrNotFound
 	}
 	if err != nil {
+		return err
+	}
+	// The vault mirror deletes an item's note when the item goes, and the
+	// item when its note goes: the person's own deletion is what is trashed.
+	if actor != "vault" {
+		if err := snapshot(ctx, tx, userID, id, typ, title); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM entities WHERE id = $1 AND user_id = $2`, id, userID); err != nil {
 		return err
 	}
 	return recordEvent(ctx, tx, userID, actor, typ, id, "deleted", nil)
@@ -327,26 +339,53 @@ func Timeline(ctx context.Context, q db.Querier, userID, entityID uuid.UUID, bef
 type Hit struct {
 	Entity
 	Rank float32 `json:"rank"`
+	// Snippet is a short excerpt; matched words are wrapped in \x02 … \x03
+	// so clients can highlight them after escaping the text.
+	Snippet string `json:"snippet"`
+}
+
+// SearchOptions narrows a search.
+type SearchOptions struct {
+	Type string // one entity type, or "" for all
 }
 
 // Search finds the user's entities matching a web-style query ("quoted
 // phrases", -exclusions, or). Offset pagination is capped: search is for
 // finding, not for paging through everything.
-func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, offset, limit int) ([]Hit, error) {
+func Search(ctx context.Context, q db.Querier, userID uuid.UUID, query string, offset, limit int, opts ...SearchOptions) ([]Hit, error) {
+	var typ *string
+	if len(opts) > 0 && opts[0].Type != "" {
+		typ = &opts[0].Type
+	}
 	if offset < 0 || offset > 1000 {
 		offset = 0
 	}
+	// Full-text matches rank first; a title containing the text also matches,
+	// so a picker finds "Learn to swim" while the person types "lea".
+	// Queries using operators ("phrase", -word, or) keep exact web-search meaning.
+	var like *string
+	if plain := strings.TrimSpace(query); !strings.ContainsAny(plain, `"`) && !strings.HasPrefix(plain, "-") &&
+		!strings.Contains(plain, " -") && !strings.Contains(strings.ToLower(" "+plain+" "), " or ") {
+		l := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(plain) + "%"
+		like = &l
+	}
 	rows, err := q.Query(ctx, `
-		SELECT id, type, title, created_at, updated_at, ts_rank(search, query) AS rank
-		FROM entities, websearch_to_tsquery('simple', $2) AS query
-		WHERE user_id = $1 AND search @@ query
-		ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4`, userID, query, offset, Page{Limit: limit}.limit())
+		SELECT id, type, title, created_at, updated_at, rank,
+			ts_headline('simple', left(search_text, 20000), query, 'MaxWords=24, MinWords=8, MaxFragments=1, StartSel=' || chr(2) || ', StopSel=' || chr(3))
+		FROM (
+			SELECT e.*, query, ts_rank(search, query) + CASE WHEN $5::text IS NOT NULL AND title ILIKE $5 THEN 0.01 ELSE 0 END AS rank
+			FROM entities e, websearch_to_tsquery('simple', $2) AS query
+			WHERE user_id = $1 AND ($6::text IS NULL OR type = $6) AND (search @@ query OR ($5::text IS NOT NULL AND title ILIKE $5))
+				-- A note the vault mirror keeps for an item would only repeat that item (EP-48).
+				AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = e.id)
+			ORDER BY rank DESC, id DESC OFFSET $3 LIMIT $4
+		) hits ORDER BY rank DESC, id DESC`, userID, query, offset, Page{Limit: limit}.limit(), like, typ)
 	if err != nil {
 		return nil, err
 	}
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (Hit, error) {
 		var h Hit
-		err := row.Scan(&h.ID, &h.Type, &h.Title, &h.CreatedAt, &h.UpdatedAt, &h.Rank)
+		err := row.Scan(&h.ID, &h.Type, &h.Title, &h.CreatedAt, &h.UpdatedAt, &h.Rank, &h.Snippet)
 		return h, err
 	})
 }

@@ -16,6 +16,7 @@ const (
 	AccountCreated      = "account.created"
 	SignInPasskey       = "signin.passkey"
 	SignInRecoveryCode  = "signin.recovery_code"
+	RecoveryFailed      = "signin.recovery_failed"
 	SignOut             = "signout"
 	SessionRevoked      = "session.revoked"
 	SessionsRevokedAll  = "sessions.revoked_all"
@@ -29,6 +30,8 @@ const (
 	AccountUpdated      = "account.updated"
 	TokenCreated        = "token.created"
 	TokenRevoked        = "token.revoked"
+	CalendarFeedCreated = "calendar_feed.created"
+	CalendarFeedRevoked = "calendar_feed.revoked"
 )
 
 // Event is one audit log entry.

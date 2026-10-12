@@ -29,25 +29,26 @@ func (s *Service) Routes(r chi.Router) {
 		r.Post("/v1/auth/login/begin", s.loginBegin)
 		r.Post("/v1/auth/login/finish", s.loginFinish)
 		r.Post("/v1/auth/recovery", s.recoveryLogin)
+		r.Post("/v1/auth/demo", s.demoLogin)
 	})
 	r.Group(func(r chi.Router) {
 		r.Use(s.RequireSession)
 		r.Get("/v1/me", s.me)
 		r.Patch("/v1/me", s.updateMe)
 		r.Get("/v1/me/tokens", s.listTokens)
-		r.Post("/v1/me/tokens", s.createToken)
+		r.With(NotDemo).Post("/v1/me/tokens", s.createToken)
 		r.Delete("/v1/me/tokens/{id}", s.revokeToken)
 		r.Post("/v1/me/logout-all", s.logoutAll)
 		r.Get("/v1/me/sessions", s.listSessions)
 		r.Delete("/v1/me/sessions/{id}", s.revokeSession)
 		r.Get("/v1/me/passkeys", s.listPasskeys)
-		r.Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
-		r.Post("/v1/me/passkeys/finish", s.addPasskeyFinish)
-		r.Delete("/v1/me/passkeys/{id}", s.removePasskey)
-		r.Post("/v1/me/recovery-codes", s.regenerateRecoveryCodes)
-		r.Post("/v1/me/totp/begin", s.totpBegin)
-		r.Post("/v1/me/totp/confirm", s.totpConfirm)
-		r.Post("/v1/me/totp/disable", s.totpDisable)
+		r.With(NotDemo).Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
+		r.With(NotDemo).Post("/v1/me/passkeys/finish", s.addPasskeyFinish)
+		r.With(NotDemo).Delete("/v1/me/passkeys/{id}", s.removePasskey)
+		r.With(NotDemo).Post("/v1/me/recovery-codes", s.regenerateRecoveryCodes)
+		r.With(NotDemo).Post("/v1/me/totp/begin", s.totpBegin)
+		r.With(NotDemo).Post("/v1/me/totp/confirm", s.totpConfirm)
+		r.With(NotDemo).Post("/v1/me/totp/disable", s.totpDisable)
 		r.Get("/v1/me/audit", s.listAudit)
 	})
 }
@@ -71,12 +72,40 @@ func (s *Service) status(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	_, idErr := s.identify(r)
+	id, idErr := s.identify(r)
 	httpx.JSON(w, http.StatusOK, map[string]bool{
 		"registration_open": open,
 		"signed_in":         idErr == nil,
 		"totp_available":    s.sealer != nil,
+		"demo_available":    s.demo,
+		"demo_session":      idErr == nil && id.Demo,
 	})
+}
+
+// demoSession is how long a demo sign-in lasts.
+const demoSession = 12 * time.Hour
+
+// demoLogin signs into the shared demo account, when the server offers one.
+func (s *Service) demoLogin(w http.ResponseWriter, r *http.Request) {
+	if !s.demo {
+		httpx.Problem(w, http.StatusNotFound, "This Axon has no demo account.")
+		return
+	}
+	var id uuid.UUID
+	err := s.db.QueryRow(r.Context(), `SELECT id FROM users WHERE demo`).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		httpx.Problem(w, http.StatusServiceUnavailable, "The demo is being prepared. Try again in a minute.")
+		return
+	}
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if err := s.startSessionFor(r.Context(), s.db, w, r, id, demoSession); err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
@@ -244,6 +273,13 @@ func (s *Service) loginFinish(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Recovery throttling: five wrong authenticator codes for an account lock
+// recovery sign-in for 15 minutes, on top of the per-IP sign-in limit.
+const (
+	recoveryMaxFailures = 5
+	recoveryLock        = 15 * time.Minute
+)
+
 func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Code string `json:"code"`
@@ -254,26 +290,35 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var displayName string
+	var failedUser *uuid.UUID
 	errInvalid := errors.New("invalid recovery attempt")
+	errLocked := errors.New("recovery locked")
 	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
 		var codeID, userID uuid.UUID
 		var sealed []byte
-		var totpOn *time.Time
+		var totpOn, lockedUntil *time.Time
 		err := tx.QueryRow(r.Context(),
-			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at
+			`SELECT c.id, u.id, u.display_name, u.totp_secret, u.totp_enabled_at, u.recovery_locked_until
 			 FROM recovery_codes c JOIN users u ON u.id = c.user_id
 			 WHERE c.code_hash = $1 AND c.used_at IS NULL FOR UPDATE`,
-			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn)
+			hashRecoveryCode(body.Code)).Scan(&codeID, &userID, &displayName, &sealed, &totpOn, &lockedUntil)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errInvalid
 		}
 		if err != nil {
 			return err
 		}
+		if lockedUntil != nil && lockedUntil.After(time.Now()) {
+			return errLocked
+		}
 		if totpOn != nil && !s.useTOTP(r.Context(), tx, userID, sealed, body.TOTP) {
+			failedUser = &userID
 			return errInvalid
 		}
 		if _, err := tx.Exec(r.Context(), `UPDATE recovery_codes SET used_at = now() WHERE id = $1`, codeID); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(r.Context(), `UPDATE users SET recovery_failures = 0, recovery_locked_until = NULL WHERE id = $1`, userID); err != nil {
 			return err
 		}
 		if err := audit.Record(r.Context(), tx, userID, audit.SignInRecoveryCode, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
@@ -281,7 +326,25 @@ func (s *Service) recoveryLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		return s.startSession(r.Context(), tx, w, r, userID)
 	})
+	if failedUser != nil {
+		// Counted outside the rolled-back transaction, so failures add up; at
+		// the limit the lock starts and the count begins again.
+		if uerr := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(r.Context(), `UPDATE users SET
+				recovery_locked_until = CASE WHEN recovery_failures + 1 >= $2 THEN now() + make_interval(secs => $3) ELSE recovery_locked_until END,
+				recovery_failures = CASE WHEN recovery_failures + 1 >= $2 THEN 0 ELSE recovery_failures + 1 END
+				WHERE id = $1`, *failedUser, recoveryMaxFailures, recoveryLock.Seconds()); err != nil {
+				return err
+			}
+			return audit.Record(r.Context(), tx, *failedUser, audit.RecoveryFailed, httpx.ClientIP(r), r.UserAgent(), nil)
+		}); uerr != nil {
+			s.log.Error("recording a failed recovery attempt", "err", uerr)
+		}
+	}
 	switch {
+	case errors.Is(err, errLocked):
+		w.Header().Set("Retry-After", "900")
+		httpx.Problem(w, http.StatusTooManyRequests, "Too many wrong authenticator codes. Recovery sign-in is paused for 15 minutes.")
 	case errors.Is(err, errInvalid):
 		httpx.Problem(w, http.StatusUnauthorized, "That recovery code (or authenticator code) is not valid.")
 	case err != nil:

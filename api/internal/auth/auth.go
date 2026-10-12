@@ -33,6 +33,7 @@ type Config struct {
 	RPID             string // WEBAUTHN_RP_ID
 	EncryptionKey    string // AXON_ENCRYPTION_KEY; TOTP is unavailable without it
 	OpenRegistration bool   // AXON_REGISTRATION=open; otherwise only the first account can register
+	Demo             bool   // AXON_DEMO=1: anyone who can reach Axon may sign into the demo account
 }
 
 // Service holds the auth dependencies.
@@ -44,6 +45,7 @@ type Service struct {
 	origin       string
 	secureCookie bool
 	openReg      bool
+	demo         bool
 	signInLimit  *limiter
 }
 
@@ -69,6 +71,7 @@ func New(cfg Config, pool *pgxpool.Pool, log *slog.Logger) (*Service, error) {
 		origin:       origin,
 		secureCookie: base.Scheme == "https",
 		openReg:      cfg.OpenRegistration,
+		demo:         cfg.Demo,
 		signInLimit:  newLimiter(6*time.Second, 10), // 10 at once, then one every 6 s
 	}
 	if cfg.EncryptionKey != "" {
@@ -122,7 +125,7 @@ func (s *Service) registrationOpen(ctx context.Context, q db.Querier) (bool, err
 		return true, nil
 	}
 	var exists bool
-	err := q.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users)`).Scan(&exists)
+	err := q.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users WHERE NOT demo)`).Scan(&exists)
 	return !exists, err
 }
 

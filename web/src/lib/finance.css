@@ -1,0 +1,85 @@
+/* Shared look of the finance pages; scoped under .finance. */
+.finance .card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	padding: var(--space-4) var(--space-6) var(--space-6);
+	overflow-x: auto;
+	margin-bottom: var(--space-4);
+}
+.finance .card h2 {
+	font-size: var(--text-lg);
+}
+.finance table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.finance th {
+	text-align: left;
+	font-size: var(--text-sm);
+	color: var(--muted);
+	font-weight: 600;
+}
+.finance th,
+.finance td {
+	padding: var(--space-2);
+	border-bottom: 1px solid var(--border);
+	vertical-align: middle;
+}
+.finance .num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.finance .ok {
+	color: var(--ok);
+}
+.finance .bad {
+	color: var(--bad);
+}
+.finance .small {
+	font-size: var(--text-sm);
+}
+.finance .link {
+	font: inherit;
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--accent);
+	cursor: pointer;
+}
+.finance form.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+	gap: var(--space-3);
+	align-items: end;
+}
+.finance .field {
+	display: grid;
+	gap: var(--space-1);
+}
+.finance .field label {
+	font-weight: 600;
+	font-size: var(--text-sm);
+}
+.finance .wide {
+	grid-column: 1 / -1;
+}
+.finance input:not([type='radio']):not([type='checkbox']),
+.finance select,
+.finance textarea {
+	font: inherit;
+	min-height: 2.5rem;
+	padding: var(--space-1) var(--space-3);
+	border-radius: var(--radius);
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--fg);
+	min-width: 0;
+}
+.finance .row {
+	display: flex;
+	gap: var(--space-2);
+	flex-wrap: wrap;
+	align-items: center;
+}

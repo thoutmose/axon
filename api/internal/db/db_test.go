@@ -28,3 +28,10 @@ func TestMigrateRejectsUnknownDirection(t *testing.T) {
 		t.Fatal("want error for unknown direction")
 	}
 }
+
+func TestLatestIsTheNewestMigration(t *testing.T) {
+	v, err := Latest()
+	if err != nil || v < 31 {
+		t.Fatalf("Latest() = %d, %v; want at least 31", v, err)
+	}
+}

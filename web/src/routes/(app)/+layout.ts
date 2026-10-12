@@ -8,7 +8,7 @@ export const ssr = false;
 export const load: LayoutLoad = async ({ url }) => {
 	const status = await api<AuthStatus>('/v1/auth/status');
 	if (!status.signed_in) {
-		redirect(307, `/signin?next=${encodeURIComponent(url.pathname)}`);
+		redirect(307, `/signin?next=${encodeURIComponent(url.pathname + url.search)}`);
 	}
 	return { status };
 };

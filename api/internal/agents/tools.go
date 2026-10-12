@@ -1,0 +1,685 @@
+package agents
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+
+	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/goals"
+	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/roadmaps"
+	"github.com/thoutmose/axon/api/internal/tasks"
+)
+
+// Tool is one capability an agent can be granted. Read tools return data.
+// Write tools never change data when the model calls them: the call becomes
+// a proposal, and Apply runs only after the user approves it.
+type Tool struct {
+	Name        string
+	Description string
+	Properties  map[string]any
+	Required    []string
+	Write       bool
+
+	// Read returns data for the model (read tools).
+	Read func(ctx context.Context, q db.Querier, userID uuid.UUID, in json.RawMessage) (any, error)
+	// Summary describes the change for the approval queue (write tools).
+	Summary func(ctx context.Context, q db.Querier, userID uuid.UUID, in json.RawMessage) (string, error)
+	// Apply makes the change, attributed to the agent (write tools).
+	Apply func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, in json.RawMessage) error
+	// Check validates a write whose Apply reaches outside Axon (a GitHub
+	// comment cannot be rolled back). Such tools must never be dry-run.
+	Check func(ctx context.Context, q db.Querier, userID uuid.UUID, in json.RawMessage) error
+}
+
+// toolError is a problem the model can fix (bad id, invalid field). It goes
+// back to the model as an error result; anything else stops the run.
+type toolError struct{ msg string }
+
+func (e toolError) Error() string { return e.msg }
+
+func toolErrorf(format string, a ...any) error { return toolError{fmt.Sprintf(format, a...)} }
+
+// decode reads a tool input strictly: unknown fields are an error.
+func decode(in json.RawMessage, v any) error {
+	dec := json.NewDecoder(bytes.NewReader(in))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(v); err != nil {
+		return toolErrorf("invalid input: %v", err)
+	}
+	return nil
+}
+
+func parseID(s, what string) (uuid.UUID, error) {
+	id, err := uuid.Parse(s)
+	if err != nil {
+		return id, toolErrorf("%s is not a valid id", what)
+	}
+	return id, nil
+}
+
+func parseDate(s *string, what string) (*time.Time, error) {
+	if s == nil || *s == "" {
+		return nil, nil
+	}
+	t, err := time.Parse(time.DateOnly, *s)
+	if err != nil {
+		return nil, toolErrorf("%s must be a date like 2026-10-12", what)
+	}
+	return &t, nil
+}
+
+// notFound turns "no such row" into something the model can act on.
+func notFound(err error, what string) error {
+	if errors.Is(err, graph.ErrNotFound) {
+		return toolErrorf("no %s with that id", what)
+	}
+	var v tasks.ValidationError
+	if errors.As(err, &v) {
+		return toolError{v.Msg}
+	}
+	var g goals.ValidationError
+	if errors.As(err, &g) {
+		return toolError{g.Msg}
+	}
+	var h habits.ValidationError
+	if errors.As(err, &h) {
+		return toolError{h.Msg}
+	}
+	var rv roadmaps.ValidationError
+	if errors.As(err, &rv) {
+		return toolError{rv.Msg}
+	}
+	return err
+}
+
+var (
+	str     = map[string]any{"type": "string"}
+	date    = map[string]any{"type": "string", "format": "date", "description": "YYYY-MM-DD. Only when the person gave this date."}
+	idField = map[string]any{"type": "string", "description": "An id returned by a list or get tool."}
+	reason  = map[string]any{"type": "string", "description": "One sentence the person can check at a glance."}
+	status  = map[string]any{"type": "string", "enum": []string{"inbox", "next", "doing", "waiting", "someday", "done"}}
+)
+
+type taskRow struct {
+	ID          uuid.UUID   `json:"id"`
+	Title       string      `json:"title"`
+	Status      string      `json:"status"`
+	Context     *string     `json:"context,omitempty"`
+	ScheduledOn *tasks.Date `json:"scheduled_on,omitempty"`
+	DueOn       *tasks.Date `json:"due_on,omitempty"`
+	Notes       string      `json:"notes,omitempty"`
+}
+
+func taskOf(t tasks.Task) taskRow {
+	return taskRow{t.ID, t.Title, t.Status, t.Context, t.ScheduledOn, t.DueOn, t.Notes}
+}
+
+type taskInput struct {
+	ID          string  `json:"id"`
+	Title       *string `json:"title"`
+	Status      *string `json:"status"`
+	Context     *string `json:"context"`
+	ScheduledOn *string `json:"scheduled_on"`
+	DueOn       *string `json:"due_on"`
+	Reason      string  `json:"reason"`
+	// Version is added by Axon when the proposal is made: approval fails if
+	// the task changed in the meantime.
+	Version *time.Time `json:"version,omitempty"`
+}
+
+func (in taskInput) fields() (tasks.Fields, error) {
+	f := tasks.Fields{Title: in.Title, Status: in.Status, Context: in.Context}
+	var err error
+	if f.ScheduledOn, err = parseDate(in.ScheduledOn, "scheduled_on"); err != nil {
+		return f, err
+	}
+	f.DueOn, err = parseDate(in.DueOn, "due_on")
+	return f, err
+}
+
+func changes(in taskInput) string {
+	var parts []string
+	add := func(name string, v *string) {
+		if v != nil {
+			parts = append(parts, fmt.Sprintf("%s → %s", name, *v))
+		}
+	}
+	add("title", in.Title)
+	add("status", in.Status)
+	add("context", in.Context)
+	add("do on", in.ScheduledOn)
+	add("due", in.DueOn)
+	return strings.Join(parts, ", ")
+}
+
+var registry = map[string]Tool{
+	"list_tasks": {
+		Name:        "list_tasks",
+		Description: "List the person's open tasks (up to 50), soonest date first. Optionally filter by status.",
+		Properties: map[string]any{
+			"status": map[string]any{"type": "string", "enum": []string{"inbox", "next", "doing", "waiting", "someday"}},
+			"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 50},
+		},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			var in struct {
+				Status *string `json:"status"`
+				Limit  int     `json:"limit"`
+			}
+			if err := decode(raw, &in); err != nil {
+				return nil, err
+			}
+			if in.Limit <= 0 || in.Limit > 50 {
+				in.Limit = 50
+			}
+			rows, err := q.Query(ctx, `SELECT t.id FROM tasks t JOIN entities e ON e.id = t.id
+				WHERE e.user_id = $1 AND t.status NOT IN ('done', 'cancelled') AND ($2::text IS NULL OR t.status = $2)
+				ORDER BY coalesce(t.due_on, t.scheduled_on, 'infinity'::date), e.created_at LIMIT $3`, userID, in.Status, in.Limit)
+			if err != nil {
+				return nil, err
+			}
+			ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+			if err != nil {
+				return nil, err
+			}
+			out := []taskRow{}
+			for _, id := range ids {
+				t, err := tasks.Get(ctx, q, userID, id)
+				if err != nil {
+					return nil, err
+				}
+				row := taskOf(t)
+				row.Notes = "" // get_task returns notes
+				out = append(out, row)
+			}
+			return out, nil
+		},
+	},
+	"get_task": {
+		Name:        "get_task",
+		Description: "Read one task, including its notes.",
+		Properties:  map[string]any{"id": idField},
+		Required:    []string{"id"},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			var in struct {
+				ID string `json:"id"`
+			}
+			if err := decode(raw, &in); err != nil {
+				return nil, err
+			}
+			id, err := parseID(in.ID, "id")
+			if err != nil {
+				return nil, err
+			}
+			t, err := tasks.Get(ctx, q, userID, id)
+			if err != nil {
+				return nil, notFound(err, "task")
+			}
+			return taskOf(t), nil
+		},
+	},
+	"update_task": {
+		Name:        "update_task",
+		Description: "Propose changes to one task. Nothing changes until the person approves. Include only the fields to change.",
+		Properties: map[string]any{
+			"id": idField, "title": str, "status": status,
+			"context":      map[string]any{"type": "string", "description": "Like @home or @phone."},
+			"scheduled_on": date, "due_on": date, "reason": reason,
+		},
+		Required: []string{"id", "reason"},
+		Write:    true,
+		Summary: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (string, error) {
+			var in taskInput
+			if err := json.Unmarshal(raw, &in); err != nil {
+				return "", err
+			}
+			id, _ := uuid.Parse(in.ID)
+			t, err := tasks.Get(ctx, q, userID, id)
+			if err != nil {
+				return "", notFound(err, "task")
+			}
+			return fmt.Sprintf("Change task “%s”: %s", t.Title, changes(in)), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in taskInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			id, err := parseID(in.ID, "id")
+			if err != nil {
+				return err
+			}
+			f, err := in.fields()
+			if err != nil {
+				return err
+			}
+			if changes(in) == "" {
+				return toolErrorf("include at least one field to change")
+			}
+			cur, err := tasks.Get(ctx, tx, userID, id)
+			if err != nil {
+				return notFound(err, "task")
+			}
+			version := cur.UpdatedAt
+			if in.Version != nil {
+				version = *in.Version
+			}
+			_, err = tasks.Update(ctx, tx, userID, id, actor, version, f)
+			if errors.Is(err, tasks.ErrStale) {
+				return toolErrorf("the task changed after this was proposed")
+			}
+			return notFound(err, "task")
+		},
+	},
+	"create_task": {
+		Name:        "create_task",
+		Description: "Propose a new task. Nothing is created until the person approves.",
+		Properties: map[string]any{
+			"title": str, "status": status,
+			"context":      map[string]any{"type": "string", "description": "Like @home or @phone."},
+			"scheduled_on": date, "due_on": date, "reason": reason,
+		},
+		Required: []string{"title", "reason"},
+		Write:    true,
+		Summary: func(_ context.Context, _ db.Querier, _ uuid.UUID, raw json.RawMessage) (string, error) {
+			var in taskInput
+			if err := json.Unmarshal(raw, &in); err != nil {
+				return "", err
+			}
+			title := ""
+			if in.Title != nil {
+				title = *in.Title
+			}
+			in.Title = nil
+			s := fmt.Sprintf("Create task “%s”", title)
+			if c := changes(in); c != "" {
+				s += ": " + c
+			}
+			return s, nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in taskInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			if in.ID != "" {
+				return toolErrorf("create_task takes no id")
+			}
+			f, err := in.fields()
+			if err != nil {
+				return err
+			}
+			_, err = tasks.Create(ctx, tx, userID, actor, f)
+			return notFound(err, "task")
+		},
+	},
+	"list_goals": {
+		Name:        "list_goals",
+		Description: "List the person's active goals with their milestones and progress.",
+		Properties:  map[string]any{},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			if err := decode(raw, &struct{}{}); err != nil {
+				return nil, err
+			}
+			list, err := goals.List(ctx, q, userID, "active")
+			if err != nil {
+				return nil, err
+			}
+			out := []map[string]any{}
+			for _, g := range list {
+				out = append(out, goalOf(g))
+			}
+			return out, nil
+		},
+	},
+	"get_goal": {
+		Name:        "get_goal",
+		Description: "Read one goal: outcome, measure, milestones, and the tasks linked to it.",
+		Properties:  map[string]any{"id": idField},
+		Required:    []string{"id"},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			var in struct {
+				ID string `json:"id"`
+			}
+			if err := decode(raw, &in); err != nil {
+				return nil, err
+			}
+			id, err := parseID(in.ID, "id")
+			if err != nil {
+				return nil, err
+			}
+			g, err := goals.Get(ctx, q, userID, id)
+			if err != nil {
+				return nil, notFound(err, "goal")
+			}
+			ex, err := goals.Explain(ctx, q, userID, g)
+			if err != nil {
+				return nil, err
+			}
+			out := goalOf(g)
+			out["outcome"] = g.Outcome
+			out["progress_inputs"] = ex.Items
+			return out, nil
+		},
+	},
+	"add_milestone": {
+		Name:        "add_milestone",
+		Description: "Propose a milestone for a goal. Nothing is added until the person approves. Set due_on only if the person gave a date.",
+		Properties:  map[string]any{"goal_id": idField, "title": str, "due_on": date, "reason": reason},
+		Required:    []string{"goal_id", "title", "reason"},
+		Write:       true,
+		Summary: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (string, error) {
+			var in milestoneInput
+			if err := json.Unmarshal(raw, &in); err != nil {
+				return "", err
+			}
+			id, _ := uuid.Parse(in.GoalID)
+			g, err := goals.Get(ctx, q, userID, id)
+			if err != nil {
+				return "", notFound(err, "goal")
+			}
+			s := fmt.Sprintf("Add milestone “%s” to goal “%s”", in.Title, g.Title)
+			if in.DueOn != nil {
+				s += ", due " + *in.DueOn
+			}
+			return s, nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in milestoneInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			id, err := parseID(in.GoalID, "goal_id")
+			if err != nil {
+				return err
+			}
+			due, err := parseDate(in.DueOn, "due_on")
+			if err != nil {
+				return err
+			}
+			_, err = goals.AddMilestone(ctx, tx, userID, id, actor, goals.MilestoneFields{Title: &in.Title, DueOn: due})
+			return notFound(err, "goal")
+		},
+	},
+	"link_task_to_goal": {
+		Name:        "link_task_to_goal",
+		Description: "Propose linking a task to a goal it moves forward. Nothing changes until the person approves.",
+		Properties:  map[string]any{"task_id": idField, "goal_id": idField, "reason": reason},
+		Required:    []string{"task_id", "goal_id", "reason"},
+		Write:       true,
+		Summary: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (string, error) {
+			var in linkInput
+			if err := json.Unmarshal(raw, &in); err != nil {
+				return "", err
+			}
+			tid, _ := uuid.Parse(in.TaskID)
+			gid, _ := uuid.Parse(in.GoalID)
+			t, err := tasks.Get(ctx, q, userID, tid)
+			if err != nil {
+				return "", notFound(err, "task")
+			}
+			g, err := goals.Get(ctx, q, userID, gid)
+			if err != nil {
+				return "", notFound(err, "goal")
+			}
+			return fmt.Sprintf("Link task “%s” to goal “%s”", t.Title, g.Title), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in linkInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			tid, err := parseID(in.TaskID, "task_id")
+			if err != nil {
+				return err
+			}
+			gid, err := parseID(in.GoalID, "goal_id")
+			if err != nil {
+				return err
+			}
+			if _, err := tasks.Get(ctx, tx, userID, tid); err != nil {
+				return notFound(err, "task")
+			}
+			if _, err := goals.Get(ctx, tx, userID, gid); err != nil {
+				return notFound(err, "goal")
+			}
+			_, err = graph.CreateLink(ctx, tx, userID, actor, tid, goals.Supports, gid)
+			if errors.Is(err, graph.ErrDuplicate) {
+				return toolErrorf("that task is already linked to the goal")
+			}
+			return err
+		},
+	},
+	"list_habits": {
+		Name:        "list_habits",
+		Description: "List the person's active habits: cue, stack, two-minute version, schedule (ISO weekdays), and how today stands.",
+		Properties:  map[string]any{},
+		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (any, error) {
+			if err := decode(raw, &struct{}{}); err != nil {
+				return nil, err
+			}
+			return habits.List(ctx, q, userID, "active", time.Now())
+		},
+	},
+	"create_habit": {
+		Name:        "create_habit",
+		Description: "Propose a new habit. Nothing is created until the person approves. title is the action (\"Read one page\").",
+		Properties:  habitProperties(false),
+		Required:    []string{"title", "two_minute", "reason"},
+		Write:       true,
+		Summary: func(_ context.Context, _ db.Querier, _ uuid.UUID, raw json.RawMessage) (string, error) {
+			f, err := habitFields(raw)
+			if err != nil {
+				return "", err
+			}
+			return "Create habit “" + deref(f.Title) + "”" + habitChanges(f, true), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			f, err := habitFields(raw)
+			if err != nil {
+				return err
+			}
+			_, err = habits.Create(ctx, tx, userID, actor, f, time.Now())
+			return notFound(err, "habit")
+		},
+	},
+	"update_habit": {
+		Name:        "update_habit",
+		Description: "Propose changes to a habit's design (cue, stack, two-minute version, reward, schedule). Nothing changes until the person approves.",
+		Properties:  habitProperties(true),
+		Required:    []string{"id", "reason"},
+		Write:       true,
+		Summary: func(ctx context.Context, q db.Querier, userID uuid.UUID, raw json.RawMessage) (string, error) {
+			var in struct {
+				ID string `json:"id"`
+			}
+			_ = json.Unmarshal(raw, &in)
+			id, _ := uuid.Parse(in.ID)
+			h, err := habits.Get(ctx, q, userID, id, time.Now())
+			if err != nil {
+				return "", notFound(err, "habit")
+			}
+			f, err := habitFields(raw)
+			if err != nil {
+				return "", err
+			}
+			return "Change habit “" + h.Title + "”" + habitChanges(f, false), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in struct {
+				ID      string     `json:"id"`
+				Version *time.Time `json:"version"`
+			}
+			_ = json.Unmarshal(raw, &in)
+			id, err := parseID(in.ID, "id")
+			if err != nil {
+				return err
+			}
+			f, err := habitFields(raw)
+			if err != nil {
+				return err
+			}
+			if habitChanges(f, false) == "" {
+				return toolErrorf("include at least one field to change")
+			}
+			cur, err := habits.Get(ctx, tx, userID, id, time.Now())
+			if err != nil {
+				return notFound(err, "habit")
+			}
+			version := cur.UpdatedAt
+			if in.Version != nil {
+				version = *in.Version
+			}
+			_, err = habits.Update(ctx, tx, userID, id, actor, version, f, time.Now())
+			if errors.Is(err, habits.ErrStale) {
+				return toolErrorf("the habit changed after this was proposed")
+			}
+			return notFound(err, "habit")
+		},
+	},
+	"remember": {
+		Name:        "remember",
+		Description: "Propose remembering a stable preference the person stated, for future runs. Needs approval; the person can delete it any time.",
+		Properties:  map[string]any{"fact": map[string]any{"type": "string", "maxLength": 500}, "reason": reason},
+		Required:    []string{"fact"},
+		Write:       true,
+		Summary: func(_ context.Context, _ db.Querier, _ uuid.UUID, raw json.RawMessage) (string, error) {
+			var in memoryInput
+			if err := json.Unmarshal(raw, &in); err != nil {
+				return "", err
+			}
+			return fmt.Sprintf("Remember: “%s”", in.Fact), nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
+			var in memoryInput
+			if err := decode(raw, &in); err != nil {
+				return err
+			}
+			in.Fact = strings.TrimSpace(in.Fact)
+			if in.Fact == "" || len(in.Fact) > 500 {
+				return toolErrorf("a memory is 1 to 500 characters")
+			}
+			_, err := tx.Exec(ctx, `INSERT INTO agent_memories (id, user_id, agent, content) VALUES ($1, $2, $3, $4)`,
+				uuid.Must(uuid.NewV7()), userID, strings.TrimPrefix(string(actor), "agent:"), in.Fact)
+			return err
+		},
+	},
+}
+
+type milestoneInput struct {
+	GoalID string  `json:"goal_id"`
+	Title  string  `json:"title"`
+	DueOn  *string `json:"due_on"`
+	Reason string  `json:"reason"`
+}
+
+type linkInput struct {
+	TaskID string `json:"task_id"`
+	GoalID string `json:"goal_id"`
+	Reason string `json:"reason"`
+}
+
+type memoryInput struct {
+	Fact   string `json:"fact"`
+	Reason string `json:"reason"`
+}
+
+func goalOf(g goals.Goal) map[string]any {
+	ms := []map[string]any{}
+	for _, m := range g.Milestones {
+		ms = append(ms, map[string]any{"id": m.ID, "title": m.Title, "due_on": m.DueOn, "done": m.DoneAt != nil})
+	}
+	return map[string]any{
+		"id": g.ID, "title": g.Title, "target_date": g.TargetDate, "measure": g.Measure,
+		"progress": g.Progress.Summary, "milestones": ms,
+	}
+}
+
+// inputReason extracts the "reason" every write tool carries.
+func inputReason(raw json.RawMessage) string {
+	var in struct {
+		Reason string `json:"reason"`
+	}
+	_ = json.Unmarshal(raw, &in)
+	if len(in.Reason) > 1000 {
+		return in.Reason[:1000]
+	}
+	return in.Reason
+}
+
+func habitProperties(withID bool) map[string]any {
+	p := map[string]any{
+		"title":           map[string]any{"type": "string", "description": "The action, small and specific."},
+		"cue":             map[string]any{"type": "string", "description": "When and where: \"At 7:00 in the kitchen\"."},
+		"craving":         map[string]any{"type": "string", "description": "Why it matters to the person, in their words."},
+		"stack_after":     map[string]any{"type": "string", "description": "An existing habit it follows: \"After I pour my coffee\"."},
+		"two_minute":      map[string]any{"type": "string", "description": "A version that takes two minutes or less."},
+		"reward":          map[string]any{"type": "string", "description": "Something immediately satisfying afterwards."},
+		"days":            map[string]any{"type": "array", "items": map[string]any{"type": "integer", "minimum": 1, "maximum": 7}, "description": "ISO weekdays, 1 = Monday."},
+		"kind":            map[string]any{"type": "string", "enum": []string{"build", "break"}, "description": "build a good habit, or break a bad one (then cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying)."},
+		"identity":        map[string]any{"type": "string", "description": "The identity it votes for: \"I am a person who reads every day\"."},
+		"intention_time":  map[string]any{"type": "string", "description": "Implementation intention time, HH:MM."},
+		"intention_place": map[string]any{"type": "string", "description": "Implementation intention place: \"in the kitchen\"."},
+		"reason":          reason,
+	}
+	if withID {
+		p["id"] = idField
+		delete(p, "title")
+	}
+	return p
+}
+
+// habitFields reads a habit tool input, dropping the agent-only keys.
+func habitFields(raw json.RawMessage) (habits.Fields, error) {
+	var m map[string]json.RawMessage
+	if err := decode(raw, &m); err != nil {
+		return habits.Fields{}, err
+	}
+	for _, k := range []string{"id", "reason", "version"} {
+		delete(m, k)
+	}
+	b, _ := json.Marshal(m)
+	f, err := habits.DecodeFields(b)
+	if err != nil {
+		return f, toolErrorf("invalid habit fields")
+	}
+	return f, nil
+}
+
+func deref(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
+func habitChanges(f habits.Fields, creating bool) string {
+	var parts []string
+	for _, kv := range []struct {
+		name string
+		v    *string
+	}{{"cue", f.Cue}, {"craving", f.Craving}, {"after", f.StackAfter}, {"two-minute version", f.TwoMinute}, {"reward", f.Reward}, {"status", f.Status}} {
+		if kv.v != nil && *kv.v != "" {
+			parts = append(parts, kv.name+": "+*kv.v)
+		}
+	}
+	if !creating && f.Title != nil {
+		parts = append(parts, "title: "+*f.Title)
+	}
+	if f.Days != nil {
+		parts = append(parts, fmt.Sprintf("days: %v", f.Days))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return " (" + strings.Join(parts, "; ") + ")"
+}

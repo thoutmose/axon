@@ -157,6 +157,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/auth/demo': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Sign into the shared demo account (sample data, reset nightly; credentials, tokens, providers, and erasure are refused) */
+		post: operations['demoSignIn'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/auth/logout': {
 		parameters: {
 			query?: never;
@@ -655,6 +672,23 @@ export interface paths {
 		patch: operations['updateTask'];
 		trace?: never;
 	};
+	'/v1/tasks/bulk': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Change or delete up to 200 tasks at once, all or none: status, context, scheduled or due date, recurrence, or notes (titles one at a time) */
+		post: operations['bulkTasks'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/contexts': {
 		parameters: {
 			query?: never;
@@ -709,10 +743,3089 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/notes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Notes ordered by path (without content) */
+		get: operations['listNotes'];
+		put?: never;
+		/** Create a note (in 0-Inbox, named after its title, unless a path is given) */
+		post: operations['createNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One note with its Markdown */
+		get: operations['getNote'];
+		/** Replace a note's Markdown or move it; a rename rewrites [[wikilinks]] to it in other notes */
+		put: operations['updateNote'];
+		post?: never;
+		/** Delete a note and its links (a sync client then deletes the file) */
+		delete: operations['deleteNote'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/tags': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Tags in use (front matter and */
+		get: operations['listNoteTags'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/mentions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Notes that name this note in plain text but do not link to it yet */
+		get: operations['listNoteMentions'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Import a ZIP of Markdown files (up to 50 MB); existing notes are never overwritten
+		 * @description A leading notes/ folder is stripped, so an export archive imports as is. A file whose path holds different content is reported as a conflict and left untouched.
+		 */
+		post: operations['importNotes'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/explore': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Filter notes by PARA, type, tag, text, and date, with statistics for charts and each note's keywords */
+		get: operations['exploreNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/analysis': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Topics and a concept graph of your literature and permanent notes
+		 * @description All local, no AI provider: Snowball stemming (English and French), TextRank key phrases, topics by label propagation over TF-IDF similarity, concepts in at least two notes linked by NPMI or as Open English WordNet synonyms.
+		 */
+		get: operations['analyseNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/analysis': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One note's key phrases, readability, topic, and closest literature and permanent notes with reasons */
+		get: operations['analyseNote'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/zettelkasten-graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * A knowledge graph of your literature and permanent notes, with communities, importance, and bridges
+		 * @description All local. Edge score = 0.45 × TF-IDF cosine + 0.30 × key-phrase overlap weighted by IDF + 0.15 × WordNet synonyms + 0.10 × shared named entities (+0.5 for your own links, always kept), sparsified to each note's strongest neighbours. Communities by Louvain modularity, labelled by class-based TF-IDF; importance by weighted PageRank; bridges by the participation coefficient.
+		 */
+		get: operations['zettelkastenGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * A knowledge graph of the filtered notes, from links and local NLP, where every edge says why
+		 * @description Edges are wikilinks and connections (always kept), then the strongest NLP reason per pair: a shared named entity, shared TF-IDF keywords, thesaurus synonyms, or similar wording (cosine similarity). At most six NLP edges per note. No AI provider is involved.
+		 */
+		get: operations['noteKnowledgeGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/sync/version': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A cheap fingerprint of your notes; it changes on every create, edit, rename, or delete, so a watching sync knows when to run */
+		get: operations['getNotesSyncVersion'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/sync': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Notes changed and deleted since a cursor, oldest first (for sync clients) */
+		get: operations['noteChanges'];
+		put?: never;
+		/** Write a file from the vault, only if Axon still holds the version the client last synced */
+		post: operations['pushNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/sync/delete': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Delete a note removed from the vault, only if Axon still holds the version the client last synced */
+		post: operations['pushNoteDeletion'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/files': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every picture and PDF notes embed, and the paths deleted in the last 30 days (for the editor and the vault sync) */
+		get: operations['listNoteFiles'];
+		put?: never;
+		/** Add a picture or PDF from the editor; it is stored under Attachments/ with a name made unique by its content. PNG and JPEG pictures (up to 20 MB) are scaled to fit 2400 px and re-encoded without metadata; other files are kept as sent (up to 10 MB) */
+		post: operations['uploadNoteFile'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/file': {
+		parameters: {
+			query: {
+				/** @description Vault path, such as Attachments/photo.png. */
+				path: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** One file's bytes; sandboxed so nothing in it can run, and PDFs download */
+		get: operations['getNoteFile'];
+		/** Write a file from the vault sync, byte for byte, only if Axon still holds the version the client last synced */
+		put: operations['pushNoteFile'];
+		post?: never;
+		/** Delete a file; with base_hash (the vault sync), only if Axon still holds that version */
+		delete: operations['deleteNoteFile'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/learning/plan': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Today's plan to learn and remember: cards to review (with minutes, retention, and leeches), notes to recall, whether a weekly practice test is due, fleeting notes to process, and the streak */
+		get: operations['getLearningPlan'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/learning/tests': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record a practice test's result (tests do not change when cards are due) */
+		post: operations['recordPracticeTest'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/palaces': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your memory palaces, by name */
+		get: operations['listPalaces'];
+		put?: never;
+		/** Add a memory palace, a place you know well walked in a fixed order */
+		post: operations['createPalace'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/palaces/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A palace with the cards placed in it, in walking order */
+		get: operations['getPalace'];
+		put?: never;
+		post?: never;
+		/** Delete a palace; its cards are kept, out of any palace */
+		delete: operations['deletePalace'];
+		options?: never;
+		head?: never;
+		/** Rename a palace or change its places; cards at places that no longer exist leave it */
+		patch: operations['updatePalace'];
+		trace?: never;
+	};
+	'/v1/notes/{id}/recall': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Your last 20 free-recall attempts at a note, newest first */
+		get: operations['listNoteRecalls'];
+		put?: never;
+		/** Free recall: send what you remember of a literature or permanent note; see which of its key ideas you recalled, and when to recall it next (expanding intervals) */
+		post: operations['recallNote'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/card-drafts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Cards drafted from the note's own markup (question :: answer, Q:/A:, ==highlights== as clozes, **Term**: definitions); nothing is stored until you add them */
+		get: operations['listCardDrafts'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/reminders': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** What reminders need: the key browsers subscribe with, whether this Axon can send email, and your devices that receive them */
+		get: operations['getReminderStatus'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/push-subscriptions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Receive reminders on this device: the browser's push subscription (only browser push services are accepted) */
+		post: operations['addPushSubscription'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/push-subscriptions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Stop reminders on one device */
+		delete: operations['deletePushSubscription'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/reminders/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send today's digest now (or a short hello when nothing is due) to your devices and email */
+		post: operations['testReminders'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Calendars you follow (Google, CalDAV, Outlook, any ICS address), without their addresses */
+		get: operations['listCalendarSources'];
+		put?: never;
+		/** Follow a calendar by its iCal (ICS) address, read only; it is fetched at once, so a wrong address is said right away, then every 30 minutes */
+		post: operations['addCalendarSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/sources/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Stop following a calendar; its events go too */
+		delete: operations['deleteCalendarSource'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/sources/{id}/refresh': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Fetch a followed calendar now; a failure is kept on it and shown */
+		post: operations['refreshCalendarSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar/events': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Events of the calendars you follow between two dates (at most 92 days), repeating events expanded */
+		get: operations['listCalendarEvents'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/import/{source}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				source: 'todoist' | 'ticktick' | 'goodreads' | 'letterboxd' | 'firefly' | 'ofx' | 'notion';
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import another app's export: Todoist or TickTick tasks (CSV), Goodreads books (CSV), Letterboxd films (ZIP or CSV), Firefly III transactions (CSV), a bank statement (OFX/QFX), or Notion pages (ZIP, Markdown & CSV); importing again creates nothing twice */
+		post: operations['importFrom'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your household, its members, and its shared lists (done items stay a week) */
+		get: operations['getHousehold'];
+		put?: never;
+		/** Start a household; you are its owner */
+		post: operations['createHousehold'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		/** Rename the household (any member) */
+		patch: operations['renameHousehold'];
+		trace?: never;
+	};
+	'/v1/household/me': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Leave the household; the last one out deletes it, and an owner who leaves hands it to the longest-standing member */
+		delete: operations['leaveHousehold'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/invites': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A one-time invite code, valid for a week and shown only now */
+		post: operations['inviteToHousehold'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/join': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Join a household with an invite code; members then see your display name and share its lists */
+		post: operations['joinHousehold'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/members/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a member (the owner only); what they were given to do is unassigned */
+		delete: operations['removeHouseholdMember'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/lists': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add a shared list (up to 50) */
+		post: operations['createHouseholdList'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/lists/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a list and its items */
+		delete: operations['deleteHouseholdList'];
+		options?: never;
+		head?: never;
+		/** Rename a list */
+		patch: operations['renameHouseholdList'];
+		trace?: never;
+	};
+	'/v1/household/lists/{id}/items': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add an item (up to 500 open per list), optionally due and given to a member */
+		post: operations['addHouseholdItem'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/household/items/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete an item */
+		delete: operations['deleteHouseholdItem'];
+		options?: never;
+		head?: never;
+		/** Change, tick, or untick an item */
+		patch: operations['updateHouseholdItem'];
+		trace?: never;
+	};
+	'/v1/me/embeddings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Search by meaning: your embedding service (without its key), your consent, and how many notes are indexed */
+		get: operations['getEmbeddings'];
+		/** Choose the embedding service: a local model server (OpenAI-style /v1/embeddings), OpenAI, or Voyage AI; notes are embedded once the ai_embeddings consent is given */
+		put: operations['setEmbeddings'];
+		post?: never;
+		/** Turn search by meaning off; the service and every stored vector are deleted */
+		delete: operations['deleteEmbeddings'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/semantic': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The ten notes closest in meaning to a question or phrase */
+		get: operations['searchNotesByMeaning'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/notes/{id}/similar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The ten notes closest in meaning to this one */
+		get: operations['similarNotes'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/trash': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Deletions of the last 30 days, newest first: one line per deletion, with what was deleted along with it */
+		get: operations['listTrash'];
+		put?: never;
+		post?: never;
+		/** Empty the trash now */
+		delete: operations['emptyTrash'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/trash/undo': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Put back the latest deletion of an item (what an Undo button sends) */
+		post: operations['undoDelete'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/trash/{id}/restore': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Put back a deletion and what was deleted with it */
+		post: operations['restoreFromTrash'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/trash/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete one deletion for good now */
+		delete: operations['forgetFromTrash'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/clip': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A web page's readable text as Markdown, for a literature note: the article without menus, headers, footers, scripts, or forms; public HTTPS pages only, unless the operator allows private networks */
+		post: operations['clipPage'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/areas': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Areas with a status (default active), by title */
+		get: operations['listAreas'];
+		put?: never;
+		/** Create an area */
+		post: operations['createArea'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/areas/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One area */
+		get: operations['getArea'];
+		put?: never;
+		post?: never;
+		/** Delete an area and its links (what was filed under it stays) */
+		delete: operations['deleteArea'];
+		options?: never;
+		head?: never;
+		/** Change an area; archiving keeps its links */
+		patch: operations['updateArea'];
+		trace?: never;
+	};
+	'/v1/resources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Resources with a status (default active), by title */
+		get: operations['listResources'];
+		put?: never;
+		/** Create a resource */
+		post: operations['createResource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/resources/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One resource */
+		get: operations['getResource'];
+		put?: never;
+		post?: never;
+		/** Delete a resource and its links (what was filed under it stays) */
+		delete: operations['deleteResource'];
+		options?: never;
+		head?: never;
+		/** Change a resource; archiving keeps its links */
+		patch: operations['updateResource'];
+		trace?: never;
+	};
+	'/v1/budget': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** One month of the budget, with income, expenses, and actual against budget per category */
+		get: operations['getBudgetMonth'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/currency': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Choose the currency amounts are shown in (amounts are not converted) */
+		put: operations['setBudgetCurrency'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/categories': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Income and expense categories, archived ones last */
+		get: operations['listBudgetCategories'];
+		put?: never;
+		/** Create a category, optionally with a monthly budget */
+		post: operations['createBudgetCategory'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/categories/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a category; its transactions become uncategorised */
+		delete: operations['deleteBudgetCategory'];
+		options?: never;
+		head?: never;
+		/** Rename, rebudget, or archive a category (its kind is fixed) */
+		patch: operations['updateBudgetCategory'];
+		trace?: never;
+	};
+	'/v1/budget/transactions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A month's transactions, newest first */
+		get: operations['listBudgetTransactions'];
+		put?: never;
+		/** Record income or an expense */
+		post: operations['createBudgetTransaction'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/transactions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a transaction */
+		delete: operations['deleteBudgetTransaction'];
+		options?: never;
+		head?: never;
+		/** Change a transaction */
+		patch: operations['updateBudgetTransaction'];
+		trace?: never;
+	};
+	'/v1/budget/accounts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your accounts */
+		get: operations['listBudgetAccounts'];
+		put?: never;
+		/** Create a account */
+		post: operations['createBudgetAccount'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/accounts/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a account that no transaction uses (archive it otherwise) */
+		delete: operations['deleteBudgetAccount'];
+		options?: never;
+		head?: never;
+		/** Change a account */
+		patch: operations['updateBudgetAccount'];
+		trace?: never;
+	};
+	'/v1/budget/recurring': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your recurring transactions */
+		get: operations['listBudgetRecurrings'];
+		put?: never;
+		/** Create a recurring transaction */
+		post: operations['createBudgetRecurring'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/recurring/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a recurring transaction; its recorded transactions stay */
+		delete: operations['deleteBudgetRecurring'];
+		options?: never;
+		head?: never;
+		/** Change a recurring transaction */
+		patch: operations['updateBudgetRecurring'];
+		trace?: never;
+	};
+	'/v1/budget/recurring/run': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record every due occurrence up to today (also done when the budget is opened); running it twice records nothing twice */
+		post: operations['runBudgetRecurring'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/rules': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your rules */
+		get: operations['listBudgetRules'];
+		put?: never;
+		/** Create a rule */
+		post: operations['createBudgetRule'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/rules/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a rule; transactions it changed stay */
+		delete: operations['deleteBudgetRule'];
+		options?: never;
+		head?: never;
+		/** Change a rule */
+		patch: operations['updateBudgetRule'];
+		trace?: never;
+	};
+	'/v1/budget/rules/apply': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Run the rules over uncategorised transactions; running it twice changes nothing */
+		post: operations['applyBudgetRules'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import a bank's CSV export; rows already imported are skipped, and rules categorise new ones */
+		post: operations['importBudgetCSV'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/pots': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Savings pots (tirelire) with what is saved, their history, and what to put in each month */
+		get: operations['listSavingsPots'];
+		put?: never;
+		/** Start a savings pot for something to buy later */
+		post: operations['createSavingsPot'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a pot and its history */
+		delete: operations['deleteSavingsPot'];
+		options?: never;
+		head?: never;
+		/** Rename, retarget, or archive a pot */
+		patch: operations['updateSavingsPot'];
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}/moves': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Put money in (positive) or take it out (negative); a pot never goes below zero */
+		post: operations['moveSavingsPot'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/pots/{id}/moves/{move}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				move: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove one move from a pot's history */
+		delete: operations['deleteSavingsPotMove'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/budget/report': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Income and expenses per month and per category, account balances, and net worth */
+		get: operations['getBudgetReport'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/goals': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Goals with a status (default active), soonest target date first */
+		get: operations['listGoals'];
+		put?: never;
+		/** Create a goal; dates and measures are only what you send */
+		post: operations['createGoal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/goals/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One goal with milestones and progress */
+		get: operations['getGoal'];
+		put?: never;
+		post?: never;
+		/** Delete a goal, its milestones, and their links (linked tasks and notes stay) */
+		delete: operations['deleteGoal'];
+		options?: never;
+		head?: never;
+		/** Change a goal; archiving keeps its milestones, links, and history */
+		patch: operations['updateGoal'];
+		trace?: never;
+	};
+	'/v1/goals/{id}/progress': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The progress figure and exactly what it was computed from */
+		get: operations['explainGoalProgress'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/goals/{id}/milestones': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add a milestone to a goal */
+		post: operations['addMilestone'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/milestones/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One milestone */
+		get: operations['getMilestone'];
+		put?: never;
+		post?: never;
+		/** Delete a milestone and its links */
+		delete: operations['deleteMilestone'];
+		options?: never;
+		head?: never;
+		/** Rename, reschedule, or complete a milestone */
+		patch: operations['updateMilestone'];
+		trace?: never;
+	};
+	'/v1/dashboard': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Today at a glance; every KPI carries the definition of what it counts */
+		get: operations['getDashboard'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/dashboard/overview': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The command dashboard; KPIs with their definitions and the previous period, daily series, a year of activity, tables, and the skills network */
+		get: operations['getDashboardOverview'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Dated tasks, goal target dates, and milestones in a range (at most 92 days) */
+		get: operations['getCalendar'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/calendar-feeds': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** iCal feeds of this account */
+		get: operations['listCalendarFeeds'];
+		put?: never;
+		/** Create a read-only iCal feed of the chosen types */
+		post: operations['createCalendarFeed'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/calendar-feeds/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Revoke a feed; its URL stops working at once */
+		delete: operations['revokeCalendarFeed'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/calendar-feeds/{token}.ics': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The iCal file (all-day events, titles only, open items from 30 days ago to a year ahead) */
+		get: operations['getCalendarFeed'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agents': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Available agents, their skill versions and tools, and whether you can run them now */
+		get: operations['listAgents'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agents/{name}/runs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Start a run; poll GET /v1/agent-runs/{id} until its status is not running */
+		post: operations['startAgentRun'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-runs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your 50 most recent run records (no prompt or reply text) */
+		get: operations['listAgentRuns'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-runs/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A run record, its proposals, and its reply (kept in memory for an hour, never stored) */
+		get: operations['getAgentRun'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-runs/{id}/continue': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Answer an agent; starts a new run that carries the conversation (held in memory for an hour, never stored) */
+		post: operations['continueAgentRun'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Changes agents proposed, newest first */
+		get: operations['listProposals'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals/{id}/approve': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Apply a pending proposal (browser sessions only) */
+		post: operations['approveProposal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/proposals/{id}/reject': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Reject a pending proposal (browser sessions only) */
+		post: operations['rejectProposal'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-settings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Set the monthly agent budget (browser sessions only) */
+		put: operations['setAgentSettings'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-memories': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** What agents remember about you (only what you approved) */
+		get: operations['listAgentMemories'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/agent-memories/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Make agents forget something (browser sessions only) */
+		delete: operations['deleteAgentMemory'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Habits with a status (default active) and where each stands today */
+		get: operations['listHabits'];
+		put?: never;
+		/** Create a habit (every day unless days are given) */
+		post: operations['createHabit'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/decks': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your flashcard decks with totals, due, and new counts */
+		get: operations['listDecks'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your cards, newest first (up to 1,000), optionally in one deck or only leeches */
+		get: operations['listCards'];
+		put?: never;
+		/** Add a flashcard, due now, optionally linked to the note or skill it comes from */
+		post: operations['createCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/due': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** What to review now: known cards due (oldest first), then new cards up to the day's allowance; across all decks, decks take turns (interleaving) unless turned off. Each card says when it would next be due for every rating. */
+		get: operations['listDueCards'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/practice': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Cards for deliberate practice: leeches first, then the cards closest to being forgotten. Practising them does not change their schedule. */
+		get: operations['listPracticeCards'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/export.apkg': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Download cards as an Anki package (all decks, or one with ?deck=), pictures included; cards arrive in Anki as new */
+		get: operations['exportCardsAPKG'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One card */
+		get: operations['getCard'];
+		put?: never;
+		post?: never;
+		/** Delete a card and its review history */
+		delete: operations['deleteCard'];
+		options?: never;
+		head?: never;
+		/** Change a card's text, deck, suspension, or place in a memory palace (its schedule is kept) */
+		patch: operations['updateCard'];
+		trace?: never;
+	};
+	'/v1/flashcards/{id}/review': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record a review (1 again, 2 hard, 3 good, 4 easy) and reschedule with FSRS-5 */
+		post: operations['reviewCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/flashcards/{id}/image': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A card's picture (PNG) or drawing (sanitised SVG, served sandboxed) */
+		get: operations['getCardImage'];
+		/** Illustrate a card with a PNG or JPEG (up to 10 MB); it is scaled to fit 1200 px and re-encoded without metadata */
+		put: operations['putCardImage'];
+		post?: never;
+		/** Remove a card's picture */
+		delete: operations['deleteCardImage'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/focus-sessions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Focus sessions of the last 7 days, with today's and this week's minutes and the daily streak */
+		get: operations['listFocusSessions'];
+		put?: never;
+		/** Start a focus session, optionally for a task, project, skill, note, or any other item */
+		post: operations['startFocusSession'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/focus-sessions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One focus session */
+		get: operations['getFocusSession'];
+		put?: never;
+		post?: never;
+		/** Delete a focus session */
+		delete: operations['deleteFocusSession'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/focus-sessions/{id}/finish': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** End a running session with the minutes actually worked (breaks left out) */
+		post: operations['finishFocusSession'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Films, series, and books, most recently changed first */
+		get: operations['listMedia'];
+		put?: never;
+		/**
+		 * Add a film, series, or book, by hand or from a catalogue entry
+		 * @description With catalog, the entry's details and cover are fetched and copied to Axon; fields you send win over the catalogue's.
+		 */
+		post: operations['createMedia'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/catalogs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Which catalogues this server can search */
+		get: operations['getMediaCatalogs'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Search Open Library (books) or TMDB (films and series)
+		 * @description Needs the external_metadata consent, since the search text goes to the provider. Results are cached for a week. Each person has 30 lookups a minute.
+		 */
+		get: operations['searchMediaCatalog'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/recommendations': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * What to watch or read next from your own list, each with its reasons
+		 * @description No AI and no catalogue: reasons come from what you rated 8 or more and what you started.
+		 */
+		get: operations['getMediaRecommendations'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/covers/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A cover copied from a catalogue, served by Axon */
+		get: operations['getMediaCover'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/media/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One film, series, or book */
+		get: operations['getMedia'];
+		put?: never;
+		post?: never;
+		/** Delete an item and its links */
+		delete: operations['deleteMedia'];
+		options?: never;
+		head?: never;
+		/**
+		 * Change status, rating, progress, review, or details
+		 * @description Moving to doing or done fills in empty start and finish dates; done sets progress to the total.
+		 */
+		patch: operations['updateMedia'];
+		trace?: never;
+	};
+	'/v1/health/status': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Whether health logging and food lookups are allowed, and which catalogues exist */
+		get: operations['getHealthStatus'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/data': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete every food entry and workout (withdrawing the consent does this too) */
+		delete: operations['deleteHealthData'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/food': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** One day of food: entries, totals, and the seven days ending on it */
+		get: operations['getFoodDay'];
+		put?: never;
+		/** Log something eaten, from a catalogue food and grams or with the numbers typed in */
+		post: operations['addFoodEntry'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/food/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a food entry */
+		delete: operations['deleteFoodEntry'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/foods/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Search Open Food Facts (default) or USDA FoodData Central
+		 * @description Needs the food_lookups consent. Cached for 30 days; 10 lookups a minute per person, and Open Food Facts' own limit of 10 searches a minute for the server.
+		 */
+		get: operations['searchFoods'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/foods/barcode/{code}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				code: string;
+			};
+			cookie?: never;
+		};
+		/** Look a packaged food up in Open Food Facts by barcode */
+		get: operations['getFoodByBarcode'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/workouts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Workouts in a date range (the last 30 days by default) and this week's totals */
+		get: operations['listWorkouts'];
+		put?: never;
+		/** Log a workout with its sets */
+		post: operations['createWorkout'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/workouts/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Replace a workout and its sets */
+		put: operations['replaceWorkout'];
+		post?: never;
+		/** Delete a workout */
+		delete: operations['deleteWorkout'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every metric week by week, with its formula, source, and trend */
+		get: operations['getInsights'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/review': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The weekly review: each metric against the week before, highlights, what was done, and open tasks to carry over */
+		get: operations['getWeeklyReview'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/metrics/{id}/items': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		/** The items behind a metric's number for one week (up to 200) */
+		get: operations['getInsightItems'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/insights/export.csv': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every metric week by week as CSV (52 weeks by default) */
+		get: operations['exportInsightsCSV'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** XP, level, points, the daily streak, and badges — or only enabled false when progress rewards are off */
+		get: operations['getProgress'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/ledger': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** How every point was earned, newest first (up to 500 entries) */
+		get: operations['getProgressLedger'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/rules': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Every way to earn points, and what a freeze costs */
+		get: operations['listProgressRules'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/progress/freezes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Buy a streak freeze with 100 earned points (never with money; up to two in stock) */
+		post: operations['buyStreakFreeze'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits/scorecard': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your habits scorecard — the behaviours of your day, each rated good, neutral, or bad */
+		get: operations['getHabitScorecard'];
+		/** Replace your habits scorecard */
+		put: operations['putHabitScorecard'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One habit and where it stands today */
+		get: operations['getHabit'];
+		put?: never;
+		post?: never;
+		/** Delete a habit, its check-ins, and its links */
+		delete: operations['deleteHabit'];
+		options?: never;
+		head?: never;
+		/** Change a habit's design, schedule, or status */
+		patch: operations['updateHabit'];
+		trace?: never;
+	};
+	'/v1/habits/{id}/checkins': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Check-ins in a range (default the last 28 days), newest first */
+		get: operations['listHabitCheckins'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/habits/{id}/checkins/{day}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Record a day as done, done in its two-minute version, or a planned skip */
+		put: operations['checkInHabit'];
+		post?: never;
+		/** Remove a day's check-in */
+		delete: operations['uncheckHabit'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/avatar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your profile picture (PNG), or the generated default (SVG with your initials) */
+		get: operations['getAvatar'];
+		/** Upload a PNG or JPEG (up to 5 MB); it is cropped square, resized to 256×256, and re-encoded without metadata */
+		put: operations['putAvatar'];
+		post?: never;
+		/** Go back to the generated default picture */
+		delete: operations['deleteAvatar'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/anki': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your Anki sync account (never the password) and how the last sync went */
+		get: operations['getAnkiAccount'];
+		/** Connect your anki-sync-server account; the password is sealed and never returned */
+		put: operations['putAnkiAccount'];
+		post?: never;
+		/** Disconnect your Anki sync account */
+		delete: operations['deleteAnkiAccount'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/anki/sync': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send your flashcards to your Anki account now; notes are updated in place and Anki-only cards are never deleted */
+		post: operations['syncAnki'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/settings': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your preferences (language, appearance, templates) and AI settings; keys are never returned */
+		get: operations['getSettings'];
+		/** Replace your preferences (AI provider and budget have their own endpoints, or use the YAML file) */
+		put: operations['putSettings'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/settings.yaml': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your settings as a commented YAML file; ai.provider.api_key is write-only and never exported */
+		get: operations['getSettingsYAML'];
+		/** Apply a settings YAML file in one transaction; errors name the line */
+		put: operations['putSettingsYAML'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-provider': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your AI provider for agents (keys are never returned) */
+		get: operations['getAgentProvider'];
+		/** Choose the AI provider, model, key, and prices your agents use */
+		put: operations['setAgentProvider'];
+		post?: never;
+		/** Go back to the server default provider */
+		delete: operations['deleteAgentProvider'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-provider/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send one tiny request (no personal data) to check the connection */
+		post: operations['testAgentProvider'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Projects with a status (default active), newest first */
+		get: operations['listProjects'];
+		put?: never;
+		/** Create a project (docs folder 1-Projects/<slug> unless given) */
+		post: operations['createProject'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One project */
+		get: operations['getProject'];
+		put?: never;
+		post?: never;
+		/** Delete a project and its board; its tasks stay */
+		delete: operations['deleteProject'];
+		options?: never;
+		head?: never;
+		/** Change a project (wip_limit null removes the limit) */
+		patch: operations['updateProject'];
+		trace?: never;
+	};
+	'/v1/projects/{id}/board': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The Kanban board; a card whose task is done always shows in Done */
+		get: operations['getBoard'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/docs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Notes in the project's docs folder */
+		get: operations['listProjectDocs'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/cards': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Create a task and put it on the board */
+		post: operations['addCard'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/projects/{id}/cards/{task}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				task: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/**
+		 * Put an existing task on the board, or move, reorder, or re-parent its card
+		 * @description Entering Doing past the WIP limit answers 409 unless over_limit is true. Moving to Done completes the task; moving a done task out reopens it.
+		 */
+		put: operations['placeCard'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/cards/{task}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				task: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Take a task off its board; the task stays */
+		delete: operations['removeCard'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/repos': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Repositories the delivery agents may read (browser sessions only; tokens are never returned) */
+		get: operations['listRepos'];
+		put?: never;
+		/** Connect a GitHub repository (read-only unless comments are allowed) */
+		post: operations['connectRepo'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/repos/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Disconnect a repository */
+		delete: operations['disconnectRepo'];
+		options?: never;
+		head?: never;
+		/** Change a connection's token (empty removes it), comments, or project */
+		patch: operations['updateRepo'];
+		trace?: never;
+	};
+	'/v1/roadmaps': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Roadmaps with progress, newest first */
+		get: operations['listRoadmaps'];
+		put?: never;
+		/** Create a roadmap by hand */
+		post: operations['createRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Curricula and curated library domains that can be imported, with licence and attribution */
+		get: operations['listRoadmapSources'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import the OSSU curriculum or a curated library domain; roadmap.sh content may not be redistributed */
+		post: operations['importRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/assessment/questions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The skills assessment's check questions per library domain (answers are not included) */
+		get: operations['listAssessmentQuestions'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/assessments': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your skills assessments, newest first, to compare over time */
+		get: operations['listAssessments'];
+		put?: never;
+		/** Take the skills assessment; each chosen domain gets an explained level from 0 to 5 */
+		post: operations['createAssessment'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/assessments/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One assessment */
+		get: operations['getAssessment'];
+		put?: never;
+		post?: never;
+		/** Delete an assessment */
+		delete: operations['deleteAssessment'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** A roadmap with its skills and prerequisite edges */
+		get: operations['getRoadmap'];
+		put?: never;
+		post?: never;
+		/** Delete a roadmap, its skills, and their links */
+		delete: operations['deleteRoadmap'];
+		options?: never;
+		head?: never;
+		/** Change a roadmap's title or description */
+		patch: operations['updateRoadmap'];
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}/regroup': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Group an older import (one skill per course or book) into skills with their resources
+		 * @description Progress is combined (done when every part is done, learning once any part is started), connections move to the skill that absorbs them, and skills added by hand are kept. Running it again changes nothing.
+		 */
+		post: operations['regroupRoadmap'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}/skills': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add a skill, optionally with prerequisites on the same roadmap */
+		post: operations['addSkill'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/skills/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Delete a skill and its links */
+		delete: operations['deleteSkill'];
+		options?: never;
+		head?: never;
+		/** Change a skill (prerequisites are links with relation requires) */
+		patch: operations['updateSkill'];
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		EmbeddingStatus: {
+			settings: {
+				/** @enum {unknown} */
+				provider: 'local' | 'openai' | 'voyage';
+				base_url: string | null;
+				model: string;
+				has_key: boolean;
+				/** @description Why the last indexing failed; empty when it worked. */
+				error: string;
+			} | null;
+			/** @description The ai_embeddings consent. */
+			consent: boolean;
+			indexed: number;
+			notes: number;
+		};
+		Household: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			members: {
+				/** Format: uuid */
+				user_id: string;
+				/** @description The member's display name. */
+				name: string;
+				owner: boolean;
+				/** Format: date-time */
+				joined_at: string;
+			}[];
+			lists: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				/** @enum {unknown} */
+				kind: 'shopping' | 'chores' | 'other';
+				open: number;
+				items: {
+					/** Format: uuid */
+					id: string;
+					/** Format: uuid */
+					list_id: string;
+					title: string;
+					/** Format: date */
+					due_on: string | null;
+					/** Format: uuid */
+					assignee: string | null;
+					/** Format: uuid */
+					created_by: string | null;
+					/** Format: uuid */
+					done_by: string | null;
+					/** Format: date-time */
+					done_at: string | null;
+					/** Format: date-time */
+					created_at: string;
+				}[];
+			}[];
+		};
+		CalendarSource: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			color: string;
+			/** @description Where the calendar lives; the full address is a secret and never shown again. */
+			host: string;
+			/** Format: date-time */
+			fetched_at: string | null;
+			/** @description Why the last fetch failed; empty when it worked. */
+			error: string;
+			events: number;
+		};
+		LearningPlan: {
+			cards: {
+				/** @description What a review now would offer. */
+				due: number;
+				reviews: number;
+				/** @description New cards in today's allowance. */
+				new: number;
+				/** @description Estimated from your own pace. */
+				minutes: number;
+				leeches: number;
+				/** @description Share of known cards remembered over 30 days; 0 with no reviews. */
+				retention: number;
+				reviewed: number;
+				target: number;
+			};
+			recall: {
+				due: components['schemas']['RecallNote'][];
+				suggested: components['schemas']['RecallNote'][];
+			};
+			test: {
+				due: boolean;
+				/** Format: date-time */
+				last_at: string | null;
+				score: number | null;
+			};
+			/** @description Fleeting notes older than two days, to process. */
+			fleeting: number;
+			palaces: number;
+			streak_days: number;
+		};
+		RecallNote: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			path: string;
+			kind: string;
+			/** Format: date */
+			due_on: string | null;
+			last_score: number | null;
+			/** Format: date-time */
+			last_at: string | null;
+		};
+		PalaceFields: {
+			/** @example My flat */
+			title?: string;
+			description?: string;
+			/**
+			 * @example [
+			 *       "Front door",
+			 *       "Coat hook",
+			 *       "Kitchen sink",
+			 *       "Sofa"
+			 *     ]
+			 */
+			loci?: string[];
+		};
+		Palace: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			loci: string[];
+			cards?: {
+				/** Format: uuid */
+				id: string;
+				locus: number;
+				deck: string;
+				front: string;
+				back: string;
+				mnemonic: string;
+				has_image: boolean;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		NoteFile: {
+			/** @example Attachments/whiteboard-1a2b3c4d.png */
+			path: string;
+			/** @enum {string} */
+			content_type:
+				| 'image/png'
+				| 'image/jpeg'
+				| 'image/gif'
+				| 'image/webp'
+				| 'image/svg+xml'
+				| 'application/pdf';
+			/** @description Bytes. */
+			size: number;
+			/** @description SHA-256 of the bytes, for sync. */
+			hash: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
 		Problem: {
 			type: string;
 			title: string;
@@ -736,6 +3849,13 @@ export interface components {
 			totp_enabled: boolean;
 			passkeys: number;
 			recovery_codes_remaining: number;
+			/** @description The shared demo account. */
+			demo: boolean;
+			/**
+			 * Format: date-time
+			 * @description When the picture last changed; add it to the avatar URL to refresh caches.
+			 */
+			avatar_updated_at: string | null;
 		};
 		Session: {
 			/** Format: uuid */
@@ -842,12 +3962,14 @@ export interface components {
 			/** Format: date-time */
 			completed_at: string | null;
 			/** Format: date-time */
+			remind_at: string | null;
+			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
 		};
 		/** @enum {unknown} */
-		TaskStatus: 'inbox' | 'next' | 'waiting' | 'someday' | 'done' | 'cancelled';
+		TaskStatus: 'inbox' | 'next' | 'doing' | 'waiting' | 'someday' | 'done' | 'cancelled';
 		TaskFields: {
 			title?: string;
 			notes?: string;
@@ -860,6 +3982,11 @@ export interface components {
 			due_on?: string | null;
 			/** @example FREQ=WEEKLY;BYDAY=MO,TH */
 			recurrence?: string | null;
+			/**
+			 * Format: date-time
+			 * @description A reminder is pushed (and emailed when set up) at this time, once; a new time means a new reminder.
+			 */
+			remind_at?: string | null;
 		};
 		Checkin: {
 			/** @enum {unknown} */
@@ -872,6 +3999,1329 @@ export interface components {
 		};
 		SearchHit: components['schemas']['Entity'] & {
 			rank: number;
+			/** @description A short excerpt; matched words are wrapped in U+0002 … U+0003. */
+			snippet: string;
+		};
+		Note: {
+			/** Format: uuid */
+			id: string;
+			/** @example Zettel/permanent/proofs.md */
+			path: string;
+			/** @description Front-matter title, else the first heading, else the file name. */
+			title: string;
+			/** @description Front-matter type (fleeting, literature, permanent…), or "note". */
+			kind: string;
+			para: components['schemas']['NotePara'];
+			/** @description From front matter tags: and #tags in the body, lower-cased. */
+			tags: string[];
+			/** @description SHA-256 of the content, hex. */
+			hash: string;
+			/** @description The Markdown exactly as written; omitted from lists. */
+			content?: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		NoteExploration: {
+			/** @description More notes matched than were analysed. */
+			truncated: boolean;
+			notes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				path: string;
+				para: components['schemas']['NotePara'];
+				kind: string;
+				tags: string[];
+				words: number;
+				/** @description Connections in and out. */
+				links: number;
+				keywords: string[];
+				/** Format: date-time */
+				created_at: string;
+				/** Format: date-time */
+				updated_at: string;
+			}[];
+			stats: {
+				total: number;
+				orphans: number;
+				words: number;
+				by_month: components['schemas']['LabelCounts'];
+				by_para: components['schemas']['LabelCounts'];
+				by_kind: components['schemas']['LabelCounts'];
+				tags: components['schemas']['LabelCounts'];
+				keywords: components['schemas']['LabelCounts'];
+			};
+		};
+		LabelCounts: {
+			label: string;
+			count: number;
+		}[];
+		NoteBrief: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			kind: string;
+		};
+		NoteTopic: {
+			id: number;
+			label: string;
+			terms: string[];
+			notes: components['schemas']['NoteBrief'][];
+		};
+		KeyPhrase: {
+			text: string;
+			/** @description 0 to 1, relative to the note's best phrase. */
+			score: number;
+		};
+		Readability: {
+			/** @enum {string} */
+			language: 'en' | 'fr';
+			words: number;
+			sentences: number;
+			reading_minutes: number;
+			/** @description Flesch reading ease (English) or Kandel–Moles (French), 0 to 100. */
+			ease: number;
+		};
+		NoteCorpusAnalysis: {
+			notes: number;
+			words: number;
+			languages: {
+				[key: string]: number;
+			};
+			ease: number;
+			topics: components['schemas']['NoteTopic'][];
+			concepts: {
+				id: string;
+				text: string;
+				notes: number;
+				of: components['schemas']['NoteBrief'][] | null;
+			}[];
+			edges: {
+				from: string;
+				to: string;
+				/** @enum {string} */
+				relation: 'co-occurs' | 'synonym';
+				together: number;
+				npmi: number;
+				reason: string;
+			}[];
+			truncated: boolean;
+		};
+		NoteAnalysis: {
+			readability: components['schemas']['Readability'];
+			phrases: components['schemas']['KeyPhrase'][];
+			topic: components['schemas']['NoteTopic'] | null;
+			related: (components['schemas']['NoteBrief'] & {
+				similarity: number;
+				reasons: string[];
+			})[];
+		};
+		ZettelGraph: {
+			nodes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				kind: string;
+				community: number;
+				/** @description 0 to 1, relative to the most central note. */
+				pagerank: number;
+				degree: number;
+				bridge: boolean;
+				participation: number;
+				phrases: string[];
+			}[];
+			edges: {
+				/** Format: uuid */
+				from: string;
+				/** Format: uuid */
+				to: string;
+				score: number;
+				kinds: ('link' | 'phrases' | 'synonyms' | 'entities' | 'wording')[];
+				reasons: string[];
+			}[];
+			communities: {
+				id: number;
+				label: string;
+				terms: string[];
+				size: number;
+				core: components['schemas']['NoteBrief'][];
+			}[];
+			stats: {
+				notes: number;
+				edges: number;
+				communities: number;
+				modularity: number;
+				density: number;
+				isolated: number;
+			};
+			truncated: boolean;
+		};
+		KnowledgeGraph: {
+			truncated: boolean;
+			nodes: {
+				/** Format: uuid */
+				id: string;
+				title: string;
+				para: components['schemas']['NotePara'];
+				kind: string;
+				keywords: string[];
+			}[];
+			edges: {
+				/** Format: uuid */
+				from: string;
+				/** Format: uuid */
+				to: string;
+				/** @enum {unknown} */
+				kind: 'link' | 'entity' | 'keyword' | 'synonym' | 'similar';
+				/** @example Shared keywords: memory, repetition */
+				why: string;
+				weight: number;
+			}[];
+		};
+		/**
+		 * @description PARA category, from the top folder (0-Inbox, 1-Projects…); notes at the root are inbox.
+		 * @enum {string}
+		 */
+		NotePara: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+		/**
+		 * @description Relative, ending in .md, with no ".." or hidden folders.
+		 * @example Zettel/idea.md
+		 */
+		NotePath: string;
+		NoteContent: string;
+		/** @enum {string} */
+		GoalStatus: 'active' | 'achieved' | 'archived';
+		Measure: {
+			/** @example km */
+			unit: string;
+			start: number;
+			/** @description Must differ from start; may be below it (e.g. weight). */
+			target: number;
+			current: number;
+		};
+		Progress: {
+			/** @description Rounded down; null when there is nothing to measure. */
+			percent: number | null;
+			/**
+			 * @description measure: how far current moved from start to target. items: done milestones and linked tasks over all of them. none: nothing to measure yet.
+			 * @enum {unknown}
+			 */
+			method: 'measure' | 'items' | 'none';
+			done: number;
+			total: number;
+			/** @example 3 of 5 milestones and linked tasks done */
+			summary: string;
+		};
+		Milestone: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			goal_id: string;
+			title: string;
+			/** Format: date */
+			due_on: string | null;
+			/** Format: date-time */
+			done_at: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		MilestoneFields: {
+			title?: string;
+			/** Format: date */
+			due_on?: string | null;
+			done?: boolean;
+		};
+		Goal: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** @description What will be true when the goal is reached. */
+			outcome: string;
+			status: components['schemas']['GoalStatus'];
+			/** Format: date */
+			target_date: string | null;
+			measure: components['schemas']['Measure'] | null;
+			progress: components['schemas']['Progress'];
+			milestones: components['schemas']['Milestone'][];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		GoalFields: {
+			title?: string;
+			outcome?: string;
+			status?: components['schemas']['GoalStatus'];
+			/** Format: date */
+			target_date?: string | null;
+			measure?: components['schemas']['Measure'] | null;
+		};
+		CalendarEvent: {
+			/** Format: date */
+			date: string;
+			/** @enum {unknown} */
+			type: 'task' | 'goal' | 'milestone';
+			/** @enum {unknown} */
+			kind: 'scheduled' | 'due' | 'target' | 'milestone';
+			/** Format: uuid */
+			id: string;
+			title: string;
+			done: boolean;
+			/**
+			 * Format: uuid
+			 * @description The milestone's goal.
+			 */
+			goal_id?: string;
+		};
+		CalendarFeed: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			types: ('task' | 'goal' | 'milestone')[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_used_at: string | null;
+		};
+		AgentStatus: {
+			available: boolean;
+			/** @description The provider runs would use. */
+			provider: string | null;
+			/** @enum {string|null} */
+			reason: 'demo' | 'not_configured' | 'no_consent' | 'budget_exhausted' | null;
+			monthly_budget_cents: number;
+			/** @description US dollars × 1,000,000 spent this calendar month (UTC). */
+			spent_micros: number;
+		};
+		/** @description The audit record of a run. It never contains prompt, reply, or tool input text. */
+		AgentRun: {
+			/** Format: uuid */
+			id: string;
+			/**
+			 * Format: uuid
+			 * @description The run this one continues.
+			 */
+			parent_run_id: string | null;
+			agent: string;
+			skill_version: string;
+			model: string;
+			/** @enum {unknown} */
+			status: 'running' | 'completed' | 'budget_exhausted' | 'step_limit' | 'refused' | 'failed';
+			/**
+			 * @example [
+			 *       "list_tasks",
+			 *       "update_task:proposed",
+			 *       "denied:web_fetch"
+			 *     ]
+			 */
+			tools_called: string[];
+			proposals: number;
+			input_tokens: number;
+			output_tokens: number;
+			cost_micros: number;
+			/** @enum {string|null} */
+			error: 'provider_error' | 'timeout' | 'interrupted' | 'internal' | null;
+			/** Format: date-time */
+			started_at: string;
+			/** Format: date-time */
+			finished_at: string | null;
+		};
+		Proposal: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			run_id: string;
+			agent: string;
+			tool: string;
+			/** @description The validated change, applied as-is on approval. */
+			input: Record<string, never>;
+			/** @example Change task “Call the plumber”: status → next, context → @phone */
+			summary: string;
+			reason: string;
+			/** @enum {unknown} */
+			status: 'pending' | 'approved' | 'rejected' | 'failed';
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			decided_at: string | null;
+		};
+		Flashcard: {
+			/** Format: uuid */
+			id: string;
+			deck: string;
+			front: string;
+			back: string;
+			has_image: boolean;
+			/**
+			 * @description 1 learning, 2 review, 3 relearning (FSRS).
+			 * @enum {integer}
+			 */
+			state: 1 | 2 | 3;
+			/** Format: date-time */
+			due: string;
+			/** Format: date-time */
+			last_review: string | null;
+			/** @description Days until recall drops to 90%. */
+			stability: number | null;
+			/** @description 1 (easy) to 10 (hard). */
+			difficulty: number | null;
+			reps: number;
+			lapses: number;
+			suspended: boolean;
+			/** Format: date-time */
+			updated_at: string;
+			elaboration: string;
+			example: string;
+			mnemonic: string;
+			/**
+			 * @description A picture (PNG) or a drawing (sanitised SVG); null without one.
+			 * @enum {string|null}
+			 */
+			image_type: 'image/png' | 'image/svg+xml' | null;
+			/** Format: uuid */
+			palace_id: string | null;
+			locus: number | null;
+			/** @description Forgotten 6 times or more: rewrite it, add an example or an image, or split it. */
+			leech: boolean;
+		};
+		FocusSession: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** Format: date-time */
+			started_at: string;
+			/** Format: date-time */
+			ended_at: string | null;
+			planned_minutes: number;
+			worked_minutes: number;
+			rounds: number;
+			/** @enum {unknown} */
+			status: 'running' | 'completed' | 'stopped';
+			target: {
+				/** Format: uuid */
+				id: string;
+				type: string;
+				title: string;
+			} | null;
+		};
+		MediaItem: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			/** @enum {unknown} */
+			kind: 'film' | 'series' | 'book';
+			/** @enum {unknown} */
+			status: 'want' | 'doing' | 'done' | 'dropped';
+			year: number | null;
+			/** @description Authors, directors, or creators, comma-separated. */
+			creators: string;
+			genres: string[];
+			rating: number | null;
+			/** @description Pages, episodes, or minutes, whichever total counts. */
+			progress: number;
+			total: number | null;
+			/** Format: date */
+			started_on: string | null;
+			/** Format: date */
+			finished_on: string | null;
+			review: string;
+			/** @enum {unknown} */
+			source: 'manual' | 'tmdb' | 'openlibrary';
+			source_id: string;
+			/** @description From the catalogue; TMDB text is dropped after six months. */
+			overview: string;
+			/**
+			 * Format: uuid
+			 * @description Fetch it from /v1/media/covers/{id}.
+			 */
+			cover_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		/** @description Unknown fields are refused by the server. */
+		MediaFields: {
+			title?: string;
+			/** @enum {unknown} */
+			kind?: 'film' | 'series' | 'book';
+			/** @enum {unknown} */
+			status?: 'want' | 'doing' | 'done' | 'dropped';
+			/** @description 0 clears it. */
+			year?: number;
+			creators?: string;
+			genres?: string[];
+			/** @description 0 clears it. */
+			rating?: number;
+			progress?: number;
+			/** @description 0 clears it. */
+			total?: number;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			started_on?: string;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			finished_on?: string;
+			review?: string;
+		};
+		MediaCandidate: {
+			/** @enum {unknown} */
+			source: 'tmdb' | 'openlibrary';
+			source_id: string;
+			/** @enum {unknown} */
+			kind: 'film' | 'series' | 'book';
+			title: string;
+			year: number | null;
+			creators: string;
+			genres: string[];
+			overview: string;
+			total: number | null;
+			has_cover: boolean;
+		};
+		Nutrients: {
+			kcal: number;
+			protein_g: number;
+			carbs_g: number;
+			fat_g: number;
+		};
+		FoodEntry: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			eaten_on: string;
+			/** @enum {string} */
+			meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+			name: string;
+			grams: number | null;
+			kcal: number | null;
+			protein_g: number | null;
+			carbs_g: number | null;
+			fat_g: number | null;
+			/** Format: uuid */
+			food_id: string | null;
+		};
+		/** @description Per 100 g. Open Food Facts data is under the ODbL; USDA FoodData Central is public domain. */
+		Food: {
+			/** Format: uuid */
+			id: string;
+			/** @enum {string} */
+			source: 'off' | 'usda';
+			source_id: string;
+			name: string;
+			brand: string;
+			kcal: number | null;
+			protein_g: number | null;
+			carbs_g: number | null;
+			fat_g: number | null;
+			fiber_g: number | null;
+			serving_g: number | null;
+		};
+		WorkoutSet: {
+			exercise: string;
+			reps?: number | null;
+			weight_kg?: number | null;
+			distance_km?: number | null;
+			seconds?: number | null;
+		};
+		WorkoutInput: {
+			/** Format: date */
+			done_on: string;
+			/** @enum {string} */
+			kind: 'strength' | 'cardio' | 'mobility' | 'sport' | 'other';
+			title: string;
+			minutes?: number | null;
+			/** @description How hard it felt (RPE), 1 to 10. */
+			effort?: number | null;
+			notes?: string;
+			sets?: components['schemas']['WorkoutSet'][];
+		};
+		Workout: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			done_on: string;
+			/** @enum {string} */
+			kind: 'strength' | 'cardio' | 'mobility' | 'sport' | 'other';
+			title: string;
+			minutes: number | null;
+			effort: number | null;
+			notes: string;
+			sets: components['schemas']['WorkoutSet'][];
+		};
+		InsightMetric: {
+			id: string;
+			title: string;
+			/** @enum {string} */
+			unit: 'count' | 'minutes' | 'percent';
+			formula: string;
+			source: string;
+		};
+		InsightItem: {
+			/** Format: uuid */
+			id: string;
+			type: string;
+			title: string;
+			/** Format: date-time */
+			when: string;
+		};
+		InsightSeries: components['schemas']['InsightMetric'] & {
+			points: {
+				week: string;
+				/** Format: date */
+				monday: string;
+				value: number;
+			}[];
+			total: number;
+			trend: {
+				/** @enum {string} */
+				direction: 'up' | 'down' | 'flat' | 'new';
+				change: number;
+				recent: number;
+				before: number;
+				sentence: string;
+			};
+		};
+		WeeklyReview: {
+			week: string;
+			/** Format: date */
+			from: string;
+			/** Format: date */
+			to: string;
+			previous: string;
+			next: string | null;
+			metrics: {
+				id: string;
+				title: string;
+				unit: string;
+				formula: string;
+				value: number;
+				previous: number;
+			}[];
+			highlights: string[];
+			sections: {
+				metric: string;
+				title: string;
+				items: components['schemas']['InsightItem'][];
+				more: number;
+			}[];
+			carry_over: components['schemas']['InsightItem'][];
+		};
+		HabitScorecard: {
+			items: {
+				/** @example Check my phone */
+				behavior: string;
+				/** @enum {unknown} */
+				rating: '+' | '=' | '-';
+			}[];
+		};
+		HabitFields: {
+			/** @description The action: “Read one page”. */
+			title?: string;
+			cue?: string;
+			craving?: string;
+			reward?: string;
+			/** @example After I pour my coffee */
+			stack_after?: string;
+			/** @example Put on my running shoes */
+			two_minute?: string;
+			/** @description ISO weekdays in the user's time zone, 1 = Monday. */
+			days?: number[];
+			/** @enum {unknown} */
+			status?: 'active' | 'paused' | 'archived';
+			/**
+			 * @description build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying.
+			 * @enum {unknown}
+			 */
+			kind?: 'build' | 'break';
+			/** @example I am a person who reads every day */
+			identity?: string;
+			/**
+			 * @description Implementation intention: I will [behaviour] at [time] in [place].
+			 * @example 07:30
+			 */
+			intention_time?: string;
+			/** @example in the kitchen */
+			intention_place?: string;
+			/** @description Optional accountability partner (Axon sends nothing to them). */
+			contract_partner?: string;
+			contract_pledge?: string;
+		};
+		Habit: {
+			/**
+			 * @description build a good habit, or break a bad one. For break, cue, craving, two_minute, and reward hold how to make it invisible, unattractive, difficult, and unsatisfying.
+			 * @enum {unknown}
+			 */
+			kind: 'build' | 'break';
+			/** @example I am a person who reads every day */
+			identity: string;
+			/**
+			 * @description Implementation intention: I will [behaviour] at [time] in [place].
+			 * @example 07:30
+			 */
+			intention_time: string;
+			/** @example in the kitchen */
+			intention_place: string;
+			/** @description Optional accountability partner (Axon sends nothing to them). */
+			contract_partner: string;
+			contract_pledge: string;
+			/** @description Check-ins kept so far; each is a vote for the identity. */
+			votes: number;
+			/** Format: uuid */
+			id: string;
+			title: string;
+			cue: string;
+			craving: string;
+			reward: string;
+			stack_after: string;
+			two_minute: string;
+			days: number[];
+			/** @enum {unknown} */
+			status: 'active' | 'paused' | 'archived';
+			state: {
+				/** Format: date */
+				today: string;
+				scheduled_today: boolean;
+				/** @enum {string|null} */
+				checked_in: 'done' | 'two_minute' | 'skipped' | null;
+				/** @description Scheduled days kept in a row, up to 366; planned skips neither count nor break it. */
+				streak: number;
+				recovery: null | {
+					/** @description Scheduled days missed in a row (up to 7). */
+					missed: number;
+					message: string;
+				};
+			};
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		HabitCheckin: {
+			/** Format: date */
+			day: string;
+			/** @enum {unknown} */
+			status: 'done' | 'two_minute' | 'skipped';
+			note: string;
+			/** Format: date-time */
+			created_at: string;
+		};
+		ProviderSettings: {
+			provider: string;
+			model: string;
+			base_url: string | null;
+			has_key: boolean;
+			input_price: number | null;
+			output_price: number | null;
+		};
+		Project: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			/** @enum {unknown} */
+			status: 'active' | 'on_hold' | 'done' | 'archived';
+			wip_limit: number | null;
+			/** @example 1-Projects/axon */
+			docs_folder: string;
+			/** @description Cards whose task is done. */
+			done: number;
+			total: number;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		ProjectFields: {
+			title?: string;
+			description?: string;
+			/** @enum {unknown} */
+			status?: 'active' | 'on_hold' | 'done' | 'archived';
+			wip_limit?: number | null;
+			docs_folder?: string;
+		};
+		Card: {
+			/** Format: uuid */
+			task_id: string;
+			title: string;
+			status: components['schemas']['TaskStatus'];
+			/** Format: date */
+			due_on: string | null;
+			/** @enum {unknown} */
+			column: 'backlog' | 'todo' | 'doing' | 'done';
+			/** @enum {unknown} */
+			kind: 'epic' | 'issue' | 'subtask';
+			/** Format: uuid */
+			parent_id: string | null;
+			children_done: number;
+			children: number;
+		};
+		CardFields: {
+			/** @enum {unknown} */
+			column?: 'backlog' | 'todo' | 'doing' | 'done';
+			/** @enum {unknown} */
+			kind?: 'epic' | 'issue' | 'subtask';
+			/**
+			 * Format: uuid
+			 * @description Issues belong to epics; sub-tasks to issues or epics.
+			 */
+			parent_id?: string | null;
+			/**
+			 * Format: uuid
+			 * @description Place before this card; omit for the end of the column.
+			 */
+			before?: string;
+			/** @description The person confirmed going over the WIP limit. */
+			over_limit?: boolean;
+		};
+		RepoConnection: {
+			/** Format: uuid */
+			id: string;
+			owner: string;
+			repo: string;
+			has_token: boolean;
+			/** @description false (default): the agents only read. */
+			allow_comments: boolean;
+			/** Format: uuid */
+			project_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+		};
+		Roadmap: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			/** @enum {unknown} */
+			source: 'manual' | 'ossu' | 'library' | 'tutor';
+			/** @description Shown with imported content. */
+			attribution: string;
+			license_url: string | null;
+			done: number;
+			/** @description Skills not skipped. */
+			total: number;
+			skills?: components['schemas']['Skill'][];
+			edges?: {
+				/** Format: uuid */
+				link_id: string;
+				/**
+				 * Format: uuid
+				 * @description The skill that needs the other.
+				 */
+				from: string;
+				/** Format: uuid */
+				to: string;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		SettingsDoc: {
+			/** @enum {unknown} */
+			language: 'en' | 'fr';
+			appearance: {
+				/** @enum {unknown} */
+				theme: 'system' | 'light' | 'dark';
+				/** @enum {unknown} */
+				font: 'system' | 'serif' | 'rounded' | 'mono';
+				/** @enum {unknown} */
+				font_size: 'small' | 'normal' | 'large';
+				/** @enum {unknown} */
+				icons: 'emoji' | 'symbols' | 'none';
+				/** @enum {unknown} */
+				motion: 'system' | 'reduced' | 'full';
+				/**
+				 * @description Themed scenery for each area: a notebook for notes, a library for learning, a workshop for projects. On when absent.
+				 * @enum {unknown}
+				 */
+				spaces?: 'on' | 'off';
+			};
+			templates: {
+				/** @description Markdown for new notes; {title} is replaced. */
+				note: string;
+				project: {
+					description: string;
+					wip_limit: number | null;
+					/** @description {slug} is replaced by the project's slug. */
+					docs_folder: string;
+				};
+				resource: {
+					section: string;
+					/** @enum {unknown} */
+					kind: 'hard' | 'soft';
+				};
+			};
+			/** @description Pomodoro defaults: 25 min work and 5 min break twice, then 25 min work and a 15 min long break; one session. */
+			focus?: {
+				work_minutes: number;
+				short_break_minutes: number;
+				long_break_minutes: number;
+				/** @description Work blocks before the long break. */
+				rounds: number;
+				/** @description How many cycles in a row. */
+				sessions: number;
+				/**
+				 * @description Focus sound generated in the browser.
+				 * @enum {unknown}
+				 */
+				sound: 'none' | 'white' | 'pink' | 'brown' | 'rain';
+				volume: number;
+				music: {
+					/** @example coding */
+					activity: string;
+					/** @example https://example.org/my-focus-playlist */
+					url: string;
+				}[];
+			};
+			/** @description Progress rewards (XP, levels, badges, streak); off by default, and off hides every surface. */
+			gamification?: {
+				enabled: boolean;
+			};
+			/** @description The vault mirror: tasks, goals, milestones, projects, areas, resources, habits, and media as Markdown notes under folder, both ways. Health logs only when health is on, one way. */
+			vault?: {
+				mirror: boolean;
+				folder: string;
+				health: boolean;
+			};
+			/** @description The review engine: new cards per day (default 20), the retention FSRS aims for (default 0.90), mixed decks in a review of everything (default on), and typing the answer before it is shown (default off). */
+			learning?: {
+				new_per_day: number;
+				retention: number;
+				interleave: boolean;
+				type_answer: boolean;
+			};
+			/** @description The sections Today shows, in order (counts stay at the top, progress at the bottom). Default: kpis, tasks, milestones, goals, notes, overview. */
+			today?: {
+				sections: (
+					| 'kpis'
+					| 'tasks'
+					| 'milestones'
+					| 'goals'
+					| 'notes'
+					| 'learning'
+					| 'habits'
+					| 'calendar'
+					| 'household'
+					| 'overview'
+				)[];
+			};
+			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
+			reminders?: {
+				enabled: boolean;
+				/** @example 08:00 */
+				morning: string;
+				/** @example 20:00 */
+				evening: string;
+				email: string;
+			};
+			/** @description Left out on update, it keeps its current defaults. */
+			keyboard?: {
+				/** @description Single-key and g-chord shortcuts; turn off if they get in the way (WCAG 2.1.4). */
+				shortcuts: boolean;
+				/** @description Vim keybindings in the note editor. */
+				vim: boolean;
+			};
+		};
+		Settings: components['schemas']['SettingsDoc'] & {
+			ai?: {
+				/** @description Your provider, or null for the server default. The key itself is never returned. */
+				provider: {
+					provider?: string;
+					model?: string;
+					base_url?: string | null;
+					has_key?: boolean;
+					input_price?: number | null;
+					output_price?: number | null;
+				} | null;
+				monthly_budget_cents: number;
+			};
+		};
+		AssessmentProfile: {
+			/** @example Support engineer */
+			role: string;
+			/** @example 3 years of scripting */
+			experience: string;
+			goals: string;
+			hours_per_week: number;
+			formats: ('book' | 'course' | 'video' | 'practice' | 'paper')[];
+		};
+		Assessment: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date-time */
+			created_at: string;
+			profile: components['schemas']['AssessmentProfile'];
+			results: {
+				domain: string;
+				title: string;
+				rating: number;
+				correct: number;
+				total: number;
+				level: number;
+				reason: string;
+			}[];
+			/** @description Up to three library domains to start with, lowest level first. */
+			suggested: string[];
+		};
+		DayCount: {
+			/** Format: date */
+			day: string;
+			value: number;
+		};
+		SavingsPot: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			target_cents: number;
+			/** Format: date */
+			target_date: string | null;
+			note: string;
+			archived: boolean;
+			saved_cents: number;
+			/** @description To put in each month from this month on to reach the target by its date. */
+			monthly_cents: number | null;
+			moves: {
+				/** Format: uuid */
+				id: string;
+				/** Format: date */
+				occurred_on: string;
+				amount_cents: number;
+				note: string;
+			}[];
+			/** Format: date-time */
+			created_at: string;
+		};
+		/** @description Unknown fields are refused by the server. */
+		SavingsPotFields: {
+			name?: string;
+			target_cents?: number;
+			/** @description YYYY-MM-DD, or empty to clear. */
+			target_date?: string;
+			note?: string;
+			archived?: boolean;
+		};
+		BudgetAccount: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			type: 'asset' | 'liability';
+			/** @enum {unknown} */
+			role: 'checking' | 'savings' | 'cash' | 'credit_card' | 'loan' | 'investment' | 'other';
+			/**
+			 * Format: int64
+			 * @description Negative for money owed.
+			 */
+			opening_cents: number;
+			/**
+			 * Format: int64
+			 * @description Opening plus income, minus expenses, plus or minus transfers.
+			 */
+			balance_cents: number;
+			archived: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetAccountFields: {
+			name?: string;
+			/**
+			 * @description On create only.
+			 * @enum {unknown}
+			 */
+			type?: 'asset' | 'liability';
+			/** @enum {unknown} */
+			role?: 'checking' | 'savings' | 'cash' | 'credit_card' | 'loan' | 'investment' | 'other';
+			/** Format: int64 */
+			opening_cents?: number;
+			archived?: boolean;
+		};
+		BudgetRecurring: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents: number;
+			/** Format: uuid */
+			account_id: string | null;
+			/** Format: uuid */
+			to_account_id: string | null;
+			/** Format: uuid */
+			category_id: string | null;
+			payee: string;
+			note: string;
+			tags: string[];
+			/** @example FREQ=MONTHLY;BYMONTHDAY=1 */
+			rule: string;
+			/**
+			 * Format: date
+			 * @description Null once the series ended.
+			 */
+			next_on: string | null;
+			active: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetRecurringFields: {
+			name?: string;
+			/** @enum {unknown} */
+			kind?: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents?: number;
+			/** Format: uuid */
+			account_id?: string | null;
+			/** Format: uuid */
+			to_account_id?: string | null;
+			/** Format: uuid */
+			category_id?: string | null;
+			payee?: string;
+			note?: string;
+			tags?: string[];
+			/** @description RFC 5545 RRULE with FREQ DAILY, WEEKLY, MONTHLY, or YEARLY. */
+			rule?: string;
+			/**
+			 * Format: date
+			 * @description The next occurrence; setting it again restarts the series there.
+			 */
+			start_on?: string;
+			active?: boolean;
+		};
+		BudgetRule: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			field: 'payee' | 'note';
+			/** @enum {unknown} */
+			operator: 'contains' | 'equals' | 'starts_with';
+			value: string;
+			/** Format: uuid */
+			category_id: string | null;
+			tag: string;
+			position: number;
+			active: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetRuleFields: {
+			name?: string;
+			/** @enum {unknown} */
+			field?: 'payee' | 'note';
+			/** @enum {unknown} */
+			operator?: 'contains' | 'equals' | 'starts_with';
+			value?: string;
+			/** Format: uuid */
+			category_id?: string | null;
+			tag?: string;
+			position?: number;
+			active?: boolean;
+		};
+		BudgetReport: {
+			currency: string;
+			/** Format: date */
+			from: string;
+			/** Format: date */
+			to: string;
+			months: {
+				month: string;
+				/** Format: int64 */
+				income_cents: number;
+				/** Format: int64 */
+				expense_cents: number;
+			}[];
+			categories: {
+				/** Format: uuid */
+				category_id: string | null;
+				name: string;
+				/** @enum {unknown} */
+				kind: 'income' | 'expense';
+				/** Format: int64 */
+				cents: number;
+			}[];
+			accounts: components['schemas']['BudgetAccount'][];
+			/**
+			 * Format: int64
+			 * @description The sum of every account balance.
+			 */
+			net_worth_cents: number;
+		};
+		BudgetCategory: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense';
+			/**
+			 * Format: int64
+			 * @description Monthly budget in cents (expense categories), or null.
+			 */
+			monthly_cents: number | null;
+			archived: boolean;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetCategoryFields: {
+			name?: string;
+			/**
+			 * @description On create only.
+			 * @enum {unknown}
+			 */
+			kind?: 'income' | 'expense';
+			/** Format: int64 */
+			monthly_cents?: number | null;
+			archived?: boolean;
+		};
+		BudgetTransaction: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			occurred_on: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents: number;
+			/** Format: uuid */
+			category_id: string | null;
+			/**
+			 * Format: uuid
+			 * @description Paid from (expense, transfer) or into (income).
+			 */
+			account_id: string | null;
+			/**
+			 * Format: uuid
+			 * @description Transfers only.
+			 */
+			to_account_id: string | null;
+			tags: string[];
+			payee: string;
+			note: string;
+			/**
+			 * Format: uuid
+			 * @description The recurring series that recorded it.
+			 */
+			recurring_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		BudgetTransactionFields: {
+			/** Format: date */
+			occurred_on?: string;
+			/** @enum {unknown} */
+			kind?: 'income' | 'expense' | 'transfer';
+			/** Format: int64 */
+			amount_cents?: number;
+			/**
+			 * Format: uuid
+			 * @description Without one, your rules may choose it.
+			 */
+			category_id?: string | null;
+			/** Format: uuid */
+			account_id?: string | null;
+			/** Format: uuid */
+			to_account_id?: string | null;
+			tags?: string[];
+			payee?: string;
+			note?: string;
+		};
+		BudgetMonth: {
+			/** @example 2026-10 */
+			month: string;
+			/** @example EUR */
+			currency: string;
+			/** Format: int64 */
+			income_cents: number;
+			/** Format: int64 */
+			expense_cents: number;
+			/**
+			 * Format: int64
+			 * @description Sum of active expense budgets.
+			 */
+			budgeted_cents: number;
+			/** Format: int64 */
+			uncategorised_income_cents: number;
+			/** Format: int64 */
+			uncategorised_expense_cents: number;
+			/** @description Categories with their actual amount this month; the lines plus the uncategorised amounts add up to the totals. */
+			lines: (components['schemas']['BudgetCategory'] & {
+				/** Format: int64 */
+				actual_cents: number;
+			})[];
+		};
+		ParaItem: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			url: string | null;
+			/** @enum {unknown} */
+			status: 'active' | 'archived';
+			/** @description Connections to and from it. */
+			linked: number;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		ParaFields: {
+			title?: string;
+			description?: string;
+			/** @description http(s) link, or empty to clear. */
+			url?: string;
+			/** @enum {unknown} */
+			status?: 'active' | 'archived';
+		};
+		Skill: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			description: string;
+			url: string | null;
+			section: string;
+			/** @enum {unknown} */
+			status: 'todo' | 'learning' | 'done' | 'skipped';
+			/**
+			 * @description Hard (technical) or soft (interpersonal, learning, leadership).
+			 * @enum {unknown}
+			 */
+			kind: 'hard' | 'soft';
+			position: number;
+			/** @description Books, courses, and sites that teach this skill (set by imports). */
+			resources: {
+				title: string;
+				/** @enum {string} */
+				kind: 'book' | 'course' | 'video' | 'channel' | 'paper' | 'site' | 'practice';
+				by: string;
+				free: boolean;
+				url: string;
+				/** @description Duration and effort, for curriculum courses. */
+				note?: string;
+			}[];
+			/** Format: date-time */
+			updated_at: string;
+		};
+		SkillFields: {
+			title?: string;
+			description?: string;
+			url?: string;
+			section?: string;
+			/** @enum {unknown} */
+			status?: 'todo' | 'learning' | 'done' | 'skipped';
+			/** @enum {unknown} */
+			kind?: 'hard' | 'soft';
+			position?: number;
 		};
 	};
 	responses: {
@@ -892,6 +5342,43 @@ export interface components {
 			content: {
 				'application/json': {
 					publicKey: Record<string, never>;
+				};
+			};
+		};
+		/** @description The note changed in Axon since the client last synced; keep both versions. */
+		SyncConflict: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/problem+json': components['schemas']['Problem'] & {
+					/** @description Axon's version, or null when the note was deleted in Axon. */
+					current: components['schemas']['Note'] | null;
+				};
+			};
+		};
+		/** @description The file changed in Axon since the client last synced; keep both versions. */
+		FileConflict: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/problem+json': components['schemas']['Problem'] & {
+					/** @description Axon's version, or null when the file was deleted in Axon. */
+					current: components['schemas']['NoteFile'] | null;
+				};
+			};
+		};
+		/** @description Put back. */
+		Restored: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/json': {
+					/** Format: uuid */
+					entity_id: string;
+					type: string;
 				};
 			};
 		};
@@ -1032,6 +5519,10 @@ export interface operations {
 						registration_open: boolean;
 						signed_in: boolean;
 						totp_available: boolean;
+						/** @description The server offers the shared demo account (AXON_DEMO=1). */
+						demo_available: boolean;
+						/** @description The caller is signed into the demo account. */
+						demo_session: boolean;
 					};
 				};
 			};
@@ -1132,6 +5623,27 @@ export interface operations {
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 			429: components['responses']['Problem'];
+		};
+	};
+	demoSignIn: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Signed in; the session cookie lasts 12 hours. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			404: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
 		};
 	};
 	logout: {
@@ -1855,6 +6367,8 @@ export interface operations {
 				/** @description Web-style query ("quoted phrase", -exclude, or). */
 				q: string;
 				offset?: number;
+				/** @description Only entities of this type, e.g. note. */
+				type?: string;
 				limit?: components['parameters']['Limit'];
 			};
 			header?: never;
@@ -1881,9 +6395,19 @@ export interface operations {
 	listTasks: {
 		parameters: {
 			query?: {
-				/** @description today and week/month include overdue and upcoming dated work in the user's time zone; done is newest first. */
+				/** @description today and week/month include overdue and upcoming dated work in the user's time zone; overdue is open work due before today; done is newest first. */
 				view?:
-					'all' | 'inbox' | 'next' | 'waiting' | 'someday' | 'today' | 'week' | 'month' | 'done';
+					| 'all'
+					| 'inbox'
+					| 'next'
+					| 'doing'
+					| 'waiting'
+					| 'someday'
+					| 'today'
+					| 'overdue'
+					| 'week'
+					| 'month'
+					| 'done';
 				context?: string;
 				/** @description next_cursor from the previous page. */
 				after?: string;
@@ -2031,6 +6555,53 @@ export interface operations {
 			428: components['responses']['Problem'];
 		};
 	};
+	bulkTasks: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					ids: string[];
+					delete?: boolean;
+					change?: {
+						status?: components['schemas']['TaskStatus'];
+						context?: string | null;
+						/** Format: date */
+						scheduled_on?: string | null;
+						/** Format: date */
+						due_on?: string | null;
+						recurrence?: string | null;
+						notes?: string;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description How many tasks were changed or deleted. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						changed: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
 	listContexts: {
 		parameters: {
 			query?: never;
@@ -2111,6 +6682,7175 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['Checkin'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listNotes: {
+		parameters: {
+			query?: {
+				para?: components['schemas']['NotePara'];
+				/** @description Only notes with this tag. */
+				tag?: string;
+				/** @description Only the note at exactly this path (e.g. a daily note). */
+				path?: string;
+				/** @description false leaves out the notes the vault mirror keeps for tasks, goals, habits, and other items. */
+				mirrored?: 'false';
+				/** @description Only notes of this type (front matter type), e.g. fleeting, literature, permanent. */
+				kind?: string;
+				/** @description Only notes under this folder, e.g. Templates/ (vault templates are offered when creating a note). */
+				folder?: string;
+				/** @description next_cursor from the previous page (the last path). */
+				after?: string;
+				limit?: components['parameters']['Limit'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A page of notes. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Note'][];
+						next_cursor: string | null;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path?: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The note. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateNote: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+				};
+			};
+		};
+		responses: {
+			/** @description The updated note. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	deleteNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listNoteTags: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 tags. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							tag: string;
+							count: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listNoteMentions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 20 notes, most recently changed first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	importNotes: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/zip': string;
+			};
+		};
+		responses: {
+			/** @description What happened to each file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: string[];
+						unchanged: string[];
+						conflicts: string[];
+						skipped: string[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+		};
+	};
+	exploreNotes: {
+		parameters: {
+			query?: {
+				para?: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+				/** @description Zettelkasten type from front matter (fleeting, literature, permanent…). */
+				kind?: string;
+				tag?: string;
+				/** @description Text in the title or body. */
+				q?: string;
+				/** @description Created on or after. */
+				from?: string;
+				/** @description Created on or before. */
+				to?: string;
+				/** @description Only notes with no connection. */
+				orphans?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 1,500 notes, newest first, and their statistics. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteExploration'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	analyseNotes: {
+		parameters: {
+			query?: {
+				/** @description Both kinds when omitted. */
+				kind?: 'literature' | 'permanent';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The analysis. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteCorpusAnalysis'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	analyseNote: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The analysis. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteAnalysis'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	zettelkastenGraph: {
+		parameters: {
+			query?: {
+				/** @description Both kinds when omitted. */
+				kind?: 'literature' | 'permanent';
+				/** @description Minimum score for NLP edges (at least 0.08). */
+				min?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The graph. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ZettelGraph'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	noteKnowledgeGraph: {
+		parameters: {
+			query?: {
+				para?: 'inbox' | 'projects' | 'areas' | 'resources' | 'archive' | 'other';
+				/** @description Zettelkasten type from front matter (fleeting, literature, permanent…). */
+				kind?: string;
+				tag?: string;
+				/** @description Text in the title or body. */
+				q?: string;
+				/** @description Created on or after. */
+				from?: string;
+				/** @description Created on or before. */
+				to?: string;
+				/** @description Only notes with no connection. */
+				orphans?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Nodes and edges (up to 600 notes). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['KnowledgeGraph'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getNotesSyncVersion: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The version. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @example 42|2026-10-11T12:00:00Z|- */
+						version: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	noteChanges: {
+		parameters: {
+			query?: {
+				/** @description cursor from the previous response; omit for everything. */
+				cursor?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 changed notes with content, and deletions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						notes: components['schemas']['Note'][];
+						tombstones: {
+							path: string;
+							/** Format: date-time */
+							deleted_at: string;
+						}[];
+						cursor: string;
+						/** @description True when another page is waiting. */
+						more: boolean;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	pushNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: components['schemas']['NotePath'];
+					content: components['schemas']['NoteContent'];
+					/** @description Hash both sides last agreed on; empty for a file Axon has never had. */
+					base_hash: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Stored (or already identical); content omitted. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Note'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['SyncConflict'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	pushNoteDeletion: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					path: string;
+					base_hash: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Deleted, or already gone. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['SyncConflict'];
+		};
+	};
+	listNoteFiles: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The files, by path. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['NoteFile'][];
+						tombstones: {
+							path: string;
+							/** Format: date-time */
+							deleted_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	uploadNoteFile: {
+		parameters: {
+			query: {
+				/** @description The original file name; its extension must match the Content-Type. */
+				name: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/png': string;
+				'image/jpeg': string;
+				'image/gif': string;
+				'image/webp': string;
+				'image/svg+xml': string;
+				'application/pdf': string;
+			};
+		};
+		responses: {
+			/** @description Stored; embed it as ![](path). */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteFile'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			415: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			507: components['responses']['Problem'];
+		};
+	};
+	getNoteFile: {
+		parameters: {
+			query: {
+				/** @description Vault path, such as Attachments/photo.png. */
+				path: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+					'image/jpeg': string;
+					'image/gif': string;
+					'image/webp': string;
+					'image/svg+xml': string;
+					'application/pdf': string;
+				};
+			};
+			/** @description Not modified. */
+			304: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	pushNoteFile: {
+		parameters: {
+			query: {
+				/** @description Vault path, such as Attachments/photo.png. */
+				path: string;
+				/** @description The hash both sides last agreed on; empty or absent for a file new to Axon. */
+				base_hash?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/octet-stream': string;
+			};
+		};
+		responses: {
+			/** @description Stored, or already identical. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['NoteFile'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['FileConflict'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			507: components['responses']['Problem'];
+		};
+	};
+	deleteNoteFile: {
+		parameters: {
+			query: {
+				/** @description Vault path, such as Attachments/photo.png. */
+				path: string;
+				base_hash?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted, or already gone. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['FileConflict'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getLearningPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The plan. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['LearningPlan'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	recordPracticeTest: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Empty for a mixed test of every deck. */
+					deck?: string;
+					questions: number;
+					correct: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Recorded. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listPalaces: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Palaces (without their cards). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Palace'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createPalace: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['PalaceFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description The palace. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getPalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The palace. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deletePalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updatePalace: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['PalaceFields'];
+			};
+		};
+		responses: {
+			/** @description The palace. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Palace'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listNoteRecalls: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Attempts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							score: number;
+							/** Format: date-time */
+							recalled_at: string;
+							/** Format: date */
+							due_on: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	recallNote: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					text: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The comparison and the next recall. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description Share of key ideas recalled, 0 to 1. */
+						score: number;
+						ideas: {
+							text: string;
+							recalled: boolean;
+						}[];
+						/** Format: date */
+						due_on: string;
+						interval_days: number;
+						/** Format: date-time */
+						recalled_at: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listCardDrafts: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Drafts, in note order. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							front: string;
+							back: string;
+							/** @enum {unknown} */
+							kind: 'qa' | 'reverse' | 'cloze' | 'definition';
+							line: number;
+							/** @description Already a card made from this note. */
+							exists: boolean;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getReminderStatus: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Reminder status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description VAPID public key (applicationServerKey), base64url. */
+						public_key: string;
+						/** @description true when the instance has a mail server (AXON_SMTP_URL). */
+						email: boolean;
+						devices: {
+							/** Format: uuid */
+							id: string;
+							device: string;
+							/** Format: date-time */
+							created_at: string;
+							/** Format: date-time */
+							last_sent_at: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	addPushSubscription: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					endpoint: string;
+					p256dh: string;
+					auth: string;
+					/** @example Firefox on Linux */
+					device?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Subscribed. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: uuid */
+						id: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deletePushSubscription: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	testReminders: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What was sent, and where. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						message: {
+							title: string;
+							body: string;
+							url: string;
+							tag: string;
+						};
+						devices: number;
+						email: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listCalendarSources: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Followed calendars. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarSource'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	addCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Work */
+					name: string;
+					/** @description https:// or webcal://; private network addresses only when the operator allows them (AXON_CALENDAR_PRIVATE=1). */
+					url: string;
+					/** @example #5aa9ff */
+					color?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Followed, with its events. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['CalendarSource'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	refreshCalendarSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The calendar after the fetch. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['CalendarSource'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listCalendarEvents: {
+		parameters: {
+			query: {
+				from: string;
+				to: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Occurrences, by start. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							source_id: string;
+							title: string;
+							location: string;
+							/** Format: date-time */
+							start: string;
+							/** Format: date-time */
+							end: string;
+							all_day: boolean;
+							/**
+							 * Format: date
+							 * @description The first day, in your time zone.
+							 */
+							date: string;
+							/**
+							 * Format: date
+							 * @description The last day it covers.
+							 */
+							last_date: string;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	importFrom: {
+		parameters: {
+			query?: {
+				/** @description true: read and count only; nothing is written. */
+				dry_run?: boolean;
+				/** @description The budget account money goes to (firefly and ofx). */
+				account_id?: string;
+			};
+			header?: never;
+			path: {
+				source: 'todoist' | 'ticktick' | 'goodreads' | 'letterboxd' | 'firefly' | 'ofx' | 'notion';
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/octet-stream': string;
+			};
+		};
+		responses: {
+			/** @description What was imported, or would be. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: string;
+						dry_run: boolean;
+						found: number;
+						created: number;
+						/** @description Already in Axon. */
+						skipped: number;
+						/** @description Notes at the same path with other content, left alone. */
+						conflicts: number;
+						problems: string[];
+						/** @description The first few items. */
+						sample: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getHousehold: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The household, its members, and its lists. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	createHousehold: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					name: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	renameHousehold: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					name: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	leaveHousehold: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Left. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	inviteToHousehold: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The code. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @example ABCD-EFGH-JKLM-NPQR */
+						code: string;
+						/** Format: date-time */
+						expires_at: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	joinHousehold: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					code: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	removeHouseholdMember: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	createHouseholdList: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Groceries */
+					title: string;
+					/**
+					 * @default other
+					 * @enum {unknown}
+					 */
+					kind?: 'shopping' | 'chores' | 'other';
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteHouseholdList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	renameHouseholdList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	addHouseholdItem: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title: string;
+					/** @description YYYY-MM-DD, or empty to clear. */
+					due_on?: string;
+					/** @description A member's user id, or empty to clear. */
+					assignee?: string;
+					done?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteHouseholdItem: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateHouseholdItem: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title?: string;
+					/** @description YYYY-MM-DD, or empty to clear. */
+					due_on?: string;
+					/** @description A member's user id, or empty to clear. */
+					assignee?: string;
+					done?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The household, its members, and its lists. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Household'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['EmbeddingStatus'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	setEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					provider: 'local' | 'openai' | 'voyage';
+					/** @description The local server, like http://ollama:11434. */
+					base_url?: string;
+					/** @description Default: nomic-embed-text, text-embedding-3-small, or voyage-3.5-lite. */
+					model?: string;
+					/** @description Left out keeps the stored key. */
+					api_key?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['EmbeddingStatus'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteEmbeddings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Off. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	searchNotesByMeaning: {
+		parameters: {
+			query: {
+				q: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Notes by meaning. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description false when the note has no embedding yet. */
+						indexed: boolean;
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** @description Cosine similarity; 1 is the same meaning. */
+							score: number;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+		};
+	};
+	similarNotes: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Notes by meaning. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description false when the note has no embedding yet. */
+						indexed: boolean;
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** @description Cosine similarity; 1 is the same meaning. */
+							score: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	listTrash: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The trash. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							/** Format: uuid */
+							entity_id: string;
+							type: string;
+							title: string;
+							/** @description Items deleted along with it (a goal's milestones). */
+							with: number;
+							/** Format: date-time */
+							deleted_at: string;
+							/** Format: date-time */
+							expires_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	emptyTrash: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Emptied. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	undoDelete: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** Format: uuid */
+					entity_id: string;
+				};
+			};
+		};
+		responses: {
+			200: components['responses']['Restored'];
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	restoreFromTrash: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			200: components['responses']['Restored'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	forgetFromTrash: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Gone for good. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	clipPage: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					url: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The clipped page. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						url: string;
+						title: string;
+						site: string;
+						markdown: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listAreas: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 areas. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['ParaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createArea: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getArea: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The area. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteArea: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateArea: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'];
+			};
+		};
+		responses: {
+			/** @description The updated area. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	listResources: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 resources. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['ParaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createResource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getResource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The resource. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteResource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateResource: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ParaFields'];
+			};
+		};
+		responses: {
+			/** @description The updated resource. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ParaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	getBudgetMonth: {
+		parameters: {
+			query?: {
+				/** @description YYYY-MM; the current month (UTC) by default. */
+				month?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The month. All amounts are integer cents in the person's currency. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetMonth'];
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	setBudgetCurrency: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/**
+					 * @description ISO 4217 code.
+					 * @example EUR
+					 */
+					currency: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The currency. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						currency: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetCategories: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 500 categories. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetCategory'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetCategoryFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetCategory'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateBudgetCategory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetCategoryFields'];
+			};
+		};
+		responses: {
+			/** @description The category. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetCategory'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetTransactions: {
+		parameters: {
+			query?: {
+				month?: string;
+				category?: string;
+				account?: string;
+				tag?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 1,000 transactions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetTransaction'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	createBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetTransactionFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetTransaction'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateBudgetTransaction: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetTransactionFields'];
+			};
+		};
+		responses: {
+			/** @description The transaction. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetTransaction'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetAccounts: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The accounts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetAccount'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetAccountFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetAccount'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetAccountFields'];
+			};
+		};
+		responses: {
+			/** @description The account. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetAccount'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listBudgetRecurrings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The recurring transactions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetRecurring'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRecurringFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRecurring'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRecurringFields'];
+			};
+		};
+		responses: {
+			/** @description The recurring transaction. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRecurring'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	runBudgetRecurring: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many transactions were recorded. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	listBudgetRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The rules. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['BudgetRule'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRuleFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRule'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateBudgetRule: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['BudgetRuleFields'];
+			};
+		};
+		responses: {
+			/** @description The rule. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetRule'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	applyBudgetRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many transactions changed. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						changed: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	importBudgetCSV: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					csv: string;
+					/** Format: uuid */
+					account_id?: string | null;
+					/** @example ; */
+					delimiter?: string;
+					/** @enum {unknown} */
+					date_format?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'DD.MM.YYYY';
+					has_header?: boolean;
+					date_column: number;
+					/** @description Negative amounts are expenses, positive ones income. */
+					amount_column: number;
+					payee_column?: number | null;
+					note_column?: number | null;
+				};
+			};
+		};
+		responses: {
+			/** @description What the import did. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						created: number;
+						/** @description Rows imported before. */
+						skipped: number;
+						problems: string[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listSavingsPots: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Pots, open ones first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['SavingsPot'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SavingsPotFields'] & Record<string, never>;
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SavingsPotFields'];
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	moveSavingsPot: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Not zero; negative takes money out. */
+					amount_cents: number;
+					/**
+					 * Format: date
+					 * @description Defaults to today.
+					 */
+					occurred_on?: string;
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The pot. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSavingsPotMove: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				move: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The pot. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SavingsPot'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getBudgetReport: {
+		parameters: {
+			query?: {
+				months?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The report. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['BudgetReport'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	listGoals: {
+		parameters: {
+			query?: {
+				status?: components['schemas']['GoalStatus'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 goals with milestones and progress. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Goal'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createGoal: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['GoalFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getGoal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The goal. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteGoal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateGoal: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['GoalFields'];
+			};
+		};
+		responses: {
+			/** @description The updated goal. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Goal'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	explainGoalProgress: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The figure, its method, and its inputs. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Progress'] & {
+						measure: components['schemas']['Measure'] | null;
+						/** @description The goal's milestones and the tasks that support the goal or one of its milestones (cancelled tasks are left out). */
+						items: {
+							/** Format: uuid */
+							id: string;
+							/** @enum {unknown} */
+							type: 'milestone' | 'task';
+							title: string;
+							done: boolean;
+							/** @description The milestone a task supports, or null when it supports the goal. */
+							via: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	addMilestone: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MilestoneFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getMilestone: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The milestone. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteMilestone: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateMilestone: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MilestoneFields'];
+			};
+		};
+		responses: {
+			/** @description The updated milestone. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Milestone'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	getDashboard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The daily view. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						today: string;
+						kpis: {
+							/**
+							 * @description overdue, today, and inbox equal the size of the task view with that name.
+							 * @enum {unknown}
+							 */
+							id: 'overdue' | 'today' | 'inbox';
+							label: string;
+							value: number;
+							definition: string;
+						}[];
+						/** @description The first of today's tasks, overdue first. */
+						tasks: components['schemas']['Task'][];
+						goals: components['schemas']['Goal'][];
+						/** @description Open milestones of active goals due in the next 14 days. */
+						milestones: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							/** Format: uuid */
+							goal_id: string;
+							goal_title: string;
+							/** Format: date */
+							due_on: string;
+						}[];
+						/** @description Most recently changed notes. */
+						notes: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** Format: date-time */
+							updated_at: string;
+						}[];
+						/** @description Today's daily check-in exists. */
+						checked_in: boolean;
+						/** @description How many tasks, notes, and goals exist, for first-run guidance. */
+						totals: {
+							tasks: number;
+							notes: number;
+							goals: number;
+						};
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getDashboardOverview: {
+		parameters: {
+			query?: {
+				/** @description The period length. */
+				days?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The overview. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						today: string;
+						days: number;
+						kpis: {
+							id: string;
+							label: string;
+							value: number;
+							/** @description The same KPI over the period before; null when no comparison makes sense. */
+							previous: number | null;
+							/** @enum {unknown} */
+							unit: 'count' | 'percent' | 'minutes';
+							definition: string;
+							/** @description The page that lists the items behind the number. */
+							href: string;
+						}[];
+						series: {
+							id: string;
+							label: string;
+							points: components['schemas']['DayCount'][];
+						}[];
+						/** @description Changes per day over the last 365 days. */
+						activity: components['schemas']['DayCount'][];
+						tables: {
+							due_soon: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: date */
+								due_on: string;
+							}[];
+							stalled_projects: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: date-time */
+								last_activity: string;
+							}[];
+							learning: {
+								/** Format: uuid */
+								id: string;
+								title: string;
+								/** Format: uuid */
+								roadmap_id: string;
+								roadmap_title: string;
+							}[];
+						};
+						skills: {
+							nodes: {
+								/** Format: uuid */
+								id: string;
+								/** @enum {unknown} */
+								type: 'skill' | 'goal' | 'project' | 'note';
+								title: string;
+								/** @enum {unknown} */
+								kind?: 'hard' | 'soft';
+								/** @enum {unknown} */
+								status?: 'todo' | 'learning' | 'done' | 'skipped';
+								/** Format: uuid */
+								roadmap_id?: string;
+							}[];
+							edges: {
+								/** Format: uuid */
+								from: string;
+								/** Format: uuid */
+								to: string;
+								relation: string;
+							}[];
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getCalendar: {
+		parameters: {
+			query: {
+				from: string;
+				to: string;
+				/** @description Comma-separated subset of task, goal, milestone (default all). */
+				types?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Events, oldest first. Cancelled tasks and archived goals are left out. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarEvent'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	listCalendarFeeds: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Feeds (their URLs are only shown at creation). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['CalendarFeed'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Phone */
+					name: string;
+					types: ('task' | 'goal' | 'milestone')[];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. Subscribe to path on this server; it is not shown again. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						feed: components['schemas']['CalendarFeed'];
+						/** @example /api/v1/calendar-feeds/3q2-…ics */
+						path: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	revokeCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Revoked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getCalendarFeed: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @description The secret part of the feed URL. */
+				token: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description An RFC 5545 calendar. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/calendar': string;
+				};
+			};
+			404: components['responses']['Problem'];
+		};
+	};
+	listAgents: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Agents and your agent status. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						status: components['schemas']['AgentStatus'];
+						agents: {
+							/** @example task-manager */
+							name: string;
+							title: string;
+							/** @description Version of the SKILL.md the agent runs. */
+							version: string;
+							/** @description Consents this agent needs on top of ai_agents (health coaches: health_data and health_ai). */
+							consents?: string[];
+							/**
+							 * @description Health guards: red-flag referral without a model call, and no unsafe restriction in replies or proposals.
+							 * @enum {string}
+							 */
+							safety?: 'health';
+							description: string;
+							tools: {
+								name: string;
+								description: string;
+								/** @description true: calls become proposals you approve. */
+								write: boolean;
+							}[];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	startAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				name: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					instruction: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Started. */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentRun'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			402: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	listAgentRuns: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Run records, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['AgentRun'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The run. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						run: components['schemas']['AgentRun'];
+						reply: string | null;
+						proposals: components['schemas']['Proposal'][];
+						/** @description True while the conversation is held in memory (an hour), so you can answer the agent. */
+						can_continue: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	continueAgentRun: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					instruction: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Started. */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentRun'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			402: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			410: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	listProposals: {
+		parameters: {
+			query?: {
+				status?: 'pending' | 'approved' | 'rejected' | 'failed';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 proposals. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Proposal'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	approveProposal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Applied. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Proposal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	rejectProposal: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Rejected. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Proposal'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	setAgentSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					monthly_budget_cents: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Your agent status with the new budget. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentStatus'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listAgentMemories: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Memories. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							agent: string;
+							content: string;
+							/** Format: date-time */
+							created_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	deleteAgentMemory: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Forgotten. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listHabits: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'paused' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 habits, oldest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Habit'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createHabit: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listDecks: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Decks. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							name: string;
+							total: number;
+							due: number;
+							/** @description Never reviewed. */
+							new: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listCards: {
+		parameters: {
+			query?: {
+				deck?: string;
+				/** @description true: only cards forgotten so often that they need rewriting. */
+				leech?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Cards. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Flashcard'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createCard: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					front: string;
+					back?: string;
+					/** @default Default */
+					deck?: string;
+					suspended?: boolean;
+					/** Format: uuid */
+					source_id?: string;
+					/** @description Why or how it is true (elaboration). */
+					elaboration?: string;
+					/** @description A concrete example. */
+					example?: string;
+					/** @description A vivid image or mnemonic tying the question to the answer. */
+					mnemonic?: string;
+					/** @description A memory palace to place the card in, or empty to take it out. */
+					palace_id?: string;
+					/** @description The place in the palace (0 is the first). */
+					locus?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The card. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listDueCards: {
+		parameters: {
+			query?: {
+				deck?: string;
+				limit?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Due cards. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						due_total: number;
+						items: (components['schemas']['Flashcard'] & {
+							next: {
+								/** Format: date-time */
+								again: string;
+								/** Format: date-time */
+								hard: string;
+								/** Format: date-time */
+								good: string;
+								/** Format: date-time */
+								easy: string;
+							};
+						})[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	listPracticeCards: {
+		parameters: {
+			query?: {
+				limit?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Cards to practise. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Flashcard'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	exportCardsAPKG: {
+		parameters: {
+			query?: {
+				deck?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The .apkg file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/zip': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					front?: string;
+					back?: string;
+					deck?: string;
+					suspended?: boolean;
+					/** @description Why or how it is true (elaboration). */
+					elaboration?: string;
+					/** @description A concrete example. */
+					example?: string;
+					/** @description A vivid image or mnemonic tying the question to the answer. */
+					mnemonic?: string;
+					/** @description A memory palace to place the card in, or empty to take it out. */
+					palace_id?: string;
+					/** @description The place in the palace (0 is the first). */
+					locus?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	reviewCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					rating: number;
+					duration_ms?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The rescheduled card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Flashcard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The picture. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+					'image/svg+xml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	putCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/png': string;
+				'image/jpeg': string;
+			};
+		};
+		responses: {
+			/** @description Saved. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			415: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCardImage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listFocusSessions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sessions and totals. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['FocusSession'][];
+						today_minutes: number;
+						week_minutes: number;
+						/** @description Days in a row with focus time, up to today. */
+						streak: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	startFocusSession: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Defaults to the item's title. */
+					title?: string;
+					/** Format: uuid */
+					target_id?: string;
+					planned_minutes: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The running session. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The session. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	finishFocusSession: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					worked_minutes: number;
+					rounds: number;
+					/** @enum {unknown} */
+					status: 'completed' | 'stopped';
+				};
+			};
+		};
+		responses: {
+			/** @description The finished session. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FocusSession'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listMedia: {
+		parameters: {
+			query?: {
+				kind?: 'film' | 'series' | 'book';
+				status?: 'want' | 'doing' | 'done' | 'dropped';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The items. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['MediaItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createMedia: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MediaFields'] & {
+					catalog?: {
+						/** @enum {unknown} */
+						source: 'tmdb' | 'openlibrary';
+						source_id: string;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description The new item. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getMediaCatalogs: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Books come from Open Library; films and series need a TMDB key on the server. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						books: boolean;
+						films_and_series: boolean;
+						/** @description Whether you allowed lookups (consent external_metadata). */
+						consented: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	searchMediaCatalog: {
+		parameters: {
+			query: {
+				kind: 'film' | 'series' | 'book';
+				q: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Catalogue entries. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['MediaCandidate'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getMediaRecommendations: {
+		parameters: {
+			query?: {
+				kind?: 'film' | 'series' | 'book';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 10 recommendations, best first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							item: components['schemas']['MediaItem'];
+							score: number;
+							reasons: string[];
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getMediaCover: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The image. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/jpeg': string;
+					'image/png': string;
+					'image/webp': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The item. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateMedia: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['MediaFields'];
+			};
+		};
+		responses: {
+			/** @description The item. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['MediaItem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getHealthStatus: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Consents and catalogues. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description Consent health_data: needed to store or read any log. */
+						consented: boolean;
+						/** @description Consent food_lookups: needed to search the catalogues. */
+						lookups_consented: boolean;
+						/** @description Whether USDA FoodData Central is set up on this server. */
+						usda: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	deleteHealthData: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	getFoodDay: {
+		parameters: {
+			query?: {
+				/** @description Defaults to today in your time zone. */
+				date?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The day. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						date: string;
+						entries: components['schemas']['FoodEntry'][];
+						totals: components['schemas']['Nutrients'];
+						week: (components['schemas']['Nutrients'] & {
+							/** Format: date */
+							date: string;
+						})[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	addFoodEntry: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** Format: date */
+					eaten_on: string;
+					/** @enum {string} */
+					meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+					/** @description Defaults to the food's name. */
+					name?: string;
+					/** @description With food_id; defaults to one serving. */
+					grams?: number;
+					kcal?: number;
+					protein_g?: number;
+					carbs_g?: number;
+					fat_g?: number;
+					/**
+					 * Format: uuid
+					 * @description Nutrients are then worked out from the food and grams.
+					 */
+					food_id?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The entry. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FoodEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteFoodEntry: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	searchFoods: {
+		parameters: {
+			query: {
+				q: string;
+				source?: 'off' | 'usda';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Foods, per 100 g. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Food'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getFoodByBarcode: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				code: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The food. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Food'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	listWorkouts: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Workouts, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Workout'][];
+						week: {
+							sessions: number;
+							minutes: number;
+							days: number;
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createWorkout: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkoutInput'];
+			};
+		};
+		responses: {
+			/** @description The workout. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Workout'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	replaceWorkout: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkoutInput'];
+			};
+		};
+		responses: {
+			/** @description The workout. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Workout'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWorkout: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getInsights: {
+		parameters: {
+			query?: {
+				weeks?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Weekly series, oldest week first, ending with the current week. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						weeks: number;
+						time_zone: string;
+						metrics: components['schemas']['InsightSeries'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getWeeklyReview: {
+		parameters: {
+			query?: {
+				/** @description An ISO week; the current week by default. */
+				week?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The review. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WeeklyReview'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getInsightItems: {
+		parameters: {
+			query?: {
+				week?: string;
+			};
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The metric and its items. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						metric: components['schemas']['InsightMetric'];
+						week: string;
+						items: components['schemas']['InsightItem'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	exportInsightsCSV: {
+		parameters: {
+			query?: {
+				weeks?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description One row per week: week, monday, then one column per metric id. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/csv': string;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getProgress: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Progress. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						enabled: boolean;
+						/** @description All points ever earned, computed from what you did. */
+						xp?: number;
+						today_xp?: number;
+						level?: number;
+						level_from?: number;
+						level_to?: number;
+						/** @description XP not spent on freezes. */
+						points?: number;
+						streak?: {
+							/** @enum {unknown} */
+							state: 'inactive' | 'active' | 'at_risk' | 'frozen' | 'broken';
+							days: number;
+							/** @description Unused freezes in stock. */
+							freezes: number;
+						};
+						badges?: {
+							id: string;
+							title: string;
+							description: string;
+							/** Format: date-time */
+							earned_at: string | null;
+						}[];
+						message?: string;
+						areas?: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getProgressLedger: {
+		parameters: {
+			query?: {
+				days?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Ledger entries. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: date-time */
+							at: string;
+							rule: string;
+							points: number;
+							/** Format: uuid */
+							entity_id: string;
+							title: string;
+						}[];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	listProgressRules: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Rules. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							id: string;
+							description: string;
+							points: number;
+						}[];
+						freeze_cost: number;
+						max_freezes: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	buyStreakFreeze: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The updated progress. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						enabled: boolean;
+						points: number;
+						streak: Record<string, never>;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	getHabitScorecard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The scorecard. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitScorecard'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	putHabitScorecard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitScorecard'];
+			};
+		};
+		responses: {
+			/** @description The saved scorecard. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitScorecard'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The habit. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateHabit: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['HabitFields'];
+			};
+		};
+		responses: {
+			/** @description The updated habit. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Habit'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	listHabitCheckins: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Check-ins. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['HabitCheckin'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	checkInHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					status: 'done' | 'two_minute' | 'skipped';
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The check-in. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HabitCheckin'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	uncheckHabit: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				/** @description A local date: today or up to 7 days back. */
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The picture. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+					'image/svg+xml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/png': string;
+				'image/jpeg': string;
+			};
+		};
+		responses: {
+			/** @description Saved. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			415: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAvatar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	getAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The account, or null. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description The server runs the Anki bridge and can store passwords. */
+						available: boolean;
+						/** @description The server's suggested sync address (ANKI_SYNC_URL). */
+						default_endpoint: string;
+						account: {
+							endpoint: string;
+							username: string;
+							/** @description Sync automatically after you approve the Teacher's cards. */
+							auto_sync: boolean;
+							/** Format: date-time */
+							last_sync_at: string | null;
+							/** @enum {string|null} */
+							last_status: 'ok' | 'error' | null;
+							last_message: string;
+						} | null;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example https://anki.example/ */
+					endpoint: string;
+					username: string;
+					/** @description Leave out to keep the stored one. */
+					password?: string;
+					/** @default true */
+					auto_sync?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The account. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						available: boolean;
+						default_endpoint: string;
+						account: Record<string, never> | null;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAnkiAccount: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Disconnected. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	syncAnki: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What the sync did. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						added: number;
+						updated: number;
+						unchanged: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	getSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SettingsDoc'];
+			};
+		};
+		responses: {
+			/** @description The saved settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getSettingsYAML: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The YAML file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/yaml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putSettingsYAML: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/yaml': string;
+			};
+		};
+		responses: {
+			/** @description The saved settings. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Settings'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Your settings, or null to use the server default. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						settings: null | components['schemas']['ProviderSettings'];
+						/** @description The server has its own Anthropic key or OAuth profile. */
+						server_default: boolean;
+						/** @description false when the server has no AXON_ENCRYPTION_KEY. */
+						can_store_keys: boolean;
+						providers: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	setAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					provider: 'anthropic' | 'deepseek' | 'gemini' | 'local' | 'mistral' | 'openai';
+					/** @example claude-opus-5-5 */
+					model: string;
+					/** @description Local servers only, e.g. http://192.168.1.20:11434/v1. */
+					base_url?: string;
+					/** @description Omit to keep the stored key; empty to remove it. Sealed at rest. */
+					api_key?: string;
+					/** @description US$ per million input tokens. */
+					input_price?: number;
+					/** @description US$ per million output tokens. */
+					output_price?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Saved; the same body as GET. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': Record<string, never>;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Reverted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	testAgentProvider: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The result. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						ok: boolean;
+						detail: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	listProjects: {
+		parameters: {
+			query?: {
+				status?: 'active' | 'on_hold' | 'done' | 'archived';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 projects. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Project'][];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	createProject: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ProjectFields'] & unknown;
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getProject: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The project. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteProject: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateProject: {
+		parameters: {
+			query?: never;
+			header: {
+				/** @description ETag from the last GET. */
+				'If-Match': components['parameters']['IfMatch'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ProjectFields'];
+			};
+		};
+		responses: {
+			/** @description The updated project. */
+			200: {
+				headers: {
+					ETag: components['headers']['ETag'];
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Project'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			412: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			428: components['responses']['Problem'];
+		};
+	};
+	getBoard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The board. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						project: components['schemas']['Project'];
+						columns: {
+							/** @enum {unknown} */
+							id: 'backlog' | 'todo' | 'doing' | 'done';
+							label: string;
+							/** @description The WIP limit (Doing only). */
+							limit: number | null;
+							cards: components['schemas']['Card'][];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listProjectDocs: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 200 notes, by path. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							title: string;
+							path: string;
+							/** Format: date-time */
+							updated_at: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	addCard: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['CardFields'] & {
+					title: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Card'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	placeCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+				task: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['CardFields'];
+			};
+		};
+		responses: {
+			/** @description The card. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Card'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	removeCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				task: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listRepos: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Connections. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['RepoConnection'][];
+						can_store_tokens: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	connectRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					owner: string;
+					repo: string;
+					/** @description Optional fine-grained token (Contents and Pull requests read; Pull requests write only for comments). Sealed at rest. */
+					token?: string;
+					/** @default false */
+					allow_comments?: boolean;
+					/**
+					 * Format: uuid
+					 * @description The board drafted issues go to.
+					 */
+					project_id?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Connected. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RepoConnection'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	disconnectRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Disconnected. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateRepo: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					token?: string;
+					allow_comments?: boolean;
+					/** Format: uuid */
+					project_id?: string | null;
+				};
+			};
+		};
+		responses: {
+			/** @description The connection. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RepoConnection'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listRoadmaps: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Up to 100 roadmaps (without skills). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Roadmap'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createRoadmap: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title: string;
+					description?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listRoadmapSources: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sources. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** @example system-design */
+							id: string;
+							/** @enum {string} */
+							kind: 'curriculum' | 'library';
+							title: string;
+							description: string;
+							attribution: string;
+							license_url: string | null;
+							/** @description Courses or resources in it. */
+							count: number;
+							/** @description Skills the courses or resources are grouped into. */
+							skills: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	importRoadmap: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example ossu */
+					source: string;
+					/**
+					 * @description Library domains only: mark the first sections done as far as your latest skills assessment of the domain justifies, and explain why in the description.
+					 * @default false
+					 */
+					place?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The new roadmap with its skills and prerequisites. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listAssessmentQuestions: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Questions. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						domains: {
+							id: string;
+							title: string;
+							questions: {
+								id: string;
+								question: string;
+								choices: string[];
+							}[];
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listAssessments: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Assessments. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Assessment'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createAssessment: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					profile: components['schemas']['AssessmentProfile'];
+					/** @description Library domain ids. */
+					interests: string[];
+					/** @description Self-rating per chosen domain. */
+					ratings: {
+						[key: string]: number;
+					};
+					/** @description Chosen answer index per question id. */
+					answers: {
+						[key: string]: number;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description The scored assessment. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Assessment'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getAssessment: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The assessment. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Assessment'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteAssessment: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	deleteRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title?: string;
+					description?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	regroupRoadmap: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The regrouped roadmap. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Roadmap'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	addSkill: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SkillFields'] & {
+					requires?: string[];
+				};
+			};
+		};
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Skill'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteSkill: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateSkill: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SkillFields'];
+			};
+		};
+		responses: {
+			/** @description The skill. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Skill'];
 				};
 			};
 			400: components['responses']['Problem'];

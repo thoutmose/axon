@@ -13,7 +13,8 @@ services:
     restart: unless-stopped
   db:
     restart: unless-stopped
-  valkey:
+  anki:
+    build: !reset null
     restart: unless-stopped
   backup:
     image: axon-backup:${AXON_VERSION:?}

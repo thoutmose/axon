@@ -1,0 +1,896 @@
+{
+ "source": "ossu",
+ "title": "OSSU Computer Science",
+ "description": "A complete, free education in computer science, from the Open Source Society University.",
+ "attribution": "Curriculum by Open Source Society University (OSSU), https://github.com/ossu/computer-science, used under the MIT License. Copyright (c) 2015-2023 Open Source Society University.",
+ "license": "MIT",
+ "license_url": "https://github.com/ossu/computer-science/blob/master/LICENSE",
+ "skills": [
+  {
+   "title": "Programming fundamentals",
+   "section": "Intro CS"
+  },
+  {
+   "title": "Systematic program design",
+   "section": "Core CS: Core programming"
+  },
+  {
+   "title": "Programming language concepts",
+   "section": "Core CS: Core programming",
+   "requires": [
+    "Systematic program design"
+   ]
+  },
+  {
+   "title": "Object-oriented design and architecture",
+   "section": "Core CS: Core programming",
+   "requires": [
+    "Systematic program design"
+   ]
+  },
+  {
+   "title": "Calculus",
+   "section": "Core CS: Core math"
+  },
+  {
+   "title": "Discrete mathematics",
+   "section": "Core CS: Core math",
+   "requires": [
+    "Calculus"
+   ]
+  },
+  {
+   "title": "Developer tooling",
+   "section": "Core CS: CS Tools"
+  },
+  {
+   "title": "Computer systems from first principles",
+   "section": "Core CS: Core systems"
+  },
+  {
+   "title": "Operating systems",
+   "section": "Core CS: Core systems",
+   "requires": [
+    "Computer systems from first principles"
+   ]
+  },
+  {
+   "title": "Computer networking",
+   "section": "Core CS: Core systems"
+  },
+  {
+   "title": "Algorithms",
+   "section": "Core CS: Core theory",
+   "requires": [
+    "Discrete mathematics"
+   ]
+  },
+  {
+   "title": "Security fundamentals",
+   "section": "Core CS: Core security"
+  },
+  {
+   "title": "Vulnerability analysis",
+   "section": "Core CS: Core security"
+  },
+  {
+   "title": "Databases and SQL",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Machine learning",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Computer graphics",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Software engineering",
+   "section": "Core CS: Core applications"
+  },
+  {
+   "title": "Ethics, intellectual property, and privacy",
+   "section": "Core CS: Core ethics"
+  },
+  {
+   "title": "Parallel programming",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Compilers",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Functional and logic programming",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Testing and debugging",
+   "section": "Advanced CS: Advanced programming"
+  },
+  {
+   "title": "Computer architecture",
+   "section": "Advanced CS: Advanced systems"
+  },
+  {
+   "title": "Theory of computation",
+   "section": "Advanced CS: Advanced theory",
+   "requires": [
+    "Discrete mathematics"
+   ]
+  },
+  {
+   "title": "Computational geometry",
+   "section": "Advanced CS: Advanced theory"
+  },
+  {
+   "title": "Algorithmic game theory",
+   "section": "Advanced CS: Advanced theory"
+  },
+  {
+   "title": "Web security",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Security governance and forensics",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Secure software development",
+   "section": "Advanced CS: Advanced Information Security"
+  },
+  {
+   "title": "Linear algebra",
+   "section": "Advanced CS: Advanced math"
+  },
+  {
+   "title": "Numerical methods",
+   "section": "Advanced CS: Advanced math",
+   "requires": [
+    "Linear algebra"
+   ]
+  },
+  {
+   "title": "Formal logic",
+   "section": "Advanced CS: Advanced math"
+  },
+  {
+   "title": "Probability",
+   "section": "Advanced CS: Advanced math",
+   "requires": [
+    "Calculus"
+   ]
+  },
+  {
+   "title": "Full-stack web development (project)",
+   "section": "Final project",
+   "requires": [
+    "Programming fundamentals"
+   ]
+  },
+  {
+   "title": "Robotics (project)",
+   "section": "Final project",
+   "requires": [
+    "Linear algebra"
+   ]
+  },
+  {
+   "title": "Data mining (project)",
+   "section": "Final project",
+   "requires": [
+    "Machine learning"
+   ]
+  },
+  {
+   "title": "Big data (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Internet of Things (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Cloud computing (project)",
+   "section": "Final project",
+   "requires": [
+    "Vulnerability analysis"
+   ]
+  },
+  {
+   "title": "Data science (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Functional programming in Scala (project)",
+   "section": "Final project"
+  },
+  {
+   "title": "Game development (project)",
+   "section": "Final project",
+   "requires": [
+    "Programming fundamentals"
+   ]
+  }
+ ],
+ "courses": [
+  {
+   "title": "Introduction to Computer Science and Programming using Python",
+   "url": "https://github.com/ossu/computer-science/blob/master/coursepages/intro-cs/README.md",
+   "section": "Intro CS",
+   "duration": "14 weeks",
+   "effort": "6-10 hours/week",
+   "prerequisites": "high school algebra",
+   "requires": [],
+   "skill": "Programming fundamentals"
+  },
+  {
+   "title": "Systematic Program Design",
+   "url": "https://github.com/ossu/computer-science/blob/master/coursepages/spd/README.md",
+   "section": "Core CS: Core programming",
+   "duration": "13 weeks",
+   "effort": "8-10 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Systematic program design"
+  },
+  {
+   "title": "Class-based Program Design",
+   "url": "https://github.com/ossu/computer-science/blob/master/coursepages/class-based/README.md",
+   "section": "Core CS: Core programming",
+   "duration": "13 weeks",
+   "effort": "5-10 hours/week",
+   "prerequisites": "Systematic Program Design, High School Math",
+   "requires": [
+    "Systematic Program Design"
+   ],
+   "skill": "Systematic program design"
+  },
+  {
+   "title": "Programming Languages",
+   "url": "https://courses.cs.washington.edu/courses/cse341/19sp/#lectures",
+   "section": "Core CS: Core programming",
+   "duration": "11 weeks",
+   "effort": "4-8 hours/week",
+   "prerequisites": "Systematic Program Design",
+   "requires": [
+    "Systematic Program Design"
+   ],
+   "skill": "Programming language concepts"
+  },
+  {
+   "title": "Object-Oriented Design",
+   "url": "https://course.ccs.neu.edu/cs3500f19/",
+   "section": "Core CS: Core programming",
+   "duration": "13 weeks",
+   "effort": "5-10 hours/week",
+   "prerequisites": "Class-based Program Design",
+   "requires": [
+    "Class-based Program Design"
+   ],
+   "skill": "Object-oriented design and architecture"
+  },
+  {
+   "title": "Software Architecture",
+   "url": "https://www.coursera.org/learn/software-architecture",
+   "section": "Core CS: Core programming",
+   "duration": "4 weeks",
+   "effort": "2-5 hours/week",
+   "prerequisites": "Object Oriented Design",
+   "requires": [
+    "Object-Oriented Design"
+   ],
+   "skill": "Object-oriented design and architecture"
+  },
+  {
+   "title": "Calculus 1A: Differentiation",
+   "url": "https://openlearninglibrary.mit.edu/courses/course-v1:MITx+18.01.1x+2T2019/about",
+   "section": "Core CS: Core math",
+   "duration": "13 weeks",
+   "effort": "6-10 hours/week",
+   "prerequisites": "high school math",
+   "requires": [],
+   "skill": "Calculus"
+  },
+  {
+   "title": "Calculus 1B: Integration",
+   "url": "https://openlearninglibrary.mit.edu/courses/course-v1:MITx+18.01.2x+3T2019/about",
+   "section": "Core CS: Core math",
+   "duration": "13 weeks",
+   "effort": "5-10 hours/week",
+   "prerequisites": "Calculus 1A",
+   "requires": [
+    "Calculus 1A: Differentiation"
+   ],
+   "skill": "Calculus"
+  },
+  {
+   "title": "Calculus 1C: Coordinate Systems & Infinite Series",
+   "url": "https://openlearninglibrary.mit.edu/courses/course-v1:MITx+18.01.3x+1T2020/about",
+   "section": "Core CS: Core math",
+   "duration": "6 weeks",
+   "effort": "5-10 hours/week",
+   "prerequisites": "Calculus 1B",
+   "requires": [
+    "Calculus 1B: Integration"
+   ],
+   "skill": "Calculus"
+  },
+  {
+   "title": "Mathematics for Computer Science",
+   "url": "https://openlearninglibrary.mit.edu/courses/course-v1:OCW+6.042J+2T2019/about",
+   "section": "Core CS: Core math",
+   "duration": "13 weeks",
+   "effort": "5 hours/week",
+   "prerequisites": "Calculus 1C",
+   "requires": [
+    "Calculus 1C: Coordinate Systems & Infinite Series"
+   ],
+   "skill": "Discrete mathematics"
+  },
+  {
+   "title": "The Missing Semester of Your CS Education",
+   "url": "https://missing.csail.mit.edu/",
+   "section": "Core CS: CS Tools",
+   "duration": "2 weeks",
+   "effort": "12 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Developer tooling"
+  },
+  {
+   "title": "Build a Modern Computer from First Principles: From Nand to Tetris",
+   "url": "https://www.coursera.org/learn/build-a-computer",
+   "section": "Core CS: Core systems",
+   "duration": "6 weeks",
+   "effort": "7-13 hours/week",
+   "prerequisites": "C-like programming language",
+   "requires": [],
+   "skill": "Computer systems from first principles"
+  },
+  {
+   "title": "Build a Modern Computer from First Principles: Nand to Tetris Part II",
+   "url": "https://www.coursera.org/learn/nand2tetris2",
+   "section": "Core CS: Core systems",
+   "duration": "6 weeks",
+   "effort": "12-18 hours/week",
+   "prerequisites": "one of these programming languages, From Nand to Tetris Part I",
+   "requires": [
+    "Build a Modern Computer from First Principles: From Nand to Tetris"
+   ],
+   "skill": "Computer systems from first principles"
+  },
+  {
+   "title": "Operating Systems: Three Easy Pieces",
+   "url": "https://github.com/ossu/computer-science/blob/master/coursepages/ostep/README.md",
+   "section": "Core CS: Core systems",
+   "duration": "10-12 weeks",
+   "effort": "6-10 hours/week",
+   "prerequisites": "Nand to Tetris Part II",
+   "requires": [
+    "Build a Modern Computer from First Principles: Nand to Tetris Part II"
+   ],
+   "skill": "Operating systems"
+  },
+  {
+   "title": "Computer Networking: a Top-Down Approach",
+   "url": "https://gaia.cs.umass.edu/kurose_ross/online_lectures.htm",
+   "section": "Core CS: Core systems",
+   "duration": "8 weeks",
+   "effort": "4–12 hours/week",
+   "prerequisites": "algebra, probability, basic CS",
+   "requires": [],
+   "skill": "Computer networking"
+  },
+  {
+   "title": "Algorithms: Design and Analysis, Part 1",
+   "url": "https://www.edx.org/learn/algorithms/stanford-university-algorithms-design-and-analysis-part-1",
+   "section": "Core CS: Core theory",
+   "duration": "8 weeks",
+   "effort": "4-8 hours/week",
+   "prerequisites": "any programming language, Mathematics for Computer Science",
+   "requires": [
+    "Mathematics for Computer Science"
+   ],
+   "skill": "Algorithms"
+  },
+  {
+   "title": "Algorithms: Design and Analysis, Part 2",
+   "url": "https://www.edx.org/learn/algorithms/stanford-university-algorithms-design-and-analysis-part-2",
+   "section": "Core CS: Core theory",
+   "duration": "8 weeks",
+   "effort": "4-8 hours/week",
+   "prerequisites": "Algorithms Part 1",
+   "requires": [
+    "Algorithms: Design and Analysis, Part 1"
+   ],
+   "skill": "Algorithms"
+  },
+  {
+   "title": "Cybersecurity Fundamentals",
+   "url": "https://www.edx.org/learn/cybersecurity/rochester-institute-of-technology-cybersecurity-fundamentals",
+   "section": "Core CS: Core security",
+   "duration": "8 weeks",
+   "effort": "10-12 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Security fundamentals"
+  },
+  {
+   "title": "Principles of Secure Coding",
+   "url": "https://www.coursera.org/learn/secure-coding-principles",
+   "section": "Core CS: Core security",
+   "duration": "4 weeks",
+   "effort": "4 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Security fundamentals"
+  },
+  {
+   "title": "Identifying Security Vulnerabilities",
+   "url": "https://www.coursera.org/learn/identifying-security-vulnerabilities",
+   "section": "Core CS: Core security",
+   "duration": "4 weeks",
+   "effort": "4 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Vulnerability analysis"
+  },
+  {
+   "title": "Identifying Security Vulnerabilities in C/C++ Programming",
+   "url": "https://www.coursera.org/learn/identifying-security-vulnerabilities-c-programming",
+   "section": "Core CS: Core security",
+   "duration": "4 weeks",
+   "effort": "5 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Vulnerability analysis"
+  },
+  {
+   "title": "Exploiting and Securing Vulnerabilities in Java Applications",
+   "url": "https://www.coursera.org/learn/exploiting-securing-vulnerabilities-java-applications",
+   "section": "Core CS: Core security",
+   "duration": "4 weeks",
+   "effort": "5 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Vulnerability analysis"
+  },
+  {
+   "title": "Databases: Modeling and Theory",
+   "url": "https://www.edx.org/learn/databases/stanford-university-databases-modeling-and-theory",
+   "section": "Core CS: Core applications",
+   "duration": "2 weeks",
+   "effort": "10 hours/week",
+   "prerequisites": "core programming",
+   "requires": [],
+   "skill": "Databases and SQL"
+  },
+  {
+   "title": "Databases: Relational Databases and SQL",
+   "url": "https://www.edx.org/learn/relational-databases/stanford-university-databases-relational-databases-and-sql",
+   "section": "Core CS: Core applications",
+   "duration": "2 weeks",
+   "effort": "10 hours/week",
+   "prerequisites": "core programming",
+   "requires": [],
+   "skill": "Databases and SQL"
+  },
+  {
+   "title": "Databases: Semistructured Data",
+   "url": "https://www.edx.org/learn/relational-databases/stanford-university-databases-semistructured-data",
+   "section": "Core CS: Core applications",
+   "duration": "2 weeks",
+   "effort": "10 hours/week",
+   "prerequisites": "core programming",
+   "requires": [],
+   "skill": "Databases and SQL"
+  },
+  {
+   "title": "Machine Learning",
+   "url": "https://www.deeplearning.ai/courses/machine-learning-specialization/",
+   "section": "Core CS: Core applications",
+   "duration": "11 weeks",
+   "effort": "9 hours/week",
+   "prerequisites": "Basic coding",
+   "requires": [],
+   "skill": "Machine learning"
+  },
+  {
+   "title": "Computer Graphics",
+   "url": "https://www.edx.org/learn/computer-graphics/the-university-of-california-san-diego-computer-graphics",
+   "section": "Core CS: Core applications",
+   "duration": "6 weeks",
+   "effort": "12 hours/week",
+   "prerequisites": "C++ or Java, Basic Linear Algebra",
+   "requires": [],
+   "skill": "Computer graphics"
+  },
+  {
+   "title": "Software Engineering: Introduction",
+   "url": "https://www.edx.org/learn/software-engineering/university-of-british-columbia-software-engineering-introduction",
+   "section": "Core CS: Core applications",
+   "duration": "6 weeks",
+   "effort": "8-10 hours/week",
+   "prerequisites": "Core Programming, and a sizable project",
+   "requires": [],
+   "skill": "Software engineering"
+  },
+  {
+   "title": "Ethics, Technology and Engineering",
+   "url": "https://www.coursera.org/learn/ethics-technology-engineering",
+   "section": "Core CS: Core ethics",
+   "duration": "9 weeks",
+   "effort": "2 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
+  },
+  {
+   "title": "Introduction to Intellectual Property",
+   "url": "https://www.coursera.org/learn/introduction-intellectual-property",
+   "section": "Core CS: Core ethics",
+   "duration": "4 weeks",
+   "effort": "2 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
+  },
+  {
+   "title": "Data Privacy Fundamentals",
+   "url": "https://www.coursera.org/learn/northeastern-data-privacy",
+   "section": "Core CS: Core ethics",
+   "duration": "3 weeks",
+   "effort": "3 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Ethics, intellectual property, and privacy"
+  },
+  {
+   "title": "Parallel Programming",
+   "url": "https://www.coursera.org/learn/scala-parallel-programming",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "4 weeks",
+   "effort": "6-8 hours/week",
+   "prerequisites": "Scala programming",
+   "requires": [],
+   "skill": "Parallel programming"
+  },
+  {
+   "title": "Compilers",
+   "url": "https://www.edx.org/learn/computer-science/stanford-university-compilers",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "9 weeks",
+   "effort": "6-8 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Compilers"
+  },
+  {
+   "title": "Introduction to Haskell",
+   "url": "https://www.seas.upenn.edu/~cis194/fall16/",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "14 weeks",
+   "effort": "-",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Functional and logic programming"
+  },
+  {
+   "title": "Learn Prolog Now!",
+   "url": "https://www.let.rug.nl/bos/lpn//lpnpage.php?pageid=online",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "12 weeks",
+   "effort": "-",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Functional and logic programming"
+  },
+  {
+   "title": "Software Debugging",
+   "url": "https://www.youtube.com/playlist?list=PLAwxTw4SYaPkxK63TiT88oEe-AIBhr96A",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "8 weeks",
+   "effort": "6 hours/week",
+   "prerequisites": "Python, object-oriented programming",
+   "requires": [],
+   "skill": "Testing and debugging"
+  },
+  {
+   "title": "Software Testing",
+   "url": "https://www.youtube.com/playlist?list=PLAwxTw4SYaPkWVHeC_8aSIbSxE_NXI76g",
+   "section": "Advanced CS: Advanced programming",
+   "duration": "4 weeks",
+   "effort": "6 hours/week",
+   "prerequisites": "Python, programming experience",
+   "requires": [],
+   "skill": "Testing and debugging"
+  },
+  {
+   "title": "Computation Structures 1: Digital Circuits",
+   "url": "https://learning.edx.org/course/course-v1:MITx+6.004.1x_3+3T2016",
+   "section": "Advanced CS: Advanced systems",
+   "duration": "10 weeks",
+   "effort": "6 hours/week",
+   "prerequisites": "Nand2Tetris II",
+   "requires": [],
+   "skill": "Computer architecture"
+  },
+  {
+   "title": "Computation Structures 2: Computer Architecture",
+   "url": "https://learning.edx.org/course/course-v1:MITx+6.004.2x+3T2015",
+   "section": "Advanced CS: Advanced systems",
+   "duration": "10 weeks",
+   "effort": "6 hours/week",
+   "prerequisites": "Computation Structures 1",
+   "requires": [
+    "Computation Structures 1: Digital Circuits"
+   ],
+   "skill": "Computer architecture"
+  },
+  {
+   "title": "Computation Structures 3: Computer Organization",
+   "url": "https://learning.edx.org/course/course-v1:MITx+6.004.3x_2+1T2017",
+   "section": "Advanced CS: Advanced systems",
+   "duration": "10 weeks",
+   "effort": "6 hours/week",
+   "prerequisites": "Computation Structures 2",
+   "requires": [
+    "Computation Structures 2: Computer Architecture"
+   ],
+   "skill": "Computer architecture"
+  },
+  {
+   "title": "Theory of Computation",
+   "url": "https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/",
+   "section": "Advanced CS: Advanced theory",
+   "duration": "13 weeks",
+   "effort": "10 hours/week",
+   "prerequisites": "Mathematics for Computer Science, logic, algorithms",
+   "requires": [
+    "Mathematics for Computer Science"
+   ],
+   "skill": "Theory of computation"
+  },
+  {
+   "title": "Computational Geometry",
+   "url": "https://www.edx.org/learn/geometry/tsinghua-university-ji-suan-ji-he-computational-geometry",
+   "section": "Advanced CS: Advanced theory",
+   "duration": "16 weeks",
+   "effort": "8 hours/week",
+   "prerequisites": "algorithms, C++",
+   "requires": [],
+   "skill": "Computational geometry"
+  },
+  {
+   "title": "Algorithmic Game Theory",
+   "url": "https://timroughgarden.org/f13/f13.html",
+   "section": "Advanced CS: Advanced theory",
+   "duration": "10 weeks",
+   "effort": "12 hours/week",
+   "prerequisites": "Core Theory",
+   "requires": [],
+   "skill": "Algorithmic game theory"
+  },
+  {
+   "title": "Web Security Fundamentals",
+   "url": "https://www.edx.org/learn/computer-security/ku-leuven-web-security-fundamentals",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "5 weeks",
+   "effort": "4-6 hours/week",
+   "prerequisites": "understanding basic web technologies",
+   "requires": [],
+   "skill": "Web security"
+  },
+  {
+   "title": "Security Governance & Compliance",
+   "url": "https://www.coursera.org/learn/security-governance-compliance",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "3 weeks",
+   "effort": "3 hours/week",
+   "prerequisites": "-",
+   "requires": [],
+   "skill": "Security governance and forensics"
+  },
+  {
+   "title": "Digital Forensics Concepts",
+   "url": "https://www.coursera.org/learn/digital-forensics-concepts",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "3 weeks",
+   "effort": "2-3 hours/week",
+   "prerequisites": "Core Security",
+   "requires": [],
+   "skill": "Security governance and forensics"
+  },
+  {
+   "title": "Secure Software Development: Requirements, Design, and Reuse",
+   "url": "https://www.edx.org/learn/software-development/the-linux-foundation-secure-software-development-requirements-design-and-reuse",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "7 weeks",
+   "effort": "1-2 hours/week",
+   "prerequisites": "Core Programming and Core Security",
+   "requires": [],
+   "skill": "Secure software development"
+  },
+  {
+   "title": "Secure Software Development: Implementation",
+   "url": "https://www.edx.org/learn/software-development/the-linux-foundation-secure-software-development-implementation",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "7 weeks",
+   "effort": "1-2 hours/week",
+   "prerequisites": "Secure Software Development: Requirements, Design, and Reuse",
+   "requires": [
+    "Secure Software Development: Requirements, Design, and Reuse"
+   ],
+   "skill": "Secure software development"
+  },
+  {
+   "title": "Secure Software Development: Verification and More Specialized Topics",
+   "url": "https://www.edx.org/learn/software-engineering/the-linux-foundation-secure-software-development-verification-and-more-specialized-topics",
+   "section": "Advanced CS: Advanced Information Security",
+   "duration": "7 weeks",
+   "effort": "1-2 hours/week",
+   "prerequisites": "Secure Software Development: Implementation",
+   "requires": [
+    "Secure Software Development: Implementation"
+   ],
+   "skill": "Secure software development"
+  },
+  {
+   "title": "Essence of Linear Algebra",
+   "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab",
+   "section": "Advanced CS: Advanced math",
+   "duration": "-",
+   "effort": "-",
+   "prerequisites": "high school math",
+   "requires": [],
+   "skill": "Linear algebra"
+  },
+  {
+   "title": "Linear Algebra",
+   "url": "https://ocw.mit.edu/courses/mathematics/18-06sc-linear-algebra-fall-2011/",
+   "section": "Advanced CS: Advanced math",
+   "duration": "14 weeks",
+   "effort": "12 hours/week",
+   "prerequisites": "corequisite: Essence of Linear Algebra",
+   "requires": [],
+   "skill": "Linear algebra"
+  },
+  {
+   "title": "Introduction to Numerical Methods",
+   "url": "https://ocw.mit.edu/courses/mathematics/18-335j-introduction-to-numerical-methods-spring-2019/index.htm",
+   "section": "Advanced CS: Advanced math",
+   "duration": "14 weeks",
+   "effort": "12 hours/week",
+   "prerequisites": "Linear Algebra",
+   "requires": [
+    "Essence of Linear Algebra"
+   ],
+   "skill": "Numerical methods"
+  },
+  {
+   "title": "Introduction to Formal Logic",
+   "url": "https://forallx.openlogicproject.org/",
+   "section": "Advanced CS: Advanced math",
+   "duration": "10 weeks",
+   "effort": "4-8 hours/week",
+   "prerequisites": "Set Theory",
+   "requires": [],
+   "skill": "Formal logic"
+  },
+  {
+   "title": "Probability",
+   "url": "https://stat110.hsites.harvard.edu/",
+   "section": "Advanced CS: Advanced math",
+   "duration": "15 weeks",
+   "effort": "5-10 hours/week",
+   "prerequisites": "Differentiation and Integration",
+   "requires": [
+    "Calculus 1A: Differentiation",
+    "Calculus 1B: Integration"
+   ],
+   "skill": "Probability"
+  },
+  {
+   "title": "Fullstack Open",
+   "url": "https://fullstackopen.com/en/",
+   "section": "Final project",
+   "duration": "12 weeks",
+   "effort": "15 hours/week",
+   "prerequisites": "programming",
+   "requires": [
+    "Introduction to Computer Science and Programming using Python"
+   ],
+   "skill": "Full-stack web development (project)"
+  },
+  {
+   "title": "Modern Robotics",
+   "url": "https://modernrobotics.northwestern.edu",
+   "section": "Final project",
+   "duration": "26 weeks",
+   "effort": "2-5 hours/week",
+   "prerequisites": "freshman-level physics, linear algebra, calculus, linear ordinary differential equations",
+   "requires": [
+    "Essence of Linear Algebra"
+   ],
+   "skill": "Robotics (project)"
+  },
+  {
+   "title": "Data Mining (Specialization)",
+   "url": "https://www.coursera.org/specializations/data-mining",
+   "section": "Final project",
+   "duration": "30 weeks",
+   "effort": "2-5 hours/week",
+   "prerequisites": "machine learning",
+   "requires": [
+    "Machine Learning"
+   ],
+   "skill": "Data mining (project)"
+  },
+  {
+   "title": "Big Data (Specialization)",
+   "url": "https://www.coursera.org/specializations/big-data",
+   "section": "Final project",
+   "duration": "30 weeks",
+   "effort": "3-5 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Big data (project)"
+  },
+  {
+   "title": "Internet of Things (Specialization)",
+   "url": "https://www.coursera.org/specializations/internet-of-things",
+   "section": "Final project",
+   "duration": "30 weeks",
+   "effort": "1-5 hours/week",
+   "prerequisites": "strong programming",
+   "requires": [],
+   "skill": "Internet of Things (project)"
+  },
+  {
+   "title": "Cloud Computing (Specialization)",
+   "url": "https://www.coursera.org/specializations/cloud-computing",
+   "section": "Final project",
+   "duration": "30 weeks",
+   "effort": "2-6 hours/week",
+   "prerequisites": "C++ programming",
+   "requires": [
+    "Identifying Security Vulnerabilities in C/C++ Programming"
+   ],
+   "skill": "Cloud computing (project)"
+  },
+  {
+   "title": "Data Science (Specialization)",
+   "url": "https://www.coursera.org/specializations/jhu-data-science",
+   "section": "Final project",
+   "duration": "43 weeks",
+   "effort": "1-6 hours/week",
+   "prerequisites": "none",
+   "requires": [],
+   "skill": "Data science (project)"
+  },
+  {
+   "title": "Functional Programming in Scala (Specialization)",
+   "url": "https://www.coursera.org/specializations/scala",
+   "section": "Final project",
+   "duration": "29 weeks",
+   "effort": "4-5 hours/week",
+   "prerequisites": "One year programming experience",
+   "requires": [],
+   "skill": "Functional programming in Scala (project)"
+  },
+  {
+   "title": "Game Design and Development with Unity 2020 (Specialization)",
+   "url": "https://www.coursera.org/specializations/game-design-and-development",
+   "section": "Final project",
+   "duration": "6 months",
+   "effort": "5 hours/week",
+   "prerequisites": "programming, interactive design",
+   "requires": [
+    "Introduction to Computer Science and Programming using Python"
+   ],
+   "skill": "Game development (project)"
+  }
+ ]
+}

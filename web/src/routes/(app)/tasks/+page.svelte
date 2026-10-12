@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
+	import AgentDock from '$lib/AgentDock.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
 	import { capturing } from '$lib/capture.svelte';
+	import TaskBoard, { type BoardColumn } from '$lib/TaskBoard.svelte';
 	import TaskEditor from '$lib/TaskEditor.svelte';
 	import { capture, overdue, relativeDay, type Task } from '$lib/tasks';
 	import Button from '$lib/ui/Button.svelte';
@@ -10,27 +14,56 @@
 	import { toast } from '$lib/ui/toast.svelte';
 
 	const views = [
+		{ id: 'gtd', label: 'GTD board' },
+		{ id: 'kanban', label: 'Kanban' },
 		{ id: 'today', label: 'Today' },
+		{ id: 'overdue', label: 'Overdue' },
 		{ id: 'week', label: 'Week' },
 		{ id: 'month', label: 'Month' },
 		{ id: 'inbox', label: 'Inbox' },
 		{ id: 'next', label: 'Next' },
+		{ id: 'doing', label: 'In progress' },
 		{ id: 'waiting', label: 'Waiting' },
 		{ id: 'someday', label: 'Someday' },
 		{ id: 'done', label: 'Done' }
 	];
 	const empty: Record<string, string> = {
 		today: 'Nothing due or planned for today.',
+		overdue: 'Nothing overdue.',
 		week: 'Nothing planned this week.',
 		month: 'Nothing planned in the next 30 days.',
 		inbox: 'Inbox zero. Press n anywhere to capture something.',
 		next: 'No next actions. Clarify your inbox to find some.',
+		doing: 'Nothing in progress.',
 		waiting: 'Not waiting on anyone.',
 		someday: 'No someday/maybe ideas yet.',
 		done: 'Nothing completed yet.'
 	};
 
-	const view = $derived(page.url.searchParams.get('view') ?? 'today');
+	// Boards show several statuses side by side; each column is one status.
+	const boards: Record<string, Omit<BoardColumn, 'tasks'>[]> = {
+		gtd: [
+			{ status: 'inbox', label: 'Inbox', hint: 'Captured, not yet clarified.' },
+			{
+				status: 'next',
+				label: 'Next actions',
+				hint: 'The very next physical step, by context.',
+				byContext: true
+			},
+			{ status: 'waiting', label: 'Waiting for', hint: 'Delegated or blocked on someone.' },
+			{ status: 'someday', label: 'Someday / maybe', hint: 'Not now; review weekly.' }
+		],
+		kanban: [
+			{ status: 'next', label: 'To do', hint: 'Ready to start.' },
+			{ status: 'doing', label: 'In progress', hint: 'Keep this short.' },
+			{ status: 'waiting', label: 'Blocked', hint: 'Waiting on someone or something.' },
+			{ status: 'done', label: 'Done', hint: 'The most recent 20.' }
+		]
+	};
+
+	const view = $derived(page.url.searchParams.get('view') ?? 'gtd');
+	const board = $derived(boards[view]);
+	let columns = $state<BoardColumn[] | null>(null);
 	const context = $derived(page.url.searchParams.get('context'));
 	let tasks = $state<Task[] | null>(null);
 	let today = $state('');
@@ -47,6 +80,27 @@
 		if (context) params.set('context', context);
 		if (more && cursor) params.set('after', cursor);
 		try {
+			if (board) {
+				const cols = board;
+				const lists = await Promise.all(
+					cols.map((c) => {
+						const p = new URLSearchParams({
+							view: c.status,
+							limit: c.status === 'done' ? '20' : '100'
+						});
+						if (context) p.set('context', context);
+						return api<{ items: Task[]; today: string }>(`/v1/tasks?${p}`);
+					})
+				);
+				columns = cols.map((c, i) => ({ ...c, tasks: lists[i].items }));
+				today = lists[0]?.today ?? today;
+				tasks = lists.flatMap((l) => l.items);
+				cursor = null;
+				contexts = (await api<{ items: { context: string; open: number }[] }>('/v1/contexts'))
+					.items;
+				return;
+			}
+			columns = null;
 			const res = await api<{ items: Task[]; today: string; next_cursor: string | null }>(
 				`/v1/tasks?${params}`
 			);
@@ -70,6 +124,7 @@
 		void context;
 		void capturing.count;
 		tasks = null;
+		columns = null;
 		load();
 	});
 
@@ -77,9 +132,9 @@
 		e.preventDefault();
 		try {
 			const status =
-				view === 'inbox' || view === 'done'
+				view === 'inbox' || view === 'done' || view === 'gtd'
 					? 'inbox'
-					: view === 'week' || view === 'month' || view === 'today'
+					: ['kanban', 'week', 'month', 'today', 'overdue'].includes(view)
 						? 'next'
 						: view;
 			await capture(quick, {
@@ -110,6 +165,23 @@
 		}
 	}
 
+	async function move(t: Task, status: Task['status']) {
+		if (t.status === status) return;
+		try {
+			const { etag } = await apiResponse<Task>(`/v1/tasks/${t.id}`);
+			await api(`/v1/tasks/${t.id}`, {
+				method: 'PATCH',
+				headers: { 'If-Match': etag },
+				body: { status }
+			});
+			const to = board?.find((c) => c.status === status)?.label ?? status;
+			toast(`Moved “${t.title}” to ${to}.`);
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
 	async function checkIn() {
 		try {
 			await api(`/v1/checkins/daily/${today}`, { method: 'PUT', body: {} });
@@ -126,6 +198,37 @@
 		else u.searchParams.delete('context');
 		goto(u, { keepFocus: true, noScroll: true });
 	}
+
+	// A reminder's notification opens its task (EP-68).
+	$effect(() => {
+		const open = page.url.searchParams.get('open');
+		if (open) editing = open;
+	});
+
+	// Bulk actions (EP-64): select tasks, then change them all at once.
+	let selecting = $state(false);
+	let picked = $state<string[]>([]);
+	let bulkContext = $state('');
+	let bulkDue = $state('');
+	function pick(id: string, on: boolean) {
+		picked = on ? [...picked, id] : picked.filter((x) => x !== id);
+	}
+	async function bulk(body: Record<string, unknown>, said: string) {
+		try {
+			const ids = picked;
+			const r = await api<{ changed: number }>('/v1/tasks/bulk', {
+				method: 'POST',
+				body: { ids, ...body }
+			});
+			const text = `${r.changed} ${r.changed === 1 ? 'task' : 'tasks'} ${said}.`;
+			if (body.delete) deleted(text, ids[0], () => load());
+			else toast(text);
+			picked = [];
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
 </script>
 
 <svelte:head><title>Tasks · Axon</title></svelte:head>
@@ -138,6 +241,8 @@
 		</Button>
 	{/if}
 </div>
+
+<AgentDock {...pageAgents.tasks} onapplied={() => load()} />
 <p class="muted hint">Press <kbd>n</kbd> anywhere to capture a thought to your inbox.</p>
 
 <nav aria-label="Task views" class="tabs">
@@ -174,23 +279,111 @@
 
 {#if error}
 	<Status kind="error" message={error} retry={() => load()} />
+{:else if board}
+	{#if columns}
+		<TaskBoard
+			label={view === 'gtd' ? 'GTD board' : 'Kanban board'}
+			{columns}
+			{today}
+			onmove={move}
+			onopen={(id) => (editing = id)}
+			ontoggle={toggle}
+		/>
+	{:else}
+		<Status kind="loading" message="Loading tasks…" />
+	{/if}
 {:else if !tasks}
 	<Status kind="loading" message="Loading tasks…" />
 {:else if tasks.length === 0}
 	<Status kind="empty" message={empty[view] ?? 'Nothing here.'} />
 {:else}
+	<div class="select-bar">
+		<Button
+			variant="ghost"
+			onclick={() => {
+				selecting = !selecting;
+				picked = [];
+			}}>{selecting ? 'Done selecting' : 'Select'}</Button
+		>
+		{#if selecting}
+			<Button variant="ghost" onclick={() => (picked = tasks!.map((t) => t.id))}>Select all</Button>
+		{/if}
+	</div>
+	{#if selecting && picked.length}
+		<div class="bulk" role="group" aria-label="Change {picked.length} selected tasks">
+			<strong>{picked.length} selected</strong>
+			<Button
+				variant="secondary"
+				onclick={() => bulk({ change: { status: 'next' } }, 'moved to Next')}>Next</Button
+			>
+			<Button variant="secondary" onclick={() => bulk({ change: { status: 'waiting' } }, 'waiting')}
+				>Waiting</Button
+			>
+			<Button
+				variant="secondary"
+				onclick={() => bulk({ change: { status: 'someday' } }, 'set to someday')}>Someday</Button
+			>
+			<Button variant="secondary" onclick={() => bulk({ change: { status: 'done' } }, 'done')}
+				>Done</Button
+			>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					bulk({ change: { context: bulkContext.trim() || null } }, 'given a context');
+				}}
+			>
+				<label for="bulk-context" class="visually-hidden">Context for the selected tasks</label>
+				<input id="bulk-context" placeholder="@context" bind:value={bulkContext} maxlength="50" />
+				<Button type="submit" variant="ghost">Set context</Button>
+			</form>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					bulk(
+						{ change: { due_on: bulkDue || null } },
+						bulkDue ? 'given a due date' : 'without a due date'
+					);
+				}}
+			>
+				<label for="bulk-due" class="visually-hidden">Due date for the selected tasks</label>
+				<input id="bulk-due" type="date" bind:value={bulkDue} />
+				<Button type="submit" variant="ghost">Set due date</Button>
+			</form>
+			<Button variant="danger" onclick={() => bulk({ delete: true }, 'deleted')}>Delete</Button>
+		</div>
+	{/if}
 	<ul class="tasks">
 		{#each tasks as t (t.id)}
-			<li class:done={t.status === 'done' || t.status === 'cancelled'}>
-				<input
-					type="checkbox"
-					checked={t.status === 'done'}
-					onchange={() => toggle(t)}
-					aria-label={`Complete ${t.title}`}
-				/>
+			<li
+				class:done={t.status === 'done' || t.status === 'cancelled'}
+				class:picked={picked.includes(t.id)}
+			>
+				{#if selecting}
+					<input
+						type="checkbox"
+						class="pick"
+						checked={picked.includes(t.id)}
+						onchange={(e) => pick(t.id, e.currentTarget.checked)}
+						aria-label={`Select ${t.title}`}
+					/>
+				{:else}
+					<input
+						type="checkbox"
+						checked={t.status === 'done'}
+						onchange={() => toggle(t)}
+						aria-label={`Complete ${t.title}`}
+					/>
+				{/if}
 				<button class="title" onclick={() => (editing = t.id)}>{t.title}</button>
 				<span class="meta">
 					{#if t.recurrence}<span title="Repeats" aria-label="Repeats">↻</span>{/if}
+					{#if t.remind_at && new Date(t.remind_at).getTime() > Date.now()}<span title="Reminder"
+							>🔔 {new Date(t.remind_at).toLocaleString(undefined, {
+								weekday: 'short',
+								hour: '2-digit',
+								minute: '2-digit'
+							})}</span
+						>{/if}
 					{#if t.context}<span class="chip">{t.context}</span>{/if}
 					{#if t.due_on}<span class:overdue={overdue(t, today)}
 							>Due {relativeDay(t.due_on, today)}</span
@@ -206,6 +399,37 @@
 <TaskEditor bind:id={editing} onchange={() => load()} />
 
 <style>
+	.select-bar {
+		display: flex;
+		gap: var(--space-1);
+		justify-content: flex-end;
+	}
+	.bulk {
+		position: sticky;
+		top: 3.5rem;
+		z-index: 5;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+		margin-bottom: var(--space-2);
+		border: 1px solid var(--accent);
+		border-radius: var(--radius-lg);
+		background: var(--surface-solid);
+	}
+	.bulk form {
+		display: flex;
+		gap: var(--space-1);
+		align-items: center;
+	}
+	.bulk input {
+		font: inherit;
+		max-width: 10rem;
+	}
+	.picked {
+		background: var(--accent-soft);
+	}
 	.head {
 		display: flex;
 		justify-content: space-between;

@@ -9,7 +9,7 @@ How Axon runs on its servers. Host configuration (SSH, Docker, monitoring, logs)
 | Staging | `srv-staging` | https://srv-staging.tail781d53.ts.net |
 | Production | `srv-prod` | https://srv-prod.tail781d53.ts.net |
 
-Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, API, web, PostgreSQL 16 + pgvector, Valkey, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
+Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the API (with its background workers), web, PostgreSQL 16 + pgvector, the Anki bridge, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
 
 ## Prerequisites on the operator machine
 
@@ -25,6 +25,8 @@ age -d -i ~/.config/axon/age.key deploy/env/staging.env.age            # read
 age -d -i ~/.config/axon/age.key deploy/env/staging.env.age > /tmp/s    # edit…
 age -e -R deploy/env/recipients.txt -o deploy/env/staging.env.age /tmp/s && rm /tmp/s
 ```
+
+Settings that are not secret (for example `AXON_DEMO`) live in plain text in `deploy/env/{staging,prod}.settings.env`. `deploy.sh` appends them to the decrypted secrets, so they are reviewed in pull requests like code. Never repeat a secret's name there.
 
 > [!CAUTION]
 > Losing every private key listed in `recipients.txt` makes the env files and **all backups** unreadable. Keep a copy of `~/.config/axon/age.key` in a password manager. To add a key holder, append their public key to `recipients.txt` and re-encrypt both env files.
@@ -85,6 +87,132 @@ rm latest.dump latest.dump.age
 ```
 
 To rehearse without touching a server, restore into a throwaway `pgvector/pgvector:pg16` container and check `goose_db_version` and the `vector` extension.
+
+## Move an instance (EP-40)
+
+`axon instance export` writes the whole installation to one gzipped tar archive. It contains every table, uploaded pictures included (they are stored in the database), plus a `manifest.json` with the Axon version, the schema version, row counts, a SHA-256 per table, and a fingerprint of `AXON_ENCRYPTION_KEY`. The archive holds personal data and sealed secrets, so keep it like a backup: encrypt it at rest and delete it after use.
+
+`axon instance import`:
+
+- loads an archive only into a **fresh installation** (no accounts, every table empty);
+- moves the schema to the archive's version and copies every table in one transaction, checking each count and checksum;
+- then applies newer migrations, so an archive from an older Axon goes into a newer one;
+- refuses an archive from a newer Axon, a damaged archive, or a different `AXON_ENCRYPTION_KEY`, because TOTP secrets, AI provider keys, and tokens could not be opened without the same key;
+- needs the database's superuser (the compose `POSTGRES_USER` is one).
+
+The Anki bridge volume is a cache rebuilt from the sync server, so it is not part of the archive.
+
+```bash
+# On the old server (read-only, the API keeps running):
+ssh old 'cd /opt/axon && docker compose exec -T api axon instance export' > axon-instance.tar.gz
+
+# On the new server, after a normal install with the same AXON_ENCRYPTION_KEY:
+ssh new 'cd /opt/axon && docker compose exec -T api axon migrate up \
+  && docker compose stop web && docker compose exec -T api axon instance import \
+  && docker compose start web && docker compose exec -T api axon integrity' < axon-instance.tar.gz
+rm axon-instance.tar.gz
+```
+
+Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
+
+## Live notes sync with SecondBrain (EP-36)
+
+Run this once on `srv-secondbrain` to import `~/SecondBrain` (notes and its `Templates/` folder) and keep it in step both ways. Create a write token first under Account → Access tokens, and save it to `~/.config/axon/notes-token` (mode 0600):
+
+```bash
+docker run -d --name axon-notes-sync --restart unless-stopped \
+  -v "$HOME/SecondBrain:/vault" -v "$HOME/.config/axon/notes-token:/token:ro" \
+  axon-api:<version> notes-sync -dir /vault -state /vault/.axon-sync.json \
+  -url https://srv-prod.tail781d53.ts.net -token-file /token -watch
+```
+
+- Create, edit, rename, or delete a Markdown file and the note follows within seconds, and the other way round (tested within 10 s).
+- A note edited on both sides keeps both versions (`*.axon-conflict.md`).
+- Pictures and PDFs (`.png`, `.jpg`, `.gif`, `.webp`, `.svg`, `.pdf`, up to 10 MB each, 500 MB per person) sync the same way, byte for byte; a conflict keeps Axon's copy as `<name>.axon-conflict.<ext>`. A file that is not what its name says is reported as skipped and stays local.
+- Notes in `Templates/` appear as templates when you create a note in Axon; `{{title}}` and `{{date}}` are filled in.
+- `-watch` replaces `-git`: commit the vault on your own schedule, for example with a nightly cron `git -C ~/SecondBrain commit -am sync && git push`.
+- The service definition belongs to the fleet repository (ADR 0004); this command is what it should run.
+
+## Notes sync with SecondBrain
+
+`axon notes-sync` runs on the host that holds the vault (`srv-secondbrain`, `~/SecondBrain`) and talks to Axon over the tailnet with a personal access token. It only ever reads and writes inside the vault folder.
+
+1. In Axon, under Account → Access tokens, create a **write** token named after the host. Save it on the vault host as `~/.axon-token` with mode `600`.
+2. Copy the binary out of the release image (`docker create` the `axon-api` image, `docker cp <id>:/usr/local/bin/axon ./axon`) or build it with `go build ./cmd/axon`.
+3. Start with one-way import and check the report:
+   ```sh
+   axon notes-sync -dir ~/SecondBrain -url https://srv-prod.tail781d53.ts.net -token-file ~/.axon-token
+   ```
+4. Templates come with the vault: notes under `Templates/` (or `_templates/`) are offered in Axon's New note dialog, with Obsidian and Templater placeholders filled. Check the report lists them, then open Notes → New note.
+5. Once the import looks right, schedule it (systemd timer or cron, every 15 minutes). Add `-two-way -git` to write Axon's edits back and commit/push the repository.
+
+Conflicts are never resolved automatically: Axon's version is written next to the file as `<name>.axon-conflict.md` and the run reports it. Merge into the original, delete the conflict file, and the next run sends the merged version. The sync state (hashes only) lives in `.axon-sync-SecondBrain.json` beside the vault; deleting it makes the next run compare everything again, which is safe.
+
+## Demo account
+
+With `AXON_DEMO=1` (on for staging and production in the settings files), the landing page offers **Try the demo**. It is a shared account with sample data in every area, and it needs no passkey (ADR 0015).
+
+- The API creates the demo account once migrations have run, then resets it every night after 03:00 UTC.
+- To reset it now: `docker compose exec api axon demo reset`.
+- The demo cannot create tokens or passkeys, set AI providers, connect repositories, delete the account, or run agents. Real accounts never see its data.
+- To turn it off, set `AXON_DEMO=` in the settings file and deploy. The demo user stays in the database, unused, until you run `axon demo reset` again or remove it with `DELETE FROM users WHERE demo`.
+
+## Media catalogues (EP-17)
+
+- **Books** come from Open Library with no key. Set `AXON_CONTACT` (an email address) so Open Library can reach you; it is sent in the User-Agent. Without it, Axon sends `AXON_BASE_URL`.
+- **Films and series** need `TMDB_API_KEY`: your own key from your TMDB account settings (a v3 API key or a v4 read access token). TMDB's base licence is non-commercial, so a paid or revenue-generating Axon needs a separate agreement with TMDB. Keep the key in the encrypted env file, never in `*.settings.env`.
+- Without a key, or when a catalogue is down, people add items by hand.
+- Searches are cached for a week. Covers are copied into `media_covers` once and served by Axon. A daily job drops TMDB covers and descriptions older than six months, as TMDB's terms require.
+
+## Food catalogues and health data (EP-18)
+
+- Health logs need each person's `health_data` consent. Withdrawing it deletes their food entries and workouts at once; an operator cannot turn this off.
+- Open Food Facts needs no key; Axon identifies itself with `AXON_CONTACT`. The server stays under Open Food Facts' 10 searches and 15 product reads a minute (beyond that, people see "busy" for a few seconds).
+- `USDA_API_KEY` (free from data.gov, 1,000 requests an hour) turns USDA FoodData Central search on. Keep it in the encrypted env file.
+- Foods are cached for 30 days in `foods`. They are shared and hold no personal data.
+
+## Vault mirror (EP-48)
+
+A background worker in the API (`internal/mirror`) reads the event log every 3 seconds and keeps each person's items and their notes under `Axon/` in step, both ways; vault sync then carries the notes to the Markdown vault. Health logs are written only when the person turned them on, one way, and are removed when the health consent is withdrawn. The first run writes a note for every existing item. Tables: `vault_mirror` (item ↔ note), `vault_mirror_users`, `vault_mirror_queue` (habit check-ins and health logs), `vault_mirror_cursor`. Nothing to configure; people turn it off or change the folder in Preferences.
+
+## Anki packages
+
+`GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. 
+
+### Anki bridge (EP-42)
+
+The `anki` service (image `axon-anki`, deployed with the rest) syncs people's flashcards to their own anki-sync-server.
+- Set `ANKI_SYNC_URL` in the settings file to suggest the address of the server on `srv-services`.
+- Each person enters their own Anki user name and password under Learn → Flashcards → Anki.
+- To check the bridge against a disposable sync server: `sh scripts/check-anki-sync.sh` (CI runs it too).
+- If the `ankidata` volume is lost, the next sync downloads each person's collection from the sync server again; nothing is lost.
+
+## Data backfills
+
+`axon migrate up` (run by `deploy/deploy.sh`) also fills data that needs Go to compute for rows written before it existed, such as note tags. It is safe to repeat.
+
+## AI agents
+
+Each person can choose their own provider under **Agents → AI provider**: Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local server such as Ollama (`http://<host>:11434/v1`). Keys they enter are sealed with `AXON_ENCRYPTION_KEY`, so that variable must be set to store keys.
+
+The server can also offer a default Anthropic account to everyone:
+
+- **With a key:** add `ANTHROPIC_API_KEY=…` to the encrypted env file (see [Secrets](#secrets)) and deploy.
+- **Without storing a key:** on the host, run `ant auth login --no-browser` as the deploy user with `ANTHROPIC_CONFIG_DIR=/opt/axon/anthropic`, then add `AXON_ANTHROPIC_OAUTH=1` and `ANTHROPIC_CONFIG_DIR=/config/anthropic` to the env file, mount `/opt/axon/anthropic:/config/anthropic` into the `api` service in `deploy/compose.server.yaml`, and deploy. This bills the Anthropic Console organisation you signed in with. A Claude Pro or Max subscription cannot be used.
+
+Each person must still grant the `ai_agents` consent, and their monthly budget (default $2) caps spending. Remove the default and every other feature keeps working.
+
+Run outcomes are logged as `agent run finished` with status, tool count, tokens, and cost; prompts and replies are never logged. A run stuck as `running` after a restart is marked `failed` (`interrupted`) when the same person next starts one.
+
+## Load testing (EP-21)
+
+`api/cmd/axon-load` sends a mix of reads and writes (today, tasks, notes, search, dashboard overview, insights, habits, and 10 % task creation) with a write-scoped personal access token, and prints throughput and p50/p95/p99 per endpoint. It creates tasks, so run it only against a local stack or a throwaway instance:
+
+```bash
+cd api && AXON_TOKEN=axon_… go run ./cmd/axon-load -url http://localhost:3000/api -c 20 -d 60s
+```
+
+Measured on 2026-10-11 (4 vCPU, 7 GB; the demo account plus 5,000 tasks): 10 clients reach 481 requests/s at p95 79 ms, and 50 clients reach 713 requests/s at p95 197 ms, with no errors. The dashboard overview is the slowest endpoint. [ADR 0021](adr/0021-single-host-measured.md) keeps the single-host design on these numbers.
 
 ## Service level objectives
 

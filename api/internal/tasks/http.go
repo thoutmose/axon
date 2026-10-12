@@ -39,6 +39,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/tasks/{id}", h.get)
 	r.Patch("/v1/tasks/{id}", h.update)
 	r.Delete("/v1/tasks/{id}", h.delete)
+	r.Post("/v1/tasks/bulk", h.bulk)
 	r.Get("/v1/contexts", h.contexts)
 	r.Get("/v1/checkins", h.listCheckins)
 	r.Put("/v1/checkins/{kind}/{day}", h.checkIn)
@@ -65,6 +66,12 @@ func decodeFields(r *http.Request) (Fields, error) {
 	if err := httpx.Decode(r, &raw); err != nil {
 		return Fields{}, ValidationError{err.Error()}
 	}
+	return fieldsFrom(raw)
+}
+
+// fieldsFrom reads task fields from a JSON object; null clears a field
+// that can be empty.
+func fieldsFrom(raw map[string]json.RawMessage) (Fields, error) {
 	var f Fields
 	str := func(key string, dst **string, clear *bool) error {
 		v, ok := raw[key]
@@ -98,6 +105,18 @@ func decodeFields(r *http.Request) (Fields, error) {
 		*dst = &t
 		return nil
 	}
+	stamp := func(key string, dst **time.Time, clear *bool) error {
+		var s *string
+		if err := str(key, &s, clear); err != nil || s == nil {
+			return err
+		}
+		t, err := time.Parse(time.RFC3339, *s)
+		if err != nil {
+			return ValidationError{fmt.Sprintf("%s must be a time like 2026-10-14T15:00:00+02:00.", key)}
+		}
+		*dst = &t
+		return nil
+	}
 	for _, step := range []error{
 		str("title", &f.Title, nil),
 		str("notes", &f.Notes, nil),
@@ -106,6 +125,7 @@ func decodeFields(r *http.Request) (Fields, error) {
 		str("recurrence", &f.Recurrence, &f.ClearRecurrence),
 		date("scheduled_on", &f.ScheduledOn, &f.ClearScheduled),
 		date("due_on", &f.DueOn, &f.ClearDue),
+		stamp("remind_at", &f.RemindAt, &f.ClearRemind),
 	} {
 		if step != nil {
 			return Fields{}, step
@@ -182,6 +202,63 @@ func (h *Handlers) update(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, t)
 }
 
+// bulk changes or deletes many tasks at once (EP-64), in one transaction:
+// all of them or none. Tasks that are not the person's are refused.
+func (h *Handlers) bulk(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	var b struct {
+		IDs    []uuid.UUID                `json:"ids"`
+		Delete bool                       `json:"delete"`
+		Change map[string]json.RawMessage `json:"change"`
+	}
+	if err := httpx.Decode(r, &b); err != nil {
+		h.fail(w, ValidationError{err.Error()})
+		return
+	}
+	if len(b.IDs) == 0 || len(b.IDs) > 200 {
+		h.fail(w, ValidationError{"Send 1 to 200 task ids."})
+		return
+	}
+	if b.Delete == (len(b.Change) > 0) {
+		h.fail(w, ValidationError{"Send either delete: true or the fields to change."})
+		return
+	}
+	if _, ok := b.Change["title"]; ok {
+		h.fail(w, ValidationError{"Titles are changed one task at a time."})
+		return
+	}
+	f, err := fieldsFrom(b.Change)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	done := 0
+	err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		for _, id := range b.IDs {
+			if b.Delete {
+				if err := Delete(r.Context(), tx, who.UserID, id, graph.UserActor); err != nil {
+					return err
+				}
+			} else {
+				cur, err := Get(r.Context(), tx, who.UserID, id)
+				if err != nil {
+					return err
+				}
+				if _, err := Update(r.Context(), tx, who.UserID, id, graph.UserActor, cur.UpdatedAt, f); err != nil {
+					return err
+				}
+			}
+			done++
+		}
+		return nil
+	})
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"changed": done})
+}
+
 func (h *Handlers) delete(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
@@ -213,9 +290,11 @@ var views = map[string]view{
 	"all":     {where: open},
 	"inbox":   {where: `t.status = 'inbox'`},
 	"next":    {where: `t.status = 'next'`},
+	"doing":   {where: `t.status = 'doing'`},
 	"waiting": {where: `t.status = 'waiting'`},
 	"someday": {where: `t.status = 'someday'`},
 	"today":   {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on <= $2 OR t.due_on <= $2)`},
+	"overdue": {where: open + ` AND t.status <> 'someday' AND t.due_on < $2`},
 	"week":    {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 6 OR t.due_on BETWEEN $2 AND $2 + 6)`},
 	"month":   {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 30 OR t.due_on BETWEEN $2 AND $2 + 30)`},
 	"done":    {where: `t.status IN ('done', 'cancelled')`, done: true},
@@ -238,7 +317,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	}
 	v, ok := views[name]
 	if !ok {
-		httpx.Problem(w, http.StatusBadRequest, "?view= must be one of all, inbox, next, waiting, someday, today, week, month, done.")
+		httpx.Problem(w, http.StatusBadRequest, "?view= must be one of all, inbox, next, doing, waiting, someday, today, overdue, week, month, done.")
 		return
 	}
 	limit, ok := httpx.Limit(r)
@@ -292,7 +371,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		var scheduled, due, occurrence *time.Time
 		var key string // the sort key as PostgreSQL text, which parses back losslessly
 		err := row.Scan(&t.ID, &t.Title, &t.Notes, &t.Status, &t.Context, &scheduled, &due, &t.Recurrence,
-			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &key)
+			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt, &key)
 		t.ScheduledOn, t.DueOn, t.OccurrenceOn = datePtr(scheduled), datePtr(due), datePtr(occurrence)
 		keys = append(keys, key)
 		return t, err
