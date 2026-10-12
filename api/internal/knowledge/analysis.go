@@ -310,7 +310,7 @@ func analyseKinds(ctx context.Context, q db.Querier, userID uuid.UUID, kinds []s
 	df := map[string]int{}
 	for i, d := range docs {
 		text := Clean(d.content)
-		out[i] = &analysed{doc: d, phrases: KeyPhrases(d.info.Title+".\n"+text, phrasesPerNote*2), read: Read(text)}
+		out[i] = &analysed{doc: d, phrases: cachedKeyPhrases(d.info.Title+".\n"+text, phrasesPerNote*2), read: Read(text)}
 		for _, p := range out[i].phrases {
 			df[p.key]++
 		}
@@ -618,7 +618,7 @@ func AnalyseNote(ctx context.Context, q db.Querier, userID, noteID uuid.UUID) (N
 				all := append([]*doc{d}, docsOf(docs)...)
 				analyse(all)
 				text := Clean(d.content)
-				self = &analysed{doc: d, phrases: KeyPhrases(d.info.Title+".\n"+text, phrasesPerNote), read: Read(text)}
+				self = &analysed{doc: d, phrases: cachedKeyPhrases(d.info.Title+".\n"+text, phrasesPerNote), read: Read(text)}
 			}
 		}
 		if self == nil {
