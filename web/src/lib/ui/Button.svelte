@@ -20,7 +20,14 @@
 </script>
 
 {#if href}
-	<a class="btn {variant}" {href}>{@render children()}</a>
+	<!-- A link styled as a button keeps its label; when disabled it is not a link at all. -->
+	{#if disabled}
+		<span class="btn {variant} disabled" aria-disabled="true" aria-label={rest['aria-label']}
+			>{@render children()}</span
+		>
+	{:else}
+		<a class="btn {variant}" {href} aria-label={rest['aria-label']}>{@render children()}</a>
+	{/if}
 {:else}
 	<button class="btn {variant}" {type} disabled={disabled || busy} aria-busy={busy} {...rest}>
 		{@render children()}
@@ -34,8 +41,8 @@
 		justify-content: center;
 		gap: var(--space-2);
 		min-height: 2.75rem;
-		padding: var(--space-2) var(--space-4);
-		border-radius: var(--radius);
+		padding: var(--space-2) var(--space-6);
+		border-radius: 999px;
 		border: 1px solid transparent;
 		font: inherit;
 		font-weight: 600;
@@ -49,10 +56,15 @@
 		background: var(--accent);
 		color: var(--accent-fg);
 	}
+	.primary:hover {
+		filter: brightness(1.08);
+	}
 	.secondary {
 		background: var(--surface);
 		color: var(--fg);
 		border-color: var(--border);
+		-webkit-backdrop-filter: var(--glass-blur);
+		backdrop-filter: var(--glass-blur);
 	}
 	.secondary:hover {
 		border-color: var(--accent);
@@ -76,5 +88,9 @@
 	}
 	.btn[aria-busy='true'] {
 		cursor: progress;
+	}
+	.btn.disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
 </style>

@@ -28,7 +28,19 @@ import (
 var Purposes = []Purpose{
 	{"ai_agents", "Send selected data to the configured AI provider so agents can draft suggestions."},
 	{"external_metadata", "Look up films, series, and books with TMDB and Open Library."},
-	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9)."},
+	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data."},
+	{"health_ai", "Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you."},
+	{"food_lookups", "Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them."},
+	{"ai_embeddings", "Send the text of your notes to the embedding service you chose, to search them by meaning. Turning it off deletes the stored embeddings."},
+}
+
+// onWithdraw holds what must happen when a consent is withdrawn, such as
+// deleting the data that only that consent allowed to keep.
+var onWithdraw = map[string]func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error{}
+
+// OnWithdraw registers fn to run, in the same transaction, when purpose is withdrawn.
+func OnWithdraw(purpose string, fn func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error) {
+	onWithdraw[purpose] = fn
 }
 
 // Purpose is one consentable use of data.
@@ -46,13 +58,21 @@ type Service struct {
 	db          *pgxpool.Pool
 	log         *slog.Logger
 	exporters   map[string]Exporter
+	files       map[string]FileExporter
 	clearCookie func(http.ResponseWriter)
 }
+
+// FileExporter returns files (path → bytes) to include in the export archive
+// under a folder named after the section, e.g. notes as Markdown.
+type FileExporter func(ctx context.Context, q db.Querier, userID uuid.UUID) (map[string][]byte, error)
+
+// RegisterFiles adds a folder of files to the export archive.
+func (s *Service) RegisterFiles(folder string, f FileExporter) { s.files[folder] = f }
 
 // New returns the service with the built-in account sections registered.
 // clearCookie signs the browser out after erasure.
 func New(pool *pgxpool.Pool, log *slog.Logger, clearCookie func(http.ResponseWriter)) *Service {
-	s := &Service{db: pool, log: log, exporters: map[string]Exporter{}, clearCookie: clearCookie}
+	s := &Service{db: pool, log: log, exporters: map[string]Exporter{}, files: map[string]FileExporter{}, clearCookie: clearCookie}
 	s.Register("account", exportAccount)
 	s.Register("passkeys", exportPasskeys)
 	s.Register("sessions", exportSessions)
@@ -71,7 +91,7 @@ func (s *Service) Routes(r chi.Router) {
 	r.Get("/v1/me/consents", s.listConsents)
 	r.Put("/v1/me/consents/{purpose}", s.setConsent)
 	r.Get("/v1/me/export", s.export)
-	r.Delete("/v1/me", s.erase)
+	r.With(auth.NotDemo).Delete("/v1/me", s.erase)
 }
 
 func (s *Service) fail(w http.ResponseWriter, err error) {
@@ -156,6 +176,11 @@ func (s *Service) setConsent(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if fn := onWithdraw[purpose]; fn != nil && !*body.Granted {
+			if err := fn(r.Context(), tx, id.UserID); err != nil {
+				return err
+			}
+		}
 		return audit.Record(r.Context(), tx, id.UserID, audit.ConsentChanged, httpx.ClientIP(r), r.UserAgent(),
 			map[string]any{"purpose": purpose, "granted": *body.Granted})
 	})
@@ -192,6 +217,17 @@ func (s *Service) export(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, err)
 		return
 	}
+	files := map[string][]byte{}
+	for folder, f := range s.files {
+		got, err := f(r.Context(), s.db, id.UserID)
+		if err != nil {
+			s.fail(w, err)
+			return
+		}
+		for p, b := range got {
+			files[folder+"/"+p] = b
+		}
+	}
 	if err := audit.Record(r.Context(), s.db, id.UserID, audit.DataExported, httpx.ClientIP(r), r.UserAgent(), nil); err != nil {
 		s.fail(w, err)
 		return
@@ -206,6 +242,16 @@ func (s *Service) export(w http.ResponseWriter, r *http.Request) {
 	}
 	if f, err := zw.Create("README.md"); err == nil {
 		_, _ = f.Write([]byte(readme(data)))
+	}
+	paths := make([]string, 0, len(files))
+	for p := range files {
+		paths = append(paths, p)
+	}
+	slices.Sort(paths)
+	for _, p := range paths {
+		if f, err := zw.Create(p); err == nil {
+			_, _ = f.Write(files[p])
+		}
 	}
 	if err := zw.Close(); err != nil {
 		s.log.Error("export stream failed", "err", err)

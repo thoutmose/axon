@@ -25,6 +25,13 @@
 	}
 
 	async function setConsent(c: Schemas['Consent'], granted: boolean) {
+		// Withdrawing this consent deletes the health logs it allowed.
+		if (
+			c.id === 'health_data' &&
+			!granted &&
+			!window.confirm('Turning this off deletes all your food and training logs now. Continue?')
+		)
+			return;
 		busy = true;
 		try {
 			await api(`/v1/me/consents/${c.id}`, { method: 'PUT', body: { granted } });

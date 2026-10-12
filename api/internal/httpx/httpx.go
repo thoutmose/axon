@@ -2,6 +2,7 @@
 package httpx
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -14,6 +15,9 @@ import (
 
 // MaxBody caps request bodies; no Axon request needs more.
 const MaxBody = 64 << 10
+
+// WriteJSON encodes body after the caller has written status and headers.
+func WriteJSON(w http.ResponseWriter, body any) { _ = json.NewEncoder(w).Encode(body) }
 
 // JSON writes body as JSON with the given status.
 func JSON(w http.ResponseWriter, status int, body any) {
@@ -36,13 +40,23 @@ func Problem(w http.ResponseWriter, status int, detail string) {
 }
 
 // Decode reads a JSON body into v, rejecting unknown fields and oversized bodies.
-func Decode(r *http.Request, v any) error {
-	dec := json.NewDecoder(io.LimitReader(r.Body, MaxBody))
+func Decode(r *http.Request, v any) error { return DecodeN(r, v, MaxBody) }
+
+// DecodeN is Decode with a custom size limit, for endpoints that carry documents.
+func DecodeN(r *http.Request, v any, limit int64) error {
+	dec := json.NewDecoder(io.LimitReader(r.Body, limit))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(v); err != nil {
 		return errors.New("the request body is not valid JSON for this endpoint")
 	}
 	return nil
+}
+
+// DecodeStrict reads JSON bytes into v, rejecting unknown fields.
+func DecodeStrict(b []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.DisallowUnknownFields()
+	return dec.Decode(v)
 }
 
 // ClientIP returns the caller's address. Caddy sets X-Real-IP from the

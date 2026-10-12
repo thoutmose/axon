@@ -1,0 +1,22 @@
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+}
+.axon-bar {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: 0.75rem 1.25rem;
+	background: #0b1220;
+	color: #fff;
+}
+.axon-bar a {
+	color: #fff;
+}
+.axon-bar a:first-child {
+	font-weight: 700;
+	text-decoration: none;
+}
+.axon-bar a:last-child {
+	margin-left: auto;
+}

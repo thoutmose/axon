@@ -29,6 +29,7 @@ type Identity struct {
 	SessionID uuid.UUID
 	TokenID   uuid.UUID
 	Scope     string // "session", or the token's "read" / "write"
+	Demo      bool   // the shared demo account (EP-28)
 }
 
 type ctxKey struct{}
@@ -56,8 +57,12 @@ func hashToken(token string) []byte {
 // cookie. A new token is issued on every sign-in, so a pre-set cookie can
 // never become an authenticated session (no session fixation).
 func (s *Service) startSession(ctx context.Context, q db.Querier, w http.ResponseWriter, r *http.Request, userID uuid.UUID) error {
+	return s.startSessionFor(ctx, q, w, r, userID, SessionAbsolute)
+}
+
+func (s *Service) startSessionFor(ctx context.Context, q db.Querier, w http.ResponseWriter, r *http.Request, userID uuid.UUID, ttl time.Duration) error {
 	token, hash := newToken()
-	expires := time.Now().Add(SessionAbsolute)
+	expires := time.Now().Add(ttl)
 	_, err := q.Exec(ctx,
 		`INSERT INTO sessions (id, user_id, token_hash, user_agent, expires_at) VALUES ($1, $2, $3, $4, $5)`,
 		uuid.Must(uuid.NewV7()), userID, hash, truncate(r.UserAgent(), 300), expires)
@@ -108,8 +113,9 @@ func (s *Service) identify(r *http.Request) (Identity, error) {
 	var id Identity
 	var lastSeen time.Time
 	err = s.db.QueryRow(r.Context(),
-		`SELECT id, user_id, last_seen_at FROM sessions WHERE token_hash = $1 AND expires_at > now()`,
-		hashToken(c.Value)).Scan(&id.SessionID, &id.UserID, &lastSeen)
+		`SELECT s.id, s.user_id, s.last_seen_at, u.demo FROM sessions s JOIN users u ON u.id = s.user_id
+		 WHERE s.token_hash = $1 AND s.expires_at > now()`,
+		hashToken(c.Value)).Scan(&id.SessionID, &id.UserID, &lastSeen, &id.Demo)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Identity{}, errNotFound
 	}
@@ -165,6 +171,18 @@ func (s *Service) require(next http.Handler, sessionOnly bool) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, id)))
+	})
+}
+
+// NotDemo refuses actions the shared demo account must not take: anything
+// that adds credentials, reaches outside Axon, or deletes the account.
+func NotDemo(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if id, _ := FromContext(r.Context()); id.Demo {
+			httpx.Problem(w, http.StatusForbidden, "The demo account cannot do this. Create your own account to use it.")
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
 

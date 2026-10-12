@@ -18,7 +18,7 @@ Confirm the README's core stack:
 | API | REST, OpenAPI 3.1 written first; no GraphQL until a measured need |
 | Frontend | SvelteKit + TypeScript + Tailwind |
 | Data | PostgreSQL 16 + pgvector (system of record) |
-| Ephemeral | Valkey for cache and job queue; jobs stay idempotent in Postgres |
+| Ephemeral | ~~Valkey for cache and job queue~~ — removed, see [ADR 0022](0022-no-valkey-yet.md); jobs stay idempotent in Postgres |
 
 Resolve the open choices:
 

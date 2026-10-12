@@ -18,7 +18,7 @@ func init() {
 	export := func(context.Context, db.Querier, uuid.UUID) (any, error) { return []string{}, nil }
 	graph.RegisterType(graph.Type{Name: "test_note", Table: "test_notes", Export: export})
 	graph.RegisterType(graph.Type{Name: "test_goal", Table: "test_goals", Export: export})
-	graph.RegisterRelation(graph.Relation{Name: "supports", Sources: []string{"test_note"}, Targets: []string{"test_goal"}})
+	graph.RegisterRelation(graph.Relation{Name: "test_supports", Sources: []string{"test_note"}, Targets: []string{"test_goal"}})
 }
 
 func userID(t *testing.T, c *client) uuid.UUID {
@@ -59,13 +59,13 @@ func TestGraphEndpoints(t *testing.T) {
 	alice.mustDo(200, "GET", "/v1/entities/"+note.String(), nil)
 	alice.mustDo(404, "GET", "/v1/entities/"+uuid.Must(uuid.NewV7()).String(), nil)
 
-	link := []byte(`{"source_id":"` + note.String() + `","relation":"supports","target_id":"` + goal.String() + `"}`)
+	link := []byte(`{"source_id":"` + note.String() + `","relation":"test_supports","target_id":"` + goal.String() + `"}`)
 	var created struct {
 		ID string `json:"id"`
 	}
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/links", link), &created)
 	alice.mustDo(409, "POST", "/v1/links", link)
-	alice.mustDo(422, "POST", "/v1/links", []byte(`{"source_id":"`+goal.String()+`","relation":"supports","target_id":"`+note.String()+`"}`))
+	alice.mustDo(422, "POST", "/v1/links", []byte(`{"source_id":"`+goal.String()+`","relation":"test_supports","target_id":"`+note.String()+`"}`))
 
 	back := alice.mustDo(200, "GET", "/v1/entities/"+goal.String()+"/links?direction=incoming&limit=1", nil)
 	if !bytes.Contains(back, []byte(note.String())) || !bytes.Contains(back, []byte(`"next_cursor":"`)) {

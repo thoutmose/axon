@@ -30,10 +30,14 @@ export async function apiResponse<T = unknown>(
 			method: init.method ?? 'GET',
 			credentials: 'same-origin',
 			headers: {
-				...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+				...(init.body === undefined || init.body instanceof Blob
+					? {}
+					: { 'Content-Type': 'application/json' }),
 				...init.headers
 			},
-			body: init.body === undefined ? undefined : JSON.stringify(init.body)
+			// Files (e.g. a ZIP import) go as they are; everything else as JSON.
+			body:
+				init.body === undefined || init.body instanceof Blob ? init.body : JSON.stringify(init.body)
 		});
 	} catch {
 		connection.apiDown = true;

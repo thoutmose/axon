@@ -1,0 +1,1057 @@
+{
+ "domains": [
+  {
+   "id": "cs",
+   "title": "Computer science foundations",
+   "questions": [
+    {
+     "id": "cs-1",
+     "question": "What does a compiler do?",
+     "choices": [
+      "Stores files on disk",
+      "Runs a program line by line",
+      "Translates source code into another language, often machine code",
+      "Schedules processes"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "cs-2",
+     "question": "Which number is 1010 in binary?",
+     "choices": [
+      "8",
+      "12",
+      "5",
+      "10"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "cs-3",
+     "question": "What is recursion?",
+     "choices": [
+      "A sorting algorithm",
+      "A loop that never ends",
+      "A function that calls itself",
+      "A data type"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "dsa",
+   "title": "Algorithms and data structures",
+   "questions": [
+    {
+     "id": "dsa-1",
+     "question": "What is the time complexity of binary search on a sorted array?",
+     "choices": [
+      "O(1)",
+      "O(n)",
+      "O(n log n)",
+      "O(log n)"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "dsa-2",
+     "question": "Which structure gives first-in, first-out order?",
+     "choices": [
+      "Queue",
+      "Binary tree",
+      "Stack",
+      "Hash set"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "dsa-3",
+     "question": "What is the average lookup time in a hash table?",
+     "choices": [
+      "O(n²)",
+      "O(log n)",
+      "O(1)",
+      "O(n)"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "maths",
+   "title": "Mathematics for computing",
+   "questions": [
+    {
+     "id": "maths-1",
+     "question": "What is the derivative of x²?",
+     "choices": [
+      "2x",
+      "x³/3",
+      "2",
+      "x"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "maths-2",
+     "question": "Two fair coins are tossed. What is the probability of two heads?",
+     "choices": [
+      "1/4",
+      "1/2",
+      "1/3",
+      "3/4"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "maths-3",
+     "question": "What does multiplying a vector by a matrix do?",
+     "choices": [
+      "Turns it into a scalar",
+      "Sorts its entries",
+      "Always doubles its length",
+      "Applies a linear transformation to it"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "os",
+   "title": "Operating systems",
+   "questions": [
+    {
+     "id": "os-1",
+     "question": "What is a process?",
+     "choices": [
+      "A running program with its own address space",
+      "A CPU instruction",
+      "A file on disk",
+      "A network packet"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "os-2",
+     "question": "What is virtual memory for?",
+     "choices": [
+      "Giving each process its own address space, backed by RAM and disk",
+      "Storing passwords",
+      "Compiling code",
+      "Faster networking"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "os-3",
+     "question": "What can happen when two threads wait for each other's lock?",
+     "choices": [
+      "A context switch only",
+      "Nothing",
+      "A deadlock",
+      "A page fault"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "linux-bash",
+   "title": "Linux and Bash",
+   "questions": [
+    {
+     "id": "linux-bash-1",
+     "question": "Which command lists files, including hidden ones?",
+     "choices": [
+      "cd -h",
+      "cat -a",
+      "ls -a",
+      "pwd -l"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "linux-bash-2",
+     "question": "What does `chmod 600 file` allow?",
+     "choices": [
+      "Only the owner executes",
+      "Everyone reads and writes",
+      "Nobody reads",
+      "Only the owner reads and writes"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "linux-bash-3",
+     "question": "In Bash, what does `$?` hold?",
+     "choices": [
+      "The current directory",
+      "The process ID",
+      "The exit status of the last command",
+      "The number of arguments"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "c-cpp",
+   "title": "C and C++",
+   "questions": [
+    {
+     "id": "c-cpp-1",
+     "question": "In C, what does a pointer store?",
+     "choices": [
+      "A memory address",
+      "A file handle",
+      "A function name",
+      "A value"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "c-cpp-2",
+     "question": "What does RAII do in C++?",
+     "choices": [
+      "Creates threads",
+      "Runs code at compile time",
+      "Ties resource lifetime to object lifetime",
+      "Disables exceptions"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "c-cpp-3",
+     "question": "What is reading past the end of an array in C?",
+     "choices": [
+      "Undefined behaviour",
+      "Returns zero",
+      "Always a compile error",
+      "Throws an exception"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "java",
+   "title": "Java",
+   "questions": [
+    {
+     "id": "java-1",
+     "question": "What runs Java bytecode?",
+     "choices": [
+      "The JDK compiler only",
+      "The browser",
+      "The operating system kernel",
+      "The JVM"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "java-2",
+     "question": "Which collection rejects duplicate elements?",
+     "choices": [
+      "ArrayList",
+      "HashSet",
+      "LinkedList",
+      "ArrayDeque"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "java-3",
+     "question": "What does `final` mean on a variable?",
+     "choices": [
+      "It can be assigned only once",
+      "It is garbage-collected first",
+      "It is static",
+      "It is thread-safe"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "python",
+   "title": "Python",
+   "questions": [
+    {
+     "id": "python-1",
+     "question": "What does `[x * 2 for x in range(3)]` give?",
+     "choices": [
+      "[0, 1, 2]",
+      "[2, 4, 6]",
+      "[1, 2, 3]",
+      "[0, 2, 4]"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "python-2",
+     "question": "Which type is immutable?",
+     "choices": [
+      "dict",
+      "set",
+      "list",
+      "tuple"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "python-3",
+     "question": "What does a `with` statement guarantee?",
+     "choices": [
+      "The context manager's exit code runs, even on error",
+      "Type checking",
+      "A new thread",
+      "Faster code"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "rust",
+   "title": "Rust",
+   "questions": [
+    {
+     "id": "rust-1",
+     "question": "What happens when you assign a String to another variable in Rust?",
+     "choices": [
+      "Ownership moves to the new variable",
+      "It is garbage-collected",
+      "Both share it mutably",
+      "It is copied"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "rust-2",
+     "question": "How many mutable references to a value may exist at once?",
+     "choices": [
+      "One",
+      "Any number",
+      "Two",
+      "None"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "rust-3",
+     "question": "What does `Option<T>` represent?",
+     "choices": [
+      "A value that may be absent",
+      "An error message",
+      "A thread",
+      "A pointer"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "networking",
+   "title": "Computer networking",
+   "questions": [
+    {
+     "id": "networking-1",
+     "question": "Which protocol guarantees ordered, reliable delivery?",
+     "choices": [
+      "IP",
+      "ICMP",
+      "UDP",
+      "TCP"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "networking-2",
+     "question": "What does DNS do?",
+     "choices": [
+      "Encrypts traffic",
+      "Resolves names to IP addresses",
+      "Routes packets between ISPs",
+      "Assigns MAC addresses"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "networking-3",
+     "question": "What is the default port for HTTPS?",
+     "choices": [
+      "443",
+      "80",
+      "22",
+      "8080"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "devops",
+   "title": "DevOps and GitOps",
+   "questions": [
+    {
+     "id": "devops-1",
+     "question": "What is continuous integration?",
+     "choices": [
+      "Merging and testing changes frequently and automatically",
+      "Deploying once a year",
+      "Manual testing",
+      "Writing documentation"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "devops-2",
+     "question": "What does infrastructure as code mean?",
+     "choices": [
+      "Servers configured by hand",
+      "Code running on bare metal",
+      "A programming language",
+      "Infrastructure defined in versioned files"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "devops-3",
+     "question": "In GitOps, what is the source of truth for deployments?",
+     "choices": [
+      "A wiki page",
+      "A Git repository",
+      "A spreadsheet",
+      "The production server"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "containers",
+   "title": "Docker, Podman, and Kubernetes",
+   "questions": [
+    {
+     "id": "containers-1",
+     "question": "What is a container image?",
+     "choices": [
+      "A network",
+      "A running virtual machine",
+      "A packaged filesystem and configuration to start containers from",
+      "A screenshot"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "containers-2",
+     "question": "What is a Kubernetes Pod?",
+     "choices": [
+      "A user",
+      "A cluster",
+      "A storage volume",
+      "The smallest deployable unit, holding one or more containers"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "containers-3",
+     "question": "How do containers differ from virtual machines?",
+     "choices": [
+      "They cannot run Linux",
+      "They need a hypervisor",
+      "They share the host kernel",
+      "Each has its own kernel"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "web",
+   "title": "Web development and full stack",
+   "questions": [
+    {
+     "id": "web-1",
+     "question": "Which language styles web pages?",
+     "choices": [
+      "SQL",
+      "HTML",
+      "HTTP",
+      "CSS"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "web-2",
+     "question": "What does `const` do in JavaScript?",
+     "choices": [
+      "Prevents reassigning the binding",
+      "Makes an object immutable",
+      "Declares a type",
+      "Makes a deep copy"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "web-3",
+     "question": "What does a 404 status mean?",
+     "choices": [
+      "Redirect",
+      "Server error",
+      "Not found",
+      "Unauthorized"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "api-design",
+   "title": "API design",
+   "questions": [
+    {
+     "id": "api-design-1",
+     "question": "Which HTTP method should be idempotent and replace a resource?",
+     "choices": [
+      "PATCH",
+      "POST",
+      "CONNECT",
+      "PUT"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "api-design-2",
+     "question": "Which status fits a request that failed validation?",
+     "choices": [
+      "422",
+      "200",
+      "301",
+      "503"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "api-design-3",
+     "question": "What is cursor pagination good for?",
+     "choices": [
+      "Stable pages while data changes",
+      "Avoiding authentication",
+      "Smaller JSON keys",
+      "Caching images"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "system-design",
+   "title": "System design and data-intensive applications",
+   "questions": [
+    {
+     "id": "system-design-1",
+     "question": "What does a load balancer do?",
+     "choices": [
+      "Encrypts disks",
+      "Stores data",
+      "Spreads requests across servers",
+      "Compiles code"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "system-design-2",
+     "question": "By the CAP theorem, during a network partition a system must choose between…",
+     "choices": [
+      "latency and throughput",
+      "speed and cost",
+      "SQL and NoSQL",
+      "consistency and availability"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "system-design-3",
+     "question": "What is a cache used for?",
+     "choices": [
+      "Authentication",
+      "Keeping copies of data for faster reads",
+      "Logging",
+      "Backups"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "databases",
+   "title": "Database architecture and administration",
+   "questions": [
+    {
+     "id": "databases-1",
+     "question": "What does an index usually speed up?",
+     "choices": [
+      "Lookups and filtered reads",
+      "Writes",
+      "Backups",
+      "Schema changes"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "databases-2",
+     "question": "What does the I in ACID stand for?",
+     "choices": [
+      "Idempotence",
+      "Isolation",
+      "Indexing",
+      "Integrity"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "databases-3",
+     "question": "Which SQL clause filters groups after aggregation?",
+     "choices": [
+      "WHERE",
+      "LIMIT",
+      "ORDER BY",
+      "HAVING"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "data-engineering",
+   "title": "Data engineering, DataOps, and big data",
+   "questions": [
+    {
+     "id": "data-engineering-1",
+     "question": "What does ETL stand for?",
+     "choices": [
+      "Edit, tag, link",
+      "Extract, transform, load",
+      "Encrypt, transfer, log",
+      "Evaluate, test, launch"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-engineering-2",
+     "question": "What is Apache Kafka mainly?",
+     "choices": [
+      "A container runtime",
+      "A relational database",
+      "A distributed event log for streaming",
+      "A BI dashboard"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "data-engineering-3",
+     "question": "What is a star schema?",
+     "choices": [
+      "A sharding key",
+      "A graph database",
+      "A backup format",
+      "A fact table joined to dimension tables"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "data-analysis",
+   "title": "Data analysis",
+   "questions": [
+    {
+     "id": "data-analysis-1",
+     "question": "Which measure is least affected by outliers?",
+     "choices": [
+      "Mean",
+      "Range",
+      "Median",
+      "Sum"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "data-analysis-2",
+     "question": "What does `df.groupby('city').size()` give in pandas?",
+     "choices": [
+      "Column names",
+      "Rows per city",
+      "The mean of each column",
+      "Unique cities sorted"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-analysis-3",
+     "question": "Which chart best shows a trend over time?",
+     "choices": [
+      "Venn diagram",
+      "Line chart",
+      "Word cloud",
+      "Pie chart"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "data-science",
+   "title": "Data science",
+   "questions": [
+    {
+     "id": "data-science-1",
+     "question": "What is overfitting?",
+     "choices": [
+      "Using too little data",
+      "A model that is too simple",
+      "A model that fits training data well but generalises poorly",
+      "A visualisation error"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "data-science-2",
+     "question": "Why split data into training and test sets?",
+     "choices": [
+      "To estimate performance on unseen data",
+      "To remove outliers",
+      "To balance classes",
+      "To make training faster"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "data-science-3",
+     "question": "What does a p-value measure?",
+     "choices": [
+      "Effect size",
+      "How surprising the data are if the null hypothesis holds",
+      "Sample size",
+      "The probability the hypothesis is true"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "machine-learning",
+   "title": "Machine learning and deep learning",
+   "questions": [
+    {
+     "id": "machine-learning-1",
+     "question": "What does gradient descent minimise?",
+     "choices": [
+      "The number of features",
+      "A loss function",
+      "Training time",
+      "The learning rate"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "machine-learning-2",
+     "question": "Which task is supervised learning?",
+     "choices": [
+      "Predicting house prices from labelled examples",
+      "Finding anomalies without labels",
+      "Reducing dimensions",
+      "Clustering customers"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "machine-learning-3",
+     "question": "What is the attention mechanism central to?",
+     "choices": [
+      "Decision trees",
+      "k-means",
+      "Linear regression",
+      "Transformers"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "mlops",
+   "title": "MLOps",
+   "questions": [
+    {
+     "id": "mlops-1",
+     "question": "Why version training data and models?",
+     "choices": [
+      "It is not useful",
+      "To reproduce and roll back results",
+      "To save disk space",
+      "To speed up inference"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "mlops-2",
+     "question": "What is model drift?",
+     "choices": [
+      "A GPU fault",
+      "A slow training loop",
+      "Performance degrading as real data changes",
+      "A naming convention"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "mlops-3",
+     "question": "What does a model registry hold?",
+     "choices": [
+      "Model versions with metadata and stage",
+      "Dashboards",
+      "Raw logs",
+      "User passwords"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "security",
+   "title": "Cyber security and DevSecOps",
+   "questions": [
+    {
+     "id": "security-1",
+     "question": "Which defence stops SQL injection best?",
+     "choices": [
+      "Longer passwords",
+      "HTTPS",
+      "Hiding error messages",
+      "Parameterised queries"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "security-2",
+     "question": "What does a password hash function like Argon2 add over SHA-256?",
+     "choices": [
+      "Compression",
+      "Deliberate slowness and memory cost against guessing",
+      "Encryption keys",
+      "Reversibility"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "security-3",
+     "question": "In DevSecOps, when should security checks run?",
+     "choices": [
+      "Continuously, in the delivery pipeline",
+      "Never automatically",
+      "Only after an incident",
+      "Only before a yearly audit"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "cloud",
+   "title": "Cloud computing",
+   "questions": [
+    {
+     "id": "cloud-1",
+     "question": "What is the shared responsibility model?",
+     "choices": [
+      "The provider is responsible for everything",
+      "The provider secures the cloud; you secure what you run in it",
+      "You are responsible for the data centre",
+      "Nobody is responsible"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "cloud-2",
+     "question": "What does autoscaling do?",
+     "choices": [
+      "Renames resources",
+      "Backs up data",
+      "Encrypts traffic",
+      "Changes capacity with load"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "cloud-3",
+     "question": "What is object storage like S3 best for?",
+     "choices": [
+      "Running containers",
+      "Low-latency transactions",
+      "DNS",
+      "Large amounts of files and blobs"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "soft-skills",
+   "title": "Soft skills for engineers",
+   "questions": [
+    {
+     "id": "soft-skills-1",
+     "question": "What is the core idea of spaced repetition?",
+     "choices": [
+      "Study only the night before",
+      "Reread notes many times in one sitting",
+      "Highlight everything",
+      "Review just before forgetting, at growing intervals"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "soft-skills-2",
+     "question": "In a hard conversation, what helps most?",
+     "choices": [
+      "Interrupting to save time",
+      "Avoiding the topic",
+      "Winning the argument",
+      "Listening and restating the other person's view"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "soft-skills-3",
+     "question": "What makes technical writing clear?",
+     "choices": [
+      "Passive voice everywhere",
+      "Knowing the audience and saying one thing per sentence",
+      "Jargon",
+      "Long sentences"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "gitops",
+   "title": "GitOps",
+   "questions": [
+    {
+     "id": "gitops-1",
+     "question": "In GitOps, what is the source of truth for what runs in the cluster?",
+     "choices": [
+      "The cluster's current state",
+      "A Git repository of declarative configuration",
+      "The CI server's logs",
+      "A wiki page"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "gitops-2",
+     "question": "How does a GitOps agent such as Argo CD or Flux apply changes?",
+     "choices": [
+      "Engineers run kubectl by hand",
+      "It pulls the desired state from Git and reconciles the cluster",
+      "CI pushes scripts over SSH",
+      "It edits Git to match the cluster"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "gitops-3",
+     "question": "Someone edits a deployment directly in the cluster. What does a GitOps agent do?",
+     "choices": [
+      "Commits the change to Git",
+      "Nothing, forever",
+      "Detects the drift and restores what Git declares",
+      "Deletes the cluster"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "dataops",
+   "title": "DataOps",
+   "questions": [
+    {
+     "id": "dataops-1",
+     "question": "What does DataOps borrow from DevOps?",
+     "choices": [
+      "Manual approvals for every query",
+      "Versioning, automated tests, and continuous delivery for data pipelines",
+      "Storing data only in spreadsheets",
+      "Avoiding monitoring"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dataops-2",
+     "question": "Where should a check like \"order_id is never null\" live?",
+     "choices": [
+      "In a dashboard someone looks at weekly",
+      "In an automated data test that runs with the pipeline",
+      "In a comment",
+      "Nowhere; trust the source"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dataops-3",
+     "question": "What does data lineage tell you?",
+     "choices": [
+      "Who owns the database server",
+      "Where a dataset came from and what depends on it",
+      "How fast a query runs",
+      "The table's disk size"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "devsecops",
+   "title": "DevSecOps",
+   "questions": [
+    {
+     "id": "devsecops-1",
+     "question": "What does \"shift left\" mean in DevSecOps?",
+     "choices": [
+      "Move security checks earlier, into design, code, and CI",
+      "Hand security to a separate team at the end",
+      "Disable tests to ship faster",
+      "Run scans only in production"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "devsecops-2",
+     "question": "What does a signed build with provenance (SLSA, Sigstore) let you verify?",
+     "choices": [
+      "That the code has no bugs",
+      "Who built an artifact, from which source, and that it was not tampered with",
+      "The licence of every dependency",
+      "Server uptime"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "devsecops-3",
+     "question": "When is threat modelling most useful?",
+     "choices": [
+      "After an incident only",
+      "While designing a feature, before it is built",
+      "Never; scanners find everything",
+      "Once per decade"
+     ],
+     "answer": 1
+    }
+   ]
+  }
+ ]
+}

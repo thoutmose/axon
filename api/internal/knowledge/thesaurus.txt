@@ -1,0 +1,98 @@
+# Axon's thesaurus: one group of synonyms or near-synonyms per line, English
+# and French. Written for Axon (EP-37); words are matched after stemming.
+learn, study, education, training, lesson, course, apprendre, étude, formation, cours
+memory, recall, retention, remember, memorise, memorize, mémoire, souvenir, rappel
+review, revision, recap, revise, révision, relecture
+practice, exercise, drill, rehearse, pratique, entraînement
+understand, comprehend, grasp, insight, comprendre, compréhension
+idea, concept, notion, thought, idée, pensée
+note, notebook, journal, log, carnet
+knowledge, wisdom, expertise, savoir, connaissance
+question, problem, issue, puzzle, problème
+answer, solution, response, réponse
+goal, objective, target, aim, purpose, objectif, but, cible
+plan, roadmap, schedule, strategy, planning, stratégie
+task, todo, chore, action, tâche
+project, initiative, venture, projet
+habit, routine, ritual, habitude
+focus, attention, concentration, concentrer
+productivity, efficiency, output, productivité, efficacité
+time, schedule, calendar, agenda, temps, calendrier
+deadline, due, échéance
+health, wellbeing, wellness, fitness, santé, forme
+exercise, workout, training, sport, run, running, course
+sleep, rest, nap, sommeil, repos
+food, meal, diet, nutrition, eating, repas, alimentation
+stress, anxiety, pressure, tension, anxiété
+money, finance, budget, cash, funds, argent, finances
+save, saving, savings, épargne, économiser
+spend, spending, expense, cost, dépense, coût
+income, salary, wage, revenue, revenu, salaire
+invest, investment, portfolio, investissement
+debt, loan, credit, liability, dette, prêt
+buy, purchase, acheter, achat
+house, home, apartment, flat, maison, logement, appartement
+family, parent, child, kids, famille, enfant
+friend, friendship, ami, amitié
+work, job, career, employment, profession, travail, emploi, carrière
+meeting, call, conversation, réunion, appel
+team, group, crew, équipe, groupe
+manager, lead, leader, leadership, manageur, dirigeant
+write, writing, draft, essay, écrire, rédaction, essai
+read, reading, book, lecture, livre, lire
+article, paper, essay, publication
+video, lecture, talk, conference, vidéo, conférence
+program, code, software, application, app, programme, logiciel
+bug, defect, error, fault, erreur, défaut
+test, testing, check, verify, validation, vérifier
+deploy, release, ship, launch, déployer, lancer
+server, host, machine, node, serveur
+database, datastore, storage, base, sql, données
+query, request, lookup, requête
+network, internet, connection, réseau
+security, safety, protection, secure, sécurité
+privacy, confidentiality, consent, confidentialité, consentement
+cloud, aws, azure, gcp, nuage
+container, docker, podman, conteneur
+cluster, kubernetes, orchestration
+pipeline, workflow, process, flux, processus
+algorithm, procedure, method, algorithme, méthode
+data, dataset, information, donnée, information
+analysis, analytics, insight, analyse
+model, modelling, modeling, modèle
+machine, learning, ml, neural, ai, intelligence
+graph, network, diagram, graphe, schéma
+design, architecture, structure, conception
+api, interface, endpoint, contract
+performance, speed, latency, throughput, vitesse, latence
+scale, scalability, growth, évolutivité, croissance
+reliability, availability, uptime, fiabilité, disponibilité
+cost, price, fee, prix, tarif
+happy, joy, content, glad, heureux, joie
+sad, unhappy, down, triste
+fear, worry, concern, peur, inquiétude
+calm, peace, serene, relax, calme, paix
+create, build, make, craft, créer, construire, fabriquer
+improve, enhance, refine, better, améliorer
+change, modify, update, edit, changer, modifier
+remove, delete, erase, supprimer, effacer
+start, begin, launch, commence, démarrer, commencer
+finish, complete, done, end, terminer, finir
+fast, quick, rapid, rapide
+slow, gradual, lent
+big, large, huge, grand, gros
+small, little, tiny, petit
+important, key, critical, essential, crucial, essentiel
+simple, easy, basic, facile
+complex, complicated, hard, difficult, difficile
+travel, trip, journey, voyage
+city, town, ville
+music, song, musique, chanson
+film, movie, cinema, cinéma
+series, show, tv, série
+game, play, jeu, jouer
+art, painting, drawing, dessin, peinture
+science, research, experiment, recherche, expérience
+math, mathematics, maths, mathématiques
+history, past, histoire, passé
+language, idiom, tongue, langue, langage

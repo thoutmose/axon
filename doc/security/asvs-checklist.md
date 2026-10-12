@@ -7,7 +7,7 @@ Status of the chapters EP-04 touches. ✅ met · ➖ not applicable · ⏳ later
 | Requirement | Status | How |
 |---|---|---|
 | 2.1 Password security (2.1.1–2.1.12) | ➖ | No passwords; passkeys only |
-| 2.2.1 Anti-automation against brute force | ✅ | Per-IP rate limit on every sign-in endpoint |
+| 2.2.1 Anti-automation against brute force | ✅ | Per-IP rate limit on every sign-in endpoint; recovery sign-in locks for 15 minutes after five wrong authenticator codes per account (EP-21) |
 | 2.2.2 Weak authenticators (SMS/email) not used | ✅ | Passkeys, TOTP, single-use recovery codes only |
 | 2.2.3 Notify users after authentication changes | ✅ | Audit log in Account → Recent activity (no email by design) |
 | 2.2.4 Phishing resistance (L3) | ✅ | WebAuthn is origin-bound |

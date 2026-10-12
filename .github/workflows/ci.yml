@@ -41,6 +41,8 @@ jobs:
           version: v2.13.2
           working-directory: api
       - run: go vet ./...
+      - name: Known vulnerabilities (reachable code only)
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - name: Unit and integration tests
         run: go test -race -count=1 -p 1 ./...
         env:
@@ -74,6 +76,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Lint the OpenAPI document
         run: docker run --rm -v "$PWD/api/openapi:/spec" -w /spec redocly/cli:2.6.0 lint openapi.yaml
+      - name: The French README keeps the English one's structure
+        run: sh scripts/check-readme.sh
+
+  anki:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: api/go.mod
+      - name: Exported decks import into Anki (official library)
+        run: sh scripts/check-apkg.sh
+      - name: The Anki bridge syncs with anki-sync-server (official library)
+        run: sh scripts/check-anki-sync.sh
 
   e2e:
     runs-on: ubuntu-24.04
@@ -83,8 +100,11 @@ jobs:
       - name: Start the stack
         run: |
           cp .env.example .env
+          echo AXON_DEMO=1 >> .env
+          echo AXON_CALENDAR_PRIVATE=1 >> .env # the test follows Axon's own feed through Caddy
           docker compose up -d --build --wait
           docker compose exec -T api axon migrate up
+          docker compose exec -T api axon demo reset
       - name: Playwright with axe (Chromium, virtual passkey)
         run: >-
           docker run --rm --network host -v "$PWD/web:/work" -w /work
@@ -114,6 +134,7 @@ jobs:
           - { name: api, context: api }
           - { name: web, context: web }
           - { name: backup, context: deploy/backup }
+          - { name: anki, context: deploy/anki }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build

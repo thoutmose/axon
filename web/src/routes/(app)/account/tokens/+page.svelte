@@ -66,6 +66,11 @@
 	title="Access tokens"
 	description="For scripts and sync tools. A token can read (or change) your data, but never manage your account, export it, or delete it."
 >
+	<p class="muted">
+		Every endpoint is documented in the <a href="/api-docs/index.html" rel="external"
+			>API reference</a
+		>, generated from the live OpenAPI document.
+	</p>
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !tokens}

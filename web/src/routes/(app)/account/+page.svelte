@@ -7,6 +7,7 @@
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
+	import { avatar, avatarSrc } from '$lib/avatar.svelte';
 
 	let me = $state<Schemas['Me'] | null>(null);
 	let etag = '';
@@ -26,6 +27,7 @@
 			etag = res.etag;
 			name = me.display_name;
 			timezone = me.timezone;
+			avatar.version = me.avatar_updated_at ?? '';
 		} catch (err) {
 			error = message(err);
 		}
@@ -61,12 +63,62 @@
 		}
 	}
 
+	async function upload(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		busy = true;
+		try {
+			const res = await fetch('/api/v1/me/avatar', {
+				method: 'PUT',
+				headers: { 'Content-Type': file.type },
+				body: file
+			});
+			if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
+			toast('Picture updated.');
+			await load();
+		} catch (err) {
+			toast(err instanceof Error ? err.message : String(err), 'error');
+		} finally {
+			busy = false;
+			input.value = '';
+		}
+	}
+
+	async function removePicture() {
+		try {
+			await api('/v1/me/avatar', { method: 'DELETE' });
+			toast('Back to your default picture.');
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
 	onMount(load);
 </script>
 
 <svelte:head><title>Account · Axon</title></svelte:head>
 
 {#if me}
+	<Section
+		id="picture"
+		title="Profile picture"
+		description="PNG or JPEG, up to 5 MB. It is cropped square and resized; camera and location details are removed."
+	>
+		<div class="picture">
+			<img src={avatarSrc(avatar.version)} alt={me.display_name} width="96" height="96" />
+			<div class="picture-actions">
+				<label class="upload">
+					<span>Upload a picture</span>
+					<input type="file" accept="image/png,image/jpeg" onchange={upload} disabled={busy} />
+				</label>
+				{#if me.avatar_updated_at}
+					<Button variant="ghost" onclick={removePicture}>Use the default picture</Button>
+				{/if}
+			</div>
+		</div>
+	</Section>
 	<Section id="profile" title="Name">
 		<form onsubmit={rename}>
 			<TextField
@@ -142,5 +194,24 @@
 		display: grid;
 		gap: var(--space-2);
 		margin: 0 0 var(--space-6);
+	}
+	.picture {
+		display: flex;
+		gap: var(--space-4);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.picture img {
+		border-radius: 50%;
+		border: 1px solid var(--border);
+	}
+	.picture-actions {
+		display: grid;
+		gap: var(--space-2);
+	}
+	.upload {
+		display: grid;
+		gap: var(--space-1);
+		font-weight: 600;
 	}
 </style>

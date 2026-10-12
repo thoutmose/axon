@@ -60,12 +60,12 @@ if [[ "$env" == prod ]]; then
 fi
 
 echo "building $version"
-AXON_VERSION=$version docker compose build api web
+AXON_VERSION=$version docker compose build api web anki
 build_net=$(sed -n 's/^AXON_BUILD_NETWORK=//p' .env 2>/dev/null)
 docker build -q --network "${build_net:-default}" -t "axon-backup:$version" deploy/backup >/dev/null
 
 echo "copying images to $host"
-docker save "axon-api:$version" "axon-web:$version" "axon-backup:$version" | ssh "$host" docker load
+docker save "axon-api:$version" "axon-web:$version" "axon-anki:$version" "axon-backup:$version" | ssh "$host" docker load
 
 echo "copying configuration"
 ssh "$host" "sudo install -d -o \$(id -un) -g \$(id -gn) -m 0750 $remote_dir && mkdir -p -m 0700 $remote_dir/backups"
@@ -76,6 +76,8 @@ remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@
 ssh "$host" 'f=/var/lib/prometheus/node-exporter/axon_backup.prom; [ -f $f ] || sudo install -o "$(id -un)" -m 0644 /dev/null $f'
 {
   age --decrypt -i "$key" "deploy/env/$env.env.age"
+  # Non-secret settings, reviewed in the open (they must not repeat a secret's name).
+  grep -v '^\s*\(#\|$\)' "deploy/env/$env.settings.env"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"
   echo "AXON_VERSION=$version"
 } | ssh "$host" "umask 077 && cat > $remote_dir/.env.next"
@@ -85,17 +87,20 @@ remote '
   set -e
   if [ -f .env ]; then grep "^AXON_VERSION=" .env | cut -d= -f2 > previous-version; fi
   mv .env.next .env
-  docker compose up -d --wait db valkey
+  docker compose up -d --wait db
   docker compose run --rm --no-deps api migrate up
   docker compose run --rm --no-deps api integrity
   docker compose up -d --wait --remove-orphans
+  # rsync replaces the Caddyfile with a new file, and a single-file bind mount
+  # keeps the old one: recreate Caddy so header and route changes apply.
+  docker compose up -d --wait --no-deps --force-recreate caddy
   # Keep only the running and previous versions for rollback.
   keep="$(grep "^AXON_VERSION=" .env | cut -d= -f2)|$(cat previous-version 2>/dev/null || echo none)"
-  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|backup):" \
+  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup):" \
     | grep -vE ":($keep)\$" | xargs -r docker rmi >/dev/null
 '
 # Locally, only the version just deployed is worth keeping.
-docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|backup):" \
+docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup):" \
   | grep -vE ":($version|dev)\$" | xargs -r docker rmi >/dev/null || true
 
 echo "serving on the tailnet"

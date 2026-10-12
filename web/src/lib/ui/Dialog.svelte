@@ -7,6 +7,7 @@
 		children
 	}: { open: boolean; title: string; children: Snippet } = $props();
 	let dialog: HTMLDialogElement;
+	const uid = $props.id(); // several dialogs can share a page
 
 	$effect(() => {
 		if (open && !dialog.open) dialog.showModal();
@@ -14,8 +15,8 @@
 	});
 </script>
 
-<dialog bind:this={dialog} aria-labelledby="dialog-title" onclose={() => (open = false)}>
-	<h2 id="dialog-title">{title}</h2>
+<dialog bind:this={dialog} aria-labelledby="{uid}-title" onclose={() => (open = false)}>
+	<h2 id="{uid}-title">{title}</h2>
 	{@render children()}
 </dialog>
 
