@@ -95,6 +95,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-44 | Coach agents | Personal Trainer and Nutritionist agents with a separate consent to share health data with the AI provider, and a safety eval suite. Split from EP-18. | COULD | 42 pts | EP-18, EP-19 | Done |
 | EP-45 | Daily-use fixes 2 | Pomodoro with 4 work sessions by default, a cleaner Today header, the dashboard network made of hard and soft skills only, and savings pots (tirelire) in the budget. Owner request. | MUST | 13 pts | EP-30, EP-35, EP-39 | Done |
 | EP-46 | Advanced note NLP | Professional NLP for literature and permanent notes: lemmatisation, key phrases, topics, a richer English/French thesaurus, and concept graphs. Owner request. | SHOULD | 21 pts | EP-37 | Done |
+| EP-47 | Zettelkasten knowledge graph | A knowledge graph of literature and permanent notes on the Notes page, from combined NLP evidence, with communities, labels, centrality, and bridges. Owner request. | SHOULD | 13 pts | EP-46 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1312,6 +1313,16 @@ Cross-cutting matrix:
 
 - `GET /v1/notes/analysis` and `GET /v1/notes/{id}/analysis`; analysis is computed on request, bounded by the explorer's 1,500-note limit, and never leaves the server.
 
+
+### EP-47 — Zettelkasten knowledge graph
+
+**Goal.** The owner asked for the knowledge graph from the advanced NLP of literature and permanent notes on the Notes page itself (2026-10-12).
+
+**Issues**
+
+- [x] **EP-47/IS-47.01 — Edge evidence** · 3 pts · SHOULD — per pair of notes: 0.45 × TF-IDF cosine + 0.30 × IDF-weighted cosine of key phrases over the concept vocabulary (phrases in two notes or more) + 0.15 × WordNet synonyms + 0.10 × shared named entities; the person's links add 0.25 and are always kept; every edge lists its reasons; key phrases that recur across notes are ranked first.
+- [x] **EP-47/IS-47.02 — Structure** · 5 pts · SHOULD — k-nearest-neighbour sparsification (six per note); communities by multi-level Louvain over several fixed node orders (stable, best modularity kept); labels by class-based TF-IDF; weighted PageRank; bridges by the participation coefficient; graph statistics (modularity, density, unconnected notes). `GET /v1/notes/zettelkasten-graph?kind=&min=`.
+- [x] **EP-47/IS-47.03 — Notes page view** · 5 pts · SHOULD — at the top of Notes: kind and strength filters, notes coloured by community and sized by centrality, bridges as diamonds, a panel with the selected note's connections and reasons or the communities with their core notes, keyboard selection, and a table version; the demo has a small Zettelkasten in three themes.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -1513,6 +1524,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-12 | Owner request: EP-47 adds the Zettelkasten knowledge graph to the Notes page, on top of EP-46. Delivered. |
 | 2026-10-11 | EP-21 delivered as a 1.0 release candidate: install, user, upgrade, and support docs, upgrade test and drill, load tests (ADR 0021), recovery drill, internal security review with fixes. External review and observed install remain. |
 | 2026-10-11 | EP-20 delivered: explainable weekly metrics, trends, weekly review, CSV export. R3 complete; next EP-21. |
 | 2026-10-11 | EP-44 delivered: Personal Trainer and Nutritionist with a health_ai consent and deterministic safety guards. |

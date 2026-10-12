@@ -58,6 +58,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Synchronisation en direct avec votre coffre Markdown : ajoutez, modifiez, renommez ou supprimez un fichier et la note suit en quelques secondes, et inversement ; les modèles du coffre apparaissent dans Axon.
 - ✅ Un explorateur de connaissances (Notes → Explorer) : filtres par PARA, type Zettelkasten, étiquette, texte, date ou notes non reliées ; graphiques des notes dans le temps, par PARA et par type, des étiquettes et des mots-clés partagés ; et un graphe de connaissances qui ajoute à vos liens des relations NLP locales (entités partagées, mots-clés distinctifs, synonymes anglais et français, formulations proches), chacune expliquant pourquoi elle existe. Aucun fournisseur d’IA n’est utilisé.
 - ✅ Analyse des notes de lecture et permanentes (Notes → Analyse) : racinisation Snowball en anglais et en français, expressions clés par TextRank, lisibilité, thèmes issus de formulations proches, un graphe de concepts dont chaque lien s’explique (ensemble plus souvent que le hasard selon la NPMI, ou synonymes d’Open English WordNet), et sur chaque note ses expressions clés, son thème et des idées liées avec leurs raisons. Tout reste local.
+- ✅ Un graphe de connaissances Zettelkasten sur la page Notes : notes de lecture et permanentes reliées par des indices combinés (expressions clés pondérées par l’IDF, synonymes WordNet, noms partagés, formulations proches, vos propres liens), communautés trouvées par la modularité de Louvain et nommées par TF-IDF de classe, centralité par PageRank, et notes passerelles entre communautés ; sélectionnez une note pour voir pourquoi elle est reliée.
 
 ### ✅ Action et exécution
 - ✅ Des tâches avec les vues Aujourd’hui, semaine et GTD (boîte de réception, prochaines actions, en attente, un jour peut-être), contextes, récurrence, capture en une touche et bilans quotidiens.
@@ -452,7 +453,7 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 | Bêta vie entière | Médias, santé, nutrition, analyses. | EP-17 → 18 → 45 → 46 → 44 → 20 |
 | 1.0 | Durcissement, restauration, documentation, chemin de mise à jour. | EP-21 |
 
-État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20 et EP-21 terminés ; la 1.0 attend la revue de sécurité externe et une installation observée.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+État actuel : **EP-00 à EP-16, EP-19, EP-22 à EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, EP-21 et EP-47 terminés ; la 1.0 attend la revue de sécurité externe et une installation observée.** Pour découvrir Axon sans compte, utilisez **Try the demo** sur la page d’accueil : un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Exploitation : [doc/operations.md](doc/operations.md). Détails dans [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
 
 ## Contribuer
 
