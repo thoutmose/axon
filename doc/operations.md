@@ -40,7 +40,7 @@ deploy/deploy.sh staging
 deploy/deploy.sh prod
 ```
 
-The script refuses to deploy a commit without a green `ci` run on GitHub, and refuses a production version that staging is not serving. After migrating it runs `axon integrity`, which fails the deployment if any entity lacks its domain row or has an unregistered type. It then builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
+The script refuses to deploy a commit without a green `ci` run on GitHub, and refuses a production version that staging is not serving. Deploy from `main`: pull request runs leave out the image build, vulnerability scan, and SBOM to save Actions minutes, and skip documentation-only changes entirely. After migrating it runs `axon integrity`, which fails the deployment if any entity lacks its domain row or has an unregistered type. It then builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
 
 ## Roll back
 

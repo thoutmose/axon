@@ -1,7 +1,12 @@
 name: ci
 
+# Actions minutes are limited: pull requests that only change documentation
+# skip CI, and images are built, scanned, and described (SBOM) on main only,
+# where deploy.sh requires the whole run to be green. The e2e job still
+# builds the api and web images for every pull request.
 on:
   pull_request:
+    paths-ignore: ["**/*.md", "doc/**", "LICENSE"]
   push:
     branches: [main]
 
@@ -125,6 +130,7 @@ jobs:
         run: docker run --rm -v "$PWD":/repo zricethezav/gitleaks:v8.24.0 git /repo --no-banner --redact
 
   images:
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
