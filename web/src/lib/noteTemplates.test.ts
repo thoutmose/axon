@@ -68,6 +68,12 @@ describe('vault templates', () => {
 		expect(t.label).toBe('Book');
 		expect(templateName('_templates/Weekly review.md')).toBe('Weekly review');
 		expect(t.path('Dune', now)).toBe('Zettel/literature/dune.md');
+		const task = vaultTemplate(
+			{ id: '2', path: 'Templates/Chore.md', title: 'Chore', kind: 'task' },
+			'',
+			'Life'
+		);
+		expect(task.path('Mow the lawn', now)).toBe('Life/Tasks/Mow the lawn.md');
 		expect(t.content('Dune', now)).toBe('# Dune');
 	});
 	it('round-trips the built-ins through the templates folder', () => {

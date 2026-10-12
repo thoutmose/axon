@@ -108,7 +108,7 @@
 		try {
 			let t = templates.find((x) => x.id === kind);
 			const n = vault.find((x) => `vault:${x.id}` === kind);
-			if (n) t = vaultTemplate(n, (await api<Note>(`/v1/notes/${n.id}`)).content ?? '');
+			if (n) t = vaultTemplate(n, (await api<Note>(`/v1/notes/${n.id}`)).content ?? '', folder);
 			if (!t) return;
 			await createFromTemplate(t, title.trim());
 			open = false;

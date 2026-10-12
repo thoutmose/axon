@@ -98,11 +98,12 @@ func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (
 	default:
 		return p, err
 	}
+	loc := zone(ctx, q, userID)
 	rows, err := q.Query(ctx, `SELECT DISTINCT d FROM (
-			SELECT (r.reviewed_at AT TIME ZONE 'UTC')::date AS d FROM card_reviews r JOIN entities e ON e.id = r.card_id WHERE e.user_id = $1 AND r.reviewed_at > $2
-			UNION SELECT (recalled_at AT TIME ZONE 'UTC')::date FROM note_recalls WHERE user_id = $1 AND recalled_at > $2
-			UNION SELECT (taken_at AT TIME ZONE 'UTC')::date FROM practice_tests WHERE user_id = $1 AND taken_at > $2) x ORDER BY d DESC`,
-		userID, now.AddDate(0, 0, -400))
+			SELECT (r.reviewed_at AT TIME ZONE $3)::date AS d FROM card_reviews r JOIN entities e ON e.id = r.card_id WHERE e.user_id = $1 AND r.reviewed_at > $2
+			UNION SELECT (recalled_at AT TIME ZONE $3)::date FROM note_recalls WHERE user_id = $1 AND recalled_at > $2
+			UNION SELECT (taken_at AT TIME ZONE $3)::date FROM practice_tests WHERE user_id = $1 AND taken_at > $2) x ORDER BY d DESC`,
+		userID, now.AddDate(0, 0, -400), loc.String())
 	if err != nil {
 		return p, err
 	}
@@ -110,7 +111,7 @@ func Today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (
 	if err != nil {
 		return p, err
 	}
-	p.StreakDays = streak(days, day(now))
+	p.StreakDays = streak(days, day(now, loc))
 	return p, nil
 }
 

@@ -113,6 +113,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-62 | Search by meaning | Embeddings from the person's own service (local, OpenAI, or Voyage AI) behind their own consent, in pgvector: notes found by meaning in the command center and "Close in meaning" on each note. Closes IS-37.04. Owner decision on the EP-49 proposals. | COULD | 5 pts | EP-37 | Done |
 | EP-63 | Customisable Today | Choose and order Today's cards, with new ones for learning, habits, today's calendar, and the household. Owner decision on the EP-49 proposals. | COULD | 2 pts | EP-30, EP-52, EP-58, EP-61 | Done |
 | EP-64 | Bulk actions, drag onto the calendar | Select tasks and change them all at once (status, context, due date, delete); drag tasks between days and undated next actions onto a day, with a date field for the keyboard. Owner decision on the EP-49 proposals. | COULD | 3 pts | EP-07, EP-13 | Done |
+| EP-65 | Audit 2: fixes | A review of EP-50 to EP-64: vault templates honour the mirror folder, learning days follow the person's time zone, unpacked imports are capped, form controls are styled everywhere, unused exports removed. Owner request. | MUST | 3 pts | EP-64 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1511,6 +1512,23 @@ Cross-cutting matrix:
 - [x] **EP-64/IS-64.02** · 1 pt · COULD — Calendar: drag a task to another day (a due date stays a due date, a scheduled one stays scheduled); "Next actions without a date" can be dragged onto a day, or given a date in their field, for the keyboard and for touch screens.
 
 **Tests.** `TestBulkTasks` (status, context, and date at once, all or none with another person's task, titles refused, either delete or a change, dates cleared, delete); e2e "bulk actions change several tasks at once" and "drag a task onto a day of the calendar, or pick its date".
+
+### EP-65 — Audit 2: fixes
+
+**Goal.** "Improve and fix everything" (owner, 2026-10-12): a second audit, over what EP-50 to EP-64 added.
+
+**Fixed**
+
+- [x] A vault template of an item type (task, goal, habit, film…) was created under `Axon/` even when the vault mirror's folder is set to another one, so it never became an item; it now follows Preferences → Markdown vault.
+- [x] The learning engine counted days in UTC: near midnight a note's next recall, the notes due today, and the learning streak were off by a day for anyone far from UTC. They now follow the person's time zone (test in UTC+14).
+- [x] Letterboxd and Notion imports trusted the sizes a ZIP declares; what is actually unpacked is now capped (100 MB and 200 MB).
+- [x] Inputs, selects, text areas, and file pickers outside the shared text field were unstyled browser controls (Import, the weekly review, Calendar, Household): one base style now covers them, with a visible focus ring.
+
+**Removed**
+
+- [x] Unused exports found by knip (`pictureTypes`, `fileURL`, two template helpers that only the module uses).
+
+**Checked and kept.** `deadcode` lists only the test-only helpers EP-49 kept on purpose; the API docs script and swagger-ui are used by the build.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

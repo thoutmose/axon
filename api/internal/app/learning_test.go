@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"testing"
+	"time"
 )
 
 type learnCard struct {
@@ -220,7 +221,20 @@ A memory palace uses ==familiar places== to hold images.
 	if res.Score < 0.8 || res.Interval != 2 && res.Interval != 3 {
 		t.Fatalf("full recall = %+v", res)
 	}
-	if out := alice.mustDo(200, "GET", "/v1/notes/"+note.ID+"/recall", nil); bytes.Count(out, []byte(`"score"`)) != 2 {
+	// Days are the person's own: far east of UTC, the next recall follows their calendar.
+	if code, out := alice.do("PATCH", "/v1/me", []byte(`{"timezone":"Pacific/Kiritimati"}`), "If-Match", alice.etag("/v1/me")); code != 204 {
+		t.Fatalf("timezone = %d %s", code, out)
+	}
+	kiritimati, _ := time.LoadLocation("Pacific/Kiritimati")
+	var timed struct {
+		DueOn    string `json:"due_on"`
+		Interval int    `json:"interval_days"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/notes/"+note.ID+"/recall", []byte(`{"text":"nothing at all"}`)), &timed)
+	if want := time.Now().In(kiritimati).AddDate(0, 0, timed.Interval).Format(time.DateOnly); timed.DueOn != want {
+		t.Fatalf("due %s, want %s (local day + %d)", timed.DueOn, want, timed.Interval)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/notes/"+note.ID+"/recall", nil); bytes.Count(out, []byte(`"score"`)) != 3 {
 		t.Fatalf("history = %s", out)
 	}
 	bob.mustDo(404, "POST", "/v1/notes/"+note.ID+"/recall", []byte(`{"text":"x"}`))

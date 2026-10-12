@@ -11,8 +11,14 @@ export async function refreshFiles(): Promise<void> {
 	noteFiles.loaded = true;
 }
 
-export const pictureTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
-const accepted = [...pictureTypes, 'application/pdf'];
+const accepted = [
+	'image/png',
+	'image/jpeg',
+	'image/gif',
+	'image/webp',
+	'image/svg+xml',
+	'application/pdf'
+];
 const extensions: Record<string, string> = {
 	'image/png': 'png',
 	'image/jpeg': 'jpg',
@@ -42,10 +48,6 @@ export async function upload(file: File): Promise<string> {
 	noteFiles.files = [...noteFiles.files.filter((x) => x.path !== f.path), f];
 	const alt = base.replace(/[[\]]/g, '');
 	return f.content_type === 'application/pdf' ? `[${alt}](${f.path})` : `![${alt}](${f.path})`;
-}
-
-export function fileURL(path: string): string {
-	return `/api/v1/notes/file?path=${encodeURIComponent(path)}`;
 }
 
 /**

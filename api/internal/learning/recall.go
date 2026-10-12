@@ -141,6 +141,7 @@ func Recall(ctx context.Context, tx pgx.Tx, userID, noteID uuid.UUID, text strin
 	if len(found) == 0 {
 		return RecallResult{}, ValidationError{"This note is too short to recall: write a few sentences in it first."}
 	}
+	loc := zone(ctx, tx, userID)
 	prev := 0
 	var lastDue, lastAt time.Time
 	err = tx.QueryRow(ctx, `SELECT due_on, recalled_at FROM note_recalls WHERE user_id = $1 AND note_id = $2 ORDER BY recalled_at DESC LIMIT 1`,
@@ -150,10 +151,10 @@ func Recall(ctx context.Context, tx pgx.Tx, userID, noteID uuid.UUID, text strin
 	case err != nil:
 		return RecallResult{}, err
 	default:
-		prev = max(1, int(lastDue.Sub(day(lastAt)).Hours()/24))
+		prev = max(1, int(lastDue.Sub(day(lastAt, loc)).Hours()/24))
 	}
 	interval := nextInterval(prev, score)
-	due := day(now).AddDate(0, 0, interval)
+	due := day(now, loc).AddDate(0, 0, interval)
 	if _, err := tx.Exec(ctx, `INSERT INTO note_recalls (id, user_id, note_id, score, recalled_at, due_on) VALUES ($1, $2, $3, $4, $5, $6)`,
 		uuid.Must(uuid.NewV7()), userID, noteID, score, now, due); err != nil {
 		return RecallResult{}, err
@@ -161,8 +162,20 @@ func Recall(ctx context.Context, tx pgx.Tx, userID, noteID uuid.UUID, text strin
 	return RecallResult{Score: score, Ideas: found, DueOn: due.Format(time.DateOnly), Interval: interval, At: now}, nil
 }
 
-func day(t time.Time) time.Time {
-	y, m, d := t.UTC().Date()
+// zone is the person's time zone: days are theirs, not the server's.
+func zone(ctx context.Context, q db.Querier, userID uuid.UUID) *time.Location {
+	var tz string
+	if err := q.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err == nil {
+		if loc, err := time.LoadLocation(tz); err == nil {
+			return loc
+		}
+	}
+	return time.UTC
+}
+
+// day is the calendar day of t in loc, as a UTC midnight (how dates are stored).
+func day(t time.Time, loc *time.Location) time.Time {
+	y, m, d := t.In(loc).Date()
 	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 }
 
@@ -173,7 +186,7 @@ func RecallDue(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Tim
 	rows, err := q.Query(ctx, `SELECT n.id, e.title, n.path, n.kind, to_char(r.due_on, 'YYYY-MM-DD'), r.score::float8, r.recalled_at
 		FROM notes n JOIN entities e ON e.id = n.id
 		JOIN LATERAL (SELECT due_on, score, recalled_at FROM note_recalls WHERE note_id = n.id ORDER BY recalled_at DESC LIMIT 1) r ON true
-		WHERE n.user_id = $1 AND n.kind = ANY($2) AND r.due_on <= $3 ORDER BY r.due_on, e.title LIMIT 50`, userID, recallKinds, day(now))
+		WHERE n.user_id = $1 AND n.kind = ANY($2) AND r.due_on <= $3 ORDER BY r.due_on, e.title LIMIT 50`, userID, recallKinds, day(now, zone(ctx, q, userID)))
 	if err != nil {
 		return nil, nil, err
 	}
