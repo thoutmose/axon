@@ -217,6 +217,12 @@ export const fr: Record<string, string> = {
 	'Nothing here yet. Add a film, a series, or a book you want to enjoy.':
 		'Rien pour l’instant. Ajoutez un film, une série ou un livre qui vous fait envie.',
 	Rated: 'Noté',
+	'{found} covers found ({checked} looked up).':
+		'{found} couvertures trouvées ({checked} recherchées).',
+	'No cover found for the {checked} looked up.':
+		'Aucune couverture trouvée pour les {checked} recherchés.',
+	'{n} items have no cover yet.': '{n} éléments n’ont pas encore de couverture.',
+	'Find missing covers': 'Trouver les couvertures manquantes',
 	of: 'sur',
 	minutes: 'minutes',
 	episodes: 'épisodes',

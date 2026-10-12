@@ -124,6 +124,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-73 | No query per item | Lists cost the same number of queries for 2 items as for 12; the Goals list (two queries per goal) and Today (one per task) no longer slow down as data grows. | SHOULD | 2 pts | EP-72 | Done |
 | EP-74 | Compressed responses | Caddy compresses pages, scripts, and API answers (zstd or gzip); nothing was compressed before (the OpenAPI document: 324 kB → 48 kB). | SHOULD | 1 pt | EP-73 | Done |
 | EP-75 | Today and the page title in every browser | Owner report: Today stayed on "Loading your day…" and the page title showed as text at the top of the page (Firefox). Both fixed, with tests that fail without the fix. | MUST | 2 pts | EP-74 | Done |
+| EP-76 | Covers for every film, series, and book | Owner request: pictures of the books, series, and films, and a better media card. "Find missing covers" looks up items added by hand, imported, or from the demo; the shelf shows poster cards, with a cover made from the title when there is none. | SHOULD | 2 pts | EP-17 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1631,6 +1632,15 @@ Cross-cutting matrix:
 - [x] **EP-75/IS-75.02** · 1 pt · MUST — Today threw "Cannot read properties of null (reading 'includes')": the staging demo's settings had `today.sections: null`, and the page used it as a list. Settings now read a missing list as the default sections (an empty list stays a choice), and Today keeps its defaults whatever it is sent.
 
 **Tests.** e2e "the page title announced to screen readers is not shown on the page" (removes the inline style, as Firefox does; red before the fix); `TestTodaySectionsAreNeverNull` (red without the fix); `csp.test.ts`; a Firefox and Chromium probe of the same state locally: Today loads, the announcer is 1×1 px.
+
+### EP-76 — Covers for every film, series, and book
+
+**Goal.** Owner request: "pictures of the books, TV series, movies, and a better UI/UX for the card of a media". Covers came only with items added from a catalogue search; items added by hand, imported (Goodreads, Letterboxd), or from the demo had none, and the card was a small thumbnail beside text.
+
+- [x] **EP-76/IS-76.01** · 1 pt · SHOULD — `POST /v1/media/covers/find`: up to 20 items without a cover, oldest first, are looked up in Open Library (books) and TMDB (films and series, when a key is set), and get the cover of the same work: same title (case, accents, punctuation aside), and the same author or year when both sides know one. A wrong cover is worse than none. It needs the `external_metadata` consent, spends the lookup quota, and reuses cached lookups; covers are copied into Axon as before, so pages load no outside image.
+- [x] **EP-76/IS-76.02** · 1 pt · SHOULD — The shelf is a grid of poster cards: the cover fills the card, the rating is a badge on it, and the title, kind, year, and creators sit below, with "210 / 611 pages" under the progress bar. An item without a cover gets one made from its title, in a colour of its own (`coverHue`). "Find missing covers" appears when lookups are allowed and some item has none. French included.
+
+**Tests.** `TestBestMatchTakesOnlyTheSameWork` (written first); `TestFindMissingCovers` against the fake catalogue (refused without consent; Dune by Frank Herbert gets its cover, Dune by someone else and a film without TMDB do not; a second run uses the cache); `coverHue` unit test; the media e2e test checks the generated cover, the rating badge, and that the button waits for consent. Checked in Firefox.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

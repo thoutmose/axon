@@ -2776,6 +2776,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/media/covers/find': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Give covers to items that have none
+		 * @description Looks up to 20 of the person's items without a cover, oldest first, in Open Library (books) and TMDB (films and series, when set up), and copies the cover of the same work: same title, and the same author or year when both are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included.
+		 */
+		post: operations['findMediaCovers'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/media/{id}': {
 		parameters: {
 			query?: never;
@@ -11659,6 +11679,34 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	findMediaCovers: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many items were looked up and how many got a cover. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						checked: number;
+						found: number;
+						/** @description Whether films and series can be looked up (TMDB set up). */
+						films_and_series: boolean;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			503: components['responses']['Problem'];
 		};
 	};
 	getMedia: {

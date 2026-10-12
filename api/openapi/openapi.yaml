@@ -4670,6 +4670,31 @@ paths:
             image/webp: { schema: { type: string, format: binary } }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/media/covers/find:
+    post:
+      tags: [media]
+      operationId: findMediaCovers
+      summary: Give covers to items that have none
+      description: >-
+        Looks up to 20 of the person's items without a cover, oldest first, in Open Library (books) and TMDB (films and
+        series, when set up), and copies the cover of the same work: same title, and the same author or year when both
+        are known. Needs the external_metadata consent; uses the person's lookup quota, cached lookups included.
+      responses:
+        "200":
+          description: How many items were looked up and how many got a cover.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [checked, found, films_and_series]
+                additionalProperties: false
+                properties:
+                  checked: { type: integer, minimum: 0 }
+                  found: { type: integer, minimum: 0 }
+                  films_and_series: { type: boolean, description: Whether films and series can be looked up (TMDB set up). }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
   /v1/media/{id}:
     parameters: [{ $ref: "#/components/parameters/ID" }]
     get:

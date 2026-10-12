@@ -46,6 +46,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/media/search", h.search)
 	r.Get("/v1/media/recommendations", h.recommendations)
 	r.Get("/v1/media/covers/{id}", h.cover)
+	r.Post("/v1/media/covers/find", h.findCovers)
 	r.Get("/v1/media/{id}", h.get)
 	r.Patch("/v1/media/{id}", h.update)
 	r.Delete("/v1/media/{id}", h.delete)
@@ -146,6 +147,22 @@ func (h *Handlers) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": found})
+}
+
+// findCovers gives covers to items that have none (added by hand, imported,
+// or from the demo), with the person's consent to catalogue lookups.
+func (h *Handlers) findCovers(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	if err := h.consented(r, who.UserID); err != nil {
+		h.fail(w, err)
+		return
+	}
+	checked, found, err := h.catalogs.FindCovers(r.Context(), who.UserID, func() bool { return h.allow(who.UserID) })
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"checked": checked, "found": found, "films_and_series": h.catalogs.TMDBEnabled()})
 }
 
 func (h *Handlers) recommendations(w http.ResponseWriter, r *http.Request) {
