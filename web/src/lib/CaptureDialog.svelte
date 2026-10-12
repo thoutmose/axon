@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { api, message } from './api';
+	import { keep, unreachable } from './outbox.svelte';
 	import { refreshNotes } from './noteIndex.svelte';
 	import { templates } from './noteTemplates';
 	import { capture } from './tasks';
@@ -17,19 +18,22 @@
 	async function asNote() {
 		if (!title.trim()) return;
 		busy = true;
+		const t = templates.find((x) => x.id === 'fleeting')!;
+		const now = new Date();
+		const note = { path: t.path(title, now), content: t.content(title, now) };
 		try {
-			const t = templates.find((x) => x.id === 'fleeting')!;
-			const now = new Date();
-			await api('/v1/notes', {
-				method: 'POST',
-				body: { path: t.path(title, now), content: t.content(title, now) }
-			});
+			await api('/v1/notes', { method: 'POST', body: note });
 			toast('Saved as a note in your inbox.');
 			title = '';
 			open = false;
 			refreshNotes().catch(() => {});
 		} catch (err) {
-			toast(message(err), 'error');
+			if (unreachable(err)) {
+				keep({ kind: 'note', title, ...note });
+				toast('No connection: kept on this device, sent when you are back online.');
+				title = '';
+				open = false;
+			} else toast(message(err), 'error');
 		} finally {
 			busy = false;
 		}
@@ -45,7 +49,12 @@
 			open = false;
 			oncaptured?.();
 		} catch (err) {
-			toast(message(err), 'error');
+			if (unreachable(err)) {
+				keep({ kind: 'task', title });
+				toast('No connection: kept on this device, sent when you are back online.');
+				title = '';
+				open = false;
+			} else toast(message(err), 'error');
 		} finally {
 			busy = false;
 		}

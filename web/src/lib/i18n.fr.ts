@@ -333,5 +333,10 @@ export const fr: Record<string, string> = {
 	Life: 'Vie',
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
-	Menu: 'Menu'
+	Menu: 'Menu',
+	App: 'Application',
+	'Axon is installed on this device.': 'Axon est installé sur cet appareil.',
+	'Install Axon on this device': 'Installer Axon sur cet appareil',
+	'Install Axon to open it like an app, even offline to capture a thought: on iPhone or iPad, Safari → Share → Add to Home Screen; in Chrome or Edge, the install icon in the address bar.':
+		'Installez Axon pour l’ouvrir comme une application, même hors ligne pour noter une idée : sur iPhone ou iPad, Safari → Partager → Sur l’écran d’accueil ; dans Chrome ou Edge, l’icône d’installation dans la barre d’adresse.'
 };

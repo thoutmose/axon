@@ -945,6 +945,31 @@ test('the menu groups pages: Do, Think, Grow, Life, Reflect', async () => {
 	await page.setViewportSize({ width: 1280, height: 720 });
 });
 
+test('installable, and a capture made offline is kept on the device and sent later', async () => {
+	await page.goto('/today');
+	const manifest = await (await page.request.get('/manifest.webmanifest')).json();
+	expect(manifest.start_url).toBe('/today');
+	expect(manifest.icons.some((i: { sizes: string }) => i.sizes === '512x512')).toBe(true);
+	await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+	await page.reload(); // now under the service worker
+
+	await page.context().setOffline(true);
+	await page.keyboard.press('n');
+	await page.getByLabel("What's on your mind?").fill('Buy batteries while offline');
+	await page.getByRole('button', { name: 'Capture task' }).click();
+	await expect(page.getByText('No connection: kept on this device')).toBeVisible();
+	await page.goto('/tasks');
+	await expect(page.getByRole('heading', { level: 1, name: 'You are offline' })).toBeVisible();
+	await expect(page.getByText('Task: Buy batteries while offline')).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.context().setOffline(false);
+	await page.goto('/today');
+	await expect(page.getByText('1 capture kept offline was sent.')).toBeVisible();
+	await page.goto('/tasks?view=inbox');
+	await expect(page.getByText('Buy batteries while offline')).toBeVisible();
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

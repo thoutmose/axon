@@ -11,6 +11,9 @@
 	import { applyAppearance, storedAppearance } from '$lib/preferences';
 	import { api, type AuthStatus } from '$lib/api';
 	import { avatar, avatarSrc } from '$lib/avatar.svelte';
+	import { flush, loadOutbox, outbox } from '$lib/outbox.svelte';
+	import { watchInstall } from '$lib/install.svelte';
+	import { toast } from '$lib/ui/toast.svelte';
 
 	let { children } = $props();
 	// Pages with a full-bleed hero lay themselves out edge to edge.
@@ -114,7 +117,24 @@
 		api<AuthStatus>('/v1/auth/status')
 			.then((s) => (avatar.signedIn = s.signed_in))
 			.catch(() => {});
-		return watchConnection();
+		// Captures kept offline go out as soon as Axon answers again.
+		loadOutbox();
+		const send = () =>
+			flush().then((n) => {
+				if (n)
+					toast(
+						`${n} ${n === 1 ? 'capture' : 'captures'} kept offline ${n === 1 ? 'was' : 'were'} sent.`
+					);
+			});
+		send();
+		addEventListener('online', send);
+		const stop = watchConnection();
+		const stopInstall = watchInstall();
+		return () => {
+			removeEventListener('online', send);
+			stop();
+			stopInstall();
+		};
 	});
 
 	function cycleTheme() {
@@ -245,7 +265,10 @@
 </header>
 
 {#if !connection.online}
-	<p class="banner" role="alert">You are offline. Changes will not be saved until you reconnect.</p>
+	<p class="banner" role="alert">
+		You are offline. Captures (press n) are kept on this device and sent when you reconnect; other
+		changes are not saved.{outbox.items.length ? ` ${outbox.items.length} waiting.` : ''}
+	</p>
 {:else if connection.apiDown}
 	<p class="banner" role="alert">
 		Axon's server is not responding. Your data is safe; try again shortly.
