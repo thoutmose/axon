@@ -108,6 +108,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-57 | Quick add for anything | One line in Capture becomes a task with a context and a day, a note with tags, a book, film, or series, a habit, a goal with a date, a project, or a flashcard; English and French. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-55 | Done |
 | EP-58 | Calendars in | Follow Google, CalDAV/Nextcloud, Outlook, or any ICS calendar, read only: events (repeats expanded, time zones kept) beside Axon's own in the month and agenda views. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-13 | Done |
 | EP-59 | Guided weekly review | A ten-step weekly review after Getting Things Done, on Axon's own data, ending in the weekly check-in; the weekend digest suggests it until it is done. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-20, EP-56 | Done |
+| EP-60 | Imports | Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX money, Notion pages; preview first, nothing twice. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-11, EP-17, EP-38 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1462,6 +1463,15 @@ Cross-cutting matrix:
 - [x] **EP-59/IS-59.01** · 3 pts · SHOULD — Reflect → Weekly review, ten steps: get clear (empty your head with quick add; the task inbox to zero with next, waiting, someday, done, delete; fleeting notes to process), get current (the week's highlights from Insights; the next two weeks from Axon and followed calendars; waiting for; projects without a next action; goals, habits, and learning), get creative (someday/maybe), and into next week (what went well, what to change, what matters most, saved as the weekly check-in). From Friday to Sunday the morning digest suggests it until that check-in exists.
 
 **Tests.** `TestReminders` (the Saturday digest suggests the review, and stops once it is done); e2e "the weekly review walks from an empty head to next week".
+
+### EP-60 — Imports
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: move to Axon without retyping.
+
+- [x] **EP-60/IS-60.01** · 3 pts · SHOULD — parsers, each a pure function: Todoist (CSV; @labels as contexts, ISO dates as due dates, spoken ones kept in the notes), TickTick (CSV backup with its preamble; status, first tag as context), Goodreads (shelves as statuses, stars ×2, read dates), Letterboxd (the export ZIP or one CSV: watched, ratings ×2, diary dates, watchlist), Firefly III (withdrawals and deposits; transfers left out), OFX/QFX bank statements (SGML or XML), Notion (ZIP of Markdown and pictures: ids dropped from names, page links as [[wikilinks]], pictures moved with their pages).
+- [x] **EP-60/IS-60.02** · 2 pts · SHOULD — `POST /v1/import/{source}` (50 MB) with `dry_run` and, for money, `account_id`: each item in its own savepoint so a refused one does not undo the rest; nothing twice (tasks by title and due date, media by kind, title, and year, transactions by the budget's import identity, notes and pictures by path; a note with other content is left alone and counted). The budget's CSV import now shares `budget.ImportRows`. Account → Import: how to export from each app, a preview, then the import.
+
+**Tests.** Parser unit tests for every source; `TestImports` (dry run, import, nothing twice for tasks, books, and money, Notion paths and links, ownership, a wrong file, an unknown source); e2e "import from another app: preview, import, and nothing twice".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

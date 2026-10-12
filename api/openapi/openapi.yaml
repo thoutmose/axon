@@ -46,6 +46,8 @@ tags:
     description: AI agents that read through granted tools and propose changes you approve. Off until the server has a provider key and you grant the ai_agents consent; every other feature works without them.
   - name: cards
     description: Flashcards, reviews scheduled with FSRS-5, and Anki export (EP-16).
+  - name: imports
+    description: "Imports from other apps (EP-60)."
   - name: calendar
     description: "Calendars you follow (EP-58): any iCal (ICS) address, read only."
   - name: reminders
@@ -1935,6 +1937,46 @@ paths:
                         last_date: { type: string, format: date, description: "The last day it covers." }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
+
+  /v1/import/{source}:
+    parameters:
+      - name: source
+        in: path
+        required: true
+        schema: { type: string, enum: [todoist, ticktick, goodreads, letterboxd, firefly, ofx, notion] }
+    post:
+      tags: [imports]
+      operationId: importFrom
+      summary: "Import another app's export: Todoist or TickTick tasks (CSV), Goodreads books (CSV), Letterboxd films (ZIP or CSV), Firefly III transactions (CSV), a bank statement (OFX/QFX), or Notion pages (ZIP, Markdown & CSV); importing again creates nothing twice"
+      parameters:
+        - { name: dry_run, in: query, description: "true: read and count only; nothing is written.", schema: { type: boolean } }
+        - { name: account_id, in: query, description: "The budget account money goes to (firefly and ofx).", schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        "200":
+          description: What was imported, or would be.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, dry_run, found, created, skipped, conflicts, problems, sample]
+                properties:
+                  source: { type: string }
+                  dry_run: { type: boolean }
+                  found: { type: integer }
+                  created: { type: integer }
+                  skipped: { type: integer, description: Already in Axon. }
+                  conflicts: { type: integer, description: "Notes at the same path with other content, left alone." }
+                  problems: { type: array, items: { type: string } }
+                  sample: { type: array, items: { type: string }, description: The first few items. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
 
   /v1/areas:
     get:

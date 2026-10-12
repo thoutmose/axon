@@ -1264,6 +1264,25 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/import/{source}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				source: 'todoist' | 'ticktick' | 'goodreads' | 'letterboxd' | 'firefly' | 'ofx' | 'notion';
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import another app's export: Todoist or TickTick tasks (CSV), Goodreads books (CSV), Letterboxd films (ZIP or CSV), Firefly III transactions (CSV), a bank statement (OFX/QFX), or Notion pages (ZIP, Markdown & CSV); importing again creates nothing twice */
+		post: operations['importFrom'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/areas': {
 		parameters: {
 			query?: never;
@@ -7495,6 +7514,54 @@ export interface operations {
 			};
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
+		};
+	};
+	importFrom: {
+		parameters: {
+			query?: {
+				/** @description true: read and count only; nothing is written. */
+				dry_run?: boolean;
+				/** @description The budget account money goes to (firefly and ofx). */
+				account_id?: string;
+			};
+			header?: never;
+			path: {
+				source: 'todoist' | 'ticktick' | 'goodreads' | 'letterboxd' | 'firefly' | 'ofx' | 'notion';
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/octet-stream': string;
+			};
+		};
+		responses: {
+			/** @description What was imported, or would be. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: string;
+						dry_run: boolean;
+						found: number;
+						created: number;
+						/** @description Already in Axon. */
+						skipped: number;
+						/** @description Notes at the same path with other content, left alone. */
+						conflicts: number;
+						problems: string[];
+						/** @description The first few items. */
+						sample: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listAreas: {
