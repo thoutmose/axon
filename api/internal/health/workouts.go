@@ -166,7 +166,11 @@ func SaveWorkout(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id *uuid.UUID
 			return Workout{}, err
 		}
 	}
-	return GetWorkout(ctx, tx, userID, *id)
+	w, err := GetWorkout(ctx, tx, userID, *id)
+	if err != nil {
+		return w, err
+	}
+	return w, changed(ctx, tx, userID, "health:workout:"+id.String())
 }
 
 // DeleteWorkout removes one of the person's workouts.
@@ -175,7 +179,10 @@ func DeleteWorkout(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID) error {
 	if err == nil && tag.RowsAffected() == 0 {
 		err = ErrNotFound
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	return changed(ctx, tx, userID, "health:workout:"+id.String())
 }
 
 // Training sums up recent training.

@@ -28,6 +28,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/insights"
 	"github.com/thoutmose/axon/api/internal/knowledge"
 	"github.com/thoutmose/axon/api/internal/media"
+	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/privacy"

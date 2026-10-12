@@ -4037,6 +4037,12 @@ export interface components {
 			gamification?: {
 				enabled: boolean;
 			};
+			/** @description The vault mirror: tasks, goals, milestones, projects, areas, resources, habits, and media as Markdown notes under folder, both ways. Health logs only when health is on, one way. */
+			vault?: {
+				mirror: boolean;
+				folder: string;
+				health: boolean;
+			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
 				/** @description Single-key and g-chord shortcuts; turn off if they get in the way (WCAG 2.1.4). */

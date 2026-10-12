@@ -39,13 +39,28 @@ func init() {
 	})
 }
 
+// OnChange, when set, hears which health log changed, in the same
+// transaction: "health:food:YYYY-MM-DD", "health:workout:<id>", or
+// "health:*" when everything was deleted (the vault mirror then removes the
+// health notes it wrote).
+var OnChange func(ctx context.Context, q db.Querier, userID uuid.UUID, key string) error
+
+func changed(ctx context.Context, q db.Querier, userID uuid.UUID, key string) error {
+	if OnChange == nil {
+		return nil
+	}
+	return OnChange(ctx, q, userID, key)
+}
+
 // DeleteAll removes every food entry and workout of the person.
 func DeleteAll(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM food_entries WHERE user_id = $1`, userID); err != nil {
 		return err
 	}
-	_, err := tx.Exec(ctx, `DELETE FROM workouts WHERE user_id = $1`, userID)
-	return err
+	if _, err := tx.Exec(ctx, `DELETE FROM workouts WHERE user_id = $1`, userID); err != nil {
+		return err
+	}
+	return changed(ctx, tx, userID, "health:*")
 }
 
 // Meals and workout kinds.
@@ -208,16 +223,24 @@ func AddEntry(ctx context.Context, tx pgx.Tx, userID uuid.UUID, in EntryInput) (
 	if err != nil {
 		return Entry{}, err
 	}
-	return pgx.CollectExactlyOneRow(rows, scanEntry)
+	e, err := pgx.CollectExactlyOneRow(rows, scanEntry)
+	if err != nil {
+		return e, err
+	}
+	return e, changed(ctx, tx, userID, "health:food:"+e.EatenOn)
 }
 
 // DeleteEntry removes one of the person's entries.
 func DeleteEntry(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID) error {
-	tag, err := tx.Exec(ctx, `DELETE FROM food_entries WHERE id = $1 AND user_id = $2`, id, userID)
-	if err == nil && tag.RowsAffected() == 0 {
-		err = ErrNotFound
+	var day string
+	err := tx.QueryRow(ctx, `DELETE FROM food_entries WHERE id = $1 AND user_id = $2 RETURNING to_char(eaten_on, 'YYYY-MM-DD')`, id, userID).Scan(&day)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrNotFound
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	return changed(ctx, tx, userID, "health:food:"+day)
 }
 
 func deref(p *float64) float64 {

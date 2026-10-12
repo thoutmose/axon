@@ -6099,6 +6099,15 @@ components:
           description: Progress rewards (XP, levels, badges, streak); off by default, and off hides every surface.
           properties:
             enabled: { type: boolean }
+        vault:
+          type: object
+          required: [mirror, folder, health]
+          additionalProperties: false
+          description: "The vault mirror: tasks, goals, milestones, projects, areas, resources, habits, and media as Markdown notes under folder, both ways. Health logs only when health is on, one way."
+          properties:
+            mirror: { type: boolean }
+            folder: { type: string, minLength: 1, maxLength: 100 }
+            health: { type: boolean }
         keyboard:
           type: object
           required: [shortcuts, vim]
