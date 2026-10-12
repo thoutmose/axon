@@ -34,6 +34,7 @@ services:
       USDA_API_KEY: ${USDA_API_KEY:-} # USDA FoodData Central search (EP-18)
       AXON_SMTP_URL: ${AXON_SMTP_URL:-} # reminder emails (EP-56): smtp://user:pass@host:587 or smtps://…:465
       AXON_SMTP_FROM: ${AXON_SMTP_FROM:-} # the sender address of reminder emails
+      AXON_CALENDAR_PRIVATE: ${AXON_CALENDAR_PRIVATE:-} # "1": followed calendars may be on your own network (EP-58)
     depends_on:
       db:
         condition: service_healthy

@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/avatars"
 	"github.com/thoutmose/axon/api/internal/budget"
+	"github.com/thoutmose/axon/api/internal/calendars"
 	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/focus"
@@ -96,6 +97,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	if err != nil {
 		return nil, err
 	}
+	calendarsAPI := calendars.NewStore(pool, log, sealer)
+	priv.Register("calendar_sources", calendars.Export)
 	priv.Register("learning", learning.Export)
 	progressAPI := progress.NewHandlers(pool, log)
 	priv.Register("streak_freezes", progress.Export)
@@ -145,6 +148,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				cardsAPI.Routes(r)
 				learningAPI.Routes(r)
 				remindersAPI.Routes(r)
+				calendarsAPI.Routes(r)
 				progressAPI.Routes(r)
 				paraAPI.Routes(r)
 				budgetAPI.Routes(r)
@@ -157,6 +161,19 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			})
 		})
 	}), nil
+}
+
+// Calendars returns the store that fetches followed calendars (EP-58); the
+// process runs it to keep them fresh.
+func Calendars(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*calendars.Store, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	return calendars.NewStore(pool, log, sealer), nil
 }
 
 // Reminders returns the reminders worker (EP-56); the API serves its

@@ -327,6 +327,35 @@ test('subscribe to a calendar feed, read it, and revoke it', async () => {
 	expect((await page.request.get(url)).status()).toBe(404);
 });
 
+test('follow another calendar by its ICS address and see its events beside your own', async () => {
+	const origin = new URL(page.url()).origin;
+	const today = new Date().toLocaleDateString('sv');
+	await page.request.post('/api/v1/tasks', {
+		headers: { Origin: origin },
+		data: { title: 'Dentist appointment', status: 'next', due_on: today }
+	});
+	await page.goto('/calendar');
+	// The calendar to follow is Axon's own feed, reached the way the API reaches Caddy.
+	await page.getByLabel('Feed name').fill('To follow');
+	await page.getByRole('button', { name: 'Create feed' }).click();
+	const feedURL = (await page.locator('.new-feed code').textContent()) ?? '';
+	await page.getByRole('button', { name: 'Done' }).click();
+	await page.getByLabel('Name', { exact: true }).fill('Shared');
+	await page
+		.getByLabel('Calendar address (iCal / ICS)')
+		.fill(feedURL.replace(/^https?:\/\/[^/]+/, 'http://caddy:3000'));
+	await page.getByRole('button', { name: 'Follow', exact: true }).click();
+	await expect(page.getByText(/Following “Shared”: \d+ events\./)).toBeVisible();
+	await expect(page.locator('li.ev.external', { hasText: 'Dentist appointment' })).toBeVisible();
+	await expect(page.getByText('caddy ·')).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('checkbox', { name: 'Calendars you follow' }).uncheck();
+	await expect(page.locator('li.ev.external')).toHaveCount(0);
+	await page.getByRole('button', { name: 'Stop following Shared' }).click();
+	await expect(page.getByText('No longer following “Shared”.')).toBeVisible();
+	await page.getByRole('button', { name: 'Revoke To follow' }).click();
+});
+
 test('design a habit, check in with the two-minute version, and link it to a goal', async () => {
 	await page.goto('/habits');
 	await expect(page.getByText('No habits yet.')).toBeVisible();
@@ -1258,6 +1287,7 @@ test('flashcards: add an illustrated card, review it with the keyboard, take a t
 });
 
 test('learn: cards from a note, free recall, a memory palace walk, and the day plan', async () => {
+	test.setTimeout(60_000); // a long story: several pages and two accessibility scans
 	const origin = new URL(page.url()).origin;
 	const res = await page.request.post('/api/v1/notes', {
 		headers: { Origin: origin },
