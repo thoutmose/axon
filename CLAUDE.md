@@ -4,7 +4,7 @@ Axon is a self-hosted life OS. Product and architecture: [README.md](README.md).
 
 ## Current state
 
-Every Epic in the backlog through EP-69 is delivered (1.0 release candidate); 1.0 waits for the external security review and an observed install. The twelve features proposed in the EP-49 audit are delivered (EP-54 to EP-64, pictures in notes in EP-51), then audit fixes, trash and undo, share to Axon, task reminders, and the clean-code pass (EP-65 to EP-69); nothing is planned next until the owner decides. Everything through EP-68 is merged into `main`; EP-69 is in pull request #81, with the CI-minutes change and a dependency bump. Open items and the delivery order are in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
+Every Epic in the backlog through EP-70 is delivered (1.0 release candidate); 1.0 waits for the external security review and an observed install. The twelve features proposed in the EP-49 audit are delivered (EP-54 to EP-64, pictures in notes in EP-51), then audit fixes, trash and undo, share to Axon, task reminders, and the clean-code pass (EP-65 to EP-69); nothing is planned next until the owner decides. Everything through EP-68 is merged into `main`; EP-69 is in pull request #81, with the CI-minutes change and a dependency bump. Open items and the delivery order are in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
 
 - `api/` — Go API (`chi`, `pgx`, `goose` migrations embedded in `internal/db/migrations`).
 - `web/` — SvelteKit 2 + TypeScript, Node 24.

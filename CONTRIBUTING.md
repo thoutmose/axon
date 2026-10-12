@@ -7,7 +7,7 @@ Contributions are welcome when they improve user agency, accessibility, privacy,
 1. Pick the next ready issue in [doc/BACKLOG.md](doc/BACKLOG.md). Work on one Epic at a time.
 2. Branch from `main`: `feat/EP-09-task-planner`, `fix/EP-04-session-rotation`, `docs/EP-00-agent-constitution`.
 3. Write tests or acceptance examples first, then the smallest vertical slice that passes them.
-4. Keep migrations reversible and APIs documented in OpenAPI.
+4. Keep migrations reversible and APIs documented in OpenAPI. Index every foreign key (`TestEveryForeignKeyIsIndexed` fails otherwise).
 5. Record significant decisions as ADRs in [doc/adr/](doc/adr/).
 6. Open a PR titled `<type>(<area>): <imperative outcome> [EP-xx/IS-xx.xx]`.
 
