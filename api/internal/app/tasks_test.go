@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -242,4 +243,38 @@ func TestViewsStayFastWithTenThousandTasks(t *testing.T) {
 func integrity() (int, error) {
 	problems, err := graph.CheckIntegrity(context.Background(), pool)
 	return len(problems), err
+}
+
+// Bulk actions change or delete many tasks at once, all or none (EP-64).
+func TestBulkTasks(t *testing.T) {
+	e := newEnv(t, true)
+	alice, bob := e.client(), e.client()
+	alice.register("Alice")
+	bob.register("Bob")
+	var ids []string
+	for _, title := range []string{"Call the bank", "Email Ada", "Fix the bike"} {
+		ids = append(ids, alice.createTask(`{"title":"`+title+`"}`).ID)
+	}
+	other := bob.createTask(`{"title":"Bob's"}`).ID
+	list := `["` + strings.Join(ids, `","`) + `"]`
+	if out := alice.mustDo(200, "POST", "/v1/tasks/bulk", []byte(`{"ids":`+list+`,"change":{"status":"next","context":"@phone","due_on":"2026-11-02"}}`)); !strings.Contains(string(out), `"changed":3`) {
+		t.Fatalf("bulk = %s", out)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/tasks?view=next", nil); strings.Count(string(out), `"context":"@phone"`) != 3 || strings.Count(string(out), `"due_on":"2026-11-02"`) != 3 {
+		t.Fatalf("after bulk = %s", out)
+	}
+	// All or none: one task that is not hers and nothing changes.
+	alice.mustDo(404, "POST", "/v1/tasks/bulk", []byte(`{"ids":["`+ids[0]+`","`+other+`"],"change":{"status":"done"}}`))
+	if out := alice.mustDo(200, "GET", "/v1/tasks/"+ids[0], nil); !strings.Contains(string(out), `"status":"next"`) {
+		t.Fatalf("a refused bulk changed something: %s", out)
+	}
+	alice.mustDo(422, "POST", "/v1/tasks/bulk", []byte(`{"ids":`+list+`,"change":{"title":"Same"}}`))
+	alice.mustDo(422, "POST", "/v1/tasks/bulk", []byte(`{"ids":`+list+`}`))
+	if out := alice.mustDo(200, "POST", "/v1/tasks/bulk", []byte(`{"ids":`+list+`,"change":{"due_on":null}}`)); !strings.Contains(string(out), `"changed":3`) {
+		t.Fatalf("clearing dates = %s", out)
+	}
+	alice.mustDo(200, "POST", "/v1/tasks/bulk", []byte(`{"ids":["`+ids[1]+`","`+ids[2]+`"],"delete":true}`))
+	alice.mustDo(404, "GET", "/v1/tasks/"+ids[1], nil)
+	alice.mustDo(200, "GET", "/v1/tasks/"+ids[0], nil)
+	bob.mustDo(200, "GET", "/v1/tasks/"+other, nil)
 }

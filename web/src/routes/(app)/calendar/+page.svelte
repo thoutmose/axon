@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { api, message, type Schemas } from '$lib/api';
+	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import { byDay, monthGrid, monthLabel, monthRange, shiftMonth } from '$lib/calendar';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -113,6 +113,52 @@
 		d.setUTCDate(d.getUTCDate() + 1);
 		return d.toISOString().slice(0, 10);
 	}
+	// Drag and drop (EP-64): a task moves to another day, keeping what the
+	// date means (scheduled or due); undated next actions can be dropped on a
+	// day to schedule them. Each has a date field too, for the keyboard.
+	type TaskLite = { id: string; title: string; scheduled_on: string | null; due_on: string | null };
+	let undated = $state<TaskLite[]>([]);
+	let overDay = $state('');
+	async function loadUndated() {
+		try {
+			const r = await api<{ items: TaskLite[] }>('/v1/tasks?view=next&limit=100');
+			undated = r.items.filter((t) => !t.scheduled_on && !t.due_on).slice(0, 20);
+		} catch {
+			undated = [];
+		}
+	}
+	async function setDate(id: string, field: 'scheduled_on' | 'due_on', day: string) {
+		try {
+			const { etag } = await apiResponse(`/v1/tasks/${id}`);
+			await api(`/v1/tasks/${id}`, {
+				method: 'PATCH',
+				headers: { 'If-Match': etag },
+				body: { [field]: day }
+			});
+			toast(`Moved to ${dayLabel(day)}.`);
+			await Promise.all([load(), loadUndated()]);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+	function drag(e: DragEvent, id: string, field: 'scheduled_on' | 'due_on') {
+		e.dataTransfer?.setData('application/x-axon-task', JSON.stringify({ id, field }));
+		if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+	}
+	function drop(e: DragEvent, day: string) {
+		overDay = '';
+		const raw = e.dataTransfer?.getData('application/x-axon-task');
+		if (!raw) return;
+		e.preventDefault();
+		const { id, field } = JSON.parse(raw) as { id: string; field: 'scheduled_on' | 'due_on' };
+		setDate(id, field, day);
+	}
+	function over(e: DragEvent, day: string) {
+		if (e.dataTransfer?.types.includes('application/x-axon-task')) {
+			e.preventDefault();
+			overDay = day;
+		}
+	}
 	let sourceName = $state('');
 	let sourceUrl = $state('');
 	let sourceColor = $state('#22aa66');
@@ -157,6 +203,7 @@
 	$effect(() => {
 		loadFeeds();
 		loadSources();
+		loadUndated();
 	});
 
 	async function loadSources() {
@@ -320,7 +367,14 @@
 			{#each weeks as week (week[0])}
 				<tr>
 					{#each week as d (d)}
-						<td class:out={!d.startsWith(month)} class:today={d === todayISO}>
+						<td
+							class:out={!d.startsWith(month)}
+							class:today={d === todayISO}
+							class:over={overDay === d}
+							ondragover={(e) => over(e, d)}
+							ondragleave={() => (overDay = '')}
+							ondrop={(e) => drop(e, d)}
+						>
 							<span class="num" aria-label={dayLabel(d)}>{Number(d.slice(8))}</span>
 							{#if byDate.get(d)}
 								<ul>
@@ -329,6 +383,10 @@
 											class="ev {e.type}"
 											class:done={e.done}
 											style={e.type === 'external' ? `--c: ${e.color}` : undefined}
+											draggable={e.type === 'task' && !e.done ? 'true' : undefined}
+											ondragstart={e.type === 'task'
+												? (ev) => drag(ev, e.id, e.kind === 'due' ? 'due_on' : 'scheduled_on')
+												: undefined}
 										>
 											{#if e.type === 'external'}<span class="visually-hidden">{e.calendar}:</span
 												>{#if e.time}<span class="time">{e.time}</span
@@ -383,6 +441,27 @@
 			</li>
 		{/each}
 	</ol>
+{/if}
+
+{#if undated.length}
+	<section class="card" aria-labelledby="undated-title">
+		<h2 id="undated-title">Next actions without a date</h2>
+		<p class="muted small">Drag one onto a day to schedule it, or pick a date.</p>
+		<ul class="undated">
+			{#each undated as t (t.id)}
+				<li draggable="true" ondragstart={(e) => drag(e, t.id, 'scheduled_on')}>
+					<span class="grow">{t.title}</span>
+					<label class="visually-hidden" for="when-{t.id}">Schedule {t.title} on</label>
+					<input
+						id="when-{t.id}"
+						type="date"
+						onchange={(e) =>
+							e.currentTarget.value && setDate(t.id, 'scheduled_on', e.currentTarget.value)}
+					/>
+				</li>
+			{/each}
+		</ul>
+	</section>
 {/if}
 
 <section class="card" aria-labelledby="follow-title">
@@ -505,6 +584,27 @@
 </section>
 
 <style>
+	td.over {
+		outline: 2px dashed var(--accent);
+		outline-offset: -2px;
+	}
+	li[draggable='true'] {
+		cursor: grab;
+	}
+	.undated {
+		list-style: none;
+		padding: 0;
+		display: grid;
+		gap: var(--space-1);
+	}
+	.undated li {
+		display: flex;
+		gap: var(--space-2);
+		align-items: center;
+		padding: var(--space-1) var(--space-2);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+	}
 	.ev.external {
 		border-left: 3px solid var(--c);
 	}

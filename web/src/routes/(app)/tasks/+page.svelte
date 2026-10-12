@@ -197,6 +197,28 @@
 		else u.searchParams.delete('context');
 		goto(u, { keepFocus: true, noScroll: true });
 	}
+
+	// Bulk actions (EP-64): select tasks, then change them all at once.
+	let selecting = $state(false);
+	let picked = $state<string[]>([]);
+	let bulkContext = $state('');
+	let bulkDue = $state('');
+	function pick(id: string, on: boolean) {
+		picked = on ? [...picked, id] : picked.filter((x) => x !== id);
+	}
+	async function bulk(body: Record<string, unknown>, said: string) {
+		try {
+			const r = await api<{ changed: number }>('/v1/tasks/bulk', {
+				method: 'POST',
+				body: { ids: picked, ...body }
+			});
+			toast(`${r.changed} ${r.changed === 1 ? 'task' : 'tasks'} ${said}.`);
+			picked = [];
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
 </script>
 
 <svelte:head><title>Tasks · Axon</title></svelte:head>
@@ -265,15 +287,83 @@
 {:else if tasks.length === 0}
 	<Status kind="empty" message={empty[view] ?? 'Nothing here.'} />
 {:else}
+	<div class="select-bar">
+		<Button
+			variant="ghost"
+			onclick={() => {
+				selecting = !selecting;
+				picked = [];
+			}}>{selecting ? 'Done selecting' : 'Select'}</Button
+		>
+		{#if selecting}
+			<Button variant="ghost" onclick={() => (picked = tasks!.map((t) => t.id))}>Select all</Button>
+		{/if}
+	</div>
+	{#if selecting && picked.length}
+		<div class="bulk" role="group" aria-label="Change {picked.length} selected tasks">
+			<strong>{picked.length} selected</strong>
+			<Button
+				variant="secondary"
+				onclick={() => bulk({ change: { status: 'next' } }, 'moved to Next')}>Next</Button
+			>
+			<Button variant="secondary" onclick={() => bulk({ change: { status: 'waiting' } }, 'waiting')}
+				>Waiting</Button
+			>
+			<Button
+				variant="secondary"
+				onclick={() => bulk({ change: { status: 'someday' } }, 'set to someday')}>Someday</Button
+			>
+			<Button variant="secondary" onclick={() => bulk({ change: { status: 'done' } }, 'done')}
+				>Done</Button
+			>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					bulk({ change: { context: bulkContext.trim() || null } }, 'given a context');
+				}}
+			>
+				<label for="bulk-context" class="visually-hidden">Context for the selected tasks</label>
+				<input id="bulk-context" placeholder="@context" bind:value={bulkContext} maxlength="50" />
+				<Button type="submit" variant="ghost">Set context</Button>
+			</form>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					bulk(
+						{ change: { due_on: bulkDue || null } },
+						bulkDue ? 'given a due date' : 'without a due date'
+					);
+				}}
+			>
+				<label for="bulk-due" class="visually-hidden">Due date for the selected tasks</label>
+				<input id="bulk-due" type="date" bind:value={bulkDue} />
+				<Button type="submit" variant="ghost">Set due date</Button>
+			</form>
+			<Button variant="danger" onclick={() => bulk({ delete: true }, 'deleted')}>Delete</Button>
+		</div>
+	{/if}
 	<ul class="tasks">
 		{#each tasks as t (t.id)}
-			<li class:done={t.status === 'done' || t.status === 'cancelled'}>
-				<input
-					type="checkbox"
-					checked={t.status === 'done'}
-					onchange={() => toggle(t)}
-					aria-label={`Complete ${t.title}`}
-				/>
+			<li
+				class:done={t.status === 'done' || t.status === 'cancelled'}
+				class:picked={picked.includes(t.id)}
+			>
+				{#if selecting}
+					<input
+						type="checkbox"
+						class="pick"
+						checked={picked.includes(t.id)}
+						onchange={(e) => pick(t.id, e.currentTarget.checked)}
+						aria-label={`Select ${t.title}`}
+					/>
+				{:else}
+					<input
+						type="checkbox"
+						checked={t.status === 'done'}
+						onchange={() => toggle(t)}
+						aria-label={`Complete ${t.title}`}
+					/>
+				{/if}
 				<button class="title" onclick={() => (editing = t.id)}>{t.title}</button>
 				<span class="meta">
 					{#if t.recurrence}<span title="Repeats" aria-label="Repeats">↻</span>{/if}
@@ -292,6 +382,37 @@
 <TaskEditor bind:id={editing} onchange={() => load()} />
 
 <style>
+	.select-bar {
+		display: flex;
+		gap: var(--space-1);
+		justify-content: flex-end;
+	}
+	.bulk {
+		position: sticky;
+		top: 3.5rem;
+		z-index: 5;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+		margin-bottom: var(--space-2);
+		border: 1px solid var(--accent);
+		border-radius: var(--radius-lg);
+		background: var(--surface-solid);
+	}
+	.bulk form {
+		display: flex;
+		gap: var(--space-1);
+		align-items: center;
+	}
+	.bulk input {
+		font: inherit;
+		max-width: 10rem;
+	}
+	.picked {
+		background: var(--accent-soft);
+	}
 	.head {
 		display: flex;
 		justify-content: space-between;
