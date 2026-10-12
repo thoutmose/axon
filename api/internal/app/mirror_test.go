@@ -104,6 +104,25 @@ func TestVaultMirror(t *testing.T) {
 	if len(bob.vault()) != 0 {
 		t.Fatal("bob sees alice's mirrored notes")
 	}
+	// Item notes do not count as notes written, and the Notes list can leave them out.
+	if out := alice.mustDo(200, "GET", "/v1/notes?mirrored=false&limit=100", nil); bytes.Contains(out, []byte(`"path":"Axon/`)) {
+		t.Fatalf("mirrored notes listed: %s", out)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/dashboard", nil); !bytes.Contains(out, []byte(`"notes":0`)) {
+		t.Fatalf("today counts item notes: %s", out)
+	}
+	var ins struct {
+		Metrics []struct {
+			ID    string  `json:"id"`
+			Total float64 `json:"total"`
+		} `json:"metrics"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/insights?weeks=4", nil), &ins)
+	for _, m := range ins.Metrics {
+		if m.ID == "notes_written" && m.Total != 0 {
+			t.Fatalf("insights count %v item notes as written", m.Total)
+		}
+	}
 
 	// Axon → vault: a renamed task moves its note.
 	patch := func(path, body string) {

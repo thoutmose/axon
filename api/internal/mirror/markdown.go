@@ -93,6 +93,16 @@ type parsed struct {
 
 var comment = regexp.MustCompile(`(?s)<!--.*?-->`)
 
+// headings are the sections Axon writes. Any other "## " line is text the
+// person wrote inside a section (a task's notes can have headings of their
+// own), so it stays in that section instead of starting a new one.
+var headings = map[string]bool{
+	"Notes": true, "Outcome": true, "Milestones": true, "Description": true, "Identity": true,
+	"Make it obvious (cue)": true, "Make it attractive (craving)": true, "Make it easy (two-minute version)": true,
+	"Make it satisfying (reward)": true, "Habit contract": true, "Recent check-ins": true, "Overview": true,
+	"Review": true, "Meals": true, "Totals": true, "Sets": true,
+}
+
 // parse reads front matter (flat "key: value" lines), the first "# " title,
 // and "## " sections. Unknown parts are ignored, never an error.
 func parse(content string) parsed {
@@ -129,7 +139,7 @@ func parse(content string) parsed {
 		switch {
 		case p.title == "" && current == "" && strings.HasPrefix(line, "# "):
 			p.title = strings.TrimSpace(line[2:])
-		case strings.HasPrefix(line, "## "):
+		case strings.HasPrefix(line, "## ") && (headings[strings.TrimSpace(line[3:])] || current == ""):
 			flush()
 			current = strings.TrimSpace(line[3:])
 		default:

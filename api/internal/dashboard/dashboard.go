@@ -196,7 +196,7 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err = h.db.Query(ctx, `SELECT n.id, e.title, n.path, n.updated_at FROM notes n JOIN entities e ON e.id = n.id
-		WHERE n.user_id = $1 ORDER BY n.updated_at DESC, n.id LIMIT 5`, who.UserID)
+		WHERE n.user_id = $1 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = n.id) ORDER BY n.updated_at DESC, n.id LIMIT 5`, who.UserID)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -214,7 +214,7 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 	var nTasks, nNotes, nGoals int
 	err = h.db.QueryRow(ctx, `SELECT
 		(SELECT count(*) FROM entities WHERE user_id = $1 AND type = 'task'),
-		(SELECT count(*) FROM entities WHERE user_id = $1 AND type = 'note'),
+		(SELECT count(*) FROM entities ne WHERE user_id = $1 AND type = 'note' AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = ne.id)),
 		(SELECT count(*) FROM entities WHERE user_id = $1 AND type = 'goal'),
 		EXISTS (SELECT 1 FROM checkins WHERE user_id = $1 AND kind = 'daily' AND day = $2)`, who.UserID, day).
 		Scan(&nTasks, &nNotes, &nGoals, &out.CheckedIn)

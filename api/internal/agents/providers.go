@@ -141,7 +141,7 @@ func providerNames() []string {
 // testParams is the cheapest possible request: no personal data.
 func testParams(model string) anthropic.BetaMessageNewParams {
 	return anthropic.BetaMessageNewParams{
-		Model:     anthropic.Model(model),
+		Model:     model,
 		MaxTokens: 16,
 		Messages:  []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Reply with the word OK."))},
 	}

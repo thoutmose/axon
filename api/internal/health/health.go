@@ -34,9 +34,7 @@ type ValidationError struct{ Msg string }
 func (e ValidationError) Error() string { return e.Msg }
 
 func init() {
-	privacy.OnWithdraw(Consent, func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error {
-		return DeleteAll(ctx, tx, userID)
-	})
+	privacy.OnWithdraw(Consent, DeleteAll)
 }
 
 // OnChange, when set, hears which health log changed, in the same

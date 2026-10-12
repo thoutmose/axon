@@ -74,7 +74,7 @@ func load(ctx context.Context, q db.Querier, userID uuid.UUID, f Filter) ([]*doc
 	rows, err := q.Query(ctx, `SELECT n.id, e.title, n.path, n.para, n.kind, coalesce(n.tags, '{}'), n.content, e.created_at, n.updated_at,
 			(SELECT count(*) FROM links l WHERE l.source_id = n.id OR l.target_id = n.id)
 		FROM notes n JOIN entities e ON e.id = n.id
-		WHERE n.user_id = $1 AND ($2 = '' OR n.para = $2) AND ($3 = '' OR n.kind = $3) AND ($4 = '' OR $4 = ANY(n.tags))
+		WHERE n.user_id = $1 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = n.id) AND ($2 = '' OR n.para = $2) AND ($3 = '' OR n.kind = $3) AND ($4 = '' OR $4 = ANY(n.tags))
 			AND ($5::timestamptz IS NULL OR e.created_at >= $5) AND ($6::timestamptz IS NULL OR e.created_at < $6::timestamptz + interval '1 day')
 			AND ($7 = '' OR e.title ILIKE '%' || $7 || '%' OR n.content ILIKE '%' || $7 || '%')
 		ORDER BY e.created_at DESC, n.id LIMIT $8`,

@@ -31,3 +31,10 @@ func TestFileName(t *testing.T) {
 		}
 	}
 }
+
+func TestOwnHeadingsStayInTheirSection(t *testing.T) {
+	got := parse("---\ntype: task\n---\n# Plan\n\n## Notes\nIntro\n\n## Steps\n1. Call\n\n<!-- footer -->\n")
+	if got.sections["Notes"] != "Intro\n\n## Steps\n1. Call" {
+		t.Fatalf("notes = %q", got.sections["Notes"])
+	}
+}

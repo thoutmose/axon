@@ -101,11 +101,14 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	if v := q.Get("after"); v != "" {
 		after = &v // the last path of the previous page
 	}
+	// ?mirrored=false leaves out the notes the vault mirror keeps for items (EP-48).
+	hideMirrored := q.Get("mirrored") == "false"
 	rows, err := h.db.Query(r.Context(), `SELECT `+columns+` FROM notes n JOIN entities e ON e.id = n.id
 		WHERE n.user_id = $1 AND ($2::text IS NULL OR n.para = $2) AND ($3::text IS NULL OR n.path > $3)
 		AND ($5::text IS NULL OR n.tags @> ARRAY[$5::text]) AND ($6::text IS NULL OR n.path = $6)
 		AND ($7::text IS NULL OR n.path LIKE $7)
-		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit, tag, exact, folder)
+		AND (NOT $8 OR NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = n.id))
+		ORDER BY n.path LIMIT $4`, who.UserID, para, after, limit, tag, exact, folder, hideMirrored)
 	if err != nil {
 		h.fail(w, err)
 		return

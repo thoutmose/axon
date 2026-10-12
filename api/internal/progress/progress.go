@@ -57,7 +57,7 @@ SELECT r.reviewed_at, 'card_review', 1, e.id, e.title FROM card_reviews r JOIN e
  WHERE e.user_id = $1 AND r.reviewed_at >= $2 AND r.reviewed_at < $3
 UNION ALL
 SELECT e.created_at, 'note_written', 3, e.id, e.title FROM entities e
- WHERE e.user_id = $1 AND e.type = 'note' AND e.created_at >= $2 AND e.created_at < $3
+ WHERE e.user_id = $1 AND e.type = 'note' AND e.created_at >= $2 AND e.created_at < $3 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = e.id)
 UNION ALL
 SELECT e.created_at, 'permanent_note', 2, e.id, e.title FROM notes n JOIN entities e ON e.id = n.id
  WHERE e.user_id = $1 AND n.kind = 'permanent' AND e.created_at >= $2 AND e.created_at < $3
