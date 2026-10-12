@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localDate } from '$lib/dates';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { monthLabel, shiftMonth } from '$lib/calendar';
@@ -15,7 +16,7 @@
 	type Kind = 'income' | 'expense';
 	type Account = Schemas['BudgetAccount'];
 
-	const today = new Date().toLocaleDateString('sv');
+	const today = localDate(new Date());
 	const month = $derived(page.url.searchParams.get('month') ?? today.slice(0, 7));
 	let summary = $state<Month | null>(null);
 	let categories = $state<Category[]>([]);

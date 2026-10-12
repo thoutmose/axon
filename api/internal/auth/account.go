@@ -71,7 +71,7 @@ func (s *Service) updateMe(w http.ResponseWriter, r *http.Request) {
 		fields = append(fields, "display_name")
 	}
 	if body.Timezone != nil {
-		if _, err := time.LoadLocation(*body.Timezone); err != nil || *body.Timezone == "" || *body.Timezone == "Local" {
+		if !validZone(*body.Timezone) {
 			httpx.Problem(w, http.StatusUnprocessableEntity, "Use an IANA time zone such as Europe/Paris.")
 			return
 		}
@@ -449,4 +449,13 @@ func (s *Service) listAudit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": events})
+}
+
+// validZone says whether tz is an IANA time zone this server knows.
+func validZone(tz string) bool {
+	if tz == "" || tz == "Local" || len(tz) > 64 {
+		return false
+	}
+	_, err := time.LoadLocation(tz)
+	return err == nil
 }

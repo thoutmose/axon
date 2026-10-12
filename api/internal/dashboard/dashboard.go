@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/httpx"
@@ -60,11 +61,8 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 
 // today is the user's current date in their time zone.
 func today(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time) (time.Time, error) {
-	var tz string
-	if err := q.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return time.Time{}, err
-	}
-	return tasks.Today(now, tz), nil
+	day, _, err := clock.Today(ctx, q, userID, now)
+	return day, err
 }
 
 // KPI is one dashboard number with the definition of what it counts.

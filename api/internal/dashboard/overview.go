@@ -11,6 +11,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/httpx"
@@ -93,12 +94,12 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 		}
 		days = n
 	}
-	var tz string
-	if err := h.db.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, who.UserID).Scan(&tz); err != nil {
+	day, loc, err := clock.Today(ctx, h.db, who.UserID, h.now())
+	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	day := tasks.Today(h.now(), tz)
+	tz := loc.String()
 	cur := window{day.AddDate(0, 0, 1-days), day}
 	prev := window{day.AddDate(0, 0, 1-2*days), day.AddDate(0, 0, -days)}
 	now, err := counts(ctx, h.db, who.UserID, tz, cur)

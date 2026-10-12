@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { byDay, monthGrid, monthRange, shiftMonth } from './calendar';
+import {
+	byDay,
+	monthGrid,
+	monthRange,
+	shiftMonth,
+	spreadEvents,
+	type Occurrence
+} from './calendar';
 
 describe('monthRange', () => {
 	it('covers the whole month, leap years included', () => {
@@ -43,5 +50,42 @@ describe('monthGrid', () => {
 		const weeks = monthGrid('2027-02');
 		expect(weeks[0][0]).toBe('2027-02-01');
 		expect(weeks.at(-1)?.at(-1)).toBe('2027-02-28');
+	});
+});
+
+describe('spreadEvents', () => {
+	const work = { id: 's1', name: 'Work', color: '#ff0000' };
+	const at = (o: Partial<Occurrence>): Occurrence => ({
+		source_id: 's1',
+		title: 'Offsite',
+		location: 'Lyon',
+		start: '2026-10-12T07:00:00Z',
+		end: '2026-10-12T09:00:00Z',
+		all_day: false,
+		date: '2026-10-12',
+		last_date: '2026-10-12',
+		...o
+	});
+
+	it("puts an event on each of its days, in its calendar's colour", () => {
+		const out = spreadEvents([at({ all_day: true, last_date: '2026-10-14' })], [work], () => '');
+		expect(out.map((e) => e.date)).toEqual(['2026-10-12', '2026-10-13', '2026-10-14']);
+		expect(new Set(out.map((e) => e.id)).size).toBe(3); // keyed apart
+		expect(out[0]).toMatchObject({
+			color: '#ff0000',
+			calendar: 'Work',
+			time: '',
+			location: 'Lyon'
+		});
+	});
+
+	it('shows the start time of timed events, and a default colour for an unknown calendar', () => {
+		const out = spreadEvents([at({ source_id: 'gone' })], [work], (iso) => `at ${iso}`);
+		expect(out).toHaveLength(1);
+		expect(out[0]).toMatchObject({
+			time: 'at 2026-10-12T07:00:00Z',
+			color: '#5aa9ff',
+			calendar: ''
+		});
 	});
 });

@@ -25,8 +25,17 @@ async function noSeriousA11yViolations(p: Page) {
 	).toEqual([]);
 }
 
+// The browser runs in a time zone whose date is not UTC's right now (UTC+14
+// late in the UTC day, UTC-11 early in it), so showing a date shifted by the
+// browser's time zone is caught whenever the suite runs.
+const browserZone = new Date().getUTCHours() >= 10 ? 'Pacific/Kiritimati' : 'Pacific/Pago_Pago';
+
+/** Today in the browser's time zone (the test runner's is UTC), as YYYY-MM-DD. */
+const browserToday = () => page.evaluate(() => new Date().toLocaleDateString('sv'));
+
 test.beforeAll(async ({ browser }) => {
-	page = await (await browser.newContext()).newPage(); // axe needs an explicit context
+	// axe needs an explicit context
+	page = await (await browser.newContext({ timezoneId: browserZone })).newPage();
 	// A platform authenticator that always verifies the user, as Touch ID would.
 	const cdp = await page.context().newCDPSession(page);
 	await cdp.send('WebAuthn.enable');
@@ -329,7 +338,7 @@ test('subscribe to a calendar feed, read it, and revoke it', async () => {
 
 test('follow another calendar by its ICS address and see its events beside your own', async () => {
 	const origin = new URL(page.url()).origin;
-	const today = new Date().toLocaleDateString('sv');
+	const today = await browserToday();
 	await page.request.post('/api/v1/tasks', {
 		headers: { Origin: origin },
 		data: { title: 'Dentist appointment', status: 'next', due_on: today }
@@ -1246,7 +1255,7 @@ test('drag a task onto a day of the calendar, or pick its date', async () => {
 	await page.locator('td.today').dispatchEvent('drop', { dataTransfer: data });
 	await expect(page.getByText(/^Moved to /)).toBeVisible();
 	await expect(page.locator('td.today').getByText('Plan the picnic')).toBeVisible();
-	await tray.getByLabel('Schedule Book the train on').fill(new Date().toLocaleDateString('sv'));
+	await tray.getByLabel('Schedule Book the train on').fill(await browserToday());
 	await expect(page.locator('td.today').getByText('Book the train')).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
@@ -1585,6 +1594,18 @@ test('learn: cards from a note, free recall, a memory palace walk, and the day p
 	await page.getByRole('button', { name: 'Compare with the note' }).click();
 	await expect(page.getByRole('heading', { name: /% of the key ideas/ })).toBeVisible();
 	await expect(page.getByText('Next recall in 1 day')).toBeVisible();
+	// The history shows the day the server set, not the day before or after
+	// (the browser runs in a time zone whose date differs from UTC's).
+	const dueOn = await page.evaluate(
+		async (id) =>
+			(await (await fetch(`/api/v1/notes/${id}/recall`)).json()).items[0].due_on as string,
+		note.id
+	);
+	const shown = await page.evaluate(
+		(d) => new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, { timeZone: 'UTC' }),
+		dueOn
+	);
+	await expect(page.getByText(`next ${shown}`)).toBeVisible();
 	await noSeriousA11yViolations(page);
 
 	// A memory palace, a card placed in it, and a walk through it.

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localDate } from '$lib/dates';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
@@ -79,7 +80,7 @@
 					.replace(/[^\p{L}\p{N}]+/gu, '-')
 					.replace(/^-|-$/g, '')
 					.slice(0, 60) || 'page';
-			const day = new Date().toLocaleDateString('sv');
+			const day = localDate(new Date());
 			const yaml = (s: string) => JSON.stringify(s);
 			const content = `---\ntype: literature\ntitle: ${yaml(name)}\nsource: ${yaml(p.url)}\nsite: ${yaml(p.site)}\nclipped: ${day}\ntags: []\n---\n# ${name}\n\n${text ? `> ${text.replace(/\n/g, '\n> ')}\n\n` : ''}## My thoughts\n\n\n## The page\n\n${p.markdown}\n`;
 			const made = await api<Note>('/v1/notes', {

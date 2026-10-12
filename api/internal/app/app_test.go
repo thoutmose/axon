@@ -193,6 +193,37 @@ func TestRegisterSignInAndFirstUserOnly(t *testing.T) {
 	}
 }
 
+// A new account starts in the time zone of the browser that created it, so
+// "today" is the person's from the first day; a zone this server does not
+// know leaves UTC rather than failing registration.
+func TestRegistrationTakesTheBrowsersTimeZone(t *testing.T) {
+	for zone, want := range map[string]string{"Europe/Paris": "Europe/Paris", "Mars/Olympus": "UTC", "": "UTC"} {
+		e := newEnv(t, false)
+		c := e.client()
+		opts := c.mustDo(200, "POST", "/v1/auth/register/begin", []byte(`{"display_name":"Ada","timezone":"`+zone+`"}`))
+		c.mustDo(201, "POST", "/v1/auth/register/finish", c.key.create(opts))
+		if me := c.mustDo(200, "GET", "/v1/me", nil); !bytes.Contains(me, []byte(`"timezone":"`+want+`"`)) {
+			t.Errorf("registered from %q: /v1/me = %s, want %s", zone, me, want)
+		}
+	}
+}
+
+// A browser's user agent is stored with the session and the audit event;
+// one that is long, cut inside a character, or not UTF-8 at all must not
+// stop the person signing in (PostgreSQL refuses invalid UTF-8).
+func TestSignInWithAnyUserAgent(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	for _, ua := range []string{strings.Repeat("a", 299) + "é", "Mozilla/5.0 \xff\xfe"} {
+		alice.signOut()
+		opts := alice.mustDo(200, "POST", "/v1/auth/login/begin", nil)
+		if code, out := alice.do("POST", "/v1/auth/login/finish", alice.key.get(opts), "User-Agent", ua); code != 200 {
+			t.Fatalf("sign-in with user agent %q = %d: %s", ua, code, out)
+		}
+	}
+}
+
 func TestPasskeyFromAnotherBrowserIsRejected(t *testing.T) {
 	e := newEnv(t, false)
 	e.client().register("Alice")

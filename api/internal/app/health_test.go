@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/thoutmose/axon/api/internal/health"
 )
@@ -149,6 +150,13 @@ func TestHealthNeedsConsentAndLogsFoodAndTraining(t *testing.T) {
 		t.Fatalf("workouts = %s", out)
 	}
 	alice.mustDo(400, "GET", "/v1/health/workouts?from=2026-10-31&to=2026-10-01", nil)
+	// A device a day ahead of the account's time zone logs "today" as
+	// tomorrow: the workout still shows in the default list.
+	ahead := time.Now().UTC().AddDate(0, 0, 1).Format(time.DateOnly)
+	alice.mustDo(201, "POST", "/v1/health/workouts", []byte(`{"done_on":"`+ahead+`","kind":"cardio","title":"Swim from abroad"}`))
+	if out := alice.mustDo(200, "GET", "/v1/health/workouts", nil); !bytes.Contains(out, []byte("Swim from abroad")) {
+		t.Fatalf("a workout dated tomorrow is missing: %s", out)
+	}
 
 	// Private, and out of search and the graph.
 	bob.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))

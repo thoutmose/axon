@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
+	import { formatDate } from '$lib/dates';
 	import type { Note } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -123,7 +124,7 @@
 				{#each history as h (h.recalled_at)}
 					<li>
 						{new Date(h.recalled_at).toLocaleDateString()}: {pct(h.score)}
-						<span class="muted">· next {new Date(h.due_on).toLocaleDateString()}</span>
+						<span class="muted">· next {formatDate(h.due_on)}</span>
 					</li>
 				{/each}
 			</ul>

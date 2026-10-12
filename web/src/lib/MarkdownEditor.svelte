@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import * as edit from './markdownEdit';
+	import type { Edit } from './markdownEdit';
 	import { canUpload, upload } from './noteFiles.svelte';
 	import { noteIndex } from './noteIndex.svelte';
 	import { stem } from './notes';
@@ -109,31 +111,16 @@
 		area.setSelectionRange(start, end);
 	}
 
-	/** Wraps the selection (or inserts a placeholder) in before…after. */
-	function wrap(before: string, after = before, placeholder = 'text') {
-		const { selectionStart: s, selectionEnd: e } = area;
-		const picked = value.slice(s, e) || placeholder;
-		value = value.slice(0, s) + before + picked + after + value.slice(e);
-		setSelection(s + before.length, s + before.length + picked.length);
+	/** Applies a text change from markdownEdit and puts its selection back. */
+	function apply(change: (t: Edit) => Edit) {
+		const next = change({ value, start: area.selectionStart, end: area.selectionEnd });
+		value = next.value;
+		setSelection(next.start, next.end);
 	}
-
-	/** Toggles a prefix on every selected line. */
-	function prefixLines(prefix: string) {
-		const { selectionStart: s, selectionEnd: e } = area;
-		const start = value.lastIndexOf('\n', s - 1) + 1;
-		const end = value.indexOf('\n', e) === -1 ? value.length : value.indexOf('\n', e);
-		const lines = value.slice(start, end).split('\n');
-		const all = lines.every((l) => l.startsWith(prefix));
-		const next = lines.map((l) => (all ? l.slice(prefix.length) : prefix + l)).join('\n');
-		value = value.slice(0, start) + next + value.slice(end);
-		setSelection(start, start + next.length);
-	}
-
-	function insert(text: string) {
-		const { selectionStart: s, selectionEnd: e } = area;
-		value = value.slice(0, s) + text + value.slice(e);
-		setSelection(s + text.length);
-	}
+	const wrap = (before: string, after = before, placeholder = 'text') =>
+		apply((t) => edit.wrap(t, before, after, placeholder));
+	const prefixLines = (prefix: string) => apply((t) => edit.prefixLines(t, prefix));
+	const insert = (text: string) => apply((t) => edit.insert(t, text));
 
 	const tools: { label: string; keys?: string; icon: string; run: () => void }[] = [
 		{ label: 'Bold', keys: 'Ctrl+B', icon: 'B', run: () => wrap('**') },
@@ -220,20 +207,10 @@
 
 	/** Enter in a list item starts the next item; on an empty item it ends the list. */
 	function continueList(e: KeyboardEvent) {
-		const s = area.selectionStart;
-		if (s !== area.selectionEnd) return;
-		const lineStart = value.lastIndexOf('\n', s - 1) + 1;
-		const line = value.slice(lineStart, s);
-		const m = line.match(/^(\s*)(- \[[ xX]\] |[-*+] |(\d+)[.)] )(.*)$/);
-		if (!m) return;
+		const next = edit.continueList({ value, start: area.selectionStart, end: area.selectionEnd });
+		if (!next) return;
 		e.preventDefault();
-		if (m[4].trim() === '') {
-			value = value.slice(0, lineStart) + value.slice(s);
-			setSelection(lineStart);
-			return;
-		}
-		const marker = m[3] ? `${Number(m[3]) + 1}. ` : m[2].startsWith('- [') ? '- [ ] ' : m[2];
-		insert(`\n${m[1]}${marker}`);
+		apply(() => next);
 	}
 </script>
 

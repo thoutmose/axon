@@ -17,7 +17,8 @@
 		try {
 			const options = await api<{ publicKey: never }>('/v1/auth/register/begin', {
 				method: 'POST',
-				body: { display_name: name }
+				// The account starts in this device's time zone (changeable in Account).
+				body: { display_name: name, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }
 			});
 			const response = await startRegistration({ optionsJSON: options.publicKey });
 			codes = (

@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/images"
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/textx"
 )
 
 // Teacher tools (EP-16). The Teacher reads only literature and permanent
@@ -157,7 +158,7 @@ func init() {
 					fronts = append(fronts, "…")
 					break
 				}
-				fronts = append(fronts, "“"+truncate(c.Front, 80)+"”")
+				fronts = append(fronts, "“"+textx.Cut(c.Front, 80)+"”")
 			}
 			drawn := 0
 			for _, c := range in.Cards {

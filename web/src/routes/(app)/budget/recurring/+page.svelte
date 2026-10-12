@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { localDate } from '$lib/dates';
 	import { api, message } from '$lib/api';
 	import {
 		frequencies,
@@ -17,7 +18,7 @@
 	let categories = $state<Category[]>([]);
 	let currency = $state('EUR');
 	let error = $state('');
-	const today = new Date().toLocaleDateString('sv');
+	const today = localDate(new Date());
 	let form = $state({
 		name: '',
 		kind: 'expense',

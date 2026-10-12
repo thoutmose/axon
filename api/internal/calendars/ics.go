@@ -168,7 +168,10 @@ type vevent struct {
 
 // Parse reads the events of an ICS file and expands repeating ones into
 // the occurrences that overlap [from, to). Floating times are read in loc.
+// ICS is UTF-8; bytes that are not become U+FFFD, so one bad calendar entry
+// cannot stop the calendar loading.
 func Parse(data []byte, from, to time.Time, loc *time.Location) []Event {
+	data = bytes.ToValidUTF8(data, []byte("\uFFFD"))
 	var evs []vevent
 	var cur *vevent
 	var dur time.Duration

@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/privacy"
 )
@@ -121,14 +122,8 @@ func pathID(r *http.Request) (uuid.UUID, error) {
 
 // today is the person's date in their time zone.
 func (h *Handlers) today(r *http.Request, user uuid.UUID) time.Time {
-	var tz string
-	_ = h.db.QueryRow(r.Context(), `SELECT timezone FROM users WHERE id = $1`, user).Scan(&tz)
-	loc, err := time.LoadLocation(tz)
-	if err != nil {
-		loc = time.UTC
-	}
-	n := h.now().In(loc)
-	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, time.UTC)
+	loc, _ := clock.Zone(r.Context(), h.db, user) // UTC when it cannot be read
+	return clock.Day(h.now(), loc)
 }
 
 func (h *Handlers) status(w http.ResponseWriter, r *http.Request) {
@@ -261,7 +256,9 @@ func (h *Handlers) workouts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	today := h.today(r, user)
-	from, to := today.AddDate(0, 0, -29).Format(time.DateOnly), today.Format(time.DateOnly)
+	// The last 30 days, and anything dated later: a device in a time zone
+	// ahead of the account's logs its "today" as tomorrow.
+	from, to := today.AddDate(0, 0, -29).Format(time.DateOnly), today.AddDate(1, 0, 0).Format(time.DateOnly)
 	if f := r.URL.Query().Get("from"); f != "" {
 		from = f
 	}

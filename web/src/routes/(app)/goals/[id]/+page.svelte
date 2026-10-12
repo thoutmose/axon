@@ -5,7 +5,8 @@
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { Goal, Milestone } from '$lib/goals';
 	import Connections from '$lib/Connections.svelte';
-	import { addDays, between, milestonePlans } from '$lib/entityTemplates';
+	import { addDays, localDate } from '$lib/dates';
+	import { between, milestonePlans } from '$lib/entityTemplates';
 	import ProgressBar from '$lib/ProgressBar.svelte';
 	import TemplateChips from '$lib/TemplateChips.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -131,7 +132,7 @@
 	// Milestones from a plan, spread from today to the target date (90 days without one).
 	async function addPlan(steps: [string, number][]) {
 		if (!goal) return;
-		const today = new Date().toLocaleDateString('sv');
+		const today = localDate(new Date());
 		const target =
 			goal.target_date && goal.target_date > today ? goal.target_date : addDays(today, 90);
 		busy = true;
