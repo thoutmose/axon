@@ -103,6 +103,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-52 | Learning and memory engine | Spaced, interleaved, retrieval-first reviews with a daily plan; free recall of notes; memory palaces; cards with the why, an example, a vivid image, and AI drawings; cards drafted from notes; deliberate practice. Owner request. | MUST | 21 pts | EP-16, EP-46, EP-51 | Done |
 | EP-53 | Agents on every page | Each page offers the agents whose skills fit it, with ready-made requests, the page's context, and approvals in place. Owner request. | SHOULD | 5 pts | EP-19, EP-52 | Done |
 | EP-54 | Navigation groups | Eighteen menu links become Today and five groups (Do, Think, Grow, Life, Reflect); one Menu sheet on phones. Owner decision on the EP-49 proposals. | SHOULD | 2 pts | EP-53 | Done |
+| EP-55 | Installable app, offline capture | A web app manifest, icons, and a service worker: Axon installs on phones and desktops, opens offline, and captures made offline are sent once, later. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-54 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1414,6 +1415,15 @@ Cross-cutting matrix:
 - [x] **EP-54/IS-54.01** · 2 pts · SHOULD — Today, then Do (Tasks, Projects, Calendar, Focus), Think (Notes, Areas, Resources, Archive), Grow (Learn, Goals, Habits), Life (Health, Media, Budget), and Reflect (Insights, Agents) as disclosure menus; the current group is marked; menus close on navigation, Escape, or a click elsewhere. Under 760 px, one Menu button opens every group in a sheet. French labels included.
 
 **Tests.** e2e "the menu groups pages: Do, Think, Grow, Life, Reflect" (disclosure state, Escape, the current section, the phone sheet, accessibility).
+
+### EP-55 — Installable app, offline capture
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: open Axon like an app, and never lose a thought for lack of a connection. Reminders (EP-56) build on its service worker.
+
+- [x] **EP-55/IS-55.01** · 1 pt · SHOULD — a web app manifest (start on Today, standalone, shortcuts to Today, flashcard review, and Notes), PNG and maskable icons from the logo, theme colour, Apple touch icon; Preferences → App installs it where the browser offers to, and says how elsewhere.
+- [x] **EP-55/IS-55.02** · 2 pts · SHOULD — a service worker keeps the app's code and a prerendered offline page; nothing personal is cached (the API always goes to the network). Offline, Capture keeps a task or a fleeting note on the device (localStorage) and the offline page lists what waits; back online, every page sends them in order, once: each carries an Idempotency-Key and tabs take turns (Web Locks), so two tabs cannot create it twice.
+
+**Tests.** e2e "installable, and a capture made offline is kept on the device and sent later" (manifest, service worker, offline capture, offline page, sent once on reconnect).
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

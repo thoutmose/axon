@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { install, promptInstall } from '$lib/install.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
@@ -193,6 +194,22 @@
 				)}
 				<a href="/progress">{t('How points are earned')}</a>
 			</p>
+		</Section>
+
+		<Section id="app" title={t('App')}>
+			{#if install.installed}
+				<p>{t('Axon is installed on this device.')}</p>
+			{:else if install.offer}
+				<Button variant="secondary" onclick={promptInstall}
+					>{t('Install Axon on this device')}</Button
+				>
+			{:else}
+				<p class="muted small">
+					{t(
+						'Install Axon to open it like an app, even offline to capture a thought: on iPhone or iPad, Safari → Share → Add to Home Screen; in Chrome or Edge, the install icon in the address bar.'
+					)}
+				</p>
+			{/if}
 		</Section>
 
 		<Section id="vault" title={t('Markdown vault')}>
