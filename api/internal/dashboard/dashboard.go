@@ -142,27 +142,10 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 		out.KPIs = append(out.KPIs, KPI{ID: k.id, Label: k.label, Value: values[i], Definition: k.definition})
 	}
 
-	// Today's tasks: overdue first, then by date (the same set as the "today" count).
-	rows, err := h.db.Query(ctx, `SELECT t.id FROM tasks t JOIN entities e ON e.id = t.id
-		WHERE e.user_id = $1 AND t.status NOT IN ('done', 'cancelled', 'someday') AND (t.scheduled_on <= $2 OR t.due_on <= $2)
-		ORDER BY coalesce(t.due_on < $2, false) DESC, coalesce(t.due_on, t.scheduled_on), t.id LIMIT 10`, who.UserID, day)
-	if err != nil {
+	// Today's tasks: the same set as the "today" count.
+	if out.Tasks, err = tasks.DueBy(ctx, h.db, who.UserID, day, 10); err != nil {
 		h.fail(w, err)
 		return
-	}
-	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
-	if err != nil {
-		h.fail(w, err)
-		return
-	}
-	out.Tasks = []tasks.Task{}
-	for _, id := range ids {
-		t, err := tasks.Get(ctx, h.db, who.UserID, id)
-		if err != nil {
-			h.fail(w, err)
-			return
-		}
-		out.Tasks = append(out.Tasks, t)
 	}
 
 	active, err := goals.List(ctx, h.db, who.UserID, "active")
@@ -172,7 +155,7 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	out.Goals = active[:min(len(active), 5)]
 
-	rows, err = h.db.Query(ctx, `SELECT m.id, me.title, g.id, ge.title, m.due_on
+	rows, err := h.db.Query(ctx, `SELECT m.id, me.title, g.id, ge.title, m.due_on
 		FROM milestones m JOIN entities me ON me.id = m.id JOIN goals g ON g.id = m.goal_id JOIN entities ge ON ge.id = g.id
 		WHERE me.user_id = $1 AND m.done_at IS NULL AND g.status = 'active' AND m.due_on BETWEEN $2 AND $2 + 14
 		ORDER BY m.due_on, m.id LIMIT 10`, who.UserID, day)

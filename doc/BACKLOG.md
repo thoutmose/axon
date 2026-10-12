@@ -121,6 +121,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-70 | Every foreign key indexed | Twenty foreign keys had no index, so deletes and lookups by them scanned whole tables (every calendar refresh, the recall queue); one migration, and a test that keeps it so. | SHOULD | 1 pt | EP-69 | Done |
 | EP-71 | Scripts checked | ShellCheck (warnings and errors) runs in `make check` and CI on every shell script; the deploy and backup scripts pass. | SHOULD | 1 pt | EP-70 | Done |
 | EP-72 | Lighter offline install | The service worker no longer keeps the API reference (Swagger UI, 1.8 MB) for offline use: each device downloads about half as much when Axon is installed or updated. | SHOULD | 1 pt | EP-55 | Done |
+| EP-73 | No query per item | Lists cost the same number of queries for 2 items as for 12; the Goals list (two queries per goal) and Today (one per task) no longer slow down as data grows. | SHOULD | 2 pts | EP-72 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1602,6 +1603,15 @@ Cross-cutting matrix:
 - [x] **EP-72/IS-72.01** · 1 pt · SHOULD — `lib/offlineShell` leaves `/api-docs/` out of the offline shell; the API reference still works online.
 
 **Tests.** `offlineShell` unit tests; the e2e "installable…" test reads the browser's caches: the offline page is there, nothing under `/api-docs/`.
+
+### EP-73 — No query per item
+
+**Goal.** Measured: the test pool counts queries, and each list is read with 2 items, then 12. Two lists ran a query per item (an "N+1"), so they slowed as data grew: Goals (6 queries for 2 goals, 26 for 12: milestones and progress per goal) and Today (one per task due). Today also lists active goals, so it paid both.
+
+- [x] **EP-73/IS-73.01** · 1 pt · SHOULD — `goals.List` reads the milestones and the supporting tasks of all listed goals in one query each, counted as `Explain` counts them (a task supporting a goal and its milestone counts once).
+- [x] **EP-73/IS-73.02** · 1 pt · SHOULD — `tasks.DueBy` returns Today's tasks in one query; the rule for what is due today lives in the tasks package.
+
+**Tests.** `TestListsDoNotQueryPerItem` over 13 lists (tasks, notes, habits, goals, projects, areas, media, Today, calendar, palaces, budget accounts and transactions, flashcards): red for Goals and Today, then green. `TestGoalProgressIsExplainedByItsInputs` now checks the listed goal against the goal itself, with a task supporting both a goal and its milestone.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

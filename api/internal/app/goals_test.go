@@ -75,6 +75,7 @@ func TestGoalProgressIsExplainedByItsInputs(t *testing.T) {
 	alice.link(drill.ID, "supports", g.ID)
 	alice.link(deck.ID, "supports", kanji.ID)
 	alice.link(dropped.ID, "supports", g.ID)
+	alice.link(drill.ID, "supports", kana.ID) // supports the goal twice: counted once
 	// A note can support a goal as context; it does not count.
 	var n noteJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/notes", []byte(`{"content":"# Study plan"}`)), &n)
@@ -89,6 +90,15 @@ func TestGoalProgressIsExplainedByItsInputs(t *testing.T) {
 	g = alice.goal(g.ID)
 	if g.Progress.Method != "items" || *g.Progress.Percent != 50 || g.Progress.Done != 2 || g.Progress.Total != 4 {
 		t.Fatalf("progress = %+v", g.Progress)
+	}
+	// The list shows each goal as the goal itself does.
+	var list struct {
+		Items []goalJSON `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals", nil), &list)
+	if len(list.Items) != 1 || len(list.Items[0].Milestones) != 2 || list.Items[0].Progress.Summary != g.Progress.Summary ||
+		*list.Items[0].Progress.Percent != *g.Progress.Percent || list.Items[0].Progress.Done != g.Progress.Done || list.Items[0].Progress.Total != g.Progress.Total {
+		t.Fatalf("listed goal = %+v, want progress %+v and 2 milestones", list.Items, g.Progress)
 	}
 	var ex explanationJSON
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals/"+g.ID+"/progress", nil), &ex)

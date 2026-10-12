@@ -154,15 +154,53 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, status string) ([
 	if err != nil {
 		return nil, err
 	}
-	for i := range out {
-		if out[i].Milestones, err = milestones(ctx, q, userID, out[i].ID); err != nil {
-			return nil, err
+	if len(out) == 0 {
+		return out, nil
+	}
+	// Two queries for the whole list, not two per goal: the milestones, then
+	// the tasks supporting each goal or one of its milestones, counted as
+	// Explain counts them.
+	ids := make([]uuid.UUID, len(out))
+	for i, g := range out {
+		ids[i] = g.ID
+	}
+	byGoal, err := milestonesOf(ctx, q, userID, ids)
+	if err != nil {
+		return nil, err
+	}
+	var targets, owners []uuid.UUID
+	done, total := map[uuid.UUID]int{}, map[uuid.UUID]int{}
+	for i, g := range out {
+		out[i].Milestones = byGoal[g.ID]
+		targets, owners = append(targets, g.ID), append(owners, g.ID)
+		for _, m := range out[i].Milestones {
+			targets, owners = append(targets, m.ID), append(owners, g.ID)
+			total[g.ID]++
+			if m.DoneAt != nil {
+				done[g.ID]++
+			}
 		}
-		ex, err := Explain(ctx, q, userID, out[i])
-		if err != nil {
-			return nil, err
+	}
+	rows, err = q.Query(ctx, `SELECT DISTINCT ON (x.goal, e.id) x.goal, t.status = 'done'
+		FROM unnest($3::uuid[], $4::uuid[]) AS x(target, goal)
+		JOIN links l ON l.target_id = x.target JOIN entities e ON e.id = l.source_id JOIN tasks t ON t.id = e.id
+		WHERE l.user_id = $1 AND l.relation = $2 AND t.status <> 'cancelled'`, userID, Supports, targets, owners)
+	if err != nil {
+		return nil, err
+	}
+	var goal uuid.UUID
+	var isDone bool
+	if _, err := pgx.ForEachRow(rows, []any{&goal, &isDone}, func() error {
+		total[goal]++
+		if isDone {
+			done[goal]++
 		}
-		out[i].Progress = ex.Progress
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	for i, g := range out {
+		out[i].Progress = compute(g.Measure, done[g.ID], total[g.ID])
 	}
 	return out, nil
 }
@@ -180,16 +218,30 @@ func scanMilestone(row pgx.Row) (Milestone, error) {
 }
 
 func milestones(ctx context.Context, q db.Querier, userID, goalID uuid.UUID) ([]Milestone, error) {
+	byGoal, err := milestonesOf(ctx, q, userID, []uuid.UUID{goalID})
+	return byGoal[goalID], err
+}
+
+// milestonesOf returns the milestones of several goals in one query; each
+// goal has a (possibly empty) slice.
+func milestonesOf(ctx context.Context, q db.Querier, userID uuid.UUID, goalIDs []uuid.UUID) (map[uuid.UUID][]Milestone, error) {
 	rows, err := q.Query(ctx, `SELECT `+milestoneColumns+` FROM milestones m JOIN entities e ON e.id = m.id
-		WHERE m.goal_id = $1 AND e.user_id = $2 ORDER BY m.due_on NULLS LAST, e.created_at`, goalID, userID)
+		WHERE m.goal_id = ANY($1) AND e.user_id = $2 ORDER BY m.due_on NULLS LAST, e.created_at`, goalIDs, userID)
 	if err != nil {
 		return nil, err
 	}
-	out, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Milestone, error) { return scanMilestone(row) })
-	if out == nil {
-		out = []Milestone{}
+	all, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Milestone, error) { return scanMilestone(row) })
+	if err != nil {
+		return nil, err
 	}
-	return out, err
+	out := make(map[uuid.UUID][]Milestone, len(goalIDs))
+	for _, id := range goalIDs {
+		out[id] = []Milestone{}
+	}
+	for _, m := range all {
+		out[m.GoalID] = append(out[m.GoalID], m)
+	}
+	return out, nil
 }
 
 // Explain computes a goal's progress. With a measure, progress is how far
