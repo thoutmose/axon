@@ -28,6 +28,8 @@ func (f *fakeCatalog) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.URL.Path == "/ol/search.json" && strings.HasPrefix(r.URL.Query().Get("q"), "key:"):
 		_, _ = w.Write([]byte(`{"docs":[{"title":"Dune","author_name":["Frank Herbert"],"first_publish_year":1965,"cover_i":123,"number_of_pages_median":612,"subject":["Science fiction","Deserts"]}]}`))
+	case r.URL.Path == "/ol/search.json" && strings.Contains(r.URL.Query().Get("q"), "Herbert"):
+		_, _ = w.Write([]byte(`{"docs":[]}`)) // as Open Library: a title with its author often finds nothing
 	case r.URL.Path == "/ol/search.json":
 		_, _ = w.Write([]byte(`{"docs":[{"key":"/works/OL1W","title":"Dune","author_name":["Frank Herbert"],"first_publish_year":1965,"cover_i":123},{"key":"/books/OL9M","title":"Not a work"}]}`))
 	case r.URL.Path == "/olc/b/id/123-M.jpg", r.URL.Path == "/img/poster.jpg":

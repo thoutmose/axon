@@ -345,7 +345,9 @@
 
 	{#if catalogs.consented && missing > 0}
 		<p class="covers-hint small">
-			{t('{n} items have no cover yet.', { n: missing })}
+			{missing === 1
+				? t('One item has no cover yet.')
+				: t('{n} items have no cover yet.', { n: missing })}
 			<Button variant="secondary" busy={finding} onclick={findCovers}
 				>{t('Find missing covers')}</Button
 			>
