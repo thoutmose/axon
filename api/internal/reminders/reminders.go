@@ -21,6 +21,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/cards"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/habits"
+	"github.com/thoutmose/axon/api/internal/household"
 	"github.com/thoutmose/axon/api/internal/learning"
 	"github.com/thoutmose/axon/api/internal/push"
 )
@@ -84,6 +85,11 @@ func Morning(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Time)
 	}
 	if scheduled > 0 {
 		parts = append(parts, plural(scheduled, "habit", "habits"))
+	}
+	if n, err := household.MineToday(ctx, q, userID, day); err != nil {
+		return Message{}, err
+	} else if n > 0 {
+		parts = append(parts, plural(n, "household item", "household items")+" for you")
 	}
 	if plan.Test.Due {
 		parts = append(parts, "the weekly test")

@@ -109,6 +109,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-58 | Calendars in | Follow Google, CalDAV/Nextcloud, Outlook, or any ICS calendar, read only: events (repeats expanded, time zones kept) beside Axon's own in the month and agenda views. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-13 | Done |
 | EP-59 | Guided weekly review | A ten-step weekly review after Getting Things Done, on Axon's own data, ending in the weekly check-in; the weekend digest suggests it until it is done. Owner decision on the EP-49 proposals. | SHOULD | 3 pts | EP-20, EP-56 | Done |
 | EP-60 | Imports | Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX money, Notion pages; preview first, nothing twice. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-11, EP-17, EP-38 | Done |
+| EP-61 | Household sharing | People on the same Axon join a household by a one-time code and share lists (shopping, chores, anything), with items given to members; nothing personal is shared. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-02, EP-56 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1472,6 +1473,15 @@ Cross-cutting matrix:
 - [x] **EP-60/IS-60.02** · 2 pts · SHOULD — `POST /v1/import/{source}` (50 MB) with `dry_run` and, for money, `account_id`: each item in its own savepoint so a refused one does not undo the rest; nothing twice (tasks by title and due date, media by kind, title, and year, transactions by the budget's import identity, notes and pictures by path; a note with other content is left alone and counted). The budget's CSV import now shares `budget.ImportRows`. Account → Import: how to export from each app, a preview, then the import.
 
 **Tests.** Parser unit tests for every source; `TestImports` (dry run, import, nothing twice for tasks, books, and money, Notion paths and links, ownership, a wrong file, an unknown source); e2e "import from another app: preview, import, and nothing twice".
+
+### EP-61 — Household sharing
+
+**Goal.** Proposed in the EP-49 audit and approved by the owner: share the lists of a home without sharing a life. Decisions in [ADR 0025](adr/0025-household-shares-lists-only.md).
+
+- [x] **EP-61/IS-61.01** · 3 pts · SHOULD — households, members, one-time invite codes (hashed, a week), lists (up to 50) and items (up to 500 open per list) with a due date and an assignee among members; one household per person; leave at any time (the last one out deletes it, an owner hands it on); the owner removes members, whose items are unassigned; done items stay a week so a tick can be undone.
+- [x] **EP-61/IS-61.02** · 2 pts · SHOULD — Life → Household: start or join, members, invite code shown once, shared lists with ticks and assignees, refreshed every 15 seconds while open; the morning digest counts household items given to you; the export holds your items, not other members' names.
+
+**Tests.** `TestHousehold` (codes used once and refused when wrong, members, shared lists, assignees limited to members, outsiders refused, ticks, nothing personal shared, owner-only removal, hand-over on leaving, the last one out); e2e "a household: start it, invite with a code, share a list, tick an item, and leave".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

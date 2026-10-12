@@ -61,7 +61,8 @@
 			links: [
 				{ href: '/health', label: 'Health' },
 				{ href: '/media', label: 'Media' },
-				{ href: '/budget', label: 'Budget' }
+				{ href: '/budget', label: 'Budget' },
+				{ href: '/household', label: 'Household' }
 			]
 		},
 		{

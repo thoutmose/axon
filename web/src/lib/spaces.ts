@@ -23,6 +23,7 @@ const byPath: [string, Space][] = [
 	['/goals', 'summit'],
 	['/progress', 'summit'],
 	['/calendar', 'almanac'],
+	['/household', 'ledger'],
 	['/budget', 'ledger'],
 	['/areas', 'atlas'],
 	['/archive', 'atlas'],
