@@ -133,9 +133,22 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 
 	// Notes: PARA folders, Zettelkasten with wikilinks, a daily note.
 	moc := s.note("3-Resources/Learning/Learning MOC.md", "---\ntags: [moc, learning]\n---\n# Learning MOC\n\nA map of how I learn.\n\n- [[Spaced repetition]]\n- [[Retrieval practice]]\n- [[The Feynman technique]]\n")
-	spaced := s.note("4-Zettelkasten/Spaced repetition.md", "---\ntags: [learning, memory]\n---\n# Spaced repetition\n\nReviewing just before forgetting makes memories last longer. Intervals grow with each successful review.\n\n> [!tip] Pair it with [[Retrieval practice]]: test yourself instead of rereading.\n\nSource: Ebbinghaus' forgetting curve.\n")
-	s.note("4-Zettelkasten/Retrieval practice.md", "---\ntags: [learning]\n---\n# Retrieval practice\n\nPulling information out of memory strengthens it more than putting it in again. See [[Spaced repetition]].\n")
-	s.note("4-Zettelkasten/The Feynman technique.md", "---\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n")
+	spaced := s.note("4-Zettelkasten/Spaced repetition.md", "---\ntype: permanent\ntags: [learning, memory]\n---\n# Spaced repetition\n\nReviewing just before forgetting makes memories last longer. Intervals grow with each successful review.\n\n> [!tip] Pair it with [[Retrieval practice]]: test yourself instead of rereading.\n\nSource: Ebbinghaus' forgetting curve.\n")
+	s.note("4-Zettelkasten/Retrieval practice.md", "---\ntype: permanent\ntags: [learning]\n---\n# Retrieval practice\n\nPulling information out of memory strengthens it more than putting it in again. See [[Spaced repetition]].\n")
+	s.note("4-Zettelkasten/The Feynman technique.md", "---\ntype: permanent\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n")
+	// A small Zettelkasten in three themes, so the knowledge graph has communities.
+	for _, z := range [][2]string{
+		{"4-Zettelkasten/Literature/Make It Stick.md", "---\ntype: literature\ntags: [learning]\n---\n# Make It Stick\n\nBrown, Roediger, and McDaniel show that retrieval practice, spaced repetition, and interleaving beat rereading. Effortful recall feels slower but memory lasts longer; the forgetting curve flattens with each review.\n"},
+		{"4-Zettelkasten/Interleaving.md", "---\ntype: permanent\ntags: [learning]\n---\n# Interleaving\n\nMixing problem types during practice forces you to choose a strategy, which improves recall and transfer more than blocked practice. Works best with spaced repetition.\n"},
+		{"4-Zettelkasten/Literature/Atomic Habits.md", "---\ntype: literature\ntags: [habits]\n---\n# Atomic Habits\n\nJames Clear: make habits obvious, attractive, easy, and satisfying. Habit stacking ties a new habit to a current one; identity-based habits start from who you want to become.\n"},
+		{"4-Zettelkasten/Habit stacking.md", "---\ntype: permanent\ntags: [habits]\n---\n# Habit stacking\n\nAfter I pour my coffee, I will read one page. A reliable cue from a current habit makes the new habit obvious and easy to start.\n"},
+		{"4-Zettelkasten/Identity-based habits.md", "---\ntype: permanent\ntags: [habits]\n---\n# Identity-based habits\n\nEvery check-in is a vote for the person you want to become. Habits last when they express an identity, not a goal; James Clear calls outcomes lagging measures.\n"},
+		{"4-Zettelkasten/Literature/Designing Data-Intensive Applications.md", "---\ntype: literature\ntags: [systems]\n---\n# Designing Data-Intensive Applications\n\nMartin Kleppmann on replication, partitioning, transactions, and consensus. Leader-based replication trades replication lag for simplicity; consensus algorithms like Raft keep replicas agreeing.\n"},
+		{"4-Zettelkasten/Replication lag.md", "---\ntype: permanent\ntags: [systems]\n---\n# Replication lag\n\nAsynchronous replication lets followers fall behind the leader. Read-your-writes and monotonic reads hide replication lag from users.\n"},
+		{"4-Zettelkasten/Consensus with Raft.md", "---\ntype: permanent\ntags: [systems]\n---\n# Consensus with Raft\n\nRaft elects a leader and replicates a log; a write commits once a majority of replicas store it. Consensus survives the failure of a minority of nodes. See [[Replication lag]].\n"},
+	} {
+		s.note(z[0], z[1])
+	}
 	site := s.note("1-Projects/personal-website/Spec.md", "---\ntags: [project, web]\n---\n# Website spec\n\n| Page | Status |\n|---|---|\n| Home | ==in design== |\n| About | drafting |\n| Blog | planned |\n\n- [ ] Choose fonts\n- [x] Pick a generator\n")
 	s.note("2-Areas/Health/Running log.md", "---\ntags: [health, running]\n---\n# Running log\n\n- 5 km in 29:40, felt easy\n- Intervals: 6 x 400 m\n")
 	s.note("Daily/"+s.today.Format(time.DateOnly)+".md", "# "+s.today.Format("Monday 2 January 2006")+"\n\n## Focus\n- Finish the About page\n\n## Notes\n- Read about [[Spaced repetition]] on the train.\n")

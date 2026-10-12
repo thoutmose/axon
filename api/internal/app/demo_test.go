@@ -60,6 +60,16 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
 		}
 	}
+	var zg struct {
+		Stats struct {
+			Notes       int `json:"notes"`
+			Communities int `json:"communities"`
+		} `json:"stats"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/notes/zettelkasten-graph", nil), &zg)
+	if zg.Stats.Notes < 10 || zg.Stats.Communities < 2 {
+		t.Errorf("demo knowledge graph = %+v", zg.Stats)
+	}
 	// The seeded proposals can be approved like real ones.
 	var props struct {
 		Items []struct {
