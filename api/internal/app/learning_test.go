@@ -80,6 +80,9 @@ func TestLearningEngineCards(t *testing.T) {
 		}
 	}
 	alice.setLearning(5, false)
+	if out := alice.mustDo(200, "GET", "/v1/me/settings", nil); !bytes.Contains(out, []byte(`"learning":{"new_per_day":5,"retention":0.9,"interleave":false,"type_answer":true}`)) {
+		t.Fatalf("settings do not show the learning section: %s", out)
+	}
 	if got := alice.dueCards(""); len(got) != 5 || got[0].Deck != "Learning" || got[1].Front != "Question 0" || got[2].Front != "Question 1" {
 		t.Fatalf("due with 5 a day, not mixed = %+v", got)
 	}
