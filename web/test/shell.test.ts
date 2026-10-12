@@ -51,6 +51,19 @@ test.beforeAll(async ({ browser }) => {
 	});
 });
 
+test('pages, scripts, and the API are sent compressed', async () => {
+	const accept = { 'Accept-Encoding': 'gzip, zstd' };
+	await page.goto('/');
+	const script = await page.evaluate(
+		() => (document.querySelector('link[rel="modulepreload"]') as HTMLLinkElement).href
+	);
+	for (const url of ['/', script, '/api/v1/openapi.yaml']) {
+		const res = await page.request.get(url, { headers: accept });
+		expect(res.ok(), url).toBe(true);
+		expect(res.headers()['content-encoding'], url).toMatch(/^(gzip|zstd)$/);
+	}
+});
+
 test('home page is accessible and offers registration', async () => {
 	// Artwork and fonts ship with Axon: nothing is fetched from another origin.
 	const foreign: string[] = [];
@@ -80,6 +93,29 @@ test('register with a passkey and see recovery codes once', async () => {
 	// A new account is guided to its first task, note, and goal.
 	await expect(page.getByRole('heading', { name: 'Get started' })).toBeVisible();
 	await noSeriousA11yViolations(page);
+});
+
+test('API answers are sent compressed', async () => {
+	// The roadmap library: the same 12 kB for everyone (under 512 bytes is not worth compressing).
+	const res = await page.request.get('/api/v1/roadmaps/sources', {
+		headers: { 'Accept-Encoding': 'gzip, zstd' }
+	});
+	expect(res.ok()).toBe(true);
+	expect(res.headers()['content-type']).toContain('application/json');
+	expect(res.headers()['content-encoding']).toMatch(/^(gzip|zstd)$/);
+});
+
+test('the page title announced to screen readers is not shown on the page', async () => {
+	await page.goto('/today');
+	await page.getByRole('link', { name: 'Account', exact: true }).click();
+	await expect(page).toHaveURL(/\/account/);
+	const announcer = page.locator('#svelte-announcer');
+	await expect(announcer).toHaveText(/Axon/); // still read out
+	// SvelteKit hides it with an inline style, which the CSP (style-src 'self')
+	// blocks in Firefox: without that style it must stay hidden.
+	await announcer.evaluate((el) => el.removeAttribute('style'));
+	const box = await announcer.boundingBox();
+	expect(box === null || (box.width <= 1 && box.height <= 1)).toBe(true);
 });
 
 test('every account page is reachable by keyboard and accessible', async () => {

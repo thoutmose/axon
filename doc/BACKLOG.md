@@ -122,6 +122,8 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-71 | Scripts checked | ShellCheck (warnings and errors) runs in `make check` and CI on every shell script; the deploy and backup scripts pass. | SHOULD | 1 pt | EP-70 | Done |
 | EP-72 | Lighter offline install | The service worker no longer keeps the API reference (Swagger UI, 1.8 MB) for offline use: each device downloads about half as much when Axon is installed or updated. | SHOULD | 1 pt | EP-55 | Done |
 | EP-73 | No query per item | Lists cost the same number of queries for 2 items as for 12; the Goals list (two queries per goal) and Today (one per task) no longer slow down as data grows. | SHOULD | 2 pts | EP-72 | Done |
+| EP-74 | Compressed responses | Caddy compresses pages, scripts, and API answers (zstd or gzip); nothing was compressed before (the OpenAPI document: 324 kB → 48 kB). | SHOULD | 1 pt | EP-73 | Done |
+| EP-75 | Today and the page title in every browser | Owner report: Today stayed on "Loading your day…" and the page title showed as text at the top of the page (Firefox). Both fixed, with tests that fail without the fix. | MUST | 2 pts | EP-74 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1612,6 +1614,23 @@ Cross-cutting matrix:
 - [x] **EP-73/IS-73.02** · 1 pt · SHOULD — `tasks.DueBy` returns Today's tasks in one query; the rule for what is due today lives in the tasks package.
 
 **Tests.** `TestListsDoNotQueryPerItem` over 13 lists (tasks, notes, habits, goals, projects, areas, media, Today, calendar, palaces, budget accounts and transactions, flashcards): red for Goals and Today, then green. `TestGoalProgressIsExplainedByItsInputs` now checks the listed goal against the goal itself, with a task supporting both a goal and its milestone.
+
+### EP-74 — Compressed responses
+
+**Goal.** Measured: no response was compressed, not by Caddy and not by the web server; scripts compress about 3×, JSON and YAML more.
+
+- [x] **EP-74/IS-74.01** · 1 pt · SHOULD — `encode zstd gzip` in the Caddyfile for HTML, CSS, JavaScript, JSON (problem and manifest too), YAML, SVG, and text. The OpenAPI document goes from 324 kB to 48 kB. No response streams; sessions travel in cookies (headers), which are not compressed. Responses under 512 bytes stay as they are.
+
+**Tests.** e2e "pages, scripts, and the API are sent compressed" (red before the change) and "API answers are sent compressed".
+
+### EP-75 — Today and the page title in every browser
+
+**Goal.** Owner report with a screenshot of staging in Firefox: Today never left "Loading your day…", and "Today · Axon" showed as text under it. A probe of staging in Firefox and Chromium found both causes.
+
+- [x] **EP-75/IS-75.01** · 1 pt · MUST — The page title text is SvelteKit's announcer for screen readers, hidden by an inline style that the Content Security Policy (`style-src 'self'`) blocks in Firefox. The stylesheet now hides it (it is still read out); `app.html`'s inline style and the calendar's colour styles moved to the stylesheet and `style:` directives; a unit test fails on any `style="…"` left in the markup.
+- [x] **EP-75/IS-75.02** · 1 pt · MUST — Today threw "Cannot read properties of null (reading 'includes')": the staging demo's settings had `today.sections: null`, and the page used it as a list. Settings now read a missing list as the default sections (an empty list stays a choice), and Today keeps its defaults whatever it is sent.
+
+**Tests.** e2e "the page title announced to screen readers is not shown on the page" (removes the inline style, as Firefox does; red before the fix); `TestTodaySectionsAreNeverNull` (red without the fix); `csp.test.ts`; a Firefox and Chromium probe of the same state locally: Today loads, the announcer is 1×1 px.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
