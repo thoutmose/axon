@@ -170,6 +170,10 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 - `USDA_API_KEY` (free from data.gov, 1,000 requests an hour) turns USDA FoodData Central search on. Keep it in the encrypted env file.
 - Foods are cached for 30 days in `foods`. They are shared and hold no personal data.
 
+## Vault mirror (EP-48)
+
+A background worker in the API (`internal/mirror`) reads the event log every 3 seconds and keeps each person's items and their notes under `Axon/` in step, both ways; vault sync then carries the notes to the Markdown vault. Health logs are written only when the person turned them on, one way, and are removed when the health consent is withdrawn. The first run writes a note for every existing item. Tables: `vault_mirror` (item ↔ note), `vault_mirror_users`, `vault_mirror_queue` (habit check-ins and health logs), `vault_mirror_cursor`. Nothing to configure; people turn it off or change the folder in Preferences.
+
 ## Anki packages
 
 `GET /api/v1/flashcards/export.apkg` downloads flashcards as an Anki package. To check that Anki still imports what Axon writes (CI does this on every change): `sh scripts/check-apkg.sh`. It needs Docker and pulls the official `anki` library into a throwaway container. 

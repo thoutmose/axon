@@ -22,6 +22,8 @@ Your day at a glance: overdue and today's tasks, your inbox, active goals, recen
 
 - Notes are Markdown with `[[wikilinks]]`, backlinks, and `#tags`, in PARA folders (Projects, Areas, Resources, Archive) plus Inbox and Zettel.
 - **New note** offers templates: fleeting, literature, permanent, project, area, resource, archive, and daily. They live as files in your vault's `Templates/` folder, so edit them there.
+- Your **tasks, goals, milestones, projects, areas, resources, habits, and media are notes too**, under `Axon/` in your vault: edit a note's front matter or sections and the item follows, write a new note with `type: task` (or goal, habit, book…) to create one, delete the file to delete it, move it into `Axon/Archive/` to archive it. Turn it off, change the folder, or add your food and training logs in **Preferences → Markdown vault**.
+- **Notes → Templates** shows every template with its sections; the strip on the Notes page starts one in a click.
 - With **vault sync**, notes stay in step with a Markdown folder (for example Obsidian on your SecondBrain server): add, edit, rename, or delete on either side and it reaches the other.
 - **Explore** filters notes by PARA, type, tag, date, or unconnected notes, charts them, and draws a knowledge graph where every link says why.
 - The **knowledge graph** at the top of Notes connects your literature and permanent notes by what they say, groups them into communities with names, and marks central notes and bridges; select a note to see why it connects.
