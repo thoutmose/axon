@@ -22,6 +22,7 @@
 		keyboard: { shortcuts: boolean; vim: boolean };
 		focus: Focus;
 		gamification: { enabled: boolean };
+		vault: { mirror: boolean; folder: string; health: boolean };
 	};
 	const focusDefaults: Focus = {
 		work_minutes: 25,
@@ -47,7 +48,8 @@
 				appearance: { ...loaded.appearance, spaces: loaded.appearance.spaces ?? 'on' },
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
-				gamification: loaded.gamification ?? { enabled: false }
+				gamification: loaded.gamification ?? { enabled: false },
+				vault: loaded.vault ?? { mirror: true, folder: 'Axon', health: false }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -62,7 +64,8 @@
 			...saved,
 			keyboard: saved.keyboard ?? { shortcuts: true, vim: false },
 			focus: (saved.focus as Focus | undefined) ?? focusDefaults,
-			gamification: saved.gamification ?? { enabled: false }
+			gamification: saved.gamification ?? { enabled: false },
+			vault: saved.vault ?? { mirror: true, folder: 'Axon', health: false }
 		};
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
@@ -74,11 +77,11 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const { language, appearance, templates, keyboard, focus, gamification } = s;
+			const { language, appearance, templates, keyboard, focus, gamification, vault } = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
 					method: 'PUT',
-					body: { language, appearance, templates, keyboard, focus, gamification }
+					body: { language, appearance, templates, keyboard, focus, gamification, vault }
 				})
 			);
 			await api('/v1/me/agent-settings', {
@@ -171,6 +174,29 @@
 					'Off hides every surface. No notifications, no shame for missed days, nothing bought with money.'
 				)}
 				<a href="/progress">{t('How points are earned')}</a>
+			</p>
+		</Section>
+
+		<Section id="vault" title={t('Markdown vault')}>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.vault.mirror} />
+				{t(
+					'Keep tasks, goals, milestones, projects, areas, resources, habits, and media as notes in my vault'
+				)}</label
+			>
+			<div class="field">
+				<label for="vault-folder">{t('Folder')}</label>
+				<input id="vault-folder" bind:value={s.vault.folder} maxlength="100" required />
+			</div>
+			<label class="check"
+				><input type="checkbox" bind:checked={s.vault.health} disabled={!s.vault.mirror} />
+				{t('Also write my food and training logs there (health data, one way)')}</label
+			>
+			<p class="muted small">
+				{t(
+					'Each item is a note with its fields in the front matter and its text in sections. Edit either side and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into Archive/ archives it. Health logs also need the health consent and are removed from the vault if you withdraw it.'
+				)}
+				<a href="/notes/templates">{t('See the templates')}</a>
 			</p>
 		</Section>
 

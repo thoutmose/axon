@@ -6,7 +6,10 @@
 	import {
 		builtInFiles,
 		customTemplate,
+		frontKeys,
 		isTemplatePath,
+		itemTemplates,
+		sections,
 		templates as builtIn,
 		templateName,
 		templatesFolder,
@@ -18,9 +21,10 @@
 	import TextField from './ui/TextField.svelte';
 	import { toast } from './ui/toast.svelte';
 
-	let { open = $bindable(false) }: { open: boolean } = $props();
+	let { open = $bindable(false), kind = $bindable('permanent') }: { open: boolean; kind?: string } =
+		$props();
 	let title = $state('');
-	let kind = $state('permanent');
+	let folder = $state('Axon');
 	let busy = $state(false);
 	let mine = $state<Template[]>([]);
 	// Template notes in the vault (Templates/ and the like), loaded on open.
@@ -28,13 +32,39 @@
 	// A vault copy of a built-in template replaces it.
 	const templates = $derived([
 		...mine,
-		...builtIn.filter((t) => !vault.some((n) => templateName(n.path) === t.label))
+		...builtIn.filter((t) => !vault.some((n) => templateName(n.path) === t.label)),
+		...itemTemplates(folder)
 	]);
+	const groups: { id: string; label: string }[] = [
+		{ id: 'zettelkasten', label: 'Zettelkasten' },
+		{ id: 'para', label: 'PARA notes' },
+		{ id: 'items', label: 'Axon items (kept in step with tasks, goals, habits…)' },
+		{ id: 'other', label: 'Other' }
+	];
+	const groupOf = (t: Template) => t.group ?? 'other';
+	// The selected template's front matter and sections, shown before creating.
+	let preview = $state<{ keys: string[]; sections: string[] } | null>(null);
+	$effect(() => {
+		const t = templates.find((x) => x.id === kind);
+		const n = vault.find((x) => `vault:${x.id}` === kind);
+		if (t) {
+			const c = t.content('Title', new Date());
+			preview = { keys: frontKeys(c), sections: sections(c) };
+		} else if (n) {
+			api<Note>(`/v1/notes/${n.id}`)
+				.then((full) => {
+					const c = full.content ?? '';
+					preview = { keys: frontKeys(c), sections: sections(c) };
+				})
+				.catch(() => (preview = null));
+		} else preview = null;
+	});
 
 	onMount(() => {
-		api<{ templates: { note: string } }>('/v1/me/settings')
+		api<{ templates: { note: string }; vault?: { folder: string } }>('/v1/me/settings')
 			.then((s) => {
 				if (s.templates.note.trim()) mine = [customTemplate(s.templates.note)];
+				if (s.vault?.folder) folder = s.vault.folder;
 			})
 			.catch(() => {});
 	});
@@ -111,15 +141,33 @@
 				{/each}
 			</fieldset>
 		{/if}
-		<fieldset>
-			<legend>{vault.length ? 'Built in' : 'Kind'}</legend>
-			{#each templates as t (t.id)}
-				<label class="choice">
-					<input type="radio" name="template" value={t.id} bind:group={kind} />
-					<span><strong>{t.label}</strong><span class="muted small">{t.hint}</span></span>
-				</label>
-			{/each}
-		</fieldset>
+		{#each groups as g (g.id)}
+			{@const list = templates.filter((t) => groupOf(t) === g.id)}
+			{#if list.length}
+				<fieldset>
+					<legend>{g.label}</legend>
+					{#each list as t (t.id)}
+						<label class="choice">
+							<input type="radio" name="template" value={t.id} bind:group={kind} />
+							<span><strong>{t.label}</strong><span class="muted small">{t.hint}</span></span>
+						</label>
+					{/each}
+				</fieldset>
+			{/if}
+		{/each}
+		{#if preview}
+			<div class="preview" aria-live="polite">
+				{#if preview.sections.length}
+					<p class="small">
+						<strong>Sections:</strong>
+						{preview.sections.join(' · ')}
+					</p>
+				{/if}
+				{#if preview.keys.length}
+					<p class="small muted">Front matter: {preview.keys.join(', ')}</p>
+				{/if}
+			</div>
+		{/if}
 		{#if !vault.length}
 			<p class="muted small">
 				Templates are notes in <code>{templatesFolder}/</code>. Put your own there (or sync them
@@ -137,6 +185,11 @@
 </Dialog>
 
 <style>
+	.preview {
+		border-left: 3px solid var(--accent);
+		padding-left: var(--space-3);
+		margin: var(--space-2) 0;
+	}
 	fieldset {
 		border: none;
 		padding: 0;
