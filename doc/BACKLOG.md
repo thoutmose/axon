@@ -127,6 +127,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-76 | Covers for every film, series, and book | Owner request: pictures of the books, series, and films, and a better media card. "Find missing covers" looks up items added by hand, imported, or from the demo; the shelf shows poster cards, with a cover made from the title when there is none. | SHOULD | 2 pts | EP-17 | Done |
 | EP-77 | Your memory, measured | Each review of a card in long-term memory keeps what the scheduler predicted (earlier ones by replaying the history); Learn shows predicted against remembered, by prediction, against the chosen retention, and says what to change. | SHOULD | 2 pts | EP-52 | Done |
 | EP-78 | Topics at scale | Grouping notes into topics compared every pair of notes (4.4 s for 3,000); an inverted index compares only notes that share a term (151 ms). | SHOULD | 1 pt | EP-46 | Done |
+| EP-79 | Key phrases kept | The key phrases of each note (TextRank, a third of the Notes page graph and analysis time) are kept by the hash of its text: at 1,500 notes, the analysis went from 1.84 s to 0.70 s and a repeat visit to the Zettelkasten graph from 2.85 s to 1.68 s. | SHOULD | 1 pt | EP-78 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1666,6 +1667,16 @@ Cross-cutting matrix:
 **Tests.** `TestSimilarPairsMatchesEveryPair` (the every-pair comparison as oracle on 300 notes: same neighbours, scores within 10⁻¹², ascending order), written first; `BenchmarkTopics`; the knowledge tests unchanged.
 
 **Measured next.** The explorer graph (up to 1,500 notes) and the Zettelkasten graph (up to 600) also compare every pair, with keyword synonyms that a term index does not catch; they need their own benchmark before a change.
+
+### EP-79 — Key phrases kept
+
+**Goal.** Measured at 1,500 permanent notes (a throwaway probe: real notes in PostgreSQL, the real functions timed): the explorer graph 0.69 s, the Zettelkasten graph 2.85 s (it keeps 600 notes), the notes analysis 1.84 s. A CPU profile showed TextRank (`KeyPhrases`) at a third of the time, spread across map lookups, string building, and stemming: no single fault, but the same work redone on every note at every visit.
+
+- [x] **EP-79/IS-79.01** · 1 pt · SHOULD — `cachedKeyPhrases` keeps each text's phrases by a SHA-256 of k and the text (an edited note is a new entry), cleared at 20,000 entries; callers get a copy, since they reweigh it. Analysis 1.84 s → 0.70 s; a repeat Zettelkasten graph 2.85 s → 1.68 s.
+
+**Tests.** `TestKeyPhrasesAreCachedByText` (same result as `KeyPhrases`, one entry per text and k, a caller's change does not reach the cache), written first; the knowledge tests unchanged.
+
+**Measured next.** What remains of the Zettelkasten graph is its pair loop (1.2 s at 600 notes): 10 × 10 keyword synonym checks per pair, which a per-note index of thesaurus groups could make linear.
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
