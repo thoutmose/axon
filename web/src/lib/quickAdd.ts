@@ -15,6 +15,8 @@
  * aujourd'hui, demain, lundi…; "d'ici" for a goal's date.
  */
 
+import { addDays, localDate } from './dates';
+
 export type Kind =
 	'task' | 'note' | 'book' | 'film' | 'series' | 'habit' | 'goal' | 'project' | 'card';
 
@@ -67,30 +69,22 @@ const weekdays: Record<string, number> = {
 	saturday: 6, samedi: 6
 }; // prettier-ignore
 
-const iso = (d: Date) =>
-	`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-function addDays(d: Date, n: number): Date {
-	const out = new Date(d);
-	out.setDate(out.getDate() + n);
-	return out;
-}
-
 /** A date word at the end of the text, as YYYY-MM-DD, and the text without it. */
-function takeDate(text: string, today: Date): [string, string | undefined] {
+function takeDate(text: string, now: Date): [string, string | undefined] {
+	const today = localDate(now);
 	const rules: [RegExp, (m: RegExpMatchArray) => string | undefined][] = [
 		[/\s+(\d{4}-\d{2}-\d{2})$/, (m) => m[1]],
-		[/\s+(today|aujourd'hui|aujourd’hui)$/i, () => iso(today)],
-		[/\s+(tomorrow|demain)$/i, () => iso(addDays(today, 1))],
-		[/\s+(?:in|dans)\s+(\d{1,3})\s+(?:days?|jours?)$/i, (m) => iso(addDays(today, Number(m[1])))],
-		[/\s+(?:next\s+week|la\s+semaine\s+prochaine)$/i, () => iso(addDays(today, 7))],
+		[/\s+(today|aujourd'hui|aujourd’hui)$/i, () => today],
+		[/\s+(tomorrow|demain)$/i, () => addDays(today, 1)],
+		[/\s+(?:in|dans)\s+(\d{1,3})\s+(?:days?|jours?)$/i, (m) => addDays(today, Number(m[1]))],
+		[/\s+(?:next\s+week|la\s+semaine\s+prochaine)$/i, () => addDays(today, 7)],
 		[
 			/\s+(?:on\s+|next\s+)?([a-zé]+)$/i,
 			(m) => {
 				const wd = weekdays[m[1].toLowerCase()];
 				if (wd === undefined) return undefined;
-				const diff = (wd - today.getDay() + 7) % 7 || 7; // the next one, never today
-				return iso(addDays(today, diff));
+				const diff = (wd - now.getDay() + 7) % 7 || 7; // the next one, never today
+				return addDays(today, diff);
 			}
 		]
 	];

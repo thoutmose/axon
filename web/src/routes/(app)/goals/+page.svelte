@@ -4,8 +4,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
-	import { daysUntil, mondayOf, type Goal } from '$lib/goals';
-	import { addDays, between, goalTemplates, type GoalTemplate } from '$lib/entityTemplates';
+	import { addDays, daysBetween, localDate, mondayOf } from '$lib/dates';
+	import type { Goal } from '$lib/goals';
+	import { between, goalTemplates, type GoalTemplate } from '$lib/entityTemplates';
 	import ProgressBar from '$lib/ProgressBar.svelte';
 	import TemplateChips from '$lib/TemplateChips.svelte';
 	import { relativeDay } from '$lib/tasks';
@@ -64,7 +65,7 @@
 	async function fromTemplate(t: GoalTemplate) {
 		busy = true;
 		try {
-			const start = today || new Date().toLocaleDateString('sv');
+			const start = today || localDate(new Date());
 			const target = addDays(start, t.days);
 			const g = await api<Goal>('/v1/goals', {
 				method: 'POST',
@@ -105,7 +106,7 @@
 
 	function due(g: Goal): string {
 		if (!g.target_date) return '';
-		const days = daysUntil(g.target_date, today);
+		const days = daysBetween(today, g.target_date);
 		return days < 0
 			? `Target date passed ${relativeDay(g.target_date, today)}`
 			: `Target ${relativeDay(g.target_date, today)}`;
@@ -184,7 +185,7 @@
 					<a href="/goals/{g.id}">{g.title}</a>
 					{#if today && g.target_date}<span
 							class="muted small"
-							class:late={daysUntil(g.target_date, today) < 0 && g.status === 'active'}
+							class:late={daysBetween(today, g.target_date) < 0 && g.status === 'active'}
 							>{due(g)}</span
 						>{/if}
 				</div>

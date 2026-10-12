@@ -1,4 +1,5 @@
 import type { Schemas } from './api';
+import { addDays } from './dates';
 
 export type Habit = Schemas['Habit'];
 export type HabitCheckin = Schemas['HabitCheckin'];
@@ -24,18 +25,7 @@ export function scheduleLabel(days: number[]): string {
 
 /** The last n days ending today, oldest first, as ISO dates. */
 export function lastDays(today: string, n: number): string[] {
-	const end = new Date(`${today}T00:00:00Z`);
-	return Array.from({ length: n }, (_, i) => {
-		const d = new Date(end);
-		d.setUTCDate(end.getUTCDate() - (n - 1 - i));
-		return d.toISOString().slice(0, 10);
-	});
-}
-
-/** ISO weekday (1 = Monday) of an ISO date. */
-export function isoWeekday(iso: string): number {
-	const wd = new Date(`${iso}T00:00:00Z`).getUTCDay();
-	return wd === 0 ? 7 : wd;
+	return Array.from({ length: n }, (_, i) => addDays(today, i - n + 1));
 }
 
 /** The four laws, or their inversions for a habit to break (Atomic Habits). */

@@ -159,6 +159,10 @@ paths:
               additionalProperties: false
               properties:
                 display_name: { $ref: "#/components/schemas/Name" }
+                timezone:
+                  type: string
+                  maxLength: 64
+                  description: The browser's IANA time zone, such as Europe/Paris. The account starts in it; one the server does not know leaves UTC.
       responses:
         "200": { $ref: "#/components/responses/WebAuthnOptions" }
         "400": { $ref: "#/components/responses/Problem" }
@@ -4860,7 +4864,7 @@ paths:
     get:
       tags: [wellbeing]
       operationId: listWorkouts
-      summary: Workouts in a date range (the last 30 days by default) and this week's totals
+      summary: Workouts in a date range (by default the last 30 days, and any dated later) and this week's totals
       parameters:
         - { name: from, in: query, schema: { type: string, format: date } }
         - { name: to, in: query, schema: { type: string, format: date } }

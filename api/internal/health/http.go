@@ -256,7 +256,9 @@ func (h *Handlers) workouts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	today := h.today(r, user)
-	from, to := today.AddDate(0, 0, -29).Format(time.DateOnly), today.Format(time.DateOnly)
+	// The last 30 days, and anything dated later: a device in a time zone
+	// ahead of the account's logs its "today" as tomorrow.
+	from, to := today.AddDate(0, 0, -29).Format(time.DateOnly), today.AddDate(1, 0, 0).Format(time.DateOnly)
 	if f := r.URL.Query().Get("from"); f != "" {
 		from = f
 	}

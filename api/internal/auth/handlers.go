@@ -111,6 +111,7 @@ func (s *Service) demoLogin(w http.ResponseWriter, r *http.Request) {
 func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		DisplayName string `json:"display_name"`
+		Timezone    string `json:"timezone"` // the browser's; one this server does not know is left out
 	}
 	if err := httpx.Decode(r, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
@@ -120,6 +121,9 @@ func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		httpx.Problem(w, http.StatusUnprocessableEntity, "Enter a name between 1 and 100 characters.")
 		return
+	}
+	if !validZone(body.Timezone) {
+		body.Timezone = ""
 	}
 	open, err := s.registrationOpen(r.Context(), s.db)
 	if err != nil {
@@ -136,7 +140,7 @@ func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	if err := s.saveCeremony(r.Context(), w, "register", ceremony{DisplayName: name, Session: *session}); err != nil {
+	if err := s.saveCeremony(r.Context(), w, "register", ceremony{DisplayName: name, Timezone: body.Timezone, Session: *session}); err != nil {
 		s.fail(w, r, err)
 		return
 	}
@@ -167,7 +171,8 @@ func (s *Service) registerFinish(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return errors.Join(errCeremonyFailed, err)
 		}
-		if _, err := tx.Exec(r.Context(), `INSERT INTO users (id, display_name) VALUES ($1, $2)`, u.ID, u.DisplayName); err != nil {
+		if _, err := tx.Exec(r.Context(), `INSERT INTO users (id, display_name, timezone) VALUES ($1, $2, coalesce(nullif($3, ''), 'UTC'))`,
+			u.ID, u.DisplayName, c.Timezone); err != nil {
 			return err
 		}
 		if err := insertPasskey(r, tx, u.ID, "First passkey", cred); err != nil {
