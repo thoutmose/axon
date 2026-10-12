@@ -6,6 +6,15 @@
 	{#each toasts as t (t.id)}
 		<div class="toast {t.kind}">
 			<span>{t.text}</span>
+			{#if t.action}
+				<button
+					class="action"
+					onclick={() => {
+						dismiss(t.id);
+						t.action?.run();
+					}}>{t.action.label}</button
+				>
+			{/if}
 			<button onclick={() => dismiss(t.id)} aria-label="Dismiss">×</button>
 		</div>
 	{/each}
@@ -36,6 +45,11 @@
 	.toast.error {
 		background: var(--bad);
 		color: #fff;
+	}
+	.action {
+		font-weight: 650;
+		text-decoration: underline;
+		margin-left: auto;
 	}
 	button {
 		background: none;

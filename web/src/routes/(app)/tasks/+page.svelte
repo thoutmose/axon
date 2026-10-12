@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
@@ -208,11 +209,14 @@
 	}
 	async function bulk(body: Record<string, unknown>, said: string) {
 		try {
+			const ids = picked;
 			const r = await api<{ changed: number }>('/v1/tasks/bulk', {
 				method: 'POST',
-				body: { ids: picked, ...body }
+				body: { ids, ...body }
 			});
-			toast(`${r.changed} ${r.changed === 1 ? 'task' : 'tasks'} ${said}.`);
+			const text = `${r.changed} ${r.changed === 1 ? 'task' : 'tasks'} ${said}.`;
+			if (body.delete) deleted(text, ids[0], () => load());
+			else toast(text);
 			picked = [];
 			await load();
 		} catch (err) {

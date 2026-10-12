@@ -151,13 +151,24 @@ func UpdateEntity(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor Ac
 }
 
 // DeleteEntity removes the entity; its domain row and links go with it.
+// What it removes goes to the trash first (EP-66).
 func DeleteEntity(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor Actor) error {
-	var typ string
-	err := tx.QueryRow(ctx, `DELETE FROM entities WHERE id = $1 AND user_id = $2 RETURNING type`, id, userID).Scan(&typ)
+	var typ, title string
+	err := tx.QueryRow(ctx, `SELECT type, title FROM entities WHERE id = $1 AND user_id = $2`, id, userID).Scan(&typ, &title)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrNotFound
 	}
 	if err != nil {
+		return err
+	}
+	// The vault mirror deletes an item's note when the item goes, and the
+	// item when its note goes: the person's own deletion is what is trashed.
+	if actor != "vault" {
+		if err := snapshot(ctx, tx, userID, id, typ, title); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM entities WHERE id = $1 AND user_id = $2`, id, userID); err != nil {
 		return err
 	}
 	return recordEvent(ctx, tx, userID, actor, typ, id, "deleted", nil)

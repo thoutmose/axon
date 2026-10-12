@@ -114,6 +114,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-63 | Customisable Today | Choose and order Today's cards, with new ones for learning, habits, today's calendar, and the household. Owner decision on the EP-49 proposals. | COULD | 2 pts | EP-30, EP-52, EP-58, EP-61 | Done |
 | EP-64 | Bulk actions, drag onto the calendar | Select tasks and change them all at once (status, context, due date, delete); drag tasks between days and undated next actions onto a day, with a date field for the keyboard. Owner decision on the EP-49 proposals. | COULD | 3 pts | EP-07, EP-13 | Done |
 | EP-65 | Audit 2: fixes | A review of EP-50 to EP-64: vault templates honour the mirror folder, learning days follow the person's time zone, unpacked imports are capped, form controls are styled everywhere, unused exports removed. Owner request. | MUST | 3 pts | EP-64 | Done |
+| EP-66 | Trash and undo | Every deletion goes to a 30-day trash with what was deleted along with it; Undo after each deletion, and Account → Trash to restore or forget. Owner request: essential functionality. | MUST | 5 pts | EP-03 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1529,6 +1530,15 @@ Cross-cutting matrix:
 - [x] Unused exports found by knip (`pictureTypes`, `fileURL`, two template helpers that only the module uses).
 
 **Checked and kept.** `deadcode` lists only the test-only helpers EP-49 kept on purpose; the API docs script and swagger-ui are used by the build.
+
+### EP-66 — Trash and undo
+
+**Goal.** "And other functionalities which could be essential" (owner, 2026-10-12): a deletion was final; a life OS must forgive a wrong click. Decisions in [ADR 0027](adr/0027-trash-keeps-rows.md).
+
+- [x] **EP-66/IS-66.01** · 3 pts · MUST — `graph.DeleteEntity` saves the rows a deletion removes (entity, domain row, cascading rows two levels down found from the foreign keys, child entities, links) in `trash`, by transaction batch; `Restore` puts a batch back parents first, skipping links whose other end is gone and refusing (with no change) when a path or name was taken; restored notes leave the sync's tombstones and are newer than every cursor; a `created` event tells the mirror; the mirror's own deletions are not trashed; 30 days, purged daily; in the export.
+- [x] **EP-66/IS-66.02** · 2 pts · MUST — `GET /v1/trash`, `POST /v1/trash/undo` (an entity's latest deletion), `POST /v1/trash/{id}/restore`, `DELETE /v1/trash/{id}`, `DELETE /v1/trash`; toasts with **Undo** after deleting a note, task (one or in bulk), goal, milestone, habit, card, film, series or book, project, or memory palace; Account → Trash.
+
+**Tests.** `TestTrash` (undo of a note with its links and the sync seeing it again, a goal with its milestones as one deletion, a habit's check-ins and a card's reviews restored, a taken path refused with nothing half-restored, a bulk deletion as one line, ownership, forget, empty); the full suite with the hook on every deletion; e2e "a deleted note can be undone, and restored from the trash".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

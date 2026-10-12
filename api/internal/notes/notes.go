@@ -27,6 +27,16 @@ const References = "references"
 
 func init() {
 	graph.RegisterType(graph.Type{Name: Type, Table: "notes", Export: export})
+	// A note back from the trash is new to the vault sync: newer than every
+	// cursor, and no longer marked deleted.
+	graph.OnRestore(Type, func(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID) error {
+		var p string
+		if err := tx.QueryRow(ctx, `UPDATE notes SET updated_at = clock_timestamp() WHERE id = $1 RETURNING path`, id).Scan(&p); err != nil {
+			return err
+		}
+		_, err := tx.Exec(ctx, `DELETE FROM note_tombstones WHERE user_id = $1 AND path = $2`, userID, p)
+		return err
+	})
 	graph.RegisterRelation(graph.Relation{Name: References, Sources: []string{Type}})
 }
 

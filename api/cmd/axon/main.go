@@ -171,6 +171,9 @@ func pruneMedia(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 		if err := media.Prune(ctx, pool); err != nil && ctx.Err() == nil {
 			log.Error("media prune failed", "err", err)
 		}
+		if err := graph.PurgeTrash(ctx, pool, time.Now()); err != nil && ctx.Err() == nil {
+			log.Error("trash purge failed", "err", err)
+		}
 		select {
 		case <-ctx.Done():
 			return

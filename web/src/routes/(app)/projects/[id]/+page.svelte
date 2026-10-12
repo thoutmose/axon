@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { tick } from 'svelte';
@@ -192,7 +193,10 @@
 	async function remove() {
 		try {
 			await api(`/v1/projects/${id}`, { method: 'DELETE' });
-			toast('Project deleted; its tasks are still in your task list.');
+			const gone = id;
+			deleted('Project deleted; its tasks are still in your task list.', gone, () =>
+				goto(`/projects/${gone}`)
+			);
 			await goto('/projects');
 		} catch (err) {
 			toast(message(err), 'error');

@@ -334,6 +334,7 @@ export const fr: Record<string, string> = {
 	Reflect: 'Bilan',
 	'current section': 'section actuelle',
 	Menu: 'Menu',
+	Trash: 'Corbeille',
 	'Learning today': 'Apprendre aujourd’hui',
 	'Habits today': 'Habitudes du jour',
 	'Calendar today': 'Agenda du jour',

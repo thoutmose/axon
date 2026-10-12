@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -35,6 +36,11 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/links", h.createLink)
 	r.Delete("/v1/links/{id}", h.deleteLink)
 	r.Get("/v1/search", h.search)
+	r.Get("/v1/trash", h.trash)
+	r.Delete("/v1/trash", h.empty)
+	r.Post("/v1/trash/undo", h.undo)
+	r.Post("/v1/trash/{id}/restore", h.restoreOne)
+	r.Delete("/v1/trash/{id}", h.forget)
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
@@ -258,4 +264,102 @@ func (h *Handlers) search(w http.ResponseWriter, r *http.Request) {
 		hits = []Hit{}
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": hits})
+}
+
+// --- Trash (EP-66) ---
+
+func (h *Handlers) trash(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	if err := PurgeTrash(r.Context(), h.db, time.Now()); err != nil {
+		h.fail(w, err)
+		return
+	}
+	items, err := TrashList(r.Context(), h.db, who.UserID, time.Now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handlers) restore(w http.ResponseWriter, r *http.Request, find func(pgx.Tx, uuid.UUID) (uuid.UUID, error)) {
+	who, _ := auth.FromContext(r.Context())
+	var id uuid.UUID
+	var typ string
+	err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		trashID, err := find(tx, who.UserID)
+		if err != nil {
+			return err
+		}
+		id, typ, err = Restore(r.Context(), tx, who.UserID, trashID)
+		return err
+	})
+	var er ErrRestore
+	switch {
+	case errors.Is(err, ErrNotFound):
+		httpx.Problem(w, http.StatusNotFound, "Not in the trash (it keeps deletions for 30 days).")
+	case errors.As(err, &er):
+		httpx.Problem(w, http.StatusConflict, er.Msg)
+	case err != nil:
+		h.fail(w, err)
+	default:
+		httpx.JSON(w, http.StatusOK, map[string]any{"entity_id": id, "type": typ})
+	}
+}
+
+func (h *Handlers) restoreOne(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	h.restore(w, r, func(_ pgx.Tx, _ uuid.UUID) (uuid.UUID, error) {
+		if err != nil {
+			return uuid.Nil, ErrNotFound
+		}
+		return id, nil
+	})
+}
+
+// undo restores the latest deletion of an entity: what an Undo button needs.
+func (h *Handlers) undo(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		EntityID uuid.UUID `json:"entity_id"`
+	}
+	if err := httpx.Decode(r, &b); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	h.restore(w, r, func(tx pgx.Tx, userID uuid.UUID) (uuid.UUID, error) {
+		var id uuid.UUID
+		err := tx.QueryRow(r.Context(), `SELECT id FROM trash WHERE user_id = $1 AND entity_id = $2 ORDER BY seq DESC LIMIT 1`, userID, b.EntityID).Scan(&id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return id, ErrNotFound
+		}
+		return id, err
+	})
+}
+
+func (h *Handlers) forget(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		httpx.Problem(w, http.StatusNotFound, "Not in the trash.")
+		return
+	}
+	tag, err := h.db.Exec(r.Context(), `DELETE FROM trash WHERE user_id = $1 AND batch = (SELECT batch FROM trash WHERE id = $2 AND user_id = $1)`, who.UserID, id)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		httpx.Problem(w, http.StatusNotFound, "Not in the trash.")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) empty(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	if _, err := h.db.Exec(r.Context(), `DELETE FROM trash WHERE user_id = $1`, who.UserID); err != nil {
+		h.fail(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

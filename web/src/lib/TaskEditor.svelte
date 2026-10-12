@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from './undo';
 	import { api, apiResponse, message } from './api';
 	import { recurrencePresets, type Task } from './tasks';
 	import Button from './ui/Button.svelte';
@@ -84,7 +85,8 @@
 		busy = true;
 		try {
 			await api(`/v1/tasks/${id}`, { method: 'DELETE' });
-			toast('Deleted.');
+			const gone = id!;
+			deleted('Task deleted.', gone, () => onchange());
 			open = false;
 			onchange();
 		} catch (err) {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
@@ -197,7 +198,9 @@
 	async function remove() {
 		if (!editing || !confirm(t('Delete this item?'))) return;
 		try {
-			await api(`/v1/media/${editing.id}`, { method: 'DELETE' });
+			const gone = editing.id;
+			await api(`/v1/media/${gone}`, { method: 'DELETE' });
+			deleted('Removed.', gone, () => load());
 			editOpen = false;
 			await load();
 		} catch (err) {
