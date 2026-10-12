@@ -1198,6 +1198,59 @@ test('Today can be customised: cards chosen and ordered', async () => {
 	).toBe(true);
 });
 
+test('bulk actions change several tasks at once', async () => {
+	const origin = new URL(page.url()).origin;
+	for (const title of ['Bulk one', 'Bulk two', 'Bulk three']) {
+		await page.request.post('/api/v1/tasks', { headers: { Origin: origin }, data: { title } });
+	}
+	await page.goto('/tasks?view=inbox');
+	await page.getByRole('button', { name: 'Select', exact: true }).click();
+	for (const title of ['Bulk one', 'Bulk two', 'Bulk three']) {
+		await page.getByRole('checkbox', { name: `Select ${title}` }).check();
+	}
+	const bar = page.getByRole('group', { name: 'Change 3 selected tasks' });
+	await expect(bar).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await bar.getByRole('button', { name: 'Next' }).click();
+	await expect(page.getByText('3 tasks moved to Next.')).toBeVisible();
+	await page.goto('/tasks?view=next');
+	await page.getByRole('button', { name: 'Select', exact: true }).click();
+	for (const title of ['Bulk one', 'Bulk two', 'Bulk three']) {
+		await page.getByRole('checkbox', { name: `Select ${title}` }).check();
+	}
+	await page
+		.getByRole('group', { name: 'Change 3 selected tasks' })
+		.getByRole('button', { name: 'Delete' })
+		.click();
+	await expect(page.getByText('3 tasks deleted.')).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Bulk one' })).toHaveCount(0);
+});
+
+test('drag a task onto a day of the calendar, or pick its date', async () => {
+	const origin = new URL(page.url()).origin;
+	for (const title of ['Plan the picnic', 'Book the train']) {
+		await page.request.post('/api/v1/tasks', {
+			headers: { Origin: origin },
+			data: { title, status: 'next' }
+		});
+	}
+	await page.goto('/calendar');
+	const tray = page.getByRole('region', { name: 'Next actions without a date' });
+	await expect(tray.getByText('Plan the picnic', { exact: true })).toBeVisible();
+	// The browser's own drag events, carrying one DataTransfer from the task to the day.
+	const data = await page.evaluateHandle(() => new DataTransfer());
+	await tray
+		.locator('li', { hasText: 'Plan the picnic' })
+		.dispatchEvent('dragstart', { dataTransfer: data });
+	await page.locator('td.today').dispatchEvent('dragover', { dataTransfer: data });
+	await page.locator('td.today').dispatchEvent('drop', { dataTransfer: data });
+	await expect(page.getByText(/^Moved to /)).toBeVisible();
+	await expect(page.locator('td.today').getByText('Plan the picnic')).toBeVisible();
+	await tray.getByLabel('Schedule Book the train on').fill(new Date().toLocaleDateString('sv'));
+	await expect(page.locator('td.today').getByText('Book the train')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

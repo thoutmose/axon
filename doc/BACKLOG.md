@@ -112,6 +112,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-61 | Household sharing | People on the same Axon join a household by a one-time code and share lists (shopping, chores, anything), with items given to members; nothing personal is shared. Owner decision on the EP-49 proposals. | SHOULD | 5 pts | EP-02, EP-56 | Done |
 | EP-62 | Search by meaning | Embeddings from the person's own service (local, OpenAI, or Voyage AI) behind their own consent, in pgvector: notes found by meaning in the command center and "Close in meaning" on each note. Closes IS-37.04. Owner decision on the EP-49 proposals. | COULD | 5 pts | EP-37 | Done |
 | EP-63 | Customisable Today | Choose and order Today's cards, with new ones for learning, habits, today's calendar, and the household. Owner decision on the EP-49 proposals. | COULD | 2 pts | EP-30, EP-52, EP-58, EP-61 | Done |
+| EP-64 | Bulk actions, drag onto the calendar | Select tasks and change them all at once (status, context, due date, delete); drag tasks between days and undated next actions onto a day, with a date field for the keyboard. Owner decision on the EP-49 proposals. | COULD | 3 pts | EP-07, EP-13 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1501,6 +1502,15 @@ Cross-cutting matrix:
 - [x] **EP-63/IS-63.01** · 2 pts · COULD — `today.sections` in the settings (known sections, each once): counts at the top and progress at the bottom when shown; the cards between (today's tasks, coming up, goals, recent notes, and new ones: learning today, habits today, calendar today from followed calendars, household items for you) in the chosen order, each loading its data only when shown; Customise Today chooses and orders them.
 
 **Tests.** `TestTodaySections` (saved in order, repeats and unknown sections refused); e2e "Today can be customised: cards chosen and ordered".
+
+### EP-64 — Bulk actions and dragging onto the calendar
+
+**Goal.** The last of the twelve features proposed in the EP-49 audit and approved by the owner.
+
+- [x] **EP-64/IS-64.01** · 2 pts · COULD — `POST /v1/tasks/bulk`: up to 200 tasks changed (status, context, scheduled or due date, recurrence, notes; titles one at a time) or deleted in one transaction, all or none; Tasks → Select, a bar to move them to Next, Waiting, Someday, or Done, set a context or a due date, or delete them.
+- [x] **EP-64/IS-64.02** · 1 pt · COULD — Calendar: drag a task to another day (a due date stays a due date, a scheduled one stays scheduled); "Next actions without a date" can be dragged onto a day, or given a date in their field, for the keyboard and for touch screens.
+
+**Tests.** `TestBulkTasks` (status, context, and date at once, all or none with another person's task, titles refused, either delete or a change, dates cleared, delete); e2e "bulk actions change several tasks at once" and "drag a task onto a day of the calendar, or pick its date".
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

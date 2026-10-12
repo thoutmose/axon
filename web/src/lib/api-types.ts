@@ -672,6 +672,23 @@ export interface paths {
 		patch: operations['updateTask'];
 		trace?: never;
 	};
+	'/v1/tasks/bulk': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Change or delete up to 200 tasks at once, all or none: status, context, scheduled or due date, recurrence, or notes (titles one at a time) */
+		post: operations['bulkTasks'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/contexts': {
 		parameters: {
 			query?: never;
@@ -6426,6 +6443,53 @@ export interface operations {
 			412: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			428: components['responses']['Problem'];
+		};
+	};
+	bulkTasks: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					ids: string[];
+					delete?: boolean;
+					change?: {
+						status?: components['schemas']['TaskStatus'];
+						context?: string | null;
+						/** Format: date */
+						scheduled_on?: string | null;
+						/** Format: date */
+						due_on?: string | null;
+						recurrence?: string | null;
+						notes?: string;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description How many tasks were changed or deleted. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						changed: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listContexts: {
