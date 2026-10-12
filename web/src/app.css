@@ -256,3 +256,50 @@ code {
 	--motion-fast: 0ms;
 	--motion: 0ms;
 }
+
+/* Form controls look the same everywhere, not only inside TextField
+   (EP-65): text inputs, dates, selects, text areas, and file pickers. */
+:where(
+	input:not(
+		[type='checkbox'],
+		[type='radio'],
+		[type='range'],
+		[type='color'],
+		[type='file'],
+		[type='hidden']
+	),
+	select,
+	textarea
+) {
+	font: inherit;
+	min-height: 2.5rem;
+	padding: var(--space-1) var(--space-3);
+	border-radius: var(--radius);
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--fg);
+	max-width: 100%;
+}
+:where(textarea) {
+	padding: var(--space-2) var(--space-3);
+	line-height: 1.5;
+}
+:where(input[type='file']) {
+	font: inherit;
+	font-size: var(--text-sm);
+	max-width: 100%;
+}
+:where(input[type='file'])::file-selector-button {
+	font: inherit;
+	margin-right: var(--space-2);
+	padding: var(--space-1) var(--space-3);
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--fg);
+	cursor: pointer;
+}
+:where(input, select, textarea):focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}

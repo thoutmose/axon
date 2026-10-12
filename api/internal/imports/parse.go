@@ -221,6 +221,7 @@ func Goodreads(data []byte) ([]Media, error) {
 func Letterboxd(data []byte) ([]Media, error) {
 	files := map[string][]byte{}
 	if zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data))); err == nil {
+		total := 0
 		for _, f := range zr.File {
 			name := path.Base(f.Name)
 			if !strings.HasSuffix(name, ".csv") || f.UncompressedSize64 > 20<<20 || strings.Contains(f.Name, "deleted/") {
@@ -234,6 +235,10 @@ func Letterboxd(data []byte) ([]Media, error) {
 			_ = rc.Close()
 			if err != nil {
 				return nil, err
+			}
+			// A ZIP can claim small sizes and hold large files: count what is read.
+			if total += len(b); total > 100<<20 {
+				return nil, ErrFormat{"This export unpacks to more than 100 MB."}
 			}
 			files[name] = b
 		}
@@ -413,6 +418,7 @@ func Notion(data []byte) ([]Note, []File, error) {
 	}
 	var notes []Note
 	var files []File
+	total := 0
 	for _, f := range zr.File {
 		if f.FileInfo().IsDir() || f.UncompressedSize64 > 10<<20 {
 			continue
@@ -429,6 +435,9 @@ func Notion(data []byte) ([]Note, []File, error) {
 		_ = rc.Close()
 		if err != nil {
 			return nil, nil, err
+		}
+		if total += len(b); total > 200<<20 {
+			return nil, nil, ErrFormat{"This export unpacks to more than 200 MB; export a part of the workspace."}
 		}
 		p := "Notion/" + cleanNotion(strings.TrimPrefix(f.Name, "/"))
 		if ext == ".md" {

@@ -27,7 +27,7 @@ export function slug(title: string): string {
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Local date as YYYY-MM-DD. */
-export function isoDate(d: Date): string {
+function isoDate(d: Date): string {
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
@@ -221,7 +221,7 @@ export function itemTemplates(folder = 'Axon'): Template[] {
 }
 
 /** File names as the vault mirror writes them: the title, without characters files cannot hold. */
-export function fileName(title: string): string {
+function fileName(title: string): string {
 	const s = title
 		.replace(/[/\\:*?"<>|#^[\]]+/g, ' ')
 		.split(/\s+/)
@@ -267,7 +267,7 @@ export function isTemplatePath(path: string): boolean {
 }
 
 /** Where a note made from a vault template goes, by the template's front-matter type. */
-const destinations: Record<string, (t: string, now: Date) => string> = {
+const destinations: Record<string, (t: string, now: Date, folder: string) => string> = {
 	fleeting: (t, now) => `0-Inbox/${zettelId(now)}-${slug(t)}.md`,
 	literature: (t) => `Zettel/literature/${slug(t)}.md`,
 	permanent: (t, now) => `Zettel/permanent/${zettelId(now)}-${slug(t)}.md`,
@@ -276,14 +276,14 @@ const destinations: Record<string, (t: string, now: Date) => string> = {
 	resource: (t) => `3-Resources/${slug(t)}.md`,
 	archive: (t) => `4-Archive/${slug(t)}.md`,
 	daily: (_t, now) => dailyPath(now),
-	// Item types land in the vault mirror's folder, where they become items.
-	task: (t) => `Axon/Tasks/${fileName(t)}.md`,
-	goal: (t) => `Axon/Goals/${fileName(t)}.md`,
-	milestone: (t) => `Axon/Milestones/${fileName(t)}.md`,
-	habit: (t) => `Axon/Habits/${fileName(t)}.md`,
-	film: (t) => `Axon/Media/Films/${fileName(t)}.md`,
-	series: (t) => `Axon/Media/Series/${fileName(t)}.md`,
-	book: (t) => `Axon/Media/Books/${fileName(t)}.md`
+	// Item types land in the vault mirror's folder (Preferences), where they become items.
+	task: (t, _now, folder) => `${folder}/Tasks/${fileName(t)}.md`,
+	goal: (t, _now, folder) => `${folder}/Goals/${fileName(t)}.md`,
+	milestone: (t, _now, folder) => `${folder}/Milestones/${fileName(t)}.md`,
+	habit: (t, _now, folder) => `${folder}/Habits/${fileName(t)}.md`,
+	film: (t, _now, folder) => `${folder}/Media/Films/${fileName(t)}.md`,
+	series: (t, _now, folder) => `${folder}/Media/Series/${fileName(t)}.md`,
+	book: (t, _now, folder) => `${folder}/Media/Books/${fileName(t)}.md`
 };
 
 /**
@@ -303,14 +303,15 @@ export function fill(body: string, title: string, now: Date): string {
 /** A template that is a note in the vault's templates folder. */
 export function vaultTemplate(
 	note: { id: string; path: string; title: string; kind: string },
-	body: string
+	body: string,
+	folder = 'Axon'
 ): Template {
 	const dest = destinations[note.kind] ?? ((t: string) => `0-Inbox/${slug(t)}.md`);
 	return {
 		id: `vault:${note.id}`,
 		label: templateName(note.path),
 		hint: `Your template ${note.path}`,
-		path: dest,
+		path: (t, now) => dest(t, now, folder),
 		content: (t, now) => fill(body, t, now)
 	};
 }
