@@ -91,3 +91,30 @@ func TestSettingsInTheAppAndAsYAML(t *testing.T) {
 		t.Fatalf("token read settings: %d", code)
 	}
 }
+
+// Today's sections are chosen and ordered from a known list, each once.
+func TestTodaySections(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	put := func(sections string, want int) []byte {
+		t.Helper()
+		var doc map[string]any
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+		delete(doc, "ai")
+		var secs []string
+		_ = json.Unmarshal([]byte(sections), &secs)
+		doc["today"] = map[string]any{"sections": secs}
+		body, _ := json.Marshal(doc)
+		code, out := alice.do("PUT", "/v1/me/settings", body)
+		if code != want {
+			t.Fatalf("today %s = %d %s", sections, code, out)
+		}
+		return out
+	}
+	if out := put(`["learning","kpis","tasks"]`, 200); !bytes.Contains(out, []byte(`"today":{"sections":["learning","kpis","tasks"]}`)) {
+		t.Fatalf("saved = %s", out)
+	}
+	put(`["tasks","tasks"]`, 422)
+	put(`["weather"]`, 422)
+}

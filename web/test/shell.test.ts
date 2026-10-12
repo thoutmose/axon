@@ -1165,6 +1165,39 @@ test('search by meaning is off until a service and the consent are given', async
 	).toBeVisible();
 });
 
+test('Today can be customised: cards chosen and ordered', async () => {
+	await page.goto('/today');
+	await page.getByRole('button', { name: 'Customise Today' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Customise Today' });
+	await dialog.getByRole('checkbox', { name: 'Learning today' }).check();
+	await dialog.getByRole('checkbox', { name: 'Habits today' }).check();
+	await dialog.getByRole('checkbox', { name: 'Recent notes' }).uncheck();
+	// Learning today first among the cards: up past goals, milestones, tasks (and counts, which stay on top).
+	for (let i = 0; i < 6; i++) {
+		const up = dialog.getByRole('button', { name: 'Move Learning today up' });
+		if (await up.isDisabled()) break;
+		await up.click();
+	}
+	await noSeriousA11yViolations(page);
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Today is set.')).toBeVisible();
+	await page.reload();
+	await expect(page.getByRole('heading', { name: 'Learning today' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Habits today' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Recent notes' })).toHaveCount(0);
+	const learning = await page.getByRole('heading', { name: 'Learning today' }).boundingBox();
+	const tasks = await page.getByRole('heading', { name: "Today's tasks" }).boundingBox();
+	expect(learning && tasks && (learning.y < tasks.y || learning.x < tasks.x)).toBeTruthy();
+	// Back to the defaults for the stories that follow.
+	const origin = new URL(page.url()).origin;
+	const doc = await (await page.request.get('/api/v1/me/settings')).json();
+	delete doc.ai;
+	doc.today = { sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview'] };
+	expect(
+		(await page.request.put('/api/v1/me/settings', { headers: { Origin: origin }, data: doc })).ok()
+	).toBe(true);
+});
+
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
 	await page.getByRole('button', { name: '✨ Ask an agent' }).click();

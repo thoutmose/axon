@@ -92,7 +92,16 @@ type Doc struct {
 	Vault        Vault        `json:"vault" yaml:"vault"`
 	Learning     Learning     `json:"learning" yaml:"learning"`
 	Reminders    Reminders    `json:"reminders" yaml:"reminders"`
+	Today        Today        `json:"today" yaml:"today"`
 }
+
+// Today (EP-63) lists the sections the Today page shows, in order.
+type Today struct {
+	Sections []string `json:"sections" yaml:"sections"`
+}
+
+// TodaySections are the sections Today can show.
+var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "overview"}
 
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them
@@ -141,6 +150,7 @@ func Defaults() Doc {
 		Vault:     Vault{Mirror: true, Folder: "Axon"},
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
 		Reminders: Reminders{Morning: "08:00", Evening: "20:00"},
+		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
@@ -213,6 +223,13 @@ func (d Doc) Validate() error {
 		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
 			return FieldError{t.path, "is a time like 08:00, or empty for none"}
 		}
+	}
+	seen := map[string]bool{}
+	for _, sec := range d.Today.Sections {
+		if !slices.Contains(TodaySections, sec) || seen[sec] {
+			return FieldError{"today.sections", "lists each of " + strings.Join(TodaySections, ", ") + " at most once"}
+		}
+		seen[sec] = true
 	}
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}
