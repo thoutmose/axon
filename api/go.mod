@@ -17,7 +17,7 @@ require (
 	github.com/pressly/goose/v3 v3.28.0
 	github.com/prometheus/client_golang v1.25.0
 	github.com/teambition/rrule-go v1.8.2
-	go.yaml.in/yaml/v4 v4.0.0-rc.2
+	go.yaml.in/yaml/v4 v4.0.0-rc.6
 	golang.org/x/net v0.61.0
 	golang.org/x/text v0.43.0
 	golang.org/x/time v0.16.0
