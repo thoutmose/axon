@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api } from './api';
 
 	type P = {
@@ -15,7 +16,8 @@
 
 {#if p?.enabled}
 	<a class="chip" href="/progress">
-		Level {p.level} · {p.streak?.days ?? 0}-day run{p.today_xp ? ` · +${p.today_xp} today` : ''}
+		{t('Level {level} · {days}-day run', { level: p.level, days: p.streak?.days ?? 0 }) +
+			(p.today_xp ? t(' · +{xp} today', { xp: p.today_xp }) : '')}
 	</a>
 {/if}
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
@@ -81,7 +83,7 @@
 				}
 			});
 			if (picture) await upload(c.id, picture);
-			toast('Card added.');
+			toast(t('Card added.'));
 			form = { front: '', back: '', deck: form.deck, ...empty };
 			picture = null;
 			if (deck !== c.deck) await goto(`/cards?deck=${encodeURIComponent(c.deck)}`);
@@ -133,7 +135,7 @@
 					body: { suspended: what === 'suspend' }
 				});
 			editOpen = false;
-			if (what === 'delete') deleted('Card deleted.', c.id, () => load());
+			if (what === 'delete') deleted(t('Card deleted.'), c.id, () => load());
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -143,35 +145,38 @@
 	const dueTotal = $derived((decks ?? []).reduce((a, d) => a + d.due, 0));
 </script>
 
-<svelte:head><title>Flashcards · Axon</title></svelte:head>
+<svelte:head><title>{t('Flashcards · Axon')}</title></svelte:head>
 
-<h1>Flashcards</h1>
+<h1>{t('Flashcards')}</h1>
 <LearnTabs />
 <AgentDock {...pageAgents.learn} onapplied={() => load()} />
 <p class="muted hint">
-	Retrieval practice with spaced repetition: cards come back just before you would forget them
-	(FSRS, the scheduler Anki uses), a few new ones a day, with decks mixed. Give a card the why, an
-	example, and a vivid image so it sticks. The Teacher agent can write illustrated cards from your
-	literature and permanent notes.
+	{t(
+		'Retrieval practice with spaced repetition: cards come back just before you would forget them (FSRS, the scheduler Anki uses), a few new ones a day, with decks mixed. Give a card the why, an example, and a vivid image so it sticks. The Teacher agent can write illustrated cards from your literature and permanent notes.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !decks}
-	<Status kind="loading" message="Loading cards…" />
+	<Status kind="loading" message={t('Loading cards…')} />
 {:else}
 	<div class="actions">
-		<Button href="/cards/review" disabled={dueTotal === 0}>Review {dueTotal} due</Button>
-		<Button variant="secondary" href="/cards/review?practice=1">Practise weak cards</Button>
-		<Button variant="ghost" href="/cards/test">Mixed test</Button>
+		<Button href="/cards/review" disabled={dueTotal === 0}
+			>{t('Review {dueTotal} due', { dueTotal })}</Button
+		>
+		<Button variant="secondary" href="/cards/review?practice=1">{t('Practise weak cards')}</Button>
+		<Button variant="ghost" href="/cards/test">{t('Mixed test')}</Button>
 		<Button
 			variant="ghost"
 			href="/agents?agent=teacher&ask={encodeURIComponent(
-				'Write illustrated flashcards from my newest literature and permanent notes, with the why, an example, and a vivid memory image.'
-			)}">✨ Illustrated cards with the Teacher</Button
+				t(
+					'Write illustrated flashcards from my newest literature and permanent notes, with the why, an example, and a vivid memory image.'
+				)
+			)}">{t('✨ Illustrated cards with the Teacher')}</Button
 		>
 		{#if decks.length}<a class="export" href="/api/v1/flashcards/export.apkg" rel="external"
-				>Export all to Anki (.apkg)</a
+				>{t('Export all to Anki (.apkg)')}</a
 			>{/if}
 	</div>
 
@@ -180,57 +185,59 @@
 			{#each decks as d (d.name)}
 				<li class="card glass" class:current={d.name === deck}>
 					<a class="name" href="/cards?deck={encodeURIComponent(d.name)}">{d.name}</a>
-					<p class="muted small">{d.total} cards · {d.due} due · {d.new} new</p>
+					<p class="muted small">
+						{t('{total} cards · {due} due · {new} new', { total: d.total, due: d.due, new: d.new })}
+					</p>
 					<div class="row">
 						<Button
 							variant="secondary"
 							href="/cards/review?deck={encodeURIComponent(d.name)}"
 							disabled={d.due === 0}
-							aria-label="Review {d.name}">Review</Button
+							aria-label={t('Review {name}', { name: d.name })}>{t('Review')}</Button
 						>
 						<Button
 							variant="ghost"
 							href="/cards/test?deck={encodeURIComponent(d.name)}"
-							aria-label="Practice test on {d.name}">Test</Button
+							aria-label={t('Practice test on {name}', { name: d.name })}>{t('Test')}</Button
 						>
 						<a
 							class="small"
 							href="/api/v1/flashcards/export.apkg?deck={encodeURIComponent(d.name)}"
 							rel="external"
-							aria-label="Export {d.name} to Anki">.apkg</a
+							aria-label={t('Export {name} to Anki', { name: d.name })}>{t('.apkg')}</a
 						>
 					</div>
 				</li>
 			{/each}
 		</ul>
 	{:else}
-		<Status kind="empty" message="No cards yet. Write your first one below." />
+		<Status kind="empty" message={t('No cards yet. Write your first one below.')} />
 	{/if}
 
 	<AnkiSync />
 
 	<section class="card glass" aria-labelledby="add-title">
-		<h2 id="add-title">Add a card</h2>
+		<h2 id="add-title">{t('Add a card')}</h2>
 		<form onsubmit={add}>
 			<div class="field">
-				<label for="card-front">Question</label>
+				<label for="card-front">{t('Question')}</label>
 				<textarea id="card-front" rows="2" maxlength="10000" required bind:value={form.front}
 				></textarea>
 			</div>
 			<div class="field">
-				<label for="card-back">Answer</label>
+				<label for="card-back">{t('Answer')}</label>
 				<textarea id="card-back" rows="3" maxlength="10000" bind:value={form.back}></textarea>
 			</div>
 			<div class="grid">
 				<TextField
 					id="card-deck"
-					label="Deck"
+					label={t('Deck')}
 					list="deck-names"
 					bind:value={form.deck}
 					maxlength={200}
 				/>
 				<div class="field">
-					<label for="card-picture">Picture (optional)</label>
+					<label for="card-picture">{t('Picture (optional)')}</label>
 					<input
 						id="card-picture"
 						type="file"
@@ -240,24 +247,24 @@
 				</div>
 			</div>
 			<details class="stick">
-				<summary>Make it stick (optional)</summary>
+				<summary>{t('Make it stick (optional)')}</summary>
 				<div class="field">
-					<label for="card-elaboration">Why is it true? How does it work?</label>
+					<label for="card-elaboration">{t('Why is it true? How does it work?')}</label>
 					<textarea id="card-elaboration" rows="2" maxlength="2000" bind:value={form.elaboration}
 					></textarea>
 				</div>
 				<div class="field">
-					<label for="card-example">A concrete example</label>
+					<label for="card-example">{t('A concrete example')}</label>
 					<textarea id="card-example" rows="2" maxlength="2000" bind:value={form.example}
 					></textarea>
 				</div>
 				<div class="field">
-					<label for="card-mnemonic">A vivid memory image</label>
+					<label for="card-mnemonic">{t('A vivid memory image')}</label>
 					<textarea
 						id="card-mnemonic"
 						rows="2"
 						maxlength="2000"
-						placeholder="Exaggerated, funny, or absurd images are remembered best."
+						placeholder={t('Exaggerated, funny, or absurd images are remembered best.')}
 						bind:value={form.mnemonic}
 					></textarea>
 				</div>
@@ -265,7 +272,7 @@
 			<datalist id="deck-names"
 				>{#each decks as d (d.name)}<option value={d.name}></option>{/each}</datalist
 			>
-			<Button type="submit" variant="secondary">Add card</Button>
+			<Button type="submit" variant="secondary">{t('Add card')}</Button>
 		</form>
 	</section>
 
@@ -286,65 +293,71 @@
 								<strong>{c.front}</strong>
 								{#if c.leech}<span
 										class="leech"
-										title="Forgotten {c.lapses} times: rewrite it, add an example or a vivid image, or split it in two."
-										>Keeps slipping</span
+										title={t(
+											'Forgotten {lapses} times: rewrite it, add an example or a vivid image, or split it in two.',
+											{ lapses: c.lapses }
+										)}>{t('Keeps slipping')}</span
 									>{/if}
 								<span class="muted small"
-									>{c.suspended ? 'Suspended' : `Due ${new Date(c.due).toLocaleDateString()}`} · {c.reps}
-									reviews</span
+									>{t(c.suspended ? 'Suspended · {reps} reviews' : 'Due {date} · {reps} reviews', {
+										date: new Date(c.due).toLocaleDateString(appLocale()),
+										reps: c.reps
+									})}</span
 								>
 							</div>
-							<Button variant="ghost" onclick={() => open(c)} aria-label="Edit {c.front}"
-								>Edit</Button
+							<Button
+								variant="ghost"
+								onclick={() => open(c)}
+								aria-label={t('Edit {front}', { front: c.front })}>{t('Edit')}</Button
 							>
 						</li>
 					{/each}
 				</ul>
 			{:else}
-				<p class="muted">This deck is empty.</p>
+				<p class="muted">{t('This deck is empty.')}</p>
 			{/if}
 		</section>
 	{/if}
 {/if}
 
-<Dialog bind:open={editOpen} title="Edit card">
+<Dialog bind:open={editOpen} title={t('Edit card')}>
 	{#if editing}
 		<form onsubmit={save}>
 			<div class="field">
-				<label for="edit-front">Question</label>
+				<label for="edit-front">{t('Question')}</label>
 				<textarea id="edit-front" rows="2" maxlength="10000" required bind:value={edit.front}
 				></textarea>
 			</div>
 			<div class="field">
-				<label for="edit-back">Answer</label>
+				<label for="edit-back">{t('Answer')}</label>
 				<textarea id="edit-back" rows="3" maxlength="10000" bind:value={edit.back}></textarea>
 			</div>
 			<TextField
 				id="edit-deck"
-				label="Deck"
+				label={t('Deck')}
 				list="deck-names"
 				bind:value={edit.deck}
 				maxlength={200}
 			/>
 			<details class="stick" open={!!(edit.elaboration || edit.example || edit.mnemonic)}>
-				<summary>Make it stick (optional)</summary>
+				<summary>{t('Make it stick (optional)')}</summary>
 				<div class="field">
-					<label for="edit-elaboration">Why is it true? How does it work?</label>
+					<label for="edit-elaboration">{t('Why is it true? How does it work?')}</label>
 					<textarea id="edit-elaboration" rows="2" maxlength="2000" bind:value={edit.elaboration}
 					></textarea>
 				</div>
 				<div class="field">
-					<label for="edit-example">A concrete example</label>
+					<label for="edit-example">{t('A concrete example')}</label>
 					<textarea id="edit-example" rows="2" maxlength="2000" bind:value={edit.example}
 					></textarea>
 				</div>
 				<div class="field">
-					<label for="edit-mnemonic">A vivid memory image</label>
+					<label for="edit-mnemonic">{t('A vivid memory image')}</label>
 					<textarea
 						id="edit-mnemonic"
 						rows="2"
 						maxlength="2000"
-						placeholder="Exaggerated, funny, or absurd images are remembered best."
+						placeholder={t('Exaggerated, funny, or absurd images are remembered best.')}
 						bind:value={edit.mnemonic}
 					></textarea>
 				</div>
@@ -352,15 +365,15 @@
 			{#if palaces.length}
 				<div class="grid">
 					<div class="field">
-						<label for="edit-palace">Memory palace</label>
+						<label for="edit-palace">{t('Memory palace')}</label>
 						<select id="edit-palace" bind:value={edit.palace_id}>
-							<option value="">None</option>
+							<option value="">{t('None')}</option>
 							{#each palaces as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
 						</select>
 					</div>
 					{#if editPalace}
 						<div class="field">
-							<label for="edit-locus">Place</label>
+							<label for="edit-locus">{t('Place')}</label>
 							<select id="edit-locus" bind:value={edit.locus}>
 								{#each editPalace.loci as l, i (i)}<option value={i}>{i + 1}. {l}</option>{/each}
 							</select>
@@ -370,7 +383,7 @@
 			{/if}
 			<div class="field">
 				<label for="edit-picture"
-					>{editing.has_image ? 'Replace the picture' : 'Add a picture'}</label
+					>{editing.has_image ? t('Replace the picture') : t('Add a picture')}</label
 				>
 				<input
 					id="edit-picture"
@@ -391,17 +404,19 @@
 				/>
 			</div>
 			<div class="row wrap">
-				<Button type="submit">Save</Button>
+				<Button type="submit">{t('Save')}</Button>
 				<Button
 					variant="secondary"
 					onclick={() => editing && act(editing, editing.suspended ? 'resume' : 'suspend')}
-					>{editing.suspended ? 'Resume' : 'Suspend'}</Button
+					>{editing.suspended ? t('Resume') : t('Suspend')}</Button
 				>
 				{#if editing.has_image}<Button
 						variant="ghost"
-						onclick={() => editing && act(editing, 'unpicture')}>Remove picture</Button
+						onclick={() => editing && act(editing, 'unpicture')}>{t('Remove picture')}</Button
 					>{/if}
-				<Button variant="danger" onclick={() => editing && act(editing, 'delete')}>Delete</Button>
+				<Button variant="danger" onclick={() => editing && act(editing, 'delete')}
+					>{t('Delete')}</Button
+				>
 			</div>
 		</form>
 	{/if}

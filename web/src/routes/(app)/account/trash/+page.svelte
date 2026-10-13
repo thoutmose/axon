@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
@@ -26,22 +28,22 @@
 		project: '/projects/',
 		palace: '/learn/palaces/'
 	};
-	const names: Record<string, string> = {
-		note: 'Note',
-		task: 'Task',
-		goal: 'Goal',
-		milestone: 'Milestone',
-		habit: 'Habit',
-		card: 'Flashcard',
-		media: 'Film, series, or book',
-		project: 'Project',
-		palace: 'Memory palace',
-		area: 'Area',
-		resource: 'Resource',
-		roadmap: 'Roadmap',
-		skill: 'Skill',
-		focus_session: 'Focus session'
-	};
+	const names: Record<string, string> = $derived({
+		note: t('Note'),
+		task: t('Task'),
+		goal: t('Goal'),
+		milestone: t('Milestone'),
+		habit: t('Habit'),
+		card: t('Flashcard'),
+		media: t('Film, series, or book'),
+		project: t('Project'),
+		palace: t('Memory palace'),
+		area: t('Area'),
+		resource: t('Resource'),
+		roadmap: t('Roadmap'),
+		skill: t('Skill'),
+		focus_session: t('Focus session')
+	});
 
 	async function load() {
 		error = '';
@@ -58,7 +60,7 @@
 			const r = await api<{ entity_id: string; type: string }>(`/v1/trash/${i.id}/restore`, {
 				method: 'POST'
 			});
-			toast(`“${i.title}” is back.`);
+			toast(t('“{title}” is back.', { title: i.title }));
 			if (pages[r.type] && r.type !== 'task') await goto(pages[r.type] + r.entity_id);
 			else await load();
 		} catch (err) {
@@ -76,10 +78,10 @@
 	}
 
 	async function empty() {
-		if (!confirm('Delete everything in the trash for good?')) return;
+		if (!confirm(t('Delete everything in the trash for good?'))) return;
 		try {
 			await api('/v1/trash', { method: 'DELETE' });
-			toast('The trash is empty.');
+			toast(t('The trash is empty.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -90,19 +92,20 @@
 		Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000));
 </script>
 
-<svelte:head><title>Trash · Axon</title></svelte:head>
+<svelte:head><title>{t('Trash · Axon')}</title></svelte:head>
 
 <p class="muted">
-	What you delete stays here for 30 days, with what was deleted along with it (a goal's milestones,
-	a habit's check-ins, a card's reviews), then is deleted for good.
+	{t(
+		"What you delete stays here for 30 days, with what was deleted along with it (a goal's milestones, a habit's check-ins, a card's reviews), then is deleted for good."
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !items}
-	<Status kind="loading" message="Loading the trash…" />
+	<Status kind="loading" message={t('Loading the trash…')} />
 {:else if items.length === 0}
-	<Status kind="empty" message="The trash is empty." />
+	<Status kind="empty" message={t('The trash is empty.')} />
 {:else}
 	<ul class="rows">
 		{#each items as i (i.id)}
@@ -110,21 +113,34 @@
 				<span class="grow">
 					<strong>{i.title}</strong>
 					<span class="muted small"
-						>{names[i.type] ?? i.type}{i.with ? ` and ${i.with} more` : ''} · deleted {new Date(
-							i.deleted_at
-						).toLocaleString()} · {days(i.expires_at)} days left</span
+						>{t(
+							i.with
+								? '{type} and {more} more · deleted {when} · {days} days left'
+								: '{type} · deleted {when} · {days} days left',
+							{
+								type: t(names[i.type] ?? i.type),
+								more: i.with,
+								when: new Date(i.deleted_at).toLocaleString(appLocale()),
+								days: days(i.expires_at)
+							}
+						)}</span
 					>
 				</span>
-				<Button variant="secondary" onclick={() => restore(i)} aria-label="Restore {i.title}"
-					>Restore</Button
+				<Button
+					variant="secondary"
+					onclick={() => restore(i)}
+					aria-label={t('Restore {title}', { title: i.title })}>{t('Restore')}</Button
 				>
-				<Button variant="ghost" onclick={() => forget(i)} aria-label="Delete {i.title} for good"
-					>Delete for good</Button
+				<Button
+					variant="ghost"
+					onclick={() => forget(i)}
+					aria-label={t('Delete {title} for good', { title: i.title })}
+					>{t('Delete for good')}</Button
 				>
 			</li>
 		{/each}
 	</ul>
-	<Button variant="danger" onclick={empty}>Empty the trash</Button>
+	<Button variant="danger" onclick={empty}>{t('Empty the trash')}</Button>
 {/if}
 
 <style>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
@@ -48,9 +50,10 @@
 
 	const rename = (e: SubmitEvent) => {
 		e.preventDefault();
-		return save({ display_name: name }, 'Name updated.');
+		return save({ display_name: name }, t('Name updated.'));
 	};
-	const setZone = (zone: string) => save({ timezone: zone }, `Time zone set to ${zone}.`);
+	const setZone = (zone: string) =>
+		save({ timezone: zone }, t('Time zone set to {zone}.', { zone }));
 
 	async function signOut() {
 		busy = true;
@@ -75,7 +78,7 @@
 				body: file
 			});
 			if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
-			toast('Picture updated.');
+			toast(t('Picture updated.'));
 			await load();
 		} catch (err) {
 			toast(err instanceof Error ? err.message : String(err), 'error');
@@ -88,7 +91,7 @@
 	async function removePicture() {
 		try {
 			await api('/v1/me/avatar', { method: 'DELETE' });
-			toast('Back to your default picture.');
+			toast(t('Back to your default picture.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -98,49 +101,51 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Account · Axon</title></svelte:head>
+<svelte:head><title>{t('Account · Axon')}</title></svelte:head>
 
 {#if me}
 	<Section
 		id="picture"
-		title="Profile picture"
-		description="PNG or JPEG, up to 5 MB. It is cropped square and resized; camera and location details are removed."
+		title={t('Profile picture')}
+		description={t(
+			'PNG or JPEG, up to 5 MB. It is cropped square and resized; camera and location details are removed.'
+		)}
 	>
 		<div class="picture">
 			<img src={avatarSrc(avatar.version)} alt={me.display_name} width="96" height="96" />
 			<div class="picture-actions">
 				<label class="upload">
-					<span>Upload a picture</span>
+					<span>{t('Upload a picture')}</span>
 					<input type="file" accept="image/png,image/jpeg" onchange={upload} disabled={busy} />
 				</label>
 				{#if me.avatar_updated_at}
-					<Button variant="ghost" onclick={removePicture}>Use the default picture</Button>
+					<Button variant="ghost" onclick={removePicture}>{t('Use the default picture')}</Button>
 				{/if}
 			</div>
 		</div>
 	</Section>
-	<Section id="profile" title="Name">
+	<Section id="profile" title={t('Name')}>
 		<form onsubmit={rename}>
 			<TextField
 				id="display-name"
-				label="Your name"
-				hint="Shown in Axon and in your passkey manager."
+				label={t('Your name')}
+				hint={t('Shown in Axon and in your passkey manager.')}
 				bind:value={name}
 				maxlength={100}
 				required
 			/>
 			<Button type="submit" variant="secondary" {busy} disabled={name === me.display_name}
-				>Save</Button
+				>{t('Save')}</Button
 			>
 		</form>
 	</Section>
 	<Section
 		id="zone"
-		title="Time zone"
-		description="Decides what “today” means for your tasks and check-ins."
+		title={t('Time zone')}
+		description={t('Decides what “today” means for your tasks and check-ins.')}
 	>
 		<div class="zone">
-			<label for="timezone" class="visually-hidden">Time zone</label>
+			<label for="timezone" class="visually-hidden">{t('Time zone')}</label>
 			<select
 				id="timezone"
 				bind:value={timezone}
@@ -151,24 +156,31 @@
 			</select>
 			{#if deviceZone && deviceZone !== me.timezone}
 				<Button variant="ghost" onclick={() => setZone(deviceZone)} {busy}
-					>Use this device's zone ({deviceZone})</Button
+					>{t("Use this device's zone ({deviceZone})", { deviceZone })}</Button
 				>
 			{/if}
 		</div>
 	</Section>
-	<Section id="summary" title="At a glance">
+	<Section id="summary" title={t('At a glance')}>
 		<ul class="facts">
-			<li><strong>{me.passkeys}</strong> passkey{me.passkeys === 1 ? '' : 's'}</li>
-			<li><strong>{me.recovery_codes_remaining}</strong> of 10 recovery codes unused</li>
-			<li>Authenticator app <strong>{me.totp_enabled ? 'on' : 'off'}</strong></li>
-			<li>Member since {new Date(me.created_at).toLocaleDateString()}</li>
+			<li>
+				<strong>{me.passkeys}</strong>
+				{t(me.passkeys === 1 ? 'passkey' : 'passkeys')}
+			</li>
+			<li><strong>{me.recovery_codes_remaining}</strong> {t('of 10 recovery codes unused')}</li>
+			<li>{t('Authenticator app')} <strong>{t(me.totp_enabled ? 'on' : 'off')}</strong></li>
+			<li>
+				{t('Member since {date}', {
+					date: new Date(me.created_at).toLocaleDateString(appLocale())
+				})}
+			</li>
 		</ul>
-		<Button variant="secondary" onclick={signOut} {busy}>Sign out</Button>
+		<Button variant="secondary" onclick={signOut} {busy}>{t('Sign out')}</Button>
 	</Section>
 {:else if error}
 	<Status kind="error" message={error} retry={load} />
 {:else}
-	<Status kind="loading" message="Loading your account…" />
+	<Status kind="loading" message={t('Loading your account…')} />
 {/if}
 
 <style>

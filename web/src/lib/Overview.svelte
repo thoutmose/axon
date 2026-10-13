@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
 	import { api, message } from '$lib/api';
 	import Heatmap from '$lib/charts/Heatmap.svelte';
 	import LineChart from '$lib/charts/LineChart.svelte';
@@ -33,7 +34,7 @@
 					: `${v} min`
 				: `${v}`;
 	const when = (d: string) =>
-		new Date(d.length === 10 ? d + 'T00:00:00' : d).toLocaleDateString(undefined, {
+		new Date(d.length === 10 ? d + 'T00:00:00' : d).toLocaleDateString(appLocale(), {
 			weekday: 'short',
 			day: 'numeric',
 			month: 'short'
@@ -93,22 +94,27 @@
 				<h3>{t('Due in the next 7 days')}</h3>
 				{#if data.tables.due_soon.length}
 					<table>
-						<thead><tr><th scope="col">Task</th><th scope="col">Due</th></tr></thead>
+						<thead><tr><th scope="col">{t('Task')}</th><th scope="col">{t('Due')}</th></tr></thead>
 						<tbody>
-							{#each data.tables.due_soon as t (t.id)}
-								<tr><td><a href="/tasks/{t.id}">{t.title}</a></td><td>{when(t.due_on)}</td></tr>
+							{#each data.tables.due_soon as task (task.id)}
+								<tr
+									><td><a href="/tasks/{task.id}">{task.title}</a></td><td>{when(task.due_on)}</td
+									></tr
+								>
 							{/each}
 						</tbody>
 					</table>
 				{:else}
-					<p class="muted">Nothing due this week.</p>
+					<p class="muted">{t('Nothing due this week.')}</p>
 				{/if}
 			</div>
 			<div class="panel glass">
 				<h3>{t('Learning now')}</h3>
 				{#if data.tables.learning.length}
 					<table>
-						<thead><tr><th scope="col">Skill</th><th scope="col">Roadmap</th></tr></thead>
+						<thead
+							><tr><th scope="col">{t('Skill')}</th><th scope="col">{t('Roadmap')}</th></tr></thead
+						>
 						<tbody>
 							{#each data.tables.learning as s (s.id)}
 								<tr>
@@ -119,14 +125,17 @@
 						</tbody>
 					</table>
 				{:else}
-					<p class="muted">No skill in progress. <a href="/roadmaps">Pick one</a>.</p>
+					<p class="muted">{t('No skill in progress.')} <a href="/roadmaps">{t('Pick one')}</a>.</p>
 				{/if}
 			</div>
 			<div class="panel glass">
 				<h3>{t('Projects without activity for 14 days')}</h3>
 				{#if data.tables.stalled_projects.length}
 					<table>
-						<thead><tr><th scope="col">Project</th><th scope="col">Last activity</th></tr></thead>
+						<thead
+							><tr><th scope="col">{t('Project')}</th><th scope="col">{t('Last activity')}</th></tr
+							></thead
+						>
 						<tbody>
 							{#each data.tables.stalled_projects as p (p.id)}
 								<tr
@@ -137,7 +146,7 @@
 						</tbody>
 					</table>
 				{:else}
-					<p class="muted">Every active project moved in the last two weeks.</p>
+					<p class="muted">{t('Every active project moved in the last two weeks.')}</p>
 				{/if}
 			</div>
 		</div>

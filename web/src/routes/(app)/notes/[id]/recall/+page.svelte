@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
-	import { formatDate } from '$lib/dates';
+	import { formatDate, appLocale } from '$lib/dates';
 	import type { Note } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -57,74 +58,91 @@
 	const words = $derived((text.match(/\S+/g) ?? []).length);
 </script>
 
-<svelte:head><title>Recall {note?.title ?? 'a note'} · Axon</title></svelte:head>
+<svelte:head
+	><title
+		>{note ? t('Recall {title} · Axon', { title: note.title }) : t('Recall a note · Axon')}</title
+	></svelte:head
+>
 
-<p class="crumbs"><a href="/learn">← Learn</a></p>
+<p class="crumbs"><a href="/learn">{t('← Learn')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !note}
-	<Status kind="loading" message="Loading…" />
+	<Status kind="loading" message={t('Loading…')} />
 {:else}
-	<h1>Recall: {note.title}</h1>
+	<h1>{t('Recall: {title}', { title: note.title })}</h1>
 	{#if !study}
 		<Status
 			kind="empty"
-			message="Free recall is for literature and permanent notes. Rewrite this one in your own words first, then set its type."
+			message={t(
+				'Free recall is for literature and permanent notes. Rewrite this one in your own words first, then set its type.'
+			)}
 		/>
 	{:else if !result}
 		<p class="muted">
-			Write everything you remember about this note, in your own words, without looking. Getting
-			stuck is the point: the effort of recalling is what makes memories last.
+			{t(
+				'Write everything you remember about this note, in your own words, without looking. Getting stuck is the point: the effort of recalling is what makes memories last.'
+			)}
 		</p>
 		<form onsubmit={send}>
-			<label for="recall" class="visually-hidden">What you remember</label>
+			<label for="recall" class="visually-hidden">{t('What you remember')}</label>
 			<!-- svelte-ignore a11y_autofocus -->
 			<textarea id="recall" rows="12" maxlength="20000" required autofocus bind:value={text}
 			></textarea>
 			<div class="row">
-				<Button type="submit" disabled={sending || !text.trim()}>Compare with the note</Button>
-				<span class="muted small">{words} words</span>
+				<Button type="submit" disabled={sending || !text.trim()}
+					>{t('Compare with the note')}</Button
+				>
+				<span class="muted small">{t('{words} words', { words })}</span>
 			</div>
 		</form>
 	{:else}
 		<section class="card glass" aria-live="polite">
-			<h2>{pct(result.score)} of the key ideas</h2>
+			<h2>{t('{value} of the key ideas', { value: pct(result.score) })}</h2>
 			<ul class="ideas">
 				{#each result.ideas as i (i.text)}
 					<li class:missed={!i.recalled}>
 						<span aria-hidden="true">{i.recalled ? '✓' : '○'}</span>
-						<span class="visually-hidden">{i.recalled ? 'Recalled:' : 'Missed:'}</span>
+						<span class="visually-hidden">{i.recalled ? t('Recalled:') : t('Missed:')}</span>
 						{i.text}
 					</li>
 				{/each}
 			</ul>
 			<p>
-				{result.score >= 0.8
-					? 'Well recalled.'
-					: result.score >= 0.5
-						? 'Half there: reread what you missed, then explain it to yourself.'
-						: 'Reread the note now, then try again tomorrow.'}
-				Next recall in {result.interval_days}
-				{result.interval_days === 1 ? 'day' : 'days'} ({new Date(
-					result.due_on
-				).toLocaleDateString()}).
+				{t(
+					result.score >= 0.8
+						? 'Well recalled.'
+						: result.score >= 0.5
+							? 'Half there: reread what you missed, then explain it to yourself.'
+							: 'Reread the note now, then try again tomorrow.'
+				) +
+					' ' +
+					t(
+						result.interval_days === 1
+							? 'Next recall in {n} day ({date}).'
+							: 'Next recall in {n} days ({date}).',
+						{
+							n: result.interval_days,
+							date: new Date(result.due_on).toLocaleDateString(appLocale())
+						}
+					)}
 			</p>
 			<div class="row">
-				<Button href="/notes/{id}">Read the note</Button>
-				<Button variant="secondary" href="/learn">Back to today</Button>
+				<Button href="/notes/{id}">{t('Read the note')}</Button>
+				<Button variant="secondary" href="/learn">{t('Back to today')}</Button>
 			</div>
 		</section>
 	{/if}
 
 	{#if history.length}
 		<section aria-labelledby="history-title">
-			<h2 id="history-title" class="small-title">Earlier attempts</h2>
+			<h2 id="history-title" class="small-title">{t('Earlier attempts')}</h2>
 			<ul class="history">
 				{#each history as h (h.recalled_at)}
 					<li>
-						{new Date(h.recalled_at).toLocaleDateString()}: {pct(h.score)}
-						<span class="muted">· next {formatDate(h.due_on)}</span>
+						{new Date(h.recalled_at).toLocaleDateString(appLocale())}: {pct(h.score)}
+						<span class="muted">{t('· next {value}', { value: formatDate(h.due_on) })}</span>
 					</li>
 				{/each}
 			</ul>

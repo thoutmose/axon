@@ -25,56 +25,56 @@
 	// Eighteen pages in five groups (EP-54): what you do, what you think,
 	// how you grow, the rest of life, and reflecting. Today stays one click away.
 	type NavLink = { href: string; label: string; also?: string[] };
-	const groups: { id: string; label: string; links: NavLink[] }[] = [
+	const groups: { id: string; label: string; links: NavLink[] }[] = $derived([
 		{
 			id: 'do',
-			label: 'Do',
+			label: t('Do'),
 			links: [
-				{ href: '/tasks', label: 'Tasks' },
-				{ href: '/projects', label: 'Projects' },
-				{ href: '/calendar', label: 'Calendar' },
-				{ href: '/focus', label: 'Focus' }
+				{ href: '/tasks', label: t('Tasks') },
+				{ href: '/projects', label: t('Projects') },
+				{ href: '/calendar', label: t('Calendar') },
+				{ href: '/focus', label: t('Focus') }
 			]
 		},
 		{
 			id: 'think',
-			label: 'Think',
+			label: t('Think'),
 			links: [
-				{ href: '/notes', label: 'Notes' },
-				{ href: '/areas', label: 'Areas' },
-				{ href: '/resources', label: 'Resources' },
-				{ href: '/archive', label: 'Archive' }
+				{ href: '/notes', label: t('Notes') },
+				{ href: '/areas', label: t('Areas') },
+				{ href: '/resources', label: t('Resources') },
+				{ href: '/archive', label: t('Archive') }
 			]
 		},
 		{
 			id: 'grow',
-			label: 'Grow',
+			label: t('Grow'),
 			links: [
-				{ href: '/learn', label: 'Learn', also: ['/roadmaps', '/cards'] },
-				{ href: '/goals', label: 'Goals' },
-				{ href: '/habits', label: 'Habits' }
+				{ href: '/learn', label: t('Learn'), also: ['/roadmaps', '/cards'] },
+				{ href: '/goals', label: t('Goals') },
+				{ href: '/habits', label: t('Habits') }
 			]
 		},
 		{
 			id: 'life',
-			label: 'Life',
+			label: t('Life'),
 			links: [
-				{ href: '/health', label: 'Health' },
-				{ href: '/media', label: 'Media' },
-				{ href: '/budget', label: 'Budget' },
-				{ href: '/household', label: 'Household' }
+				{ href: '/health', label: t('Health') },
+				{ href: '/media', label: t('Media') },
+				{ href: '/budget', label: t('Budget') },
+				{ href: '/household', label: t('Household') }
 			]
 		},
 		{
 			id: 'reflect',
-			label: 'Reflect',
+			label: t('Reflect'),
 			links: [
-				{ href: '/review', label: 'Weekly review' },
-				{ href: '/insights', label: 'Insights' },
-				{ href: '/agents', label: 'Agents' }
+				{ href: '/review', label: t('Weekly review') },
+				{ href: '/insights', label: t('Insights') },
+				{ href: '/agents', label: t('Agents') }
 			]
 		}
-	];
+	]);
 	const inSection = (l: NavLink) => current(l.href) || (l.also ?? []).some(current);
 	let openGroup = $state<string | null>(null);
 	// Narrow screens get one Menu button and every group in a sheet.
@@ -268,12 +268,13 @@
 
 {#if !connection.online}
 	<p class="banner" role="alert">
-		You are offline. Captures (press n) are kept on this device and sent when you reconnect; other
-		changes are not saved.{outbox.items.length ? ` ${outbox.items.length} waiting.` : ''}
+		{t(
+			'You are offline. Captures (press n) are kept on this device and sent when you reconnect; other changes are not saved.'
+		) + (outbox.items.length ? ' ' + t('{n} waiting.', { n: outbox.items.length }) : '')}
 	</p>
 {:else if connection.apiDown}
 	<p class="banner" role="alert">
-		Axon's server is not responding. Your data is safe; try again shortly.
+		{t("Axon's server is not responding. Your data is safe; try again shortly.")}
 	</p>
 {/if}
 

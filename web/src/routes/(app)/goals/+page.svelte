@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
@@ -14,11 +15,11 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	const tabs = [
-		{ id: 'active', label: 'Active' },
-		{ id: 'achieved', label: 'Achieved' },
-		{ id: 'archived', label: 'Archived' }
-	];
+	const tabs = $derived([
+		{ id: 'active', label: t('Active') },
+		{ id: 'achieved', label: t('Achieved') },
+		{ id: 'archived', label: t('Archived') }
+	]);
 	const status = $derived(page.url.searchParams.get('status') ?? 'active');
 	let goals = $state<Goal[] | null>(null);
 	let error = $state('');
@@ -98,7 +99,7 @@
 				body: { note: reflection }
 			});
 			reviewed = true;
-			toast('Weekly review saved.');
+			toast(t('Weekly review saved.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		}
@@ -113,36 +114,37 @@
 	}
 </script>
 
-<svelte:head><title>Goals · Axon</title></svelte:head>
+<svelte:head><title>{t('Goals · Axon')}</title></svelte:head>
 
-<h1>Goals</h1>
+<h1>{t('Goals')}</h1>
 <AgentDock {...pageAgents.goals} onapplied={() => load()} />
 <p class="muted hint">
-	Name an outcome, then connect the milestones, tasks, and notes that move it. Every figure shows
-	how it was worked out.
+	{t(
+		'Name an outcome, then connect the milestones, tasks, and notes that move it. Every figure shows how it was worked out.'
+	)}
 </p>
 
-<nav aria-label="Goal status" class="tabs">
-	{#each tabs as t (t.id)}
-		<a href="?status={t.id}" aria-current={status === t.id ? 'page' : undefined}>{t.label}</a>
+<nav aria-label={t('Goal status')} class="tabs">
+	{#each tabs as tab (tab.id)}
+		<a href="?status={tab.id}" aria-current={status === tab.id ? 'page' : undefined}>{tab.label}</a>
 	{/each}
 </nav>
 
 {#if status === 'active'}
 	<form class="quick" onsubmit={create}>
-		<label for="new-goal" class="visually-hidden">New goal</label>
+		<label for="new-goal" class="visually-hidden">{t('New goal')}</label>
 		<input
 			id="new-goal"
-			placeholder="New goal, e.g. Run a 10 km race…"
+			placeholder={t('New goal, e.g. Run a 10 km race…')}
 			bind:value={title}
 			maxlength="500"
 			required
 			autocomplete="off"
 		/>
-		<Button type="submit" variant="secondary">Create</Button>
+		<Button type="submit" variant="secondary">{t('Create')}</Button>
 	</form>
 	<TemplateChips
-		items={goalTemplates.map((t) => ({ title: t.title, hint: t.outcome }))}
+		items={goalTemplates.map((tpl) => ({ title: t(tpl.title), hint: t(tpl.outcome) }))}
 		onpick={(i) => fromTemplate(goalTemplates[i])}
 		{busy}
 	/>
@@ -150,17 +152,18 @@
 
 {#if status === 'active' && goals?.length && today && !reviewed}
 	<section class="review" aria-labelledby="review-title">
-		<h2 id="review-title">Weekly goal review</h2>
+		<h2 id="review-title">{t('Weekly goal review')}</h2>
 		<p class="muted">
-			A few minutes to look at each goal: what moved this week, and what is the next step? Nothing
-			changes unless you change it.
+			{t(
+				'A few minutes to look at each goal: what moved this week, and what is the next step? Nothing changes unless you change it.'
+			)}
 		</p>
 		<form onsubmit={review}>
-			<label for="reflection">What moved forward, and what's next?</label>
+			<label for="reflection">{t("What moved forward, and what's next?")}</label>
 			<textarea id="reflection" rows="3" maxlength="2000" bind:value={reflection}></textarea>
 			<div class="row">
-				<Button type="submit" variant="secondary">Save review</Button>
-				<Button variant="ghost" onclick={() => (reviewed = true)}>Not this week</Button>
+				<Button type="submit" variant="secondary">{t('Save review')}</Button>
+				<Button variant="ghost" onclick={() => (reviewed = true)}>{t('Not this week')}</Button>
 			</div>
 		</form>
 	</section>
@@ -169,13 +172,15 @@
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !goals}
-	<Status kind="loading" message="Loading goals…" />
+	<Status kind="loading" message={t('Loading goals…')} />
 {:else if goals.length === 0}
 	<Status
 		kind="empty"
 		message={status === 'active'
-			? 'No active goals. Name one outcome you want this year, above.'
-			: `No ${status} goals.`}
+			? t('No active goals. Name one outcome you want this year, above.')
+			: status === 'archived'
+				? t('No archived goals.')
+				: t('No achieved goals.')}
 	/>
 {:else}
 	<ul class="goals">
@@ -189,7 +194,7 @@
 							>{due(g)}</span
 						>{/if}
 				</div>
-				<ProgressBar progress={g.progress} label="Progress of {g.title}" />
+				<ProgressBar progress={g.progress} label={t('Progress of {title}', { title: g.title })} />
 			</li>
 		{/each}
 	</ul>

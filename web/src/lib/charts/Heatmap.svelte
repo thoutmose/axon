@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { levels, type DayCount } from '$lib/overview';
 
-	let { days, title = 'Activity' }: { days: DayCount[]; title?: string } = $props();
+	let { days, title = t('Activity') }: { days: DayCount[]; title?: string } = $props();
 	const CELL = 12;
 	const GAP = 3;
 	// Columns are weeks starting on Monday; rows are weekdays.
@@ -13,7 +15,7 @@
 	const months = $derived.by(() => {
 		const out: { label: string; changes: number; activeDays: number }[] = [];
 		for (const d of days) {
-			const label = new Date(d.day + 'T00:00:00').toLocaleDateString(undefined, {
+			const label = new Date(d.day + 'T00:00:00').toLocaleDateString(appLocale(), {
 				month: 'long',
 				year: 'numeric'
 			});
@@ -27,14 +29,26 @@
 </script>
 
 <figure class="heat">
-	<figcaption>{title}: {total} changes on {active} of {days.length} days</figcaption>
+	<figcaption>
+		{t('{title}: {total} changes on {active} of {length} days', {
+			title,
+			total,
+			active,
+			length: days.length
+		})}
+	</figcaption>
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex (a scrollable region must be reachable by keyboard) -->
-	<div class="scroll" role="region" aria-label="{title}, scrollable" tabindex="0">
+	<div class="scroll" role="region" aria-label={t('{title}, scrollable', { title })} tabindex="0">
 		<svg
 			width={weeks * (CELL + GAP)}
 			height={7 * (CELL + GAP)}
 			role="img"
-			aria-label="{title}: {total} changes on {active} of {days.length} days"
+			aria-label={t('{title}: {total} changes on {active} of {length} days', {
+				title,
+				total,
+				active,
+				length: days.length
+			})}
 		>
 			{#each days as d, i (d.day)}
 				<rect
@@ -49,11 +63,12 @@
 		</svg>
 	</div>
 	<details>
-		<summary>Show by month</summary>
+		<summary>{t('Show by month')}</summary>
 		<table>
 			<thead
 				><tr
-					><th scope="col">Month</th><th scope="col">Changes</th><th scope="col">Active days</th
+					><th scope="col">{t('Month')}</th><th scope="col">{t('Changes')}</th><th scope="col"
+						>{t('Active days')}</th
 					></tr
 				></thead
 			>

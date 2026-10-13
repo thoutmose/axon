@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { api, message } from './api';
 	import { createFromTemplate } from './newNote';
@@ -24,7 +25,7 @@
 	let { open = $bindable(false), kind = $bindable('permanent') }: { open: boolean; kind?: string } =
 		$props();
 	let title = $state('');
-	let folder = $state('Axon');
+	let folder = $state(t('Axon'));
 	let busy = $state(false);
 	let mine = $state<Template[]>([]);
 	// Template notes in the vault (Templates/ and the like), loaded on open.
@@ -35,12 +36,12 @@
 		...builtIn.filter((t) => !vault.some((n) => templateName(n.path) === t.label)),
 		...itemTemplates(folder)
 	]);
-	const groups: { id: string; label: string }[] = [
-		{ id: 'zettelkasten', label: 'Zettelkasten' },
-		{ id: 'para', label: 'PARA notes' },
-		{ id: 'items', label: 'Axon items (kept in step with tasks, goals, habits…)' },
-		{ id: 'other', label: 'Other' }
-	];
+	const groups: { id: string; label: string }[] = $derived([
+		{ id: 'zettelkasten', label: t('Zettelkasten') },
+		{ id: 'para', label: t('PARA notes') },
+		{ id: 'items', label: t('Axon items (kept in step with tasks, goals, habits…)') },
+		{ id: 'other', label: t('Other') }
+	]);
 	const groupOf = (t: Template) => t.group ?? 'other';
 	// The selected template's front matter and sections, shown before creating.
 	let preview = $state<{ keys: string[]; sections: string[] } | null>(null);
@@ -94,7 +95,9 @@
 				await api('/v1/notes', { method: 'POST', body: f }).catch(() => {}); // already there
 			}
 			await loadVault();
-			toast(`The templates are in ${templatesFolder}/: edit them like any note.`);
+			toast(
+				t('The templates are in {templatesFolder}/: edit them like any note.', { templatesFolder })
+			);
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
@@ -121,13 +124,15 @@
 	}
 </script>
 
-<Dialog bind:open title="New note">
+<Dialog bind:open title={t('New note')}>
 	<form onsubmit={create}>
-		<TextField id="new-note-title" label="Title" bind:value={title} maxlength={200} required />
+		<TextField id="new-note-title" label={t('Title')} bind:value={title} maxlength={200} required />
 		{#if vault.length}
 			<fieldset>
 				<legend
-					>Your templates <span class="muted small">({templatesFolder}/ in your vault)</span
+					>{t('Your templates')}
+					<span class="muted small"
+						>{t('({templatesFolder}/ in your vault)', { templatesFolder })}</span
 					></legend
 				>
 				{#each vault as n (n.id)}
@@ -146,10 +151,13 @@
 			{#if list.length}
 				<fieldset>
 					<legend>{g.label}</legend>
-					{#each list as t (t.id)}
+					{#each list as tmpl (tmpl.id)}
 						<label class="choice">
-							<input type="radio" name="template" value={t.id} bind:group={kind} />
-							<span><strong>{t.label}</strong><span class="muted small">{t.hint}</span></span>
+							<input type="radio" name="template" value={tmpl.id} bind:group={kind} />
+							<span
+								><strong>{t(tmpl.label)}</strong><span class="muted small">{t(tmpl.hint)}</span
+								></span
+							>
 						</label>
 					{/each}
 				</fieldset>
@@ -159,27 +167,31 @@
 			<div class="preview" aria-live="polite">
 				{#if preview.sections.length}
 					<p class="small">
-						<strong>Sections:</strong>
+						<strong>{t('Sections:')}</strong>
 						{preview.sections.join(' · ')}
 					</p>
 				{/if}
 				{#if preview.keys.length}
-					<p class="small muted">Front matter: {preview.keys.join(', ')}</p>
+					<p class="small muted">
+						{t('Front matter: {value}', { value: preview.keys.join(', ') })}
+					</p>
 				{/if}
 			</div>
 		{/if}
 		{#if !vault.length}
 			<p class="muted small">
-				Templates are notes in <code>{templatesFolder}/</code>. Put your own there (or sync them
-				from your vault), or
+				{t('Templates are notes in')} <code>{templatesFolder}/</code>{t(
+					'. Put your own there (or sync them from your vault), or'
+				)}
 				<button type="button" class="link" onclick={installBuiltIns} disabled={busy}
-					>copy these built-in ones there</button
-				> to edit them.
+					>{t('copy these built-in ones there')}</button
+				>
+				{t('to edit them.')}
 			</p>
 		{/if}
 		<div class="actions">
-			<Button variant="secondary" onclick={() => (open = false)}>Cancel</Button>
-			<Button type="submit" {busy}>Create</Button>
+			<Button variant="secondary" onclick={() => (open = false)}>{t('Cancel')}</Button>
+			<Button type="submit" {busy}>{t('Create')}</Button>
 		</div>
 	</form>
 </Dialog>

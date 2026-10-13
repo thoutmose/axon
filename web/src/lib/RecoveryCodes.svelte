@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import Button from './ui/Button.svelte';
 
 	let { codes }: { codes: string[] } = $props();
@@ -13,11 +14,11 @@
 	}
 </script>
 
-<p>Save these now, for example in a password manager. They will not be shown again.</p>
-<ul class="codes" aria-label="Recovery codes">
+<p>{t('Save these now, for example in a password manager. They will not be shown again.')}</p>
+<ul class="codes" aria-label={t('Recovery codes')}>
 	{#each codes as c (c)}<li>{c}</li>{/each}
 </ul>
-<p><Button variant="secondary" onclick={download}>Download as a text file</Button></p>
+<p><Button variant="secondary" onclick={download}>{t('Download as a text file')}</Button></p>
 
 <style>
 	.codes {

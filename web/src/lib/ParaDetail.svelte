@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message } from '$lib/api';
@@ -59,7 +60,7 @@
 
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
-		save(form, 'Saved.');
+		save(form, t('Saved.'));
 	}
 
 	async function remove() {
@@ -100,72 +101,87 @@
 	}
 </script>
 
-<svelte:head><title>{item?.title ?? kind.title} · Axon</title></svelte:head>
+<svelte:head><title>{item?.title ?? t(kind.title)} · Axon</title></svelte:head>
 
-<p><a href="/{kind.path}">← {kind.title}</a></p>
+<p><a href="/{kind.path}">← {t(kind.title)}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !item}
-	<Status kind="loading" message="Loading…" />
+	<Status kind="loading" message={t('Loading…')} />
 {:else}
 	<div class="head">
 		<h1>{item.title}</h1>
-		{#if item.status === 'archived'}<span class="chip">Archived</span>{/if}
+		{#if item.status === 'archived'}<span class="chip">{t('Archived')}</span>{/if}
 	</div>
 	<div class="layout">
 		<section class="card" aria-labelledby="details">
-			<h2 id="details">Details</h2>
+			<h2 id="details">{t('Details')}</h2>
 			<form onsubmit={submit}>
-				<TextField id="para-title" label="Title" bind:value={form.title} maxlength={500} required />
+				<TextField
+					id="para-title"
+					label={t('Title')}
+					bind:value={form.title}
+					maxlength={500}
+					required
+				/>
 				<div class="field">
 					<label for="para-description"
-						>{kind.type === 'area' ? 'Standard to keep' : 'What it is for'}</label
+						>{kind.type === 'area' ? t('Standard to keep') : t('What it is for')}</label
 					>
 					<textarea id="para-description" rows="4" maxlength="20000" bind:value={form.description}
 					></textarea>
 				</div>
-				<TextField id="para-url" label="Link (optional)" type="url" bind:value={form.url} />
+				<TextField id="para-url" label={t('Link (optional)')} type="url" bind:value={form.url} />
 				<div class="row">
-					<Button type="submit" {busy}>Save</Button>
-					{#if item.url}<a href={item.url} rel="noopener noreferrer" target="_blank">Open link ↗</a
+					<Button type="submit" {busy}>{t('Save')}</Button>
+					{#if item.url}<a href={item.url} rel="noopener noreferrer" target="_blank"
+							>{t('Open link ↗')}</a
 						>{/if}
 				</div>
 			</form>
 			<div class="row actions">
-				<Button variant="secondary" onclick={newNote}>New {kind.one} note</Button>
+				<Button variant="secondary" onclick={newNote}
+					>{t('New {one} note', { one: kind.one })}</Button
+				>
 				{#if item.status === 'active'}
 					<Button
 						variant="secondary"
 						onclick={() => save({ status: 'archived' }, `Archived. Find it in the Archive.`)}
-						>Archive</Button
+						>{t('Archive')}</Button
 					>
 				{:else}
 					<Button variant="secondary" onclick={() => save({ status: 'active' }, 'Restored.')}
-						>Restore</Button
+						>{t('Restore')}</Button
 					>
 				{/if}
-				<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+				<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 			</div>
 			<p class="muted small">
-				{kind.type === 'area'
-					? 'File projects, goals, habits, tasks, notes, and resources here with “In area” in Connections.'
-					: 'Connect notes, skills, projects, and areas to this resource in Connections.'}
-				Notes for it live in <code>{kind.folder}/</code> in your vault.
+				{t(
+					kind.type === 'area'
+						? 'File projects, goals, habits, tasks, notes, and resources here with “In area” in Connections.'
+						: 'Connect notes, skills, projects, and areas to this resource in Connections.'
+				) +
+					' ' +
+					t('Notes for it live in')} <code>{kind.folder}/</code>
+				{t('in your vault.')}
 			</p>
 		</section>
 		{#key links}<Connections id={item.id} type={kind.type} onchange={load} />{/key}
 	</div>
 {/if}
 
-<Dialog bind:open={confirmDelete} title="Delete this {kind.one}?">
+<Dialog bind:open={confirmDelete} title={t('Delete this {one}?', { one: kind.one })}>
 	<p>
-		“{item?.title}” is removed with its connections. What was filed under it stays. To keep it,
-		archive it instead.
+		{t(
+			'“{title}” is removed with its connections. What was filed under it stays. To keep it, archive it instead.',
+			{ title: item?.title }
+		)}
 	</p>
 	<div class="row end">
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove} {busy}>Delete</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
+		<Button variant="danger" onclick={remove} {busy}>{t('Delete')}</Button>
 	</div>
 </Dialog>
 

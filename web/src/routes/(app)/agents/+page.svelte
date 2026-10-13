@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { onDestroy, tick } from 'svelte';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
@@ -34,23 +36,28 @@
 	let answer = $state('');
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
-	const reasons: Record<string, string> = {
-		demo: 'Agents do not run in the shared demo, so nobody spends AI credit. The proposals below were prepared so you can try approving and rejecting.',
-		not_configured:
-			'No AI provider is set up yet. Choose one under “AI provider” below; everything else in Axon works without agents.',
-		no_consent:
-			'Agents are off. When on, an agent sends the tasks, goals, and notes it reads to Anthropic to draft suggestions. Nothing changes without your approval.',
-		budget_exhausted:
+	const reasons: Record<string, string> = $derived({
+		demo: t(
+			'Agents do not run in the shared demo, so nobody spends AI credit. The proposals below were prepared so you can try approving and rejecting.'
+		),
+		not_configured: t(
+			'No AI provider is set up yet. Choose one under “AI provider” below; everything else in Axon works without agents.'
+		),
+		no_consent: t(
+			'Agents are off. When on, an agent sends the tasks, goals, and notes it reads to Anthropic to draft suggestions. Nothing changes without your approval.'
+		),
+		budget_exhausted: t(
 			"This month's agent budget is used up. Raise it below or wait until next month."
-	};
-	const outcomes: Record<string, string> = {
-		running: 'Working…',
-		completed: 'Finished',
-		budget_exhausted: 'Stopped: the next step could have gone over your monthly budget',
-		step_limit: 'Stopped after 8 steps',
-		refused: 'The model declined this request',
-		failed: 'Failed'
-	};
+		)
+	});
+	const outcomes: Record<string, string> = $derived({
+		running: t('Working…'),
+		completed: t('Finished'),
+		budget_exhausted: t('Stopped: the next step could have gone over your monthly budget'),
+		step_limit: t('Stopped after 8 steps'),
+		refused: t('The model declined this request'),
+		failed: t('Failed')
+	});
 
 	const dollars = (micros: number) => `$${(micros / 1_000_000).toFixed(2)}`;
 
@@ -130,7 +137,7 @@
 	async function decide(p: Proposal, action: 'approve' | 'reject') {
 		try {
 			await api(`/v1/proposals/${p.id}/${action}`, { method: 'POST' });
-			toast(action === 'approve' ? 'Approved and applied.' : 'Rejected. Nothing changed.');
+			toast(action === 'approve' ? t('Approved and applied.') : t('Rejected. Nothing changed.'));
 			if (current) current = await api<RunDetail>(`/v1/agent-runs/${current.run.id}`);
 			await load();
 		} catch (err) {
@@ -146,7 +153,7 @@
 				method: 'PUT',
 				body: { monthly_budget_cents: Math.round(Number(budget) * 100) }
 			});
-			toast('Budget saved.');
+			toast(t('Budget saved.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -156,7 +163,7 @@
 	async function forget(m: Memory) {
 		try {
 			await api(`/v1/agent-memories/${m.id}`, { method: 'DELETE' });
-			toast('Forgotten.');
+			toast(t('Forgotten.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -164,48 +171,52 @@
 	}
 </script>
 
-<svelte:head><title>Agents · Axon</title></svelte:head>
+<svelte:head><title>{t('Agents · Axon')}</title></svelte:head>
 
-<h1>Agents</h1>
+<h1>{t('Agents')}</h1>
 <p class="muted hint">
-	Agents read what you allow and draft changes. Every change waits for your approval, and Axon works
-	fully with agents off.
+	{t(
+		'Agents read what you allow and draft changes. Every change waits for your approval, and Axon works fully with agents off.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !listing}
-	<Status kind="loading" message="Loading agents…" />
+	<Status kind="loading" message={t('Loading agents…')} />
 {:else}
 	{@const st = listing.status}
 	{#if !st.available && st.reason}
 		<div class="notice" role="status">
 			<p>{reasons[st.reason]}</p>
 			{#if st.reason === 'no_consent'}
-				<Button href="/account/privacy" variant="secondary">Review AI consent</Button>
+				<Button href="/account/privacy" variant="secondary">{t('Review AI consent')}</Button>
 			{/if}
 		</div>
 	{/if}
 
 	{#if pending.length}
 		<section class="card approvals" aria-labelledby="queue-title">
-			<h2 id="queue-title">Waiting for your approval ({pending.length})</h2>
+			<h2 id="queue-title">
+				{t('Waiting for your approval ({length})', { length: pending.length })}
+			</h2>
 			<ul class="rows">
 				{#each pending as p (p.id)}
 					<li>
 						<div class="grow">
 							<strong>{p.summary}</strong>
 							{#if p.reason}<span class="muted small">{p.reason}</span>{/if}
-							<span class="muted small">Proposed by {p.agent}</span>
+							<span class="muted small">{t('Proposed by {agent}', { agent: p.agent })}</span>
 						</div>
 						<div class="row">
 							<Button
 								variant="secondary"
 								onclick={() => decide(p, 'reject')}
-								aria-label="Reject: {p.summary}">Reject</Button
+								aria-label={t('Reject: {summary}', { summary: p.summary })}>{t('Reject')}</Button
 							>
-							<Button onclick={() => decide(p, 'approve')} aria-label="Approve: {p.summary}"
-								>Approve</Button
+							<Button
+								onclick={() => decide(p, 'approve')}
+								aria-label={t('Approve: {summary}', { summary: p.summary })}>{t('Approve')}</Button
 							>
 						</div>
 					</li>
@@ -217,27 +228,33 @@
 	{#if current}
 		<section class="card" aria-labelledby="current-title" aria-live="polite">
 			<h2 id="current-title">
-				Conversation with {current.run.agent} · {outcomes[current.run.status] ?? current.run.status}
+				{t('Conversation with {agent} · {value}', {
+					agent: current.run.agent,
+					value: outcomes[current.run.status] ?? current.run.status
+				})}
 			</h2>
 			<ol class="thread">
-				{#each thread as t, i (i)}
-					<li class={t.who}>
-						<span class="visually-hidden">{t.who === 'you' ? 'You' : 'Agent'}:</span>
-						<p class="reply">{t.text}</p>
+				{#each thread as turn, i (i)}
+					<li class={turn.who}>
+						<span class="visually-hidden">{turn.who === 'you' ? t('You') : t('Agent')}:</span>
+						<p class="reply">{turn.text}</p>
 					</li>
 				{/each}
 			</ol>
 			{#if current.run.status !== 'running'}
 				<p class="muted small">
-					{current.run.proposals} proposal(s) · {current.run.tools_called.length} tool call(s) · cost
-					{dollars(current.run.cost_micros)}
+					{t('{proposals} proposal(s) · {length} tool call(s) · cost {value}', {
+						proposals: current.run.proposals,
+						length: current.run.tools_called.length,
+						value: dollars(current.run.cost_micros)
+					})}
 				</p>
 			{/if}
 			{#if current.can_continue}
 				<form class="answer" onsubmit={reply}>
-					<label for="answer">Answer the agent</label>
+					<label for="answer">{t('Answer the agent')}</label>
 					<textarea id="answer" rows="2" maxlength="4000" required bind:value={answer}></textarea>
-					<Button type="submit" variant="secondary">Send</Button>
+					<Button type="submit" variant="secondary">{t('Send')}</Button>
 				</form>
 			{/if}
 		</section>
@@ -249,23 +266,27 @@
 			<p class="muted">{a.description}</p>
 			{#if a.consents?.length}
 				<p class="small">
-					Also needs your consent: {a.consents.join(', ')}.
-					<a href="/account/privacy">Review in Privacy</a>, where each says what is shared.
+					{t('Also needs your consent: {value}.', { value: a.consents.join(', ') })}
+					<a href="/account/privacy">{t('Review in Privacy')}</a>{t(
+						', where each says what is shared.'
+					)}
 				</p>
 			{/if}
 			<details>
-				<summary>What it can do</summary>
+				<summary>{t('What it can do')}</summary>
 				<ul class="tools">
-					{#each a.tools as t (t.name)}
+					{#each a.tools as toolCall (toolCall.name)}
 						<li>
-							<span class="chip" class:write={t.write}>{t.write ? 'needs approval' : 'reads'}</span>
-							{t.description}
+							<span class="chip" class:write={toolCall.write}
+								>{toolCall.write ? t('needs approval') : 'reads'}</span
+							>
+							{toolCall.description}
 						</li>
 					{/each}
 				</ul>
 			</details>
 			<form onsubmit={(e) => start(a.name, e)}>
-				<label for="ask-{a.name}">What should it do?</label>
+				<label for="ask-{a.name}">{t('What should it do?')}</label>
 				<textarea
 					id="ask-{a.name}"
 					rows="2"
@@ -274,17 +295,18 @@
 					bind:value={instructions[a.name]}
 					placeholder={(
 						{
-							goals: 'Suggest milestones for my running goal',
-							habits: 'Help me restart my reading habit',
-							'side-projects': 'What should I work on next in my repository?',
-							'code-review': 'Review the open pull request'
+							goals: t('Suggest milestones for my running goal'),
+							habits: t('Help me restart my reading habit'),
+							'side-projects': t('What should I work on next in my repository?'),
+							'code-review': t('Review the open pull request')
 						} as Record<string, string>
-					)[a.name] ?? 'Clarify my inbox into next actions'}
+					)[a.name] ?? t('Clarify my inbox into next actions')}
 				></textarea>
 				<Button
 					type="submit"
 					variant="secondary"
-					disabled={!st.available || current?.run.status === 'running'}>Ask {a.title}</Button
+					disabled={!st.available || current?.run.status === 'running'}
+					>{t('Ask {title}', { title: a.title })}</Button
 				>
 			</form>
 		</section>
@@ -295,30 +317,33 @@
 	<RepoConnections />
 
 	<section class="card" aria-labelledby="budget-title">
-		<h2 id="budget-title">Budget</h2>
+		<h2 id="budget-title">{t('Budget')}</h2>
 		<p>
-			Spent <strong>{dollars(st.spent_micros)}</strong> of ${(
-				st.monthly_budget_cents / 100
-			).toFixed(2)} this month. A run stops before any step that could go over the budget.
+			{t('Spent')} <strong>{dollars(st.spent_micros)}</strong>
+			{t('of ${value} this month. A run stops before any step that could go over the budget.', {
+				value: (st.monthly_budget_cents / 100).toFixed(2)
+			})}
 		</p>
 		<form class="row" onsubmit={saveBudget}>
-			<label for="budget">Monthly budget (US$)</label>
+			<label for="budget">{t('Monthly budget (US$)')}</label>
 			<input id="budget" type="number" min="0" max="1000" step="0.5" bind:value={budget} />
-			<Button type="submit" variant="secondary">Save</Button>
+			<Button type="submit" variant="secondary">{t('Save')}</Button>
 		</form>
 	</section>
 
 	<section class="card" aria-labelledby="memory-title">
-		<h2 id="memory-title">What agents remember</h2>
+		<h2 id="memory-title">{t('What agents remember')}</h2>
 		{#if memories.length === 0}
-			<p class="muted">Nothing. Agents can only remember what you approve.</p>
+			<p class="muted">{t('Nothing. Agents can only remember what you approve.')}</p>
 		{:else}
 			<ul class="rows">
 				{#each memories as m (m.id)}
 					<li>
 						<span class="grow">{m.content} <span class="muted small">({m.agent})</span></span>
-						<Button variant="ghost" onclick={() => forget(m)} aria-label="Forget: {m.content}"
-							>Forget</Button
+						<Button
+							variant="ghost"
+							onclick={() => forget(m)}
+							aria-label={t('Forget: {content}', { content: m.content })}>{t('Forget')}</Button
 						>
 					</li>
 				{/each}
@@ -327,20 +352,23 @@
 	</section>
 
 	<section class="card" aria-labelledby="runs-title">
-		<h2 id="runs-title">Run history</h2>
+		<h2 id="runs-title">{t('Run history')}</h2>
 		{#if runs.length === 0}
-			<p class="muted">No runs yet.</p>
+			<p class="muted">{t('No runs yet.')}</p>
 		{:else}
 			<div class="table-wrap">
 				<table>
-					<caption class="visually-hidden">Recent agent runs (no content is stored)</caption>
+					<caption class="visually-hidden">{t('Recent agent runs (no content is stored)')}</caption>
 					<thead>
-						<tr><th>When</th><th>Agent</th><th>Outcome</th><th>Tools</th><th>Cost</th></tr>
+						<tr
+							><th>{t('When')}</th><th>{t('Agent')}</th><th>{t('Outcome')}</th><th>{t('Tools')}</th
+							><th>{t('Cost')}</th></tr
+						>
 					</thead>
 					<tbody>
 						{#each runs as r (r.id)}
 							<tr>
-								<td>{new Date(r.started_at).toLocaleString()}</td>
+								<td>{new Date(r.started_at).toLocaleString(appLocale())}</td>
 								<td>{r.agent} v{r.skill_version}</td>
 								<td>{outcomes[r.status] ?? r.status}</td>
 								<td>{r.tools_called.join(', ') || '—'}</td>

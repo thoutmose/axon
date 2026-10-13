@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
@@ -29,13 +30,13 @@
 		if (
 			c.id === 'health_data' &&
 			!granted &&
-			!window.confirm('Turning this off deletes all your food and training logs now. Continue?')
+			!window.confirm(t('Turning this off deletes all your food and training logs now. Continue?'))
 		)
 			return;
 		busy = true;
 		try {
 			await api(`/v1/me/consents/${c.id}`, { method: 'PUT', body: { granted } });
-			toast(granted ? 'Allowed.' : 'Turned off.');
+			toast(granted ? t('Allowed.') : t('Turned off.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -59,17 +60,19 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Privacy & data · Axon</title></svelte:head>
+<svelte:head><title>{t('Privacy & data · Axon')}</title></svelte:head>
 
 <Section
 	id="choices"
-	title="Privacy choices"
-	description="Everything is off until you turn it on. You can change your mind at any time; each change is recorded in your activity."
+	title={t('Privacy choices')}
+	description={t(
+		'Everything is off until you turn it on. You can change your mind at any time; each change is recorded in your activity.'
+	)}
 >
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !consents}
-		<Status kind="loading" message="Loading…" />
+		<Status kind="loading" message={t('Loading…')} />
 	{:else}
 		{#each consents as c (c.id)}
 			<label class="choice">
@@ -87,34 +90,38 @@
 
 <Section
 	id="export"
-	title="Download your data"
-	description="Everything Axon holds about you: a JSON file for machines and a Markdown summary for people."
+	title={t('Download your data')}
+	description={t(
+		'Everything Axon holds about you: a JSON file for machines and a Markdown summary for people.'
+	)}
 >
-	<Button href="/api/v1/me/export" variant="secondary">Download everything</Button>
+	<Button href="/api/v1/me/export" variant="secondary">{t('Download everything')}</Button>
 </Section>
 
 <Section
 	id="delete"
-	title="Delete your account"
-	description="Your account and all its data are deleted immediately. Encrypted backups expire within 30 days."
+	title={t('Delete your account')}
+	description={t(
+		'Your account and all its data are deleted immediately. Encrypted backups expire within 30 days.'
+	)}
 >
-	<Button variant="danger" onclick={() => (confirming = true)}>Delete account…</Button>
+	<Button variant="danger" onclick={() => (confirming = true)}>{t('Delete account…')}</Button>
 </Section>
 
-<Dialog bind:open={confirming} title="Delete your account?">
-	<p>This cannot be undone. Download your data first if you want to keep it.</p>
+<Dialog bind:open={confirming} title={t('Delete your account?')}>
+	<p>{t('This cannot be undone. Download your data first if you want to keep it.')}</p>
 	<form onsubmit={erase}>
 		<TextField
 			id="confirm"
-			label="Type DELETE to confirm"
+			label={t('Type DELETE to confirm')}
 			bind:value={confirm}
 			autocomplete="off"
 			required
 		/>
 		<div class="actions">
-			<Button variant="secondary" onclick={() => (confirming = false)}>Cancel</Button>
+			<Button variant="secondary" onclick={() => (confirming = false)}>{t('Cancel')}</Button>
 			<Button type="submit" variant="danger" {busy} disabled={confirm !== 'DELETE'}
-				>Delete account</Button
+				>{t('Delete account')}</Button
 			>
 		</div>
 	</form>

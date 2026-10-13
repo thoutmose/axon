@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { onDestroy } from 'svelte';
 	import { api, message, type Schemas } from './api';
 	import type { paths } from './api-types';
@@ -44,12 +45,12 @@
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	onDestroy(() => clearTimeout(timer));
 
-	const reasons: Record<string, string> = {
-		demo: 'Agents do not run in the shared demo.',
-		not_configured: 'No AI provider is set up yet.',
-		no_consent: 'Agents are off until you turn them on.',
-		budget_exhausted: "This month's agent budget is used up."
-	};
+	const reasons: Record<string, string> = $derived({
+		demo: t('Agents do not run in the shared demo.'),
+		not_configured: t('No AI provider is set up yet.'),
+		no_consent: t('Agents are off until you turn them on.'),
+		budget_exhausted: t("This month's agent budget is used up.")
+	});
 	const available = $derived(
 		(listing?.agents ?? [])
 			.filter((a) => agents.includes(a.name))
@@ -111,7 +112,7 @@
 	async function decide(p: Proposal, action: 'approve' | 'reject') {
 		try {
 			await api(`/v1/proposals/${p.id}/${action}`, { method: 'POST' });
-			toast(action === 'approve' ? 'Approved and applied.' : 'Rejected. Nothing changed.');
+			toast(action === 'approve' ? t('Approved and applied.') : t('Rejected. Nothing changed.'));
 			if (current) current = await api<RunDetail>(`/v1/agent-runs/${current.run.id}`);
 			if (action === 'approve') onapplied?.();
 		} catch (err) {
@@ -120,19 +121,19 @@
 	}
 </script>
 
-<section class="dock" aria-label="Agents for this page">
+<section class="dock" aria-label={t('Agents for this page')}>
 	<button type="button" class="toggle" aria-expanded={open} onclick={toggle}>
-		✨ {open ? 'Close' : `Ask ${agents.length > 1 ? 'an agent' : 'the agent'}`}
+		{'✨ ' + (open ? t('Close') : agents.length > 1 ? t('Ask an agent') : t('Ask the agent'))}
 	</button>
 	{#if open}
 		<div class="panel glass">
 			{#if !listing}
-				<p class="muted small">Loading…</p>
+				<p class="muted small">{t('Loading…')}</p>
 			{:else if !available.length}
-				<p class="muted small">No agent for this page.</p>
+				<p class="muted small">{t('No agent for this page.')}</p>
 			{:else}
 				{#if available.length > 1}
-					<div class="choose" role="radiogroup" aria-label="Agent">
+					<div class="choose" role="radiogroup" aria-label={t('Agent')}>
 						{#each available as a (a.name)}
 							<label class:on={agent?.name === a.name}>
 								<input type="radio" name="dock-agent" value={a.name} bind:group={chosen} />
@@ -146,11 +147,11 @@
 					{#if !listing.status.available && listing.status.reason}
 						<p class="notice small">
 							{reasons[listing.status.reason]}
-							<a href="/agents">Set up agents</a>
+							<a href="/agents">{t('Set up agents')}</a>
 						</p>
 					{:else}
 						{#if (suggestions[agent.name] ?? []).length}
-							<ul class="chips" aria-label="Suggestions">
+							<ul class="chips" aria-label={t('Suggestions')}>
 								{#each suggestions[agent.name] as s (s)}
 									<li>
 										<button
@@ -163,16 +164,18 @@
 							</ul>
 						{/if}
 						<form onsubmit={ask}>
-							<label for="dock-ask" class="visually-hidden">Ask {agent.title}</label>
+							<label for="dock-ask" class="visually-hidden"
+								>{t('Ask {title}', { title: agent.title })}</label
+							>
 							<textarea
 								id="dock-ask"
 								rows="2"
 								maxlength="3000"
-								placeholder="Ask {agent.title}…"
+								placeholder={t('Ask {title}…', { title: agent.title })}
 								bind:value={instruction}
 							></textarea>
 							<Button type="submit" variant="secondary" disabled={current?.run.status === 'running'}
-								>Ask {agent.title}</Button
+								>{t('Ask {title}', { title: agent.title })}</Button
 							>
 						</form>
 					{/if}
@@ -180,7 +183,7 @@
 				{#if current}
 					<div class="run" aria-live="polite">
 						{#if current.run.status === 'running'}
-							<p class="muted small">Working…</p>
+							<p class="muted small">{t('Working…')}</p>
 						{:else if current.reply}
 							<p class="reply">{current.reply}</p>
 						{/if}
@@ -194,23 +197,26 @@
 									<Button
 										variant="secondary"
 										onclick={() => decide(p, 'reject')}
-										aria-label="Reject: {p.summary}">Reject</Button
+										aria-label={t('Reject: {summary}', { summary: p.summary })}
+										>{t('Reject')}</Button
 									>
-									<Button onclick={() => decide(p, 'approve')} aria-label="Approve: {p.summary}"
-										>Approve</Button
+									<Button
+										onclick={() => decide(p, 'approve')}
+										aria-label={t('Approve: {summary}', { summary: p.summary })}
+										>{t('Approve')}</Button
 									>
 								</div>
 							</div>
 						{/each}
 						{#if current.can_continue}
 							<form onsubmit={reply}>
-								<label for="dock-answer" class="visually-hidden">Answer the agent</label>
+								<label for="dock-answer" class="visually-hidden">{t('Answer the agent')}</label>
 								<textarea id="dock-answer" rows="2" maxlength="4000" required bind:value={answer}
 								></textarea>
-								<Button type="submit" variant="secondary">Send</Button>
+								<Button type="submit" variant="secondary">{t('Send')}</Button>
 							</form>
 						{/if}
-						<p class="muted small"><a href="/agents">All agents, history, and budget</a></p>
+						<p class="muted small"><a href="/agents">{t('All agents, history, and budget')}</a></p>
 					</div>
 				{/if}
 			{/if}

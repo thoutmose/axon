@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
@@ -57,19 +58,19 @@
 		regrouping = true;
 		try {
 			roadmap = await api<Roadmap>(`/v1/roadmaps/${id}/regroup`, { method: 'POST' });
-			toast('Grouped into skills. Your progress and connections were kept.');
+			toast(t('Grouped into skills. Your progress and connections were kept.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
 			regrouping = false;
 		}
 	}
-	const statusNames: Record<string, string> = {
-		todo: 'To learn',
-		learning: 'Learning',
-		done: 'Done',
-		skipped: 'Skipped'
-	};
+	const statusNames: Record<string, string> = $derived({
+		todo: t('To learn'),
+		learning: t('Learning'),
+		done: t('Done'),
+		skipped: t('Skipped')
+	});
 
 	async function load() {
 		error = '';
@@ -186,22 +187,21 @@
 	}
 </script>
 
-<svelte:head><title>{roadmap?.title ?? 'Roadmap'} · Axon</title></svelte:head>
+<svelte:head><title>{roadmap?.title ?? t('Roadmap')} · Axon</title></svelte:head>
 
-<p class="crumbs"><a href="/roadmaps">← Roadmaps</a></p>
+<p class="crumbs"><a href="/roadmaps">{t('← Roadmaps')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !roadmap}
-	<Status kind="loading" message="Loading roadmap…" />
+	<Status kind="loading" message={t('Loading roadmap…')} />
 {:else}
 	<div class="head">
 		<div>
 			<h1>{roadmap.title}</h1>
 			<p class="muted">
-				{roadmap.done} of {roadmap.total} skills done{roadmap.description
-					? ` · ${roadmap.description}`
-					: ''}
+				{t('{done} of {total} skills done', { done: roadmap.done, total: roadmap.total }) +
+					(roadmap.description ? ` · ${roadmap.description}` : '')}
 			</p>
 			{#if roadmap.attribution}
 				<p class="attribution small">
@@ -209,37 +209,40 @@
 					{#if roadmap.license_url}<a
 							href={roadmap.license_url}
 							rel="noopener noreferrer"
-							target="_blank">Licence</a
+							target="_blank">{t('Licence')}</a
 						>{/if}
 				</p>
 			{/if}
 		</div>
 		<div class="row">
-			<Button variant="secondary" onclick={openEdit}>Edit</Button>
-			<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+			<Button variant="secondary" onclick={openEdit}>{t('Edit')}</Button>
+			<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 		</div>
 	</div>
 
 	{#if ungrouped}
 		<div class="upgrade card glass" role="note">
 			<p>
-				This roadmap was imported when each book or course was its own node. Group them into the
-				skills they teach, with the resources listed under each skill. Progress and connections are
-				kept.
+				{t(
+					'This roadmap was imported when each book or course was its own node. Group them into the skills they teach, with the resources listed under each skill. Progress and connections are kept.'
+				)}
 			</p>
-			<Button variant="secondary" busy={regrouping} onclick={regroup}>Group into skills</Button>
+			<Button variant="secondary" busy={regrouping} onclick={regroup}
+				>{t('Group into skills')}</Button
+			>
 		</div>
 	{/if}
 
-	<nav class="tabs" aria-label="View">
-		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>List</a>
-		<a href="?view=graph" aria-current={view === 'graph' ? 'page' : undefined}>Skill graph</a>
+	<nav class="tabs" aria-label={t('View')}>
+		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>{t('List')}</a>
+		<a href="?view=graph" aria-current={view === 'graph' ? 'page' : undefined}>{t('Skill graph')}</a
+		>
 	</nav>
 
 	<div class="layout" class:with-detail={!!selected}>
 		<div class="main">
 			{#if skills.length === 0}
-				<Status kind="empty" message="No skills yet. Add the first one below." />
+				<Status kind="empty" message={t('No skills yet. Add the first one below.')} />
 			{:else if view === 'graph'}
 				<SkillGraph {skills} {edges} selected={selectedId} onselect={(sid) => go({ skill: sid })} />
 			{:else}
@@ -257,10 +260,12 @@
 									<div class="grow">
 										<a href="?view=list&skill={s.id}">{s.title}</a>
 										{#if needs(s.id).length}<span class="muted small"
-												>needs {needs(s.id).join(', ')}</span
+												>{t('needs {value}', { value: needs(s.id).join(', ') })}</span
 											>{/if}
 									</div>
-									<label class="visually-hidden" for="status-{s.id}">Status of {s.title}</label>
+									<label class="visually-hidden" for="status-{s.id}"
+										>{t('Status of {title}', { title: s.title })}</label
+									>
 									<select
 										id="status-{s.id}"
 										value={s.status}
@@ -278,35 +283,35 @@
 			{/if}
 
 			<section class="card glass" aria-labelledby="add-skill-title">
-				<h2 id="add-skill-title">Add a skill</h2>
+				<h2 id="add-skill-title">{t('Add a skill')}</h2>
 				<form onsubmit={add}>
 					<div class="grid">
 						<TextField
 							id="skill-title"
-							label="Skill"
+							label={t('Skill')}
 							bind:value={form.title}
 							maxlength={500}
 							required
 						/>
 						<TextField
 							id="skill-section"
-							label="Section"
+							label={t('Section')}
 							list="sections"
 							bind:value={form.section}
 							maxlength={200}
 						/>
 						<TextField
 							id="skill-url"
-							label="Link (optional)"
+							label={t('Link (optional)')}
 							type="url"
 							placeholder="https://…"
 							bind:value={form.url}
 						/>
 						<div class="field">
-							<label for="skill-kind">Kind</label>
+							<label for="skill-kind">{t('Kind')}</label>
 							<select id="skill-kind" bind:value={form.kind}>
-								<option value="hard">Hard skill</option>
-								<option value="soft">Soft skill</option>
+								<option value="hard">{t('Hard skill')}</option>
+								<option value="soft">{t('Soft skill')}</option>
 							</select>
 						</div>
 					</div>
@@ -315,13 +320,13 @@
 					>
 					{#if skills.length}
 						<div class="field">
-							<label for="skill-requires">Needs first (optional)</label>
+							<label for="skill-requires">{t('Needs first (optional)')}</label>
 							<select id="skill-requires" multiple size="4" bind:value={form.requires}>
 								{#each skills as s (s.id)}<option value={s.id}>{s.title}</option>{/each}
 							</select>
 						</div>
 					{/if}
-					<Button type="submit" variant="secondary">Add skill</Button>
+					<Button type="submit" variant="secondary">{t('Add skill')}</Button>
 				</form>
 			</section>
 		</div>
@@ -330,35 +335,39 @@
 			<aside class="detail card glass" aria-labelledby="detail-title">
 				<div class="row">
 					<h2 id="detail-title">{selected.title}</h2>
-					<Button variant="ghost" onclick={() => selected && editSkill(selected)}>Edit</Button>
-					<Button variant="ghost" onclick={() => go({ skill: null })} aria-label="Close details"
-						>✕</Button
+					<Button variant="ghost" onclick={() => selected && editSkill(selected)}
+						>{t('Edit')}</Button
+					>
+					<Button
+						variant="ghost"
+						onclick={() => go({ skill: null })}
+						aria-label={t('Close details')}>✕</Button
 					>
 				</div>
 				{#if selected.description}<p class="muted">{selected.description}</p>{/if}
 				{#if selected.resources.length}
-					<h3 class="small">Learn it with</h3>
+					<h3 class="small">{t('Learn it with')}</h3>
 					<ul class="resources">
 						{#each selected.resources as r (r.url + r.title)}
 							<li>
 								<a href={r.url} rel="noopener noreferrer" target="_blank">{r.title} ↗</a>
 								<span class="muted small"
-									>{r.kind}{r.by ? ` · ${r.by}` : ''}{r.free ? ' · free' : ''}{r.note
-										? ` · ${r.note}`
-										: ''}</span
+									>{[t(r.kind), r.by, r.free ? t('free') : '', r.note]
+										.filter(Boolean)
+										.join(' · ')}</span
 								>
 							</li>
 						{/each}
 					</ul>
 				{:else if selected.url}<p>
 						<a href={selected.url} rel="noopener noreferrer" target="_blank"
-							>Open the course or resource ↗</a
+							>{t('Open the course or resource ↗')}</a
 						>
 					</p>{/if}
 				{#if needs(selected.id).length}<p class="small">
-						Needs first: {needs(selected.id).join(', ')}
+						{t('Needs first: {value}', { value: needs(selected.id).join(', ') })}
 					</p>{/if}
-				<div class="statuses" role="group" aria-label="Status">
+				<div class="statuses" role="group" aria-label={t('Status')}>
 					{#each Object.entries(statusNames) as [k, label] (k)}
 						<Button
 							variant={selected.status === k ? 'primary' : 'secondary'}
@@ -368,7 +377,7 @@
 				</div>
 				<Connections id={selected.id} type="skill" />
 				<Button variant="danger" onclick={() => selected && removeSkill(selected)}
-					>Delete skill</Button
+					>{t('Delete skill')}</Button
 				>
 			</aside>
 		{/if}
@@ -377,54 +386,60 @@
 	<Connections id={roadmap.id} type="roadmap" />
 {/if}
 
-<Dialog bind:open={editing} title="Edit roadmap">
+<Dialog bind:open={editing} title={t('Edit roadmap')}>
 	<form onsubmit={saveMeta}>
-		<TextField id="roadmap-title" label="Title" bind:value={meta.title} maxlength={500} required />
+		<TextField
+			id="roadmap-title"
+			label={t('Title')}
+			bind:value={meta.title}
+			maxlength={500}
+			required
+		/>
 		<div class="field wide">
-			<label for="roadmap-description">Description</label>
+			<label for="roadmap-description">{t('Description')}</label>
 			<textarea id="roadmap-description" rows="4" maxlength="20000" bind:value={meta.description}
 			></textarea>
 		</div>
 		<div class="row end">
-			<Button variant="secondary" onclick={() => (editing = false)}>Cancel</Button>
-			<Button type="submit">Save</Button>
+			<Button variant="secondary" onclick={() => (editing = false)}>{t('Cancel')}</Button>
+			<Button type="submit">{t('Save')}</Button>
 		</div>
 	</form>
 </Dialog>
 
-<Dialog bind:open={skillOpen} title="Edit skill">
+<Dialog bind:open={skillOpen} title={t('Edit skill')}>
 	{#if skillEdit}
 		<form onsubmit={saveSkill}>
 			<TextField
 				id="edit-skill-title"
-				label="Skill"
+				label={t('Skill')}
 				bind:value={skillEdit.title}
 				maxlength={500}
 				required
 			/>
 			<TextField
 				id="edit-skill-section"
-				label="Section"
+				label={t('Section')}
 				list="sections"
 				bind:value={skillEdit.section}
 				maxlength={200}
 			/>
 			<TextField
 				id="edit-skill-url"
-				label="Link"
+				label={t('Link')}
 				type="url"
 				placeholder="https://…"
 				bind:value={skillEdit.url}
 			/>
 			<div class="field">
-				<label for="edit-skill-kind">Kind</label>
+				<label for="edit-skill-kind">{t('Kind')}</label>
 				<select id="edit-skill-kind" bind:value={skillEdit.kind}>
-					<option value="hard">Hard skill</option>
-					<option value="soft">Soft skill</option>
+					<option value="hard">{t('Hard skill')}</option>
+					<option value="soft">{t('Soft skill')}</option>
 				</select>
 			</div>
 			<div class="field wide">
-				<label for="edit-skill-description">Notes</label>
+				<label for="edit-skill-description">{t('Notes')}</label>
 				<textarea
 					id="edit-skill-description"
 					rows="3"
@@ -433,18 +448,18 @@
 				></textarea>
 			</div>
 			<div class="row end">
-				<Button variant="secondary" onclick={() => (skillOpen = false)}>Cancel</Button>
-				<Button type="submit">Save</Button>
+				<Button variant="secondary" onclick={() => (skillOpen = false)}>{t('Cancel')}</Button>
+				<Button type="submit">{t('Save')}</Button>
 			</div>
 		</form>
 	{/if}
 </Dialog>
 
-<Dialog bind:open={confirmDelete} title="Delete this roadmap?">
-	<p>Its skills and their links are removed. Goals and notes stay.</p>
+<Dialog bind:open={confirmDelete} title={t('Delete this roadmap?')}>
+	<p>{t('Its skills and their links are removed. Goals and notes stay.')}</p>
 	<div class="row end">
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove}>Delete</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
+		<Button variant="danger" onclick={remove}>{t('Delete')}</Button>
 	</div>
 </Dialog>
 

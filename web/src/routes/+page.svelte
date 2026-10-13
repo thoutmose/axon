@@ -29,45 +29,55 @@
 		}
 	}
 
-	const features = [
+	const features = $derived([
 		{
 			id: 'notes',
-			title: 'Notes that connect.',
-			text: 'Plain Markdown with [[wikilinks]], backlinks, and PARA folders. Your vault stays yours and syncs both ways.',
-			tiles: ['Zettel/permanent/proofs.md', '[[induction]] · 3 backlinks', '2-Areas/maths']
+			title: t('Notes that connect.'),
+			text: t(
+				'Plain Markdown with [[wikilinks]], backlinks, and PARA folders. Your vault stays yours and syncs both ways.'
+			),
+			tiles: [t('Zettel/permanent/proofs.md'), t('[[induction]] · 3 backlinks'), '2-Areas/maths']
 		},
 		{
 			id: 'tasks',
-			title: 'Work, made calm.',
-			text: 'Capture anything with one key. Today, week, and GTD views, repeating tasks, and a daily check-in.',
+			title: t('Work, made calm.'),
+			text: t(
+				'Capture anything with one key. Today, week, and GTD views, repeating tasks, and a daily check-in.'
+			),
 			tiles: [
-				'☐ Call the plumber · @phone',
-				'☐ Renew passport · due Friday',
-				'☑ Stretch for ten minutes'
+				t('☐ Call the plumber · @phone'),
+				t('☐ Renew passport · due Friday'),
+				t('☑ Stretch for ten minutes')
 			]
 		},
 		{
 			id: 'goals',
-			title: 'Goals you can explain.',
-			text: 'Milestones, linked tasks, and habits. Every progress figure shows exactly how it was worked out.',
-			tiles: ['Learn to swim 1 km', '■■■■■□□□□□ 50%', '2 of 4 milestones and tasks done']
+			title: t('Goals you can explain.'),
+			text: t(
+				'Milestones, linked tasks, and habits. Every progress figure shows exactly how it was worked out.'
+			),
+			tiles: [t('Learn to swim 1 km'), '■■■■■□□□□□ 50%', t('2 of 4 milestones and tasks done')]
 		},
 		{
 			id: 'habits',
-			title: 'Habits without guilt.',
-			text: 'A cue, a stack, and a two-minute version for hard days. Miss one, and Axon helps you start again.',
-			tiles: ['After I pour my coffee', 'Read one page', 'Never miss twice']
+			title: t('Habits without guilt.'),
+			text: t(
+				'A cue, a stack, and a two-minute version for hard days. Miss one, and Axon helps you start again.'
+			),
+			tiles: [t('After I pour my coffee'), t('Read one page'), t('Never miss twice')]
 		},
 		{
 			id: 'agents',
-			title: 'AI that asks first.',
-			text: 'Agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.',
-			tiles: ['Proposal · status → next', 'Approve   Reject', 'Budget $2.00 · spent $0.12']
+			title: t('AI that asks first.'),
+			text: t(
+				'Agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.'
+			),
+			tiles: [t('Proposal · status → next'), t('Approve   Reject'), t('Budget $2.00 · spent $0.12')]
 		}
-	];
+	]);
 </script>
 
-<svelte:head><title>Axon · Your self-hosted life, connected</title></svelte:head>
+<svelte:head><title>{t('Axon · Your self-hosted life, connected')}</title></svelte:head>
 
 <section class="hero" aria-labelledby="hero-title">
 	<Scenery />
@@ -123,7 +133,7 @@
 			</div>
 			<div class="stage {f.id}" aria-hidden="true">
 				<div class="visual glass">
-					{#each f.tiles as t (t)}<div class="tile">{t}</div>{/each}
+					{#each f.tiles as tileText (tileText)}<div class="tile">{tileText}</div>{/each}
 				</div>
 			</div>
 		</section>
@@ -133,9 +143,9 @@
 <p class="status" role="status">
 	<span class="dot {data.api.state}" aria-hidden="true"></span>
 	{#if data.api.state === 'up'}
-		Server running · version {data.api.version}
+		{t('Server running · version {version}', { version: data.api.version })}
 	{:else}
-		Server not available. {data.api.reason}
+		{t('Server not available. {reason}', { reason: data.api.reason })}
 	{/if}
 </p>
 

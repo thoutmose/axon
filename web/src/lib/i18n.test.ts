@@ -15,6 +15,11 @@ describe('t', () => {
 		i18n.locale = 'en';
 	});
 
+	it('shows a missing value as nothing, as markup does', () => {
+		expect(t('Due {date}', { date: undefined })).toBe('Due ');
+		expect(t('{n} min', { n: null })).toBe(' min');
+	});
+
 	it('keeps placeholders in every French string', () => {
 		for (const [en, f] of Object.entries(fr)) {
 			expect(f.trim()).not.toBe('');

@@ -9,9 +9,11 @@ export const i18n = $state({ locale: 'en' as Locale });
 const key = 'axon-locale';
 
 /** Translates an English string, filling {name} placeholders. */
-export function t(s: string, vars?: Record<string, string | number>): string {
+export function t(s: string, vars?: Record<string, string | number | null | undefined>): string {
 	let out = i18n.locale === 'fr' ? (fr[s] ?? s) : s;
-	if (vars) for (const [k, v] of Object.entries(vars)) out = out.replaceAll(`{${k}}`, String(v));
+	// A missing value shows as nothing, as {value} does in markup.
+	if (vars)
+		for (const [k, v] of Object.entries(vars)) out = out.replaceAll(`{${k}}`, String(v ?? ''));
 	return out;
 }
 

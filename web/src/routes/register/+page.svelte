@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { startRegistration } from '@simplewebauthn/browser';
 	import { api, message } from '$lib/api';
 	import RecoveryCodes from '$lib/RecoveryCodes.svelte';
@@ -35,28 +36,28 @@
 	}
 </script>
 
-<svelte:head><title>Create your account · Axon</title></svelte:head>
+<svelte:head><title>{t('Create your account · Axon')}</title></svelte:head>
 
 {#if codes.length}
-	<h1>Save your recovery codes</h1>
-	<p>Each code signs you in once if you lose your passkey.</p>
+	<h1>{t('Save your recovery codes')}</h1>
+	<p>{t('Each code signs you in once if you lose your passkey.')}</p>
 	<RecoveryCodes {codes} />
-	<Button href="/">I saved them, continue</Button>
+	<Button href="/">{t('I saved them, continue')}</Button>
 {:else}
-	<h1>Create your account</h1>
+	<h1>{t('Create your account')}</h1>
 	<p class="muted">
-		Axon uses a passkey instead of a password: your device's fingerprint, face, or PIN.
+		{t("Axon uses a passkey instead of a password: your device's fingerprint, face, or PIN.")}
 	</p>
 	<form onsubmit={register}>
 		<TextField
 			id="name"
-			label="Your name"
+			label={t('Your name')}
 			autocomplete="name"
 			maxlength={100}
 			bind:value={name}
 			required
 		/>
-		<Button type="submit" {busy}>Create account with a passkey</Button>
+		<Button type="submit" {busy}>{t('Create account with a passkey')}</Button>
 	</form>
 	{#if error}<p class="error" role="alert">{error}</p>{/if}
 {/if}

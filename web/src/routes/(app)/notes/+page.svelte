@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { page } from '$app/state';
@@ -90,47 +91,56 @@
 	}
 </script>
 
-<svelte:head><title>Notes · Axon</title></svelte:head>
+<svelte:head><title>{t('Notes · Axon')}</title></svelte:head>
 
 <div class="head">
-	<h1>{tag ? `#${tag}` : kind ? `${kind[0].toUpperCase()}${kind.slice(1)} notes` : 'Notes'}</h1>
+	<h1>
+		{tag
+			? `#${tag}`
+			: kind
+				? t('{kind} notes', { kind: t(`${kind[0].toUpperCase()}${kind.slice(1)}`) })
+				: t('Notes')}
+	</h1>
 	<label class="upload" aria-busy={importing}>
 		<input type="file" accept=".zip,application/zip" onchange={importZip} disabled={importing} />
-		{importing ? 'Importing…' : 'Import ZIP'}
+		{importing ? t('Importing…') : t('Import ZIP')}
 	</label>
 </div>
 
 <AgentDock {...pageAgents.notes} onapplied={() => load()} />
 <p class="muted hint">
-	Markdown, stored exactly as you write it. Link notes with <code>[[note name]]</code>; folders like
-	<code>1-Projects/</code> sort them into PARA.
+	{t('Markdown, stored exactly as you write it. Link notes with')} <code>[[note name]]</code>{t(
+		'; folders like'
+	)}
+	<code>1-Projects/</code>
+	{t('sort them into PARA.')}
 </p>
 
-<nav aria-label="Note folders" class="tabs">
+<nav aria-label={t('Note folders')} class="tabs">
 	{#each paraViews as v (v.id)}
-		<a href="?para={v.id}" aria-current={para === v.id ? 'page' : undefined}>{v.label}</a>
+		<a href="?para={v.id}" aria-current={para === v.id ? 'page' : undefined}>{t(v.label)}</a>
 	{/each}
 </nav>
 
 <form class="quick" onsubmit={add}>
-	<label for="new-note" class="visually-hidden">New note title</label>
+	<label for="new-note" class="visually-hidden">{t('New note title')}</label>
 	<input
 		id="new-note"
-		placeholder="New note title…"
+		placeholder={t('New note title…')}
 		bind:value={quick}
 		maxlength="200"
 		required
 		autocomplete="off"
 	/>
-	<Button type="submit" variant="secondary">Create</Button>
+	<Button type="submit" variant="secondary">{t('Create')}</Button>
 </form>
 
-<nav class="starters" aria-label="Start from a template">
-	<span class="small muted">Start from a template:</span>
-	{#each [['fleeting', 'Fleeting'], ['literature', 'Literature'], ['permanent', 'Permanent'], ['project', 'Project note'], ['area', 'Area note'], ['resource', 'Resource note'], ['archive', 'Archive note'], ['item-task', 'Task'], ['item-goal', 'Goal'], ['item-milestone', 'Milestone'], ['item-habit', 'Habit'], ['item-book', 'Book'], ['item-film', 'Film']] as [id, label] (id)}
+<nav class="starters" aria-label={t('Start from a template')}>
+	<span class="small muted">{t('Start from a template:')}</span>
+	{#each [['fleeting', t('Fleeting')], ['literature', t('Literature')], ['permanent', t('Permanent')], ['project', t('Project note')], ['area', t('Area note')], ['resource', t('Resource note')], ['archive', t('Archive note')], ['item-task', t('Task')], ['item-goal', t('Goal')], ['item-milestone', t('Milestone')], ['item-habit', t('Habit')], ['item-book', t('Book')], ['item-film', t('Film')]] as [id, label] (id)}
 		<a href="?new={id}">{label}</a>
 	{/each}
-	<a href="/notes/templates" class="all">All templates and their sections →</a>
+	<a href="/notes/templates" class="all">{t('All templates and their sections →')}</a>
 </nav>
 
 {#if para === 'all' && !tag && !kind}
@@ -140,9 +150,14 @@
 {#if report}
 	<div class="report" role="status">
 		<p>
-			Imported {report.created.length} new, {report.unchanged.length} already here.
+			{t('Imported {length} new, {length2} already here.', {
+				length: report.created.length,
+				length2: report.unchanged.length
+			})}
 			{#if report.conflicts.length}
-				{report.conflicts.length} differ from the note you already have and were left untouched:
+				{t('{length} differ from the note you already have and were left untouched:', {
+					length: report.conflicts.length
+				})}
 			{/if}
 		</p>
 		{#if report.conflicts.length}
@@ -152,23 +167,25 @@
 		{/if}
 		{#if report.skipped.length}
 			<p class="muted">
-				Skipped {report.skipped.length} file(s) that are not Markdown notes or are over 1 MB.
+				{t('Skipped {length} file(s) that are not Markdown notes or are over 1 MB.', {
+					length: report.skipped.length
+				})}
 			</p>
 		{/if}
-		<Button variant="ghost" onclick={() => (report = null)}>Dismiss</Button>
+		<Button variant="ghost" onclick={() => (report = null)}>{t('Dismiss')}</Button>
 	</div>
 {/if}
 
 {#if error}
 	<Status kind="error" message={error} retry={() => load()} />
 {:else if !notes}
-	<Status kind="loading" message="Loading notes…" />
+	<Status kind="loading" message={t('Loading notes…')} />
 {:else if notes.length === 0}
 	<Status
 		kind="empty"
 		message={para === 'all'
-			? 'No notes yet. Create one above, or import a ZIP of your Markdown vault.'
-			: 'No notes in this folder.'}
+			? t('No notes yet. Create one above, or import a ZIP of your Markdown vault.')
+			: t('No notes in this folder.')}
 	/>
 {:else}
 	<ul class="notes">
@@ -182,24 +199,27 @@
 			</li>
 		{/each}
 	</ul>
-	{#if cursor}<Button variant="secondary" onclick={() => load(true)}>Show more</Button>{/if}
+	{#if cursor}<Button variant="secondary" onclick={() => load(true)}>{t('Show more')}</Button>{/if}
 {/if}
 
 <details class="sync">
-	<summary>Sync with a Markdown vault</summary>
+	<summary>{t('Sync with a Markdown vault')}</summary>
 	<p>
-		Keep a folder of Markdown files (for example an Obsidian vault in Git) and Axon in step. Create
-		a write <a href="/account/tokens">access token</a>, save it in a file on the machine with the
-		vault, and run:
+		{t(
+			'Keep a folder of Markdown files (for example an Obsidian vault in Git) and Axon in step. Create a write'
+		)} <a href="/account/tokens">{t('access token')}</a>{t(
+			', save it in a file on the machine with the vault, and run:'
+		)}
 	</p>
 	<pre><code
 			>axon notes-sync -dir ~/SecondBrain -url {page.url.origin} -token-file ~/.axon-token</code
 		></pre>
 	<p>
-		By default this only imports files into Axon. Add <code>-two-way</code> to also write Axon's
-		changes back, and <code>-git</code> to pull and push the repository around each run. When a note
-		changed on both sides, Axon's version is saved next to yours as <code>.axon-conflict.md</code>;
-		nothing is overwritten.
+		{t('By default this only imports files into Axon. Add')} <code>-two-way</code>
+		{t("to also write Axon's changes back, and")} <code>-git</code>
+		{t(
+			"to pull and push the repository around each run. When a note changed on both sides, Axon's version is saved next to yours as"
+		)} <code>.axon-conflict.md</code>{t('; nothing is overwritten.')}
 	</p>
 </details>
 

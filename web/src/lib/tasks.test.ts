@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { i18n } from './i18n.svelte';
 import { overdue, relativeDay, type Task } from './tasks';
 
 describe('relativeDay', () => {
@@ -10,6 +11,12 @@ describe('relativeDay', () => {
 	it('does not drift across daylight-saving changes', () => {
 		expect(relativeDay('2026-10-26', '2026-10-25')).toBe('Tomorrow');
 		expect(relativeDay('2026-03-30', '2026-03-29')).toBe('Tomorrow');
+	});
+	it('speaks the language of the interface', () => {
+		i18n.locale = 'fr';
+		expect(relativeDay('2026-10-11', '2026-10-10')).toBe('Demain');
+		expect(relativeDay('2026-10-16', '2026-10-10')).toBe('ven. 16 oct.');
+		i18n.locale = 'en';
 	});
 });
 

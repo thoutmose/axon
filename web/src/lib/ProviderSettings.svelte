@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import Button from './ui/Button.svelte';
 	import TextField from './ui/TextField.svelte';
@@ -12,14 +13,14 @@
 		can_store_keys: boolean;
 		providers: string[];
 	};
-	const names: Record<string, string> = {
-		anthropic: 'Anthropic (Claude)',
-		openai: 'OpenAI',
-		mistral: 'Mistral',
-		gemini: 'Google Gemini',
-		deepseek: 'DeepSeek',
-		local: 'Local model (Ollama, LM Studio, llama.cpp)'
-	};
+	const names: Record<string, string> = $derived({
+		anthropic: t('Anthropic (Claude)'),
+		openai: t('OpenAI'),
+		mistral: t('Mistral'),
+		gemini: t('Google Gemini'),
+		deepseek: t('DeepSeek'),
+		local: t('Local model (Ollama, LM Studio, llama.cpp)')
+	});
 
 	let info = $state<State | null>(null);
 	let form = $state({
@@ -70,7 +71,7 @@
 					)
 				}
 			});
-			toast('Provider saved.');
+			toast(t('Provider saved.'));
 			await load();
 			onchange();
 		} catch (err) {
@@ -109,34 +110,37 @@
 </script>
 
 <section class="card" aria-labelledby="provider-title">
-	<h2 id="provider-title">AI provider</h2>
+	<h2 id="provider-title">{t('AI provider')}</h2>
 	{#if info}
 		<p class="muted">
 			{#if info.settings}
-				Your agents use {names[info.settings.provider] ?? info.settings.provider} ({info.settings
-					.model}).
+				{t('Your agents use {value} ({value2}).', {
+					value: names[info.settings.provider] ?? info.settings.provider,
+					value2: info.settings.model
+				})}
 			{:else if info.server_default}
-				Your agents use this server's Anthropic account. Choose your own provider below if you
-				prefer.
+				{t(
+					"Your agents use this server's Anthropic account. Choose your own provider below if you prefer."
+				)}
 			{:else}
-				Choose a provider to use agents. A local model keeps everything on your own hardware.
+				{t('Choose a provider to use agents. A local model keeps everything on your own hardware.')}
 			{/if}
 		</p>
 		<form onsubmit={save}>
 			<div class="field">
-				<label for="p-provider">Provider</label>
+				<label for="p-provider">{t('Provider')}</label>
 				<select id="p-provider" bind:value={form.provider}>
 					{#each info.providers as p (p)}<option value={p}>{names[p] ?? p}</option>{/each}
 				</select>
 			</div>
 			<TextField
 				id="p-model"
-				label="Model"
+				label={t('Model')}
 				hint={form.provider === 'anthropic'
-					? 'For example claude-opus-5-5.'
+					? t('For example claude-opus-5-5.')
 					: form.provider === 'local'
-						? 'The model name on your server, for example llama3.1:8b.'
-						: "The model name from your provider's documentation."}
+						? t('The model name on your server, for example llama3.1:8b.')
+						: t("The model name from your provider's documentation.")}
 				bind:value={form.model}
 				maxlength={100}
 				required
@@ -144,35 +148,38 @@
 			{#if form.provider === 'local'}
 				<TextField
 					id="p-url"
-					label="Server address"
-					hint="Its OpenAI-compatible endpoint, for example http://192.168.1.20:11434/v1 for Ollama."
+					label={t('Server address')}
+					hint={t(
+						'Its OpenAI-compatible endpoint, for example http://192.168.1.20:11434/v1 for Ollama.'
+					)}
 					bind:value={form.base_url}
 					required
 				/>
 			{/if}
 			<TextField
 				id="p-key"
-				label={form.provider === 'local' ? 'API key (optional)' : 'API key'}
+				label={form.provider === 'local' ? t('API key (optional)') : t('API key')}
 				type="password"
 				autocomplete="off"
 				hint={info.settings?.has_key
-					? 'A key is stored, encrypted. Leave empty to keep it.'
+					? t('A key is stored, encrypted. Leave empty to keep it.')
 					: info.can_store_keys
-						? 'Stored encrypted on this server and never shown again.'
-						: 'This server cannot store keys until AXON_ENCRYPTION_KEY is set.'}
+						? t('Stored encrypted on this server and never shown again.')
+						: t('This server cannot store keys until AXON_ENCRYPTION_KEY is set.')}
 				bind:value={form.api_key}
 				disabled={!info.can_store_keys}
 			/>
 			<details>
-				<summary>Prices for your budget</summary>
+				<summary>{t('Prices for your budget')}</summary>
 				<p class="muted small">
-					US dollars per million tokens. Leave empty for Axon's cautious default; a local model
-					costs nothing.
+					{t(
+						"US dollars per million tokens. Leave empty for Axon's cautious default; a local model costs nothing."
+					)}
 				</p>
 				<div class="grid">
 					<TextField
 						id="p-in"
-						label="Input"
+						label={t('Input')}
 						type="number"
 						step="any"
 						min="0"
@@ -180,7 +187,7 @@
 					/>
 					<TextField
 						id="p-out"
-						label="Output"
+						label={t('Output')}
 						type="number"
 						step="any"
 						min="0"
@@ -189,13 +196,14 @@
 				</div>
 			</details>
 			<div class="row">
-				<Button type="submit" {busy}>Save provider</Button>
+				<Button type="submit" {busy}>{t('Save provider')}</Button>
 				{#if info.settings}
-					<Button variant="secondary" onclick={test}>Test connection</Button>
-					{#if info.settings.has_key}<Button variant="ghost" onclick={removeKey}>Remove key</Button
+					<Button variant="secondary" onclick={test}>{t('Test connection')}</Button>
+					{#if info.settings.has_key}<Button variant="ghost" onclick={removeKey}
+							>{t('Remove key')}</Button
 						>{/if}
 					{#if info.server_default}<Button variant="ghost" onclick={useDefault}
-							>Use server default</Button
+							>{t('Use server default')}</Button
 						>{/if}
 				{/if}
 			</div>
@@ -206,9 +214,10 @@
 			{/if}
 		</form>
 		<p class="muted small">
-			Consumer chat subscriptions (Claude Pro or Max, ChatGPT Plus) cannot be used by other apps;
-			providers only allow API access. On the server, an administrator can sign Axon in to Anthropic
-			once with <code>ant auth login</code> so no key is stored at all.
+			{t(
+				'Consumer chat subscriptions (Claude Pro or Max, ChatGPT Plus) cannot be used by other apps; providers only allow API access. On the server, an administrator can sign Axon in to Anthropic once with'
+			)} <code>ant auth login</code>
+			{t('so no key is stored at all.')}
 		</p>
 	{/if}
 </section>

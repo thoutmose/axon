@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message } from '$lib/api';
 	import { loadBasics, type Category, type Rule } from '$lib/finance';
 	import Button from '$lib/ui/Button.svelte';
@@ -16,11 +17,11 @@
 		category_id: '',
 		tag: ''
 	});
-	const ops: Record<string, string> = {
+	const ops: Record<string, string> = $derived({
 		contains: 'contains',
 		equals: 'is',
-		starts_with: 'starts with'
-	};
+		starts_with: t('starts with')
+	});
 	const catName = (id: string | null) => categories.find((c) => c.id === id)?.name ?? '';
 
 	async function load() {
@@ -83,35 +84,36 @@
 	}
 </script>
 
-<svelte:head><title>Rules · Budget · Axon</title></svelte:head>
+<svelte:head><title>{t('Rules · Budget · Axon')}</title></svelte:head>
 
-<h1>Rules</h1>
+<h1>{t('Rules')}</h1>
 <p class="muted small">
-	When a new transaction has no category, the rules are tried in order: the first matching rule with
-	a category of the right kind sets it, and every matching rule adds its tag. A category you chose
-	is never overridden.
+	{t(
+		'When a new transaction has no category, the rules are tried in order: the first matching rule with a category of the right kind sets it, and every matching rule adds its tag. A category you chose is never overridden.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !rules}
-	<Status kind="loading" message="Loading…" />
+	<Status kind="loading" message={t('Loading…')} />
 {:else}
 	<section class="card" aria-labelledby="list">
 		<div class="row">
-			<h2 id="list">Your rules</h2>
-			<Button variant="secondary" onclick={apply}>Apply to uncategorised transactions</Button>
+			<h2 id="list">{t('Your rules')}</h2>
+			<Button variant="secondary" onclick={apply}>{t('Apply to uncategorised transactions')}</Button
+			>
 		</div>
 		{#if rules.length === 0}
 			<p class="muted">
-				No rules yet. Imports and new transactions stay uncategorised until you add one.
+				{t('No rules yet. Imports and new transactions stay uncategorised until you add one.')}
 			</p>
 		{:else}
 			<table>
 				<thead
 					><tr
-						><th scope="col">When</th><th scope="col">Then</th><th scope="col"
-							><span class="visually-hidden">Actions</span></th
+						><th scope="col">{t('When')}</th><th scope="col">{t('Then')}</th><th scope="col"
+							><span class="visually-hidden">{t('Actions')}</span></th
 						></tr
 					></thead
 				>
@@ -120,16 +122,18 @@
 						<tr class:muted={!r.active}>
 							<td>{r.field} {ops[r.operator]} “{r.value}”</td>
 							<td
-								>{#if r.category_id}category {catName(
-										r.category_id
-									)}{/if}{#if r.category_id && r.tag},
-								{/if}{#if r.tag}tag #{r.tag}{/if}</td
+								>{#if r.category_id}{t('category {value}', {
+										value: catName(r.category_id)
+									})}{/if}{#if r.category_id && r.tag},
+								{/if}{#if r.tag}{t('tag #{tag}', { tag: r.tag })}{/if}</td
 							>
 							<td class="row"
 								><button class="link" onclick={() => patch(r, { active: !r.active })}
-									>{r.active ? 'Turn off' : 'Turn on'}</button
-								><button class="link" onclick={() => remove(r)} aria-label="Delete rule {r.name}"
-									>Delete</button
+									>{r.active ? t('Turn off') : t('Turn on')}</button
+								><button
+									class="link"
+									onclick={() => remove(r)}
+									aria-label={t('Delete rule {name}', { name: r.name })}>{t('Delete')}</button
 								></td
 							>
 						</tr>
@@ -140,33 +144,33 @@
 	</section>
 
 	<section class="card" aria-labelledby="new">
-		<h2 id="new">Add a rule</h2>
+		<h2 id="new">{t('Add a rule')}</h2>
 		<form class="grid" onsubmit={create}>
 			<div class="field">
-				<label for="rule-field">When the</label>
+				<label for="rule-field">{t('When the')}</label>
 				<select id="rule-field" bind:value={form.field}>
-					<option value="payee">payee</option>
-					<option value="note">note</option>
+					<option value="payee">{t('payee')}</option>
+					<option value="note">{t('note')}</option>
 				</select>
 			</div>
 			<div class="field">
-				<label for="rule-op">Test</label>
+				<label for="rule-op">{t('Test')}</label>
 				<select id="rule-op" bind:value={form.operator}>
 					{#each Object.entries(ops) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 				</select>
 			</div>
 			<div class="field">
-				<label for="rule-value">Text</label>
+				<label for="rule-value">{t('Text')}</label>
 				<input
 					id="rule-value"
 					bind:value={form.value}
 					maxlength="200"
 					required
-					placeholder="carrefour"
+					placeholder={t('carrefour')}
 				/>
 			</div>
 			<div class="field">
-				<label for="rule-category">Set category</label>
+				<label for="rule-category">{t('Set category')}</label>
 				<select id="rule-category" bind:value={form.category_id}>
 					<option value="">—</option>
 					{#each categories.filter((c) => !c.archived) as c (c.id)}<option value={c.id}
@@ -175,10 +179,10 @@
 				</select>
 			</div>
 			<div class="field">
-				<label for="rule-tag">Add tag</label>
-				<input id="rule-tag" bind:value={form.tag} maxlength="41" placeholder="#food" />
+				<label for="rule-tag">{t('Add tag')}</label>
+				<input id="rule-tag" bind:value={form.tag} maxlength="41" placeholder={t('#food')} />
 			</div>
-			<div><Button type="submit">Add rule</Button></div>
+			<div><Button type="submit">{t('Add rule')}</Button></div>
 		</form>
 	</section>
 {/if}

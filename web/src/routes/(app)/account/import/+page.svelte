@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -17,59 +18,59 @@
 	};
 	type Account = Schemas['BudgetAccount'];
 
-	const sources = [
+	const sources = $derived([
 		{
 			id: 'todoist',
-			name: 'Todoist',
-			what: 'Tasks, with @labels as contexts and dates as due dates.',
-			how: 'In a project: … → Export as a template → CSV. One file per project.',
+			name: t('Todoist'),
+			what: t('Tasks, with @labels as contexts and dates as due dates.'),
+			how: t('In a project: … → Export as a template → CSV. One file per project.'),
 			accept: '.csv,text/csv'
 		},
 		{
 			id: 'ticktick',
-			name: 'TickTick',
-			what: 'Tasks, done or open, with the first tag as the context.',
-			how: 'Settings → Account → Generate backup (CSV).',
+			name: t('TickTick'),
+			what: t('Tasks, done or open, with the first tag as the context.'),
+			how: t('Settings → Account → Generate backup (CSV).'),
 			accept: '.csv,text/csv'
 		},
 		{
 			id: 'goodreads',
-			name: 'Goodreads',
-			what: 'Books: read, reading, or to read, with your stars as a rating out of 10.',
-			how: 'My Books → Import and export → Export library.',
+			name: t('Goodreads'),
+			what: t('Books: read, reading, or to read, with your stars as a rating out of 10.'),
+			how: t('My Books → Import and export → Export library.'),
 			accept: '.csv,text/csv'
 		},
 		{
 			id: 'letterboxd',
-			name: 'Letterboxd',
-			what: 'Films: watched, rated, and on your watchlist.',
-			how: 'Settings → Data → Export your data (the ZIP, as it comes).',
+			name: t('Letterboxd'),
+			what: t('Films: watched, rated, and on your watchlist.'),
+			how: t('Settings → Data → Export your data (the ZIP, as it comes).'),
 			accept: '.zip,.csv,application/zip,text/csv'
 		},
 		{
 			id: 'firefly',
-			name: 'Firefly III',
-			what: 'Withdrawals and deposits into the budget; transfers are left out.',
-			how: 'Export data → Transactions → CSV.',
+			name: t('Firefly III'),
+			what: t('Withdrawals and deposits into the budget; transfers are left out.'),
+			how: t('Export data → Transactions → CSV.'),
 			accept: '.csv,text/csv',
 			money: true
 		},
 		{
 			id: 'ofx',
-			name: 'Your bank (OFX/QFX)',
-			what: 'A bank statement’s transactions into the budget.',
-			how: 'In online banking: download transactions as OFX, QFX, or “Money/Quicken”.',
+			name: t('Your bank (OFX/QFX)'),
+			what: t('A bank statement’s transactions into the budget.'),
+			how: t('In online banking: download transactions as OFX, QFX, or “Money/Quicken”.'),
 			accept: '.ofx,.qfx,application/x-ofx',
 			money: true
 		},
 		{
 			id: 'notion',
-			name: 'Notion',
-			what: 'Pages as Markdown notes under Notion/, links as [[wikilinks]], pictures kept.',
-			how: 'Settings → Export all workspace content (or … → Export on a page) → Markdown & CSV.',
+			name: t('Notion'),
+			what: t('Pages as Markdown notes under Notion/, links as [[wikilinks]], pictures kept.'),
+			how: t('Settings → Export all workspace content (or … → Export on a page) → Markdown & CSV.'),
 			accept: '.zip,application/zip'
 		}
-	] as const;
+	] as const);
 
 	let files = $state<Record<string, File | null>>({});
 	let results = $state<Record<string, Result>>({});
@@ -103,12 +104,12 @@
 	}
 </script>
 
-<svelte:head><title>Import · Axon</title></svelte:head>
+<svelte:head><title>{t('Import · Axon')}</title></svelte:head>
 
 <p class="muted">
-	Bring your data from other apps. Preview first: nothing is written until you import, and importing
-	the same file again adds nothing twice. Vault notes come in from Notes (ZIP), and any bank CSV
-	from Budget.
+	{t(
+		'Bring your data from other apps. Preview first: nothing is written until you import, and importing the same file again adds nothing twice. Vault notes come in from Notes (ZIP), and any bank CSV from Budget.'
+	)}
 </p>
 
 <ul class="sources">
@@ -117,8 +118,8 @@
 		<li class="card">
 			<h2>{s.name}</h2>
 			<p>{s.what}</p>
-			<p class="muted small">How to export: {s.how}</p>
-			<label for="file-{s.id}">{s.name} export</label>
+			<p class="muted small">{t('How to export: {how}', { how: s.how })}</p>
+			<label for="file-{s.id}">{t('{name} export', { name: s.name })}</label>
 			<input
 				id="file-{s.id}"
 				type="file"
@@ -129,9 +130,9 @@
 				}}
 			/>
 			{#if 'money' in s && accounts.length}
-				<label for="account-{s.id}">Into the account</label>
+				<label for="account-{s.id}">{t('Into the account')}</label>
 				<select id="account-{s.id}" bind:value={account}>
-					<option value="">No account</option>
+					<option value="">{t('No account')}</option>
 					{#each accounts as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
 				</select>
 			{/if}
@@ -140,31 +141,38 @@
 					variant="secondary"
 					disabled={!files[s.id]}
 					busy={busy === s.id}
-					onclick={() => run(s.id, true, 'money' in s)}>Preview</Button
+					onclick={() => run(s.id, true, 'money' in s)}>{t('Preview')}</Button
 				>
 				<Button
 					disabled={!files[s.id] || !r?.dry_run}
 					busy={busy === s.id}
-					onclick={() => run(s.id, false, 'money' in s)}>Import</Button
+					onclick={() => run(s.id, false, 'money' in s)}>{t('Import')}</Button
 				>
 			</div>
 			{#if r}
 				<div class="result" role="status">
 					{#if r.dry_run}
-						<p><strong>{r.found}</strong> found{r.sample.length ? ', for example:' : '.'}</p>
+						<p>
+							<strong>{r.found}</strong>
+							{t(r.sample.length ? 'found, for example:' : 'found.')}
+						</p>
 						<ul class="small">
 							{#each r.sample as x, i (i)}<li>{x}</li>{/each}
 						</ul>
 					{:else}
 						<p>
-							<strong>{r.created}</strong> added, {r.skipped} already in Axon{r.conflicts
-								? `, ${r.conflicts} left alone (a note with other content at the same path)`
-								: ''}.
+							<strong>{r.created}</strong>
+							{t(
+								r.conflicts
+									? 'added, {skipped} already in Axon, {conflicts} left alone (a note with other content at the same path).'
+									: 'added, {skipped} already in Axon.',
+								{ skipped: r.skipped, conflicts: r.conflicts }
+							)}
 						</p>
 					{/if}
 					{#if r.problems.length}
 						<details>
-							<summary>{r.problems.length} not imported</summary>
+							<summary>{t('{length} not imported', { length: r.problems.length })}</summary>
 							<ul class="small">
 								{#each r.problems as p, i (i)}<li>{p}</li>{/each}
 							</ul>

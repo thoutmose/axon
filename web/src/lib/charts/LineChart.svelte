@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import type { DayCount } from '$lib/overview';
 
 	let {
@@ -17,7 +19,7 @@
 		pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
 	const totals = $derived(series.map((s) => s.points.reduce((a, p) => a + p.value, 0)));
 	const short = (d: string) =>
-		new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+		new Date(d + 'T00:00:00').toLocaleDateString(appLocale(), { day: 'numeric', month: 'short' });
 </script>
 
 <figure class="chart">
@@ -32,12 +34,12 @@
 	<svg
 		viewBox="0 0 {W} {H}"
 		role="img"
-		aria-label="{title}: {series.map((s, i) => `${s.label} ${totals[i]}`).join(', ')}"
+		aria-label={`${title}: ${series.map((s, i) => `${s.label} ${totals[i]}`).join(', ')}`}
 	>
-		{#each [0, 0.5, 1] as t (t)}
-			<line class="grid" x1={PAD} x2={W - PAD} y1={y(max * t)} y2={y(max * t)} />
-			<text class="axis" x={PAD - 6} y={y(max * t) + 4} text-anchor="end"
-				>{Math.round(max * t)}</text
+		{#each [0, 0.5, 1] as level (level)}
+			<line class="grid" x1={PAD} x2={W - PAD} y1={y(max * level)} y2={y(max * level)} />
+			<text class="axis" x={PAD - 6} y={y(max * level) + 4} text-anchor="end"
+				>{Math.round(max * level)}</text
 			>
 		{/each}
 		{#if days.length}
@@ -51,12 +53,12 @@
 		{/each}
 	</svg>
 	<details>
-		<summary>Show as a table</summary>
+		<summary>{t('Show as a table')}</summary>
 		<div class="table-wrap">
 			<table>
 				<thead>
 					<tr
-						><th scope="col">Day</th>{#each series as s (s.id)}<th scope="col">{s.label}</th
+						><th scope="col">{t('Day')}</th>{#each series as s (s.id)}<th scope="col">{s.label}</th
 							>{/each}</tr
 					>
 				</thead>

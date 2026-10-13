@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { forceLayout } from '$lib/overview';
@@ -34,49 +36,59 @@
 	const textOf = (id: string) => data?.concepts.find((c) => c.id === id)?.text ?? id;
 </script>
 
-<svelte:head><title>Analysis · Notes · Axon</title></svelte:head>
+<svelte:head><title>{t('Analysis · Notes · Axon')}</title></svelte:head>
 
-<h1>Analysis of your literature and permanent notes</h1>
+<h1>{t('Analysis of your literature and permanent notes')}</h1>
 <p class="muted">
-	All computed on this server, no AI: English and French stemming, key phrases (TextRank), topics
-	from similar wording, and concepts linked when they appear together more than chance (NPMI) or are
-	synonyms (Open English WordNet and Axon's French list).
+	{t(
+		"All computed on this server, no AI: English and French stemming, key phrases (TextRank), topics from similar wording, and concepts linked when they appear together more than chance (NPMI) or are synonyms (Open English WordNet and Axon's French list)."
+	)}
 </p>
 
-<nav class="tabs" aria-label="Which notes">
-	<a href="?" aria-current={kind === '' ? 'page' : undefined}>Both</a>
-	<a href="?kind=literature" aria-current={kind === 'literature' ? 'page' : undefined}>Literature</a
+<nav class="tabs" aria-label={t('Which notes')}>
+	<a href="?" aria-current={kind === '' ? 'page' : undefined}>{t('Both')}</a>
+	<a href="?kind=literature" aria-current={kind === 'literature' ? 'page' : undefined}
+		>{t('Literature')}</a
 	>
-	<a href="?kind=permanent" aria-current={kind === 'permanent' ? 'page' : undefined}>Permanent</a>
+	<a href="?kind=permanent" aria-current={kind === 'permanent' ? 'page' : undefined}
+		>{t('Permanent')}</a
+	>
 </nav>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !data}
-	<Status kind="loading" message="Reading your notes…" />
+	<Status kind="loading" message={t('Reading your notes…')} />
 {:else if data.notes === 0}
 	<Status
 		kind="empty"
-		message="No literature or permanent notes yet. Notes with type: literature or type: permanent in their front matter are analysed here."
+		message={t(
+			'No literature or permanent notes yet. Notes with type: literature or type: permanent in their front matter are analysed here.'
+		)}
 	/>
 {:else}
-	<section class="kpis" aria-label="Summary">
-		<p><strong>{data.notes}</strong> notes</p>
-		<p><strong>{data.words.toLocaleString()}</strong> words</p>
+	<section class="kpis" aria-label={t('Summary')}>
+		<p><strong>{data.notes}</strong> {t('notes')}</p>
+		<p><strong>{data.words.toLocaleString(appLocale())}</strong> {t('words')}</p>
 		<p>
-			<strong>{data.languages.en ?? 0}</strong> English · <strong>{data.languages.fr ?? 0}</strong> French
+			<strong>{data.languages.en ?? 0}</strong> English · <strong>{data.languages.fr ?? 0}</strong>
+			{t('French')}
 		</p>
-		<p><strong>{data.ease}</strong>/100 average readability</p>
+		<p><strong>{data.ease}</strong>{t('/100 average readability')}</p>
 		<p>
-			<strong>{data.topics.length}</strong> topics · <strong>{data.concepts.length}</strong> concepts
+			<strong>{data.topics.length}</strong>
+			{t('topics ·')} <strong>{data.concepts.length}</strong>
+			{t('concepts')}
 		</p>
 	</section>
-	{#if data.truncated}<p class="muted small">Only the most recent notes were analysed.</p>{/if}
+	{#if data.truncated}<p class="muted small">
+			{t('Only the most recent notes were analysed.')}
+		</p>{/if}
 
 	<section aria-labelledby="topics-title">
-		<h2 id="topics-title">Topics</h2>
+		<h2 id="topics-title">{t('Topics')}</h2>
 		{#if data.topics.length === 0}
-			<p class="muted">No two notes are close enough to form a topic yet.</p>
+			<p class="muted">{t('No two notes are close enough to form a topic yet.')}</p>
 		{:else}
 			<ul class="topics">
 				{#each data.topics as tp (tp.id)}
@@ -93,15 +105,17 @@
 	</section>
 
 	<section aria-labelledby="concepts-title">
-		<h2 id="concepts-title">Concept graph</h2>
+		<h2 id="concepts-title">{t('Concept graph')}</h2>
 		{#if data.concepts.length === 0}
-			<p class="muted">Concepts appear once a key phrase is in at least two notes.</p>
+			<p class="muted">{t('Concepts appear once a key phrase is in at least two notes.')}</p>
 		{:else}
 			<svg
 				viewBox="0 0 {W} {H}"
 				role="img"
-				aria-label="Concept graph: {data.concepts.length} concepts, {data.edges
-					.length} connections. The table below lists them."
+				aria-label={t(
+					'Concept graph: {length} concepts, {value} connections. The table below lists them.',
+					{ length: data.concepts.length, value: data.edges.length }
+				)}
 			>
 				{#each data.edges as e (e.from + e.to + e.relation)}
 					{@const a = at.get(e.from)}
@@ -125,15 +139,18 @@
 				{/each}
 			</svg>
 			<p class="small muted">
-				Larger dots are in more notes; solid lines appear together more than chance, thicker when
-				stronger; dashed lines are synonyms.
+				{t(
+					'Larger dots are in more notes; solid lines appear together more than chance, thicker when stronger; dashed lines are synonyms.'
+				)}
 			</p>
 			<details>
-				<summary>Show as a table</summary>
+				<summary>{t('Show as a table')}</summary>
 				<table>
 					<thead
 						><tr
-							><th scope="col">Concept</th><th scope="col">Concept</th><th scope="col">Why</th></tr
+							><th scope="col">{t('Concept')}</th><th scope="col">{t('Concept')}</th><th scope="col"
+								>{t('Why')}</th
+							></tr
 						></thead
 					>
 					<tbody>
@@ -148,10 +165,9 @@
 {/if}
 
 <p class="small muted attribution">
-	English synonyms: <a href="https://github.com/globalwordnet/english-wordnet"
-		>Open English WordNet</a
-	>
-	(CC BY 4.0).
+	{t('English synonyms:')}
+	<a href="https://github.com/globalwordnet/english-wordnet">{t('Open English WordNet')}</a>
+	{t('(CC BY 4.0).')}
 </p>
 
 <style>

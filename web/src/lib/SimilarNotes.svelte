@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api } from './api';
 
 	// Notes close in meaning to this one (EP-62). Shown only when search by
@@ -18,7 +19,7 @@
 
 {#if items.length}
 	<section class="card" aria-labelledby="similar-title">
-		<h2 id="similar-title">Close in meaning</h2>
+		<h2 id="similar-title">{t('Close in meaning')}</h2>
 		<ul class="rows">
 			{#each items as h (h.id)}
 				<li>

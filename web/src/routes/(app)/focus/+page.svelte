@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
 	import { onDestroy, onMount } from 'svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { i18n, t } from '$lib/i18n.svelte';
@@ -58,11 +59,11 @@
 	let searchTimer: ReturnType<typeof setTimeout> | undefined;
 	const key = 'axon-focus';
 
-	const phaseNames: Record<string, string> = {
-		work: 'Focus',
-		short: 'Short break',
-		long: 'Long break'
-	};
+	const phaseNames: Record<string, string> = $derived({
+		work: t('Focus'),
+		short: t('Short break'),
+		long: t('Long break')
+	});
 	const name = (kind: string) => t(phaseNames[kind]);
 	const plan = $derived(phases(config));
 	const phase = $derived(timer && !finished(timer) ? timer.phases[timer.index] : null);
@@ -173,7 +174,7 @@
 				method: 'POST',
 				body: {
 					planned_minutes: totalWorkMinutes(plan),
-					...(target ? { target_id: target.id } : { title: title.trim() || 'Focus' })
+					...(target ? { target_id: target.id } : { title: title.trim() || t('Focus') })
 				}
 			});
 			timer = newTimer(plan, Date.now());
@@ -428,7 +429,7 @@
 					{#each history.items as s (s.id)}
 						<tr>
 							<td
-								>{new Date(s.started_at).toLocaleString(undefined, {
+								>{new Date(s.started_at).toLocaleString(appLocale(), {
 									weekday: 'short',
 									hour: '2-digit',
 									minute: '2-digit'

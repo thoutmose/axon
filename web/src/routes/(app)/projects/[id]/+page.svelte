@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -34,12 +35,12 @@
 	const titleOf = (taskId: string | null | undefined) =>
 		cards.find((c) => c.task_id === taskId)?.title;
 	const parents = $derived(cards.filter((c) => c.kind !== 'subtask' && c.column !== 'done'));
-	const labels: Record<string, string> = {
-		backlog: 'Backlog',
-		todo: 'To do',
-		doing: 'Doing',
-		done: 'Done'
-	};
+	const labels: Record<string, string> = $derived({
+		backlog: t('Backlog'),
+		todo: t('To do'),
+		doing: t('Doing'),
+		done: t('Done')
+	});
 
 	async function load() {
 		error = '';
@@ -90,7 +91,7 @@
 					`${err.message.replace(' Send over_limit to move it anyway.', '')}\n\nMove “${card.title}” anyway?`
 				)
 			) {
-				announce = `${card.title} stayed where it was.`;
+				announce = t('{title} stayed where it was.', { title: card.title });
 				return;
 			}
 			await send(true);
@@ -149,7 +150,7 @@
 	}
 
 	async function newDoc() {
-		const title = prompt('Title of the new doc');
+		const title = prompt(t('Title of the new doc'));
 		if (!title?.trim() || !project) return;
 		try {
 			const slug =
@@ -183,7 +184,7 @@
 				}
 			});
 			etag = res.etag;
-			toast('Saved.');
+			toast(t('Saved.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -194,7 +195,7 @@
 		try {
 			await api(`/v1/projects/${id}`, { method: 'DELETE' });
 			const gone = id;
-			deleted('Project deleted; its tasks are still in your task list.', gone, () =>
+			deleted(t('Project deleted; its tasks are still in your task list.'), gone, () =>
 				goto(`/projects/${gone}`)
 			);
 			await goto('/projects');
@@ -204,19 +205,21 @@
 	}
 </script>
 
-<svelte:head><title>{project?.title ?? 'Project'} · Axon</title></svelte:head>
+<svelte:head><title>{project?.title ?? t('Project')} · Axon</title></svelte:head>
 
-<p class="crumbs"><a href="/projects">← Projects</a></p>
+<p class="crumbs"><a href="/projects">{t('← Projects')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !project}
-	<Status kind="loading" message="Loading board…" />
+	<Status kind="loading" message={t('Loading board…')} />
 {:else}
 	<h1>{project.title}</h1>
 	{#if project.description}<p class="muted">{project.description}</p>{/if}
 	<p class="muted small" id="board-help">
-		Drag cards, or focus a card and press Shift + arrow keys: ← → to change column, ↑ ↓ to reorder.
+		{t(
+			'Drag cards, or focus a card and press Shift + arrow keys: ← → to change column, ↑ ↓ to reorder.'
+		)}
 	</p>
 	<p class="visually-hidden" role="status" aria-live="polite">{announce}</p>
 
@@ -232,7 +235,7 @@
 			>
 				<h2 id="col-{col.id}">
 					{col.label}
-					{#if w}<span class="wip" class:full={w.full} title="WIP limit">{w.label}</span
+					{#if w}<span class="wip" class:full={w.full} title={t('WIP limit')}>{w.label}</span
 						>{:else}<span class="count">{col.cards.length}</span>{/if}
 				</h2>
 				<ul>
@@ -255,17 +258,24 @@
 							>
 							<div class="meta">
 								{#if card.kind !== 'issue'}<span class="chip"
-										>{card.kind === 'epic' ? 'Epic' : 'Sub-task'}</span
+										>{card.kind === 'epic' ? t('Epic') : t('Sub-task')}</span
 									>{/if}
 								{#if card.parent_id && titleOf(card.parent_id)}<span class="muted"
-										>in {titleOf(card.parent_id)}</span
+										>{t('in {value}', { value: titleOf(card.parent_id) })}</span
 									>{/if}
 								{#if card.children}<span class="muted"
-										>{card.children_done}/{card.children} done</span
+										>{t('{children_done}/{children} done', {
+											children_done: card.children_done,
+											children: card.children
+										})}</span
 									>{/if}
-								{#if card.due_on}<span class="muted">due {card.due_on}</span>{/if}
+								{#if card.due_on}<span class="muted"
+										>{t('due {due_on}', { due_on: card.due_on })}</span
+									>{/if}
 							</div>
-							<label class="visually-hidden" for="move-{card.task_id}">Move {card.title} to</label>
+							<label class="visually-hidden" for="move-{card.task_id}"
+								>{t('Move {title} to', { title: card.title })}</label
+							>
 							<select
 								id="move-{card.task_id}"
 								value={card.column}
@@ -280,10 +290,12 @@
 				</ul>
 				{#if col.id !== 'done'}
 					<form onsubmit={(e) => add(e, col)}>
-						<label for="add-{col.id}" class="visually-hidden">Add a card to {col.label}</label>
+						<label for="add-{col.id}" class="visually-hidden"
+							>{t('Add a card to {label}', { label: col.label })}</label
+						>
 						<input
 							id="add-{col.id}"
-							placeholder="Add a card…"
+							placeholder={t('Add a card…')}
 							bind:value={adding[col.id]}
 							maxlength="500"
 							autocomplete="off"
@@ -294,16 +306,18 @@
 		{/each}
 	</div>
 	<div class="add-options">
-		<label for="add-kind">New cards are</label>
+		<label for="add-kind">{t('New cards are')}</label>
 		<select id="add-kind" bind:value={addKind}>
-			<option value="issue">issues</option>
-			<option value="epic">epics</option>
-			<option value="subtask">sub-tasks</option>
+			<option value="issue">{t('issues')}</option>
+			<option value="epic">{t('epics')}</option>
+			<option value="subtask">{t('sub-tasks')}</option>
 		</select>
 		{#if addKind !== 'epic'}
-			<label for="add-parent">in</label>
+			<label for="add-parent">{t('in')}</label>
 			<select id="add-parent" bind:value={addParent}>
-				<option value="">{addKind === 'subtask' ? 'Choose an issue or epic…' : 'no epic'}</option>
+				<option value=""
+					>{addKind === 'subtask' ? t('Choose an issue or epic…') : t('no epic')}</option
+				>
 				{#each parents.filter( (p) => (addKind === 'issue' ? p.kind === 'epic' : true) ) as p (p.task_id)}
 					<option value={p.task_id}>{p.title}</option>
 				{/each}
@@ -313,12 +327,13 @@
 
 	<section class="panel" aria-labelledby="docs-title">
 		<div class="row">
-			<h2 id="docs-title">Docs</h2>
-			<Button variant="secondary" onclick={newDoc}>New doc</Button>
+			<h2 id="docs-title">{t('Docs')}</h2>
+			<Button variant="secondary" onclick={newDoc}>{t('New doc')}</Button>
 		</div>
 		{#if docs.length === 0}
 			<p class="muted">
-				Notes in <code>{project.docs_folder}/</code> appear here: specs, decisions, meeting notes.
+				{t('Notes in')} <code>{project.docs_folder}/</code>
+				{t('appear here: specs, decisions, meeting notes.')}
 			</p>
 		{:else}
 			<ul class="rows">
@@ -332,48 +347,58 @@
 	<Connections id={project.id} type="project" />
 
 	<section class="panel" aria-labelledby="settings-title">
-		<h2 id="settings-title">Settings</h2>
+		<h2 id="settings-title">{t('Settings')}</h2>
 		<form onsubmit={save}>
-			<TextField id="p-title" label="Project" bind:value={form.title} maxlength={500} required />
+			<TextField
+				id="p-title"
+				label={t('Project')}
+				bind:value={form.title}
+				maxlength={500}
+				required
+			/>
 			<div class="field">
-				<label for="p-desc">Outcome</label>
+				<label for="p-desc">{t('Outcome')}</label>
 				<textarea id="p-desc" rows="2" maxlength="20000" bind:value={form.description}></textarea>
 			</div>
 			<div class="grid">
 				<TextField
 					id="p-wip"
-					label="WIP limit for Doing"
-					hint="Empty for no limit."
+					label={t('WIP limit for Doing')}
+					hint={t('Empty for no limit.')}
 					type="number"
 					min="1"
 					max="50"
 					bind:value={form.wip}
 				/>
-				<TextField id="p-docs" label="Docs folder" bind:value={form.docs_folder} required />
+				<TextField id="p-docs" label={t('Docs folder')} bind:value={form.docs_folder} required />
 				<div class="field">
-					<label for="p-status">Status</label>
+					<label for="p-status">{t('Status')}</label>
 					<select id="p-status" bind:value={form.status}>
-						<option value="active">Active</option>
-						<option value="on_hold">On hold</option>
-						<option value="done">Done</option>
-						<option value="archived">Archived</option>
+						<option value="active">{t('Active')}</option>
+						<option value="on_hold">{t('On hold')}</option>
+						<option value="done">{t('Done')}</option>
+						<option value="archived">{t('Archived')}</option>
 					</select>
 				</div>
 			</div>
 			<div class="row">
-				<Button type="submit">Save</Button>
+				<Button type="submit">{t('Save')}</Button>
 				<span class="grow"></span>
-				<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete project</Button>
+				<Button variant="danger" onclick={() => (confirmDelete = true)}
+					>{t('Delete project')}</Button
+				>
 			</div>
 		</form>
 	</section>
 {/if}
 
-<Dialog bind:open={confirmDelete} title="Delete this project?">
-	<p>The board is removed. Its tasks stay in your task list, and its docs stay in your notes.</p>
+<Dialog bind:open={confirmDelete} title={t('Delete this project?')}>
+	<p>
+		{t('The board is removed. Its tasks stay in your task list, and its docs stay in your notes.')}
+	</p>
 	<div class="row end">
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove}>Delete</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
+		<Button variant="danger" onclick={remove}>{t('Delete')}</Button>
 	</div>
 </Dialog>
 

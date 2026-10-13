@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
@@ -43,11 +45,11 @@
 		}
 	}
 
-	async function revoke(t: Schemas['Token']) {
+	async function revoke(token: Schemas['Token']) {
 		busy = true;
 		try {
-			await api(`/v1/me/tokens/${t.id}`, { method: 'DELETE' });
-			toast(`Revoked “${t.name}”.`);
+			await api(`/v1/me/tokens/${token.id}`, { method: 'DELETE' });
+			toast(t('Revoked “{name}”.', { name: token.name }));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -59,67 +61,73 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Access tokens · Axon</title></svelte:head>
+<svelte:head><title>{t('Access tokens · Axon')}</title></svelte:head>
 
 <Section
 	id="tokens"
-	title="Access tokens"
-	description="For scripts and sync tools. A token can read (or change) your data, but never manage your account, export it, or delete it."
+	title={t('Access tokens')}
+	description={t(
+		'For scripts and sync tools. A token can read (or change) your data, but never manage your account, export it, or delete it.'
+	)}
 >
 	<p class="muted">
-		Every endpoint is documented in the <a href="/api-docs/index.html" rel="external"
-			>API reference</a
-		>, generated from the live OpenAPI document.
+		{t('Every endpoint is documented in the')}
+		<a href="/api-docs/index.html" rel="external">{t('API reference')}</a>{t(
+			', generated from the live OpenAPI document.'
+		)}
 	</p>
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !tokens}
-		<Status kind="loading" message="Loading…" />
+		<Status kind="loading" message={t('Loading…')} />
 	{:else}
-		<List items={tokens} key={(t) => t.id} empty="No tokens yet.">
-			{#snippet row(t)}
+		<List items={tokens} key={(t) => t.id} empty={t('No tokens yet.')}>
+			{#snippet row(token)}
 				<span
-					>{t.name}
+					>{token.name}
 					<span class="muted"
-						>· {t.scope === 'read' ? 'read only' : 'read and write'} · expires {new Date(
-							t.expires_at
-						).toLocaleDateString()}</span
+						>{t(
+							token.scope === 'read'
+								? '· read only · expires {date}'
+								: '· read and write · expires {date}',
+							{ date: new Date(token.expires_at).toLocaleDateString(appLocale()) }
+						)}</span
 					></span
 				>
-				<Button variant="secondary" onclick={() => revoke(t)} {busy}>Revoke</Button>
+				<Button variant="secondary" onclick={() => revoke(token)} {busy}>{t('Revoke')}</Button>
 			{/snippet}
 		</List>
 	{/if}
 	{#if secret}
-		<p role="status">Copy this token now; it will not be shown again:</p>
+		<p role="status">{t('Copy this token now; it will not be shown again:')}</p>
 		<p><code>{secret}</code></p>
 	{/if}
 	<form onsubmit={create}>
 		<TextField
 			id="token-name"
-			label="Name"
-			placeholder="e.g. Notes sync"
+			label={t('Name')}
+			placeholder={t('e.g. Notes sync')}
 			bind:value={name}
 			maxlength={100}
 			required
 		/>
 		<div class="field">
-			<label for="token-scope">Access</label>
+			<label for="token-scope">{t('Access')}</label>
 			<select id="token-scope" bind:value={scope}>
-				<option value="read">Read only</option>
-				<option value="write">Read and write</option>
+				<option value="read">{t('Read only')}</option>
+				<option value="write">{t('Read and write')}</option>
 			</select>
 		</div>
 		<TextField
 			id="token-days"
-			label="Expires after (days)"
+			label={t('Expires after (days)')}
 			type="number"
 			min={1}
 			max={365}
 			bind:value={days}
 			required
 		/>
-		<Button type="submit" {busy}>Create token</Button>
+		<Button type="submit" {busy}>{t('Create token')}</Button>
 	</form>
 </Section>
 

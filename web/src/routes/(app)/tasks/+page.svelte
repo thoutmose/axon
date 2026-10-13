@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
@@ -13,53 +15,53 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	const views = [
-		{ id: 'gtd', label: 'GTD board' },
-		{ id: 'kanban', label: 'Kanban' },
-		{ id: 'today', label: 'Today' },
-		{ id: 'overdue', label: 'Overdue' },
-		{ id: 'week', label: 'Week' },
-		{ id: 'month', label: 'Month' },
-		{ id: 'inbox', label: 'Inbox' },
-		{ id: 'next', label: 'Next' },
-		{ id: 'doing', label: 'In progress' },
-		{ id: 'waiting', label: 'Waiting' },
-		{ id: 'someday', label: 'Someday' },
-		{ id: 'done', label: 'Done' }
-	];
-	const empty: Record<string, string> = {
-		today: 'Nothing due or planned for today.',
-		overdue: 'Nothing overdue.',
-		week: 'Nothing planned this week.',
-		month: 'Nothing planned in the next 30 days.',
-		inbox: 'Inbox zero. Press n anywhere to capture something.',
-		next: 'No next actions. Clarify your inbox to find some.',
-		doing: 'Nothing in progress.',
-		waiting: 'Not waiting on anyone.',
-		someday: 'No someday/maybe ideas yet.',
-		done: 'Nothing completed yet.'
-	};
+	const views = $derived([
+		{ id: 'gtd', label: t('GTD board') },
+		{ id: 'kanban', label: t('Kanban') },
+		{ id: 'today', label: t('Today') },
+		{ id: 'overdue', label: t('Overdue') },
+		{ id: 'week', label: t('Week') },
+		{ id: 'month', label: t('Month') },
+		{ id: 'inbox', label: t('Inbox') },
+		{ id: 'next', label: t('Next') },
+		{ id: 'doing', label: t('In progress') },
+		{ id: 'waiting', label: t('Waiting') },
+		{ id: 'someday', label: t('Someday') },
+		{ id: 'done', label: t('Done') }
+	]);
+	const empty: Record<string, string> = $derived({
+		today: t('Nothing due or planned for today.'),
+		overdue: t('Nothing overdue.'),
+		week: t('Nothing planned this week.'),
+		month: t('Nothing planned in the next 30 days.'),
+		inbox: t('Inbox zero. Press n anywhere to capture something.'),
+		next: t('No next actions. Clarify your inbox to find some.'),
+		doing: t('Nothing in progress.'),
+		waiting: t('Not waiting on anyone.'),
+		someday: t('No someday/maybe ideas yet.'),
+		done: t('Nothing completed yet.')
+	});
 
 	// Boards show several statuses side by side; each column is one status.
-	const boards: Record<string, Omit<BoardColumn, 'tasks'>[]> = {
+	const boards: Record<string, Omit<BoardColumn, 'tasks'>[]> = $derived({
 		gtd: [
-			{ status: 'inbox', label: 'Inbox', hint: 'Captured, not yet clarified.' },
+			{ status: 'inbox', label: t('Inbox'), hint: t('Captured, not yet clarified.') },
 			{
 				status: 'next',
-				label: 'Next actions',
-				hint: 'The very next physical step, by context.',
+				label: t('Next actions'),
+				hint: t('The very next physical step, by context.'),
 				byContext: true
 			},
-			{ status: 'waiting', label: 'Waiting for', hint: 'Delegated or blocked on someone.' },
-			{ status: 'someday', label: 'Someday / maybe', hint: 'Not now; review weekly.' }
+			{ status: 'waiting', label: t('Waiting for'), hint: t('Delegated or blocked on someone.') },
+			{ status: 'someday', label: t('Someday / maybe'), hint: t('Not now; review weekly.') }
 		],
 		kanban: [
-			{ status: 'next', label: 'To do', hint: 'Ready to start.' },
-			{ status: 'doing', label: 'In progress', hint: 'Keep this short.' },
-			{ status: 'waiting', label: 'Blocked', hint: 'Waiting on someone or something.' },
-			{ status: 'done', label: 'Done', hint: 'The most recent 20.' }
+			{ status: 'next', label: t('To do'), hint: t('Ready to start.') },
+			{ status: 'doing', label: t('In progress'), hint: t('Keep this short.') },
+			{ status: 'waiting', label: t('Blocked'), hint: t('Waiting on someone or something.') },
+			{ status: 'done', label: t('Done'), hint: t('The most recent 20.') }
 		]
-	};
+	});
 
 	const view = $derived(page.url.searchParams.get('view') ?? 'gtd');
 	const board = $derived(boards[view]);
@@ -149,33 +151,39 @@
 		}
 	}
 
-	async function toggle(t: Task) {
+	async function toggle(task: Task) {
 		try {
-			const { etag } = await apiResponse<Task>(`/v1/tasks/${t.id}`);
-			const done = t.status !== 'done';
-			await api(`/v1/tasks/${t.id}`, {
+			const { etag } = await apiResponse<Task>(`/v1/tasks/${task.id}`);
+			const done = task.status !== 'done';
+			await api(`/v1/tasks/${task.id}`, {
 				method: 'PATCH',
 				headers: { 'If-Match': etag },
 				body: { status: done ? 'done' : 'next' }
 			});
-			toast(done ? (t.recurrence ? 'Done. The next one is scheduled.' : 'Done.') : 'Reopened.');
+			toast(
+				done
+					? task.recurrence
+						? t('Done. The next one is scheduled.')
+						: t('Done.')
+					: t('Reopened.')
+			);
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
 		}
 	}
 
-	async function move(t: Task, status: Task['status']) {
-		if (t.status === status) return;
+	async function move(task: Task, status: Task['status']) {
+		if (task.status === status) return;
 		try {
-			const { etag } = await apiResponse<Task>(`/v1/tasks/${t.id}`);
-			await api(`/v1/tasks/${t.id}`, {
+			const { etag } = await apiResponse<Task>(`/v1/tasks/${task.id}`);
+			await api(`/v1/tasks/${task.id}`, {
 				method: 'PATCH',
 				headers: { 'If-Match': etag },
 				body: { status }
 			});
 			const to = board?.find((c) => c.status === status)?.label ?? status;
-			toast(`Moved “${t.title}” to ${to}.`);
+			toast(t('Moved “{title}” to {to}.', { title: task.title, to }));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -185,7 +193,7 @@
 	async function checkIn() {
 		try {
 			await api(`/v1/checkins/daily/${today}`, { method: 'PUT', body: {} });
-			toast('Checked in for today.');
+			toast(t('Checked in for today.'));
 			checkedIn = true;
 		} catch (err) {
 			toast(message(err), 'error');
@@ -231,29 +239,32 @@
 	}
 </script>
 
-<svelte:head><title>Tasks · Axon</title></svelte:head>
+<svelte:head><title>{t('Tasks · Axon')}</title></svelte:head>
 
 <div class="head">
-	<h1>Tasks</h1>
+	<h1>{t('Tasks')}</h1>
 	{#if view === 'today' && today}
 		<Button variant={checkedIn ? 'ghost' : 'secondary'} onclick={checkIn} disabled={checkedIn}>
-			{checkedIn ? '✓ Checked in today' : 'Daily check-in'}
+			{checkedIn ? t('✓ Checked in today') : t('Daily check-in')}
 		</Button>
 	{/if}
 </div>
 
 <AgentDock {...pageAgents.tasks} onapplied={() => load()} />
-<p class="muted hint">Press <kbd>n</kbd> anywhere to capture a thought to your inbox.</p>
+<p class="muted hint">
+	{t('Press')} <kbd>n</kbd>
+	{t('anywhere to capture a thought to your inbox.')}
+</p>
 
-<nav aria-label="Task views" class="tabs">
+<nav aria-label={t('Task views')} class="tabs">
 	{#each views as v (v.id)}
 		<a href="?view={v.id}" aria-current={view === v.id ? 'page' : undefined}>{v.label}</a>
 	{/each}
 </nav>
 
 {#if contexts.length}
-	<div class="contexts" role="group" aria-label="Filter by context">
-		<button class:active={!context} onclick={() => filter(null)}>All</button>
+	<div class="contexts" role="group" aria-label={t('Filter by context')}>
+		<button class:active={!context} onclick={() => filter(null)}>{t('All')}</button>
 		{#each contexts as c (c.context)}
 			<button class:active={context === c.context} onclick={() => filter(c.context)}
 				>{c.context} <span class="muted">{c.open}</span></button
@@ -264,16 +275,16 @@
 
 {#if view !== 'done'}
 	<form class="quick" onsubmit={quickAdd}>
-		<label for="quick" class="visually-hidden">Add a task</label>
+		<label for="quick" class="visually-hidden">{t('Add a task')}</label>
 		<input
 			id="quick"
-			placeholder="Add a task…"
+			placeholder={t('Add a task…')}
 			bind:value={quick}
 			maxlength="500"
 			required
 			autocomplete="off"
 		/>
-		<Button type="submit" variant="secondary">Add</Button>
+		<Button type="submit" variant="secondary">{t('Add')}</Button>
 	</form>
 {/if}
 
@@ -282,7 +293,7 @@
 {:else if board}
 	{#if columns}
 		<TaskBoard
-			label={view === 'gtd' ? 'GTD board' : 'Kanban board'}
+			label={view === 'gtd' ? t('GTD board') : t('Kanban board')}
 			{columns}
 			{today}
 			onmove={move}
@@ -290,12 +301,12 @@
 			ontoggle={toggle}
 		/>
 	{:else}
-		<Status kind="loading" message="Loading tasks…" />
+		<Status kind="loading" message={t('Loading tasks…')} />
 	{/if}
 {:else if !tasks}
-	<Status kind="loading" message="Loading tasks…" />
+	<Status kind="loading" message={t('Loading tasks…')} />
 {:else if tasks.length === 0}
-	<Status kind="empty" message={empty[view] ?? 'Nothing here.'} />
+	<Status kind="empty" message={empty[view] ?? t('Nothing here.')} />
 {:else}
 	<div class="select-bar">
 		<Button
@@ -303,28 +314,35 @@
 			onclick={() => {
 				selecting = !selecting;
 				picked = [];
-			}}>{selecting ? 'Done selecting' : 'Select'}</Button
+			}}>{selecting ? t('Done selecting') : t('Select')}</Button
 		>
 		{#if selecting}
-			<Button variant="ghost" onclick={() => (picked = tasks!.map((t) => t.id))}>Select all</Button>
+			<Button variant="ghost" onclick={() => (picked = tasks!.map((t) => t.id))}
+				>{t('Select all')}</Button
+			>
 		{/if}
 	</div>
 	{#if selecting && picked.length}
-		<div class="bulk" role="group" aria-label="Change {picked.length} selected tasks">
-			<strong>{picked.length} selected</strong>
+		<div
+			class="bulk"
+			role="group"
+			aria-label={t('Change {length} selected tasks', { length: picked.length })}
+		>
+			<strong>{t('{length} selected', { length: picked.length })}</strong>
 			<Button
 				variant="secondary"
-				onclick={() => bulk({ change: { status: 'next' } }, 'moved to Next')}>Next</Button
+				onclick={() => bulk({ change: { status: 'next' } }, 'moved to Next')}>{t('Next')}</Button
 			>
 			<Button variant="secondary" onclick={() => bulk({ change: { status: 'waiting' } }, 'waiting')}
-				>Waiting</Button
+				>{t('Waiting')}</Button
 			>
 			<Button
 				variant="secondary"
-				onclick={() => bulk({ change: { status: 'someday' } }, 'set to someday')}>Someday</Button
+				onclick={() => bulk({ change: { status: 'someday' } }, 'set to someday')}
+				>{t('Someday')}</Button
 			>
 			<Button variant="secondary" onclick={() => bulk({ change: { status: 'done' } }, 'done')}
-				>Done</Button
+				>{t('Done')}</Button
 			>
 			<form
 				onsubmit={(e) => {
@@ -332,9 +350,16 @@
 					bulk({ change: { context: bulkContext.trim() || null } }, 'given a context');
 				}}
 			>
-				<label for="bulk-context" class="visually-hidden">Context for the selected tasks</label>
-				<input id="bulk-context" placeholder="@context" bind:value={bulkContext} maxlength="50" />
-				<Button type="submit" variant="ghost">Set context</Button>
+				<label for="bulk-context" class="visually-hidden"
+					>{t('Context for the selected tasks')}</label
+				>
+				<input
+					id="bulk-context"
+					placeholder={t('@context')}
+					bind:value={bulkContext}
+					maxlength="50"
+				/>
+				<Button type="submit" variant="ghost">{t('Set context')}</Button>
 			</form>
 			<form
 				onsubmit={(e) => {
@@ -345,55 +370,59 @@
 					);
 				}}
 			>
-				<label for="bulk-due" class="visually-hidden">Due date for the selected tasks</label>
+				<label for="bulk-due" class="visually-hidden">{t('Due date for the selected tasks')}</label>
 				<input id="bulk-due" type="date" bind:value={bulkDue} />
-				<Button type="submit" variant="ghost">Set due date</Button>
+				<Button type="submit" variant="ghost">{t('Set due date')}</Button>
 			</form>
-			<Button variant="danger" onclick={() => bulk({ delete: true }, 'deleted')}>Delete</Button>
+			<Button variant="danger" onclick={() => bulk({ delete: true }, 'deleted')}
+				>{t('Delete')}</Button
+			>
 		</div>
 	{/if}
 	<ul class="tasks">
-		{#each tasks as t (t.id)}
+		{#each tasks as row (row.id)}
 			<li
-				class:done={t.status === 'done' || t.status === 'cancelled'}
-				class:picked={picked.includes(t.id)}
+				class:done={row.status === 'done' || row.status === 'cancelled'}
+				class:picked={picked.includes(row.id)}
 			>
 				{#if selecting}
 					<input
 						type="checkbox"
 						class="pick"
-						checked={picked.includes(t.id)}
-						onchange={(e) => pick(t.id, e.currentTarget.checked)}
-						aria-label={`Select ${t.title}`}
+						checked={picked.includes(row.id)}
+						onchange={(e) => pick(row.id, e.currentTarget.checked)}
+						aria-label={t('Select {title}', { title: row.title })}
 					/>
 				{:else}
 					<input
 						type="checkbox"
-						checked={t.status === 'done'}
-						onchange={() => toggle(t)}
-						aria-label={`Complete ${t.title}`}
+						checked={row.status === 'done'}
+						onchange={() => toggle(row)}
+						aria-label={t('Complete {title}', { title: row.title })}
 					/>
 				{/if}
-				<button class="title" onclick={() => (editing = t.id)}>{t.title}</button>
+				<button class="title" onclick={() => (editing = row.id)}>{row.title}</button>
 				<span class="meta">
-					{#if t.recurrence}<span title="Repeats" aria-label="Repeats">↻</span>{/if}
-					{#if t.remind_at && new Date(t.remind_at).getTime() > Date.now()}<span title="Reminder"
-							>🔔 {new Date(t.remind_at).toLocaleString(undefined, {
-								weekday: 'short',
-								hour: '2-digit',
-								minute: '2-digit'
-							})}</span
+					{#if row.recurrence}<span title={t('Repeats')} aria-label={t('Repeats')}>↻</span>{/if}
+					{#if row.remind_at && new Date(row.remind_at).getTime() > Date.now()}<span
+							title={t('Reminder')}
+							>{'🔔 ' +
+								new Date(row.remind_at).toLocaleString(appLocale(), {
+									weekday: 'short',
+									hour: '2-digit',
+									minute: '2-digit'
+								})}</span
 						>{/if}
-					{#if t.context}<span class="chip">{t.context}</span>{/if}
-					{#if t.due_on}<span class:overdue={overdue(t, today)}
-							>Due {relativeDay(t.due_on, today)}</span
+					{#if row.context}<span class="chip">{row.context}</span>{/if}
+					{#if row.due_on}<span class:overdue={overdue(row, today)}
+							>{t('Due {value}', { value: relativeDay(row.due_on, today) })}</span
 						>
-					{:else if t.scheduled_on}<span>{relativeDay(t.scheduled_on, today)}</span>{/if}
+					{:else if row.scheduled_on}<span>{relativeDay(row.scheduled_on, today)}</span>{/if}
 				</span>
 			</li>
 		{/each}
 	</ul>
-	{#if cursor}<Button variant="secondary" onclick={() => load(true)}>Show more</Button>{/if}
+	{#if cursor}<Button variant="secondary" onclick={() => load(true)}>{t('Show more')}</Button>{/if}
 {/if}
 
 <TaskEditor bind:id={editing} onchange={() => load()} />

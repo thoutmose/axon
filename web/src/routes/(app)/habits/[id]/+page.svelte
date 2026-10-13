@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -83,7 +84,7 @@
 			});
 			habit = res.data;
 			etag = res.etag;
-			toast('Saved.');
+			toast(t('Saved.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
@@ -95,7 +96,7 @@
 		busy = true;
 		try {
 			await api(`/v1/habits/${id}`, { method: 'DELETE' });
-			deleted('Habit deleted.', id, () => goto(`/habits/${id}`));
+			deleted(t('Habit deleted.'), id, () => goto(`/habits/${id}`));
 			await goto('/habits');
 		} catch (err) {
 			toast(message(err), 'error');
@@ -104,33 +105,33 @@
 		}
 	}
 
-	const dayState: Record<string, string> = {
+	const dayState: Record<string, string> = $derived({
 		done: 'done',
-		two_minute: 'done (two-minute version)',
-		skipped: 'rest day'
-	};
+		two_minute: t('done (two-minute version)'),
+		skipped: t('rest day')
+	});
 	function describe(day: string): string {
 		if (checkins[day]) return dayState[checkins[day]];
-		return habit?.days.includes(isoWeekday(day)) ? 'not checked in' : 'not scheduled';
+		return habit?.days.includes(isoWeekday(day)) ? t('not checked in') : t('not scheduled');
 	}
 </script>
 
-<svelte:head><title>{habit?.title ?? 'Habit'} · Axon</title></svelte:head>
+<svelte:head><title>{habit?.title ?? t('Habit')} · Axon</title></svelte:head>
 
-<p class="crumbs"><a href="/habits">← Habits</a></p>
+<p class="crumbs"><a href="/habits">{t('← Habits')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !habit}
-	<Status kind="loading" message="Loading habit…" />
+	<Status kind="loading" message={t('Loading habit…')} />
 {:else}
 	<h1>{habit.title}</h1>
 	<p class="muted">
-		{scheduleLabel(habit.days)}{habit.status !== 'active' ? ` · ${habit.status}` : ''}
+		{scheduleLabel(habit.days) + (habit.status !== 'active' ? ` · ${t(habit.status)}` : '')}
 	</p>
 
 	<section class="card" aria-labelledby="history-title">
-		<h2 id="history-title">Last four weeks</h2>
+		<h2 id="history-title">{t('Last four weeks')}</h2>
 		<ol class="grid">
 			{#each lastDays(habit.state.today, 28) as day (day)}
 				<li
@@ -143,107 +144,129 @@
 			{/each}
 		</ol>
 		<p class="muted small legend">
-			<span class="cell done"></span> done <span class="cell two_minute"></span> two-minute
-			<span class="cell skipped"></span> rest <span class="cell"></span> open
+			<span class="cell done"></span>
+			{t('done')} <span class="cell two_minute"></span>
+			{t('two-minute')}
+			<span class="cell skipped"></span>
+			{t('rest')} <span class="cell"></span>
+			{t('open')}
 		</p>
 	</section>
 
 	<Connections id={habit.id} type="habit" />
 
 	<section class="card" aria-labelledby="design-title">
-		<h2 id="design-title">Design</h2>
+		<h2 id="design-title">{t('Design')}</h2>
 		<form onsubmit={save}>
-			<TextField id="h-title" label="Habit" bind:value={form.title} maxlength={500} required />
+			<TextField id="h-title" label={t('Habit')} bind:value={form.title} maxlength={500} required />
 			<fieldset class="kind">
-				<legend>Kind</legend>
-				<label><input type="radio" value="build" bind:group={form.kind} /> Build</label>
-				<label><input type="radio" value="break" bind:group={form.kind} /> Break</label>
+				<legend>{t('Kind')}</legend>
+				<label><input type="radio" value="build" bind:group={form.kind} /> {t('Build')}</label>
+				<label><input type="radio" value="break" bind:group={form.kind} /> {t('Break')}</label>
 			</fieldset>
 			<TextField
 				id="h-identity"
-				label="Identity"
-				hint="Who you are becoming; each check-in is a vote."
+				label={t('Identity')}
+				hint={t('Who you are becoming; each check-in is a vote.')}
 				bind:value={form.identity}
 				maxlength={500}
 			/>
 			<div class="pair">
 				<div class="field">
-					<label for="h-time">Time</label>
+					<label for="h-time">{t('Time')}</label>
 					<input id="h-time" type="time" bind:value={form.intention_time} />
 				</div>
-				<TextField id="h-place" label="Place" bind:value={form.intention_place} maxlength={500} />
+				<TextField
+					id="h-place"
+					label={t('Place')}
+					bind:value={form.intention_place}
+					maxlength={500}
+				/>
 			</div>
 			<TextField
 				id="h-two"
-				label="Two-minute version"
-				hint="The smallest step that still counts."
+				label={t('Two-minute version')}
+				hint={t('The smallest step that still counts.')}
 				bind:value={form.two_minute}
 				maxlength={500}
 			/>
 			<TextField
 				id="h-stack"
-				label="After…"
-				hint="An existing habit it follows."
+				label={t('After…')}
+				hint={t('An existing habit it follows.')}
 				bind:value={form.stack_after}
 				maxlength={500}
 			/>
 			<TextField
 				id="h-cue"
-				label="Cue"
-				hint="When and where."
+				label={t('Cue')}
+				hint={t('When and where.')}
 				bind:value={form.cue}
 				maxlength={500}
 			/>
-			<TextField id="h-craving" label="Why it matters" bind:value={form.craving} maxlength={500} />
+			<TextField
+				id="h-craving"
+				label={t('Why it matters')}
+				bind:value={form.craving}
+				maxlength={500}
+			/>
 			<TextField
 				id="h-reward"
-				label="Reward"
-				hint="Something satisfying right after."
+				label={t('Reward')}
+				hint={t('Something satisfying right after.')}
 				bind:value={form.reward}
 				maxlength={500}
 			/>
 			<TextField
 				id="h-partner"
-				label="Accountability partner"
+				label={t('Accountability partner')}
 				bind:value={form.contract_partner}
 				maxlength={200}
 			/>
-			<TextField id="h-pledge" label="Pledge" bind:value={form.contract_pledge} maxlength={2000} />
+			<TextField
+				id="h-pledge"
+				label={t('Pledge')}
+				bind:value={form.contract_pledge}
+				maxlength={2000}
+			/>
 			<fieldset class="days">
-				<legend>Days</legend>
+				<legend>{t('Days')}</legend>
 				{#each weekdays as d (d.id)}
 					<label
 						><input type="checkbox" value={d.id} bind:group={form.days} />
-						<span aria-hidden="true">{d.short}</span><span class="visually-hidden">{d.long}</span
+						<span aria-hidden="true">{t(d.short)}</span><span class="visually-hidden"
+							>{t(d.long)}</span
 						></label
 					>
 				{/each}
 			</fieldset>
 			<div class="field">
-				<label for="h-status">Status</label>
+				<label for="h-status">{t('Status')}</label>
 				<select id="h-status" bind:value={form.status}>
-					<option value="active">Active</option>
-					<option value="paused">Paused (no prompts)</option>
-					<option value="archived">Archived</option>
+					<option value="active">{t('Active')}</option>
+					<option value="paused">{t('Paused (no prompts)')}</option>
+					<option value="archived">{t('Archived')}</option>
 				</select>
 			</div>
 			<div class="row">
-				<Button type="submit" {busy} disabled={form.days.length === 0}>Save</Button>
+				<Button type="submit" {busy} disabled={form.days.length === 0}>{t('Save')}</Button>
 				<span class="grow"></span>
-				<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete habit</Button>
+				<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete habit')}</Button>
 			</div>
 		</form>
 	</section>
 {/if}
 
-<Dialog bind:open={confirmDelete} title="Delete this habit?">
+<Dialog bind:open={confirmDelete} title={t('Delete this habit?')}>
 	<p>
-		“{habit?.title}” and its check-ins are removed. To keep the history, pause or archive it
-		instead.
+		{t(
+			'“{title}” and its check-ins are removed. To keep the history, pause or archive it instead.',
+			{ title: habit?.title }
+		)}
 	</p>
 	<div class="row end">
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove} {busy}>Delete</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
+		<Button variant="danger" onclick={remove} {busy}>{t('Delete')}</Button>
 	</div>
 </Dialog>
 

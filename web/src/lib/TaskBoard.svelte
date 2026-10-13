@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import { t } from '$lib/i18n.svelte';
 	import type { Task } from '$lib/tasks';
 
 	export type BoardColumn = {
@@ -37,9 +38,9 @@
 	function groups(col: BoardColumn): [string, Task[]][] {
 		if (!col.byContext) return [['', col.tasks]];
 		const out = new Map<string, Task[]>();
-		for (const t of col.tasks) {
-			const key = t.context ?? 'No context';
-			out.set(key, [...(out.get(key) ?? []), t]);
+		for (const task of col.tasks) {
+			const key = task.context ?? t('No context');
+			out.set(key, [...(out.get(key) ?? []), task]);
 		}
 		return [...out].sort(([a], [b]) =>
 			a === 'No context' ? 1 : b === 'No context' ? -1 : a.localeCompare(b)
@@ -81,37 +82,41 @@
 			{#each groups(col) as [context, tasks] (context)}
 				{#if context}<h3>{context}</h3>{/if}
 				<ul>
-					{#each tasks as t (t.id)}
+					{#each tasks as item (item.id)}
 						<li
 							draggable="true"
-							ondragstart={() => (dragging = t)}
+							ondragstart={() => (dragging = item)}
 							ondragend={() => (dragging = null)}
-							class:done={t.status === 'done'}
+							class:done={item.status === 'done'}
 						>
 							<input
 								type="checkbox"
-								checked={t.status === 'done'}
-								onchange={() => ontoggle(t)}
-								aria-label={`Complete ${t.title}`}
+								checked={item.status === 'done'}
+								onchange={() => ontoggle(item)}
+								aria-label={t('Complete {title}', { title: item.title })}
 							/>
 							<button
 								class="title"
-								onclick={() => onopen(t.id)}
-								onkeydown={(e) => onkeydown(e, t, i)}>{t.title}</button
+								onclick={() => onopen(item.id)}
+								onkeydown={(e) => onkeydown(e, item, i)}>{item.title}</button
 							>
 							<span class="meta">
-								{#if t.recurrence}<span title="Repeats" aria-label="Repeats">↻</span>{/if}
-								{#if t.context && !col.byContext}<span class="chip">{t.context}</span>{/if}
-								{#if t.due_on}<span class:overdue={overdue(t, today)}
-										>Due {relativeDay(t.due_on, today)}</span
+								{#if item.recurrence}<span title={t('Repeats')} aria-label={t('Repeats')}>↻</span
+									>{/if}
+								{#if item.context && !col.byContext}<span class="chip">{item.context}</span>{/if}
+								{#if item.due_on}<span class:overdue={overdue(item, today)}
+										>{t('Due {value}', { value: relativeDay(item.due_on, today) })}</span
 									>
-								{:else if t.scheduled_on}<span>{relativeDay(t.scheduled_on, today)}</span>{/if}
+								{:else if item.scheduled_on}<span>{relativeDay(item.scheduled_on, today)}</span
+									>{/if}
 							</span>
-							<label class="visually-hidden" for="move-{t.id}">Move {t.title} to</label>
+							<label class="visually-hidden" for="move-{item.id}"
+								>{t('Move {title} to', { title: item.title })}</label
+							>
 							<select
-								id="move-{t.id}"
-								value={t.status}
-								onchange={(e) => onmove(t, e.currentTarget.value as Task['status'])}
+								id="move-{item.id}"
+								value={item.status}
+								onchange={(e) => onmove(item, e.currentTarget.value as Task['status'])}
 							>
 								{#each columns as c (c.status)}<option value={c.status}>{c.label}</option>{/each}
 							</select>
@@ -119,15 +124,14 @@
 					{/each}
 				</ul>
 			{:else}
-				<p class="empty">Nothing here.</p>
+				<p class="empty">{t('Nothing here.')}</p>
 			{/each}
 		</section>
 	{/each}
 </div>
 <p class="keys">
-	Drag a card to another column, use its menu, or focus its title and press <kbd>Shift</kbd>+<kbd
-		>←</kbd
-	>/<kbd>→</kbd>.
+	{t('Drag a card to another column, use its menu, or focus its title and press')}
+	<kbd>Shift</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.
 </p>
 
 <style>

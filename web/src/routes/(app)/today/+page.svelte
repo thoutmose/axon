@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { localDate } from '$lib/dates';
+	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { t } from '$lib/i18n.svelte';
@@ -28,19 +28,19 @@
 
 	// Customisable Today (EP-63): the cards shown, in order; counts stay at
 	// the top and progress at the bottom.
-	const labels: Record<string, string> = {
-		kpis: 'Counts (overdue, today, inbox)',
-		tasks: "Today's tasks",
-		milestones: 'Coming up (milestones)',
-		goals: 'Active goals',
-		notes: 'Recent notes',
-		learning: 'Learning today',
-		habits: 'Habits today',
-		calendar: 'Calendar today',
-		household: 'Household',
-		overview: 'Your progress'
-	};
-	const all = Object.keys(labels);
+	const labels: Record<string, string> = $derived({
+		kpis: t('Counts (overdue, today, inbox)'),
+		tasks: t("Today's tasks"),
+		milestones: t('Coming up (milestones)'),
+		goals: t('Active goals'),
+		notes: t('Recent notes'),
+		learning: t('Learning today'),
+		habits: t('Habits today'),
+		calendar: t('Calendar today'),
+		household: t('Household'),
+		overview: t('Your progress')
+	});
+	const all = $derived(Object.keys(labels));
 	let sections = $state<string[]>(['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']);
 	const cards = $derived(sections.filter((x) => x !== 'kpis' && x !== 'overview'));
 	let customising = $state(false);
@@ -119,7 +119,7 @@
 			});
 			sections = chosen;
 			customising = false;
-			toast('Today is set.');
+			toast(t('Today is set.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		}
@@ -143,15 +143,15 @@
 		!!d && (d.totals.tasks === 0 || d.totals.notes === 0 || d.totals.goals === 0)
 	);
 
-	async function complete(t: Task) {
+	async function complete(task: Task) {
 		try {
-			const { etag } = await apiResponse<Schemas['Task']>(`/v1/tasks/${t.id}`);
-			await api(`/v1/tasks/${t.id}`, {
+			const { etag } = await apiResponse<Schemas['Task']>(`/v1/tasks/${task.id}`);
+			await api(`/v1/tasks/${task.id}`, {
 				method: 'PATCH',
 				headers: { 'If-Match': etag },
 				body: { status: 'done' }
 			});
-			toast(t.recurrence ? 'Done. The next one is scheduled.' : 'Done.');
+			toast(task.recurrence ? t('Done. The next one is scheduled.') : t('Done.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -163,13 +163,13 @@
 		try {
 			await api(`/v1/checkins/daily/${d.today}`, { method: 'PUT', body: {} });
 			d.checked_in = true;
-			toast('Checked in for today.');
+			toast(t('Checked in for today.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		}
 	}
 
-	const dateLabel = new Date().toLocaleDateString(undefined, {
+	const dateLabel = new Date().toLocaleDateString(appLocale(), {
 		weekday: 'long',
 		day: 'numeric',
 		month: 'long'
@@ -177,11 +177,11 @@
 
 	function greeting(): string {
 		const h = new Date().getHours();
-		return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+		return h < 12 ? t('Good morning') : h < 18 ? t('Good afternoon') : t('Good evening');
 	}
 </script>
 
-<svelte:head><title>Today · Axon</title></svelte:head>
+<svelte:head><title>{t('Today · Axon')}</title></svelte:head>
 
 <!-- A compact header: the dashboard starts right under the navigation. -->
 <section class="hero" aria-labelledby="today-title">
@@ -193,7 +193,7 @@
 				onclick={checkIn}
 				disabled={d.checked_in}
 			>
-				{d.checked_in ? '✓ Checked in today' : 'Daily check-in'}
+				{d.checked_in ? t('✓ Checked in today') : t('Daily check-in')}
 			</Button>
 		{/if}
 	</div>
@@ -204,36 +204,41 @@
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !d}
-		<Status kind="loading" message="Loading your day…" />
+		<Status kind="loading" message={t('Loading your day…')} />
 	{:else}
 		{#if firstRun}
 			<section class="card start" aria-labelledby="start-title">
-				<h2 id="start-title">Get started</h2>
+				<h2 id="start-title">{t('Get started')}</h2>
 				<ol>
 					<li class:done={d.totals.tasks > 0}>
-						{#if d.totals.tasks > 0}<span class="visually-hidden">Done:</span>✓{/if}
+						{#if d.totals.tasks > 0}<span class="visually-hidden">{t('Done:')}</span>✓{/if}
 						<span
-							>Capture your first task: press <kbd>n</kbd> anywhere, or
-							<a href="/tasks?view=inbox">open your inbox</a>.</span
+							>{t('Capture your first task: press')} <kbd>n</kbd>
+							{t('anywhere, or')}
+							<a href="/tasks?view=inbox">{t('open your inbox')}</a>.</span
 						>
 					</li>
 					<li class:done={d.totals.notes > 0}>
-						{#if d.totals.notes > 0}<span class="visually-hidden">Done:</span>✓{/if}
-						<span><a href="/notes">Write your first note</a>, or import your Markdown vault.</span>
+						{#if d.totals.notes > 0}<span class="visually-hidden">{t('Done:')}</span>✓{/if}
+						<span
+							><a href="/notes">{t('Write your first note')}</a>{t(
+								', or import your Markdown vault.'
+							)}</span
+						>
 					</li>
 					<li class:done={d.totals.goals > 0}>
-						{#if d.totals.goals > 0}<span class="visually-hidden">Done:</span>✓{/if}
-						<span><a href="/goals">Name a goal</a> you want to move this year.</span>
+						{#if d.totals.goals > 0}<span class="visually-hidden">{t('Done:')}</span>✓{/if}
+						<span><a href="/goals">{t('Name a goal')}</a> {t('you want to move this year.')}</span>
 					</li>
 				</ol>
 			</section>
 		{/if}
 
 		<div class="customise">
-			<Button variant="ghost" onclick={openCustomise}>Customise Today</Button>
+			<Button variant="ghost" onclick={openCustomise}>{t('Customise Today')}</Button>
 		</div>
 		{#if sections.includes('kpis')}
-			<ul class="kpis" aria-label="Task counts">
+			<ul class="kpis" aria-label={t('Task counts')}>
 				{#each d.kpis as k (k.id)}
 					<li>
 						<a href={kpiLinks[k.id]} class="glass" class:alert={k.id === 'overdue' && k.value > 0}>
@@ -255,24 +260,24 @@
 							<p class="muted">{t('Nothing due or planned for today.')}</p>
 						{:else}
 							<ul class="rows">
-								{#each d.tasks as t (t.id)}
+								{#each d.tasks as dayTask (dayTask.id)}
 									<li>
 										<input
 											type="checkbox"
-											onchange={() => complete(t)}
-											aria-label="Complete {t.title}"
+											onchange={() => complete(dayTask)}
+											aria-label={t('Complete {title}', { title: dayTask.title })}
 										/>
-										<span class="grow">{t.title}</span>
-										{#if t.due_on}
-											<span class="small" class:late={overdue(t, d.today)}
-												>Due {relativeDay(t.due_on, d.today)}</span
+										<span class="grow">{dayTask.title}</span>
+										{#if dayTask.due_on}
+											<span class="small" class:late={overdue(dayTask, d.today)}
+												>{t('Due {value}', { value: relativeDay(dayTask.due_on, d.today) })}</span
 											>
 										{/if}
 									</li>
 								{/each}
 							</ul>
 							{#if (d.kpis.find((k) => k.id === 'today')?.value ?? 0) > d.tasks.length}
-								<a href="/tasks?view=today">All of today's tasks →</a>
+								<a href="/tasks?view=today">{t("All of today's tasks →")}</a>
 							{/if}
 						{/if}
 					</section>
@@ -296,13 +301,16 @@
 					<section class="card" aria-labelledby="goals-title">
 						<h2 id="goals-title">{t('Active goals')}</h2>
 						{#if d.goals.length === 0}
-							<p class="muted">No active goals. <a href="/goals">Name one</a>.</p>
+							<p class="muted">{t('No active goals.')} <a href="/goals">{t('Name one')}</a>.</p>
 						{:else}
 							<ul class="goals">
 								{#each d.goals as g (g.id)}
 									<li>
 										<a href="/goals/{g.id}">{g.title}</a>
-										<ProgressBar progress={g.progress} label="Progress of {g.title}" />
+										<ProgressBar
+											progress={g.progress}
+											label={t('Progress of {title}', { title: g.title })}
+										/>
 									</li>
 								{/each}
 							</ul>
@@ -312,7 +320,7 @@
 					<section class="card" aria-labelledby="notes-title">
 						<h2 id="notes-title">{t('Recent notes')}</h2>
 						{#if d.notes.length === 0}
-							<p class="muted">No notes yet. <a href="/notes">Write one</a>.</p>
+							<p class="muted">{t('No notes yet.')} <a href="/notes">{t('Write one')}</a>.</p>
 						{:else}
 							<ul class="rows">
 								{#each d.notes as n (n.id)}
@@ -326,22 +334,24 @@
 						<h2 id="learning-title">{t('Learning today')}</h2>
 						{#if plan}
 							<p>
-								<strong>{plan.cards.due}</strong> cards{plan.cards.due
-									? ` · about ${plan.cards.minutes} min`
-									: ''}{#if plan.recall.due.length}
-									· <strong>{plan.recall.due.length}</strong> notes to recall{/if}{#if plan.test.due}
-									· the weekly test{/if}
+								<strong>{plan.cards.due}</strong>
+								{t(plan.cards.due ? 'cards · about {minutes} min' : 'cards', {
+									minutes: plan.cards.minutes
+								})}{#if plan.recall.due.length}
+									· <strong>{plan.recall.due.length}</strong>
+									{t('notes to recall')}{/if}{#if plan.test.due}
+									{t('· the weekly test')}{/if}
 							</p>
-							<a href="/learn">Learn → Today</a>
+							<a href="/learn">{t('Learn → Today')}</a>
 						{:else}
-							<p class="muted">Loading…</p>
+							<p class="muted">{t('Loading…')}</p>
 						{/if}
 					</section>
 				{:else if id === 'habits'}
 					<section class="card" aria-labelledby="habits-title">
 						<h2 id="habits-title">{t('Habits today')}</h2>
 						{#if habits.length === 0}
-							<p class="muted">No habit scheduled today.</p>
+							<p class="muted">{t('No habit scheduled today.')}</p>
 						{:else}
 							<ul class="rows">
 								{#each habits as h (h.id)}
@@ -350,7 +360,7 @@
 										<span class="small muted"
 											>{h.state.checked_in
 												? '✓ ' + h.state.checked_in
-												: h.two_minute || 'to do'}</span
+												: h.two_minute || t('to do')}</span
 										>
 									</li>
 								{/each}
@@ -362,7 +372,8 @@
 						<h2 id="calendar-title">{t('Calendar today')}</h2>
 						{#if events.length === 0}
 							<p class="muted">
-								Nothing in the calendars you follow today. <a href="/calendar">Calendar</a>
+								{t('Nothing in the calendars you follow today.')}
+								<a href="/calendar">{t('Calendar')}</a>
 							</p>
 						{:else}
 							<ul class="rows">
@@ -370,8 +381,8 @@
 									<li>
 										<span class="small time"
 											>{ev.all_day
-												? 'All day'
-												: new Date(ev.start).toLocaleTimeString(undefined, {
+												? t('All day')
+												: new Date(ev.start).toLocaleTimeString(appLocale(), {
 														hour: '2-digit',
 														minute: '2-digit'
 													})}</span
@@ -387,9 +398,11 @@
 					<section class="card" aria-labelledby="household-title">
 						<h2 id="household-title">{t('Household')}</h2>
 						{#if !household}
-							<p class="muted">No household. <a href="/household">Start or join one</a>.</p>
+							<p class="muted">
+								{t('No household.')} <a href="/household">{t('Start or join one')}</a>.
+							</p>
 						{:else if mine.length === 0}
-							<p class="muted">Nothing open for you.</p>
+							<p class="muted">{t('Nothing open for you.')}</p>
 						{:else}
 							<ul class="rows">
 								{#each mine.slice(0, 6) as i (i.id)}
@@ -398,7 +411,7 @@
 									</li>
 								{/each}
 							</ul>
-							<a href="/household">All lists →</a>
+							<a href="/household">{t('All lists →')}</a>
 						{/if}
 					</section>
 				{/if}
@@ -410,9 +423,9 @@
 	{/if}
 </div>
 
-<Dialog bind:open={customising} title="Customise Today">
+<Dialog bind:open={customising} title={t('Customise Today')}>
 	<p class="muted small">
-		Choose the cards and their order. Counts stay at the top, your progress at the bottom.
+		{t('Choose the cards and their order. Counts stay at the top, your progress at the bottom.')}
 	</p>
 	<ul class="choose">
 		{#each draft as x, i (x.id)}
@@ -423,21 +436,21 @@
 						variant="ghost"
 						onclick={() => move(i, -1)}
 						disabled={i === 0}
-						aria-label="Move {labels[x.id]} up">↑</Button
+						aria-label={t('Move {value} up', { value: labels[x.id] })}>↑</Button
 					>
 					<Button
 						variant="ghost"
 						onclick={() => move(i, 1)}
 						disabled={i === draft.length - 1}
-						aria-label="Move {labels[x.id]} down">↓</Button
+						aria-label={t('Move {value} down', { value: labels[x.id] })}>↓</Button
 					>
 				</span>
 			</li>
 		{/each}
 	</ul>
 	<div class="dialog-actions">
-		<Button onclick={saveCustom}>Save</Button>
-		<Button variant="secondary" onclick={() => (customising = false)}>Cancel</Button>
+		<Button onclick={saveCustom}>{t('Save')}</Button>
+		<Button variant="secondary" onclick={() => (customising = false)}>{t('Cancel')}</Button>
 	</div>
 </Dialog>
 

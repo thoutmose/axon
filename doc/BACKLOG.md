@@ -134,6 +134,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-83 | Focus music | Owner request ("listen to the best music for productivity related to what I do during the Pomodoro session"): music composed in the browser, without words, matched to what the session is about (lo-fi beats, ambient, calm piano), chosen before or during a session. | SHOULD | 3 pts | EP-35 | Done |
 | EP-84 | Teaser on the home page | Owner request: with the demo on, the home page shows "Axon in under a minute", a tour of the demo with Axon's own music, captions in English and French, served by Axon itself; recorded by a script anyone can run again. | SHOULD | 2 pts | EP-82, EP-83 | Done |
 | EP-85 | Focus and Roadmaps in French | IS-31.06 says a page is translated when next touched: Focus, Roadmaps, the skills radar, and the focus sounds in Preferences now follow the language setting. | SHOULD | 1 pt | EP-31, EP-82, EP-83 | Done |
+| EP-86 | French everywhere in the web app | The rest of IS-31.06: all 86 remaining components in French (about 1,800 strings), dates in the interface's language, and two tests that keep it so. | SHOULD | 8 pts | EP-85 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -843,9 +844,10 @@ Cross-cutting matrix:
   - [x] Theme, font (system, serif, rounded, mono), text size, icon theme (emoji, symbols, none), and motion, applied through `<html>` attributes and CSS tokens; cached for the first paint.
 - [x] **EP-31/IS-31.05 — Template settings** · 3 pts · MUST
   - [x] "My template" for new notes, project defaults (description, WIP limit, docs folder with `{slug}`), and resource defaults (section, hard or soft kind, now editable on skills).
-- [ ] **EP-31/IS-31.06 — French for every page** · 8 pts · SHOULD
+- [x] **EP-31/IS-31.06 — French for every page** · 8 pts · SHOULD
   - [x] Shell, landing, sign-in, demo banner, Today and the command dashboard, account tabs, and Preferences are in French.
-  - [ ] Tasks, notes, goals, projects, habits, calendar, agents, and the remaining account pages still show English (Focus and Roadmaps are done: EP-85). They are translated as each page is next touched, and fully before 1.0 (EP-21).
+  - [x] Every other page, dialog, and component (EP-85, EP-86), checked by tests: no text outside `t()` in any template, and a French string for every key the code and Axon's own tables use.
+  - [ ] Text the API writes (dashboard and insight explanations, privacy purposes, badges, media suggestions) is still English: EP-87.
 
 **Exit evidence.** The integration test covers:
 - defaults, a JSON update, and per-field rejection;
@@ -1736,6 +1738,16 @@ Cross-cutting matrix:
 - [x] **EP-85/IS-85.01** · 1 pt · SHOULD — Every string on Focus and Roadmaps, the radar's captions, table, and hover text, the sound choices (Focus and Preferences), and the item types shown on Focus go through `t()`, with 104 French strings. Sentences around a link are split where the French reads well split. "0 jour d'affilée": the day count picks its form with `Intl.PluralRules`, since French counts zero as singular. Roadmap titles and library content are the person's own data and stay as they are.
 
 **Tests.** `i18n.test.ts` checks every French string keeps its placeholders; the English e2e suite is unchanged but for the matched-music line ("Lo-fi beats for “Buy timber”."). Both pages seen in French in Firefox.
+
+### EP-86 — French everywhere in the web app
+
+**Goal.** Finish IS-31.06 ("fully before 1.0"). After EP-85, 86 of 102 components still showed English only, about 1,500 strings in templates and 570 in code, with no way to tell what was left except reading every page.
+
+- [x] **EP-86/IS-86.01** · 2 pts · SHOULD — `i18nCoverage.test.ts`, written first: it fails on text between tags, in the attributes people read (placeholder, aria-label, title, label, alt, message, and the empty, hint, and description props), and on string literals in template expressions (both sides of a ternary, template literals and their `${…}` parts) that do not go through `t()`. A second test fails on any key passed to `t()`, in code or in Axon's own tables (templates, PARA kinds, weekdays, Atomic Habits laws, recurrence presets), that has no French; names and codes that read the same are listed.
+- [x] **EP-86/IS-86.02** · 5 pts · SHOULD — Every component goes through `t()`, with 1,800 French strings. Plurals and fragments that built English from parts (`passkey{s}`, "vote"/"votes", "card keeps"/"cards keep") became whole sentences per case. Loop variables named `t` were renamed so `t()` is never shadowed; tables of labels follow a language change (`$derived`), and Axon's own tables are translated where they are shown. `t()` shows a missing value as nothing, as `{value}` does in markup.
+- [x] **EP-86/IS-86.03** · 1 pt · SHOULD — Dates and numbers follow the interface's language (`appLocale()`: French gives French dates, in the browser's own French when it has one); "Today", "Tomorrow", and "Yesterday" are translated. Before, a French page said "Échéance Fri, Oct 22".
+
+**Tests.** The two coverage tests (each made to fail by adding an untranslated string); `relativeDay` and `formatDate` in French; the 66 English e2e tests unchanged and green; a Firefox walk through 42 pages in French with no page error, whose remaining English is the demo's own data (titles the person wrote) and text the API writes (EP-87).
 
 ### EP-20 — Analytics & insights
 

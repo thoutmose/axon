@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { layout, NODE_H, NODE_W, type Edge, type Skill } from './skillGraph';
 
 	let {
@@ -21,18 +22,23 @@
 </script>
 
 <div class="toolbar">
-	<button type="button" onclick={() => (zoom = Math.max(0.3, zoom - 0.2))} aria-label="Zoom out"
-		>−</button
+	<button
+		type="button"
+		onclick={() => (zoom = Math.max(0.3, zoom - 0.2))}
+		aria-label={t('Zoom out')}>−</button
 	>
 	<span class="muted small">{Math.round(zoom * 100)}%</span>
-	<button type="button" onclick={() => (zoom = Math.min(2, zoom + 0.2))} aria-label="Zoom in"
+	<button type="button" onclick={() => (zoom = Math.min(2, zoom + 0.2))} aria-label={t('Zoom in')}
 		>＋</button
 	>
 	<span class="legend small">
-		<span class="dot todo"></span> to learn <span class="dot learning"></span> learning
+		<span class="dot todo"></span>
+		{t('to learn')} <span class="dot learning"></span>
+		{t('learning')}
 		<span class="dot done"></span>
-		done
-		<span class="dot skipped"></span> skipped
+		{t('done')}
+		<span class="dot skipped"></span>
+		{t('skipped')}
 	</span>
 </div>
 <div class="viewport glass">
@@ -41,7 +47,10 @@
 		height={(g.height + 40) * zoom}
 		viewBox="-20 -20 {g.width + 40} {g.height + 40}"
 		role="group"
-		aria-label="Skill graph: {skills.length} skills, {done} done. Arrows point from a skill to what it needs first."
+		aria-label={t(
+			'Skill graph: {length} skills, {done} done. Arrows point from a skill to what it needs first.',
+			{ length: skills.length, done }
+		)}
 	>
 		<defs>
 			<marker
