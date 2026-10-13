@@ -2626,5 +2626,21 @@ export const fr: Record<string, string> = {
 	'{eaten} of {need} {unit}': '{eaten} sur {need} {unit}',
 	'above the reference': 'au-dessus de la référence',
 	'These are needs for keeping your weight, not a diet: Axon sets no weight-loss target. A dietitian can adapt them to you.':
-		'Ce sont des besoins pour garder votre poids, pas un régime : Axon ne fixe aucun objectif de perte de poids. Un diététicien peut les adapter à vous.'
+		'Ce sont des besoins pour garder votre poids, pas un régime : Axon ne fixe aucun objectif de perte de poids. Un diététicien peut les adapter à vous.',
+	'No barcode found in the photo. Try closer, with the lines straight.':
+		'Aucun code-barres trouvé sur la photo. Essayez plus près, avec les barres bien droites.',
+	'Photo of a meal': 'Photo d’un repas',
+	'Photo of a barcode': 'Photo d’un code-barres',
+	'Looking at the photo…': 'Analyse de la photo…',
+	'Before the photo is sent': 'Avant l’envoi de la photo',
+	'To estimate the meal, Axon sends the photo to your AI provider:':
+		'Pour estimer le repas, Axon envoie la photo à votre fournisseur d’IA :',
+	'Allow and send': 'Autoriser et envoyer',
+	'What the photo seems to hold': 'Ce que la photo semble contenir',
+	'Estimates from a photo can be far off, portions above all. Check and correct each line before you log it.':
+		'Les estimations d’après une photo peuvent être loin du compte, surtout les portions. Vérifiez et corrigez chaque ligne avant de l’enregistrer.',
+	Log: 'Noter',
+	'Log {name}': 'Noter {name}',
+	'Log the checked lines': 'Noter les lignes cochées',
+	Discard: 'Ignorer'
 };

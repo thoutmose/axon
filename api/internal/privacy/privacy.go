@@ -33,6 +33,7 @@ var Purposes = []Purpose{
 	{"health_ai", l10n.Mark("Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you.")},
 	{"food_lookups", l10n.Mark("Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them.")},
 	{"ai_embeddings", l10n.Mark("Send the text of your notes to the embedding service you chose, to search them by meaning. Turning it off deletes the stored embeddings.")},
+	{"food_photos", l10n.Mark("Send a photo of a meal to the AI provider you set up, to estimate what it contains. The photo is not kept, and its camera and location details are removed first.")},
 }
 
 // onWithdraw holds what must happen when a consent is withdrawn, such as

@@ -2,7 +2,13 @@ package l10n
 
 // catalog is the French for every string the API writes to people.
 var catalog = map[string]string{
-	"− 78, the middle of the female and male constants": "− 78, le milieu des constantes féminine et masculine",
+	"Photos are limited to 10 MB.": "Les photos sont limitées à 10 Mo.",
+	"Photos are not analysed in the shared demo, so nobody spends AI credit. Type the meal in instead.": "Les photos ne sont pas analysées dans la démo partagée, pour que personne ne dépense de crédit d’IA. Saisissez plutôt le repas.",
+	"Send a JPEG or PNG photo.": "Envoyez une photo JPEG ou PNG.",
+	"Send a photo of a meal to the AI provider you set up, to estimate what it contains. The photo is not kept, and its camera and location details are removed first.": "Envoyer la photo d’un repas au fournisseur d’IA que vous avez configuré, pour estimer ce qu’il contient. La photo n’est pas conservée, et ses informations d’appareil et de lieu sont retirées avant.",
+	"The photo could not be read as a meal. Try a closer, brighter photo, or type it in.":                                                                               "La photo n’a pas pu être lue comme un repas. Essayez une photo plus proche et plus lumineuse, ou saisissez-le.",
+	"Your AI provider could not look at the photo. Check that its model can read images, or type the meal in.":                                                          "Votre fournisseur d’IA n’a pas pu regarder la photo. Vérifiez que son modèle sait lire les images, ou saisissez le repas.",
+	"− 78, the middle of the female and male constants":                                                                                                                 "− 78, le milieu des constantes féminine et masculine",
 	"− 161 for women": "− 161 pour les femmes",
 	"+ 5 for men":     "+ 5 pour les hommes",
 	"Basal metabolic rate: %d kcal (Mifflin–St Jeor: 10 × weight + 6.25 × height − 5 × age %s).": "Métabolisme de base : %d kcal (Mifflin–St Jeor : 10 × poids + 6,25 × taille − 5 × âge %s).",

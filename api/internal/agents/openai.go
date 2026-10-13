@@ -28,8 +28,9 @@ func newOpenAICompatible(baseURL, apiKey, maxTokensField string) Provider {
 }
 
 type chatMessage struct {
-	Role       string     `json:"role"`
-	Content    *string    `json:"content"`
+	Role    string `json:"role"`
+	Content any    `json:"content"` // a string, or text and image parts
+
 	ToolCalls  []toolCall `json:"tool_calls,omitempty"`
 	ToolCallID string     `json:"tool_call_id,omitempty"`
 }
@@ -63,6 +64,10 @@ type wire struct {
 			Content   []struct {
 				Text string `json:"text"`
 			} `json:"content"`
+			Source struct {
+				MediaType string `json:"media_type"`
+				Data      string `json:"data"`
+			} `json:"source"`
 		} `json:"content"`
 	} `json:"messages"`
 	Tools []struct {
@@ -98,10 +103,14 @@ func (o openAICompatible) translate(p anthropic.BetaMessageNewParams) (map[strin
 	for _, m := range w.Messages {
 		var text []string
 		var calls []toolCall
+		var images []map[string]any
 		for _, c := range m.Content {
 			switch c.Type {
 			case "text":
 				text = append(text, c.Text)
+			case "image":
+				images = append(images, map[string]any{"type": "image_url",
+					"image_url": map[string]any{"url": "data:" + c.Source.MediaType + ";base64," + c.Source.Data}})
 			case "tool_use":
 				tc := toolCall{ID: c.ID, Type: "function"}
 				tc.Function.Name = c.Name
@@ -119,7 +128,13 @@ func (o openAICompatible) translate(p anthropic.BetaMessageNewParams) (map[strin
 				msgs = append(msgs, chatMessage{Role: "tool", ToolCallID: c.ToolUseID, Content: strp(result)})
 			}
 		}
-		if len(text) > 0 || len(calls) > 0 {
+		if len(images) > 0 {
+			parts := []map[string]any{}
+			if len(text) > 0 {
+				parts = append(parts, map[string]any{"type": "text", "text": strings.Join(text, "\n\n")})
+			}
+			msgs = append(msgs, chatMessage{Role: m.Role, Content: append(parts, images...)})
+		} else if len(text) > 0 || len(calls) > 0 {
 			msg := chatMessage{Role: m.Role, ToolCalls: calls}
 			if len(text) > 0 || m.Role == "user" {
 				msg.Content = strp(strings.Join(text, "\n\n"))
@@ -151,8 +166,11 @@ func (o openAICompatible) translate(p anthropic.BetaMessageNewParams) (map[strin
 type chatResponse struct {
 	Model   string `json:"model"`
 	Choices []struct {
-		FinishReason string      `json:"finish_reason"`
-		Message      chatMessage `json:"message"`
+		FinishReason string `json:"finish_reason"`
+		Message      struct {
+			Content   *string    `json:"content"`
+			ToolCalls []toolCall `json:"tool_calls"`
+		} `json:"message"`
 	} `json:"choices"`
 	Usage struct {
 		PromptTokens     int64 `json:"prompt_tokens"`

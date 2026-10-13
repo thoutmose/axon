@@ -67,3 +67,23 @@ func TestChatReplyBecomesMessage(t *testing.T) {
 		t.Fatalf("content filter = %s", m.StopReason)
 	}
 }
+
+// A photo goes to an OpenAI-style vision model as an image_url part (EP-89).
+func TestImagesBecomeImageURLParts(t *testing.T) {
+	p := anthropic.BetaMessageNewParams{
+		Model: "gpt-5", MaxTokens: 100,
+		Messages: []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(
+			anthropic.NewBetaImageBlock(anthropic.BetaBase64ImageSourceParam{Data: "AAAA", MediaType: anthropic.BetaBase64ImageSourceMediaTypeImageJPEG}),
+			anthropic.NewBetaTextBlock("What is on the plate?"),
+		)},
+	}
+	body, err := openAICompatible{maxTokensField: "max_completion_tokens"}.translate(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := json.Marshal(body)
+	want := `{"role":"user","content":[{"text":"What is on the plate?","type":"text"},{"image_url":{"url":"data:image/jpeg;base64,AAAA"},"type":"image_url"}]}`
+	if !strings.Contains(string(b), want) {
+		t.Fatalf("got\n%s", b)
+	}
+}

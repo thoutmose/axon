@@ -2950,6 +2950,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/health/food/estimate': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Estimate the foods and nutrients in a photo of a meal
+		 * @description The photo (JPEG or PNG, up to 10 MB) is re-encoded without its camera and location details, sent once to the person's AI provider, and never stored. Needs the ai_agents, health_data, and food_photos consents; counts against the monthly agent budget. Every line is an estimate for the person to check before logging it. Not in the shared demo.
+		 */
+		post: operations['estimateMealPhoto'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/health/needs': {
 		parameters: {
 			query?: never;
@@ -12179,6 +12199,49 @@ export interface operations {
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			429: components['responses']['Problem'];
+			503: components['responses']['Problem'];
+		};
+	};
+	estimateMealPhoto: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'image/jpeg': string;
+				'image/png': string;
+			};
+		};
+		responses: {
+			/** @description The estimate; items is empty when the photo shows no food. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							name: string;
+							grams: number;
+							kcal: number;
+							protein_g: number;
+							carbs_g: number;
+							fat_g: number;
+						}[];
+						/** @description What the model was unsure of, in your language. */
+						note: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			402: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			413: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
 			503: components['responses']['Problem'];
 		};
 	};
