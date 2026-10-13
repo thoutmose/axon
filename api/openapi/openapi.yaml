@@ -4923,6 +4923,45 @@ paths:
         "422": { $ref: "#/components/responses/Problem" }
         "429": { $ref: "#/components/responses/Problem" }
         "503": { $ref: "#/components/responses/Problem" }
+  /v1/health/needs:
+    get:
+      tags: [wellbeing]
+      operationId: getDailyNeeds
+      summary: Your health profile and the daily needs worked out from it
+      description: >-
+        Reference intakes for a healthy adult who keeps their weight, with how each was worked out and the
+        sources. No numbers before 18 or during pregnancy or breastfeeding. Estimates, not medical advice:
+        check with a dietitian. Needs the health_data consent.
+      responses:
+        "200": { $ref: "#/components/responses/DailyNeeds" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/health/profile:
+    put:
+      tags: [wellbeing]
+      operationId: putHealthProfile
+      summary: Save the profile the daily needs are worked out from
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [birth_year, sex, height_cm, weight_kg, activity]
+              properties:
+                birth_year: { type: integer, example: 1990 }
+                sex: { type: string, enum: [female, male, unspecified] }
+                height_cm: { type: number, minimum: 100, maximum: 250 }
+                weight_kg: { type: number, minimum: 25, maximum: 350 }
+                activity: { type: string, enum: [sedentary, light, moderate, active, very_active] }
+                pregnant_or_breastfeeding: { type: boolean }
+                updated_at: { type: string, format: date-time, description: Ignored. }
+      responses:
+        "200": { $ref: "#/components/responses/DailyNeeds" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/health/workouts:
     get:
       tags: [wellbeing]
@@ -6341,6 +6380,16 @@ components:
               code: { type: string }
 
   responses:
+    DailyNeeds:
+      description: The profile (null until saved) and the needs (null without a profile).
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [profile, needs]
+            properties:
+              profile: { oneOf: [{ $ref: "#/components/schemas/HealthProfile" }, { type: "null" }] }
+              needs: { oneOf: [{ $ref: "#/components/schemas/DailyNeeds" }, { type: "null" }] }
     Problem:
       description: RFC 9457 problem document.
       content:
@@ -7194,6 +7243,41 @@ components:
         protein_g: { type: number }
         carbs_g: { type: number }
         fat_g: { type: number }
+    HealthProfile:
+      type: object
+      required: [birth_year, sex, height_cm, weight_kg, activity, pregnant_or_breastfeeding, updated_at]
+      properties:
+        birth_year: { type: integer }
+        sex: { type: string, enum: [female, male, unspecified] }
+        height_cm: { type: number }
+        weight_kg: { type: number }
+        activity: { type: string, enum: [sedentary, light, moderate, active, very_active] }
+        pregnant_or_breastfeeding: { type: boolean }
+        updated_at: { type: string, format: date-time }
+    DailyNeeds:
+      type: object
+      required: [available, reason, age, bmr_kcal, kcal, protein_g, fat_g, carbs_g, fiber_g, water_l, protein_g_per_kg, explanation, sources]
+      properties:
+        available: { type: boolean, description: "False when a professional should set the numbers." }
+        reason: { type: [string, "null"], enum: [under_18, pregnant, null] }
+        age: { type: integer }
+        bmr_kcal: { type: integer, description: Basal metabolic rate (Mifflin–St Jeor). }
+        kcal: { type: integer }
+        protein_g: { type: integer }
+        fat_g: { type: integer }
+        carbs_g: { type: integer }
+        fiber_g: { type: integer }
+        water_l: { type: number }
+        protein_g_per_kg: { type: number }
+        explanation: { type: array, items: { type: string }, description: "How each figure is worked out, in your language." }
+        sources:
+          type: array
+          items:
+            type: object
+            required: [title, url]
+            properties:
+              title: { type: string }
+              url: { type: string, format: uri }
     FoodEntry:
       type: object
       required: [id, eaten_on, meal, name, grams, kcal, protein_g, carbs_g, fat_g, food_id]

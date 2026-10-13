@@ -16,6 +16,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/privacy"
 )
 
@@ -52,6 +53,8 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Delete("/v1/health/food/{id}", h.deleteEntry)
 	r.Get("/v1/health/foods/search", h.search)
 	r.Get("/v1/health/foods/barcode/{code}", h.barcode)
+	r.Get("/v1/health/needs", h.needs)
+	r.Put("/v1/health/profile", h.putProfile)
 	r.Get("/v1/health/workouts", h.workouts)
 	r.Post("/v1/health/workouts", h.createWorkout)
 	r.Put("/v1/health/workouts/{id}", h.replaceWorkout)
@@ -332,4 +335,44 @@ func (h *Handlers) deleteWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// needsBody is the profile and the needs worked out from it (EP-88).
+func (h *Handlers) needsBody(r *http.Request, p *Profile) map[string]any {
+	out := map[string]any{"profile": p, "needs": nil}
+	if p != nil {
+		out["needs"] = Calc(*p, h.now().Year(), l10n.Lang(r.Context()))
+	}
+	return out
+}
+
+func (h *Handlers) needs(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	p, err := GetProfile(r.Context(), h.db, user)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, h.needsBody(r, p))
+}
+
+func (h *Handlers) putProfile(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	var in Profile
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	p, err := PutProfile(r.Context(), h.db, user, in, h.now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, h.needsBody(r, &p))
 }

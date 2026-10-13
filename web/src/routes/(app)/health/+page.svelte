@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { localDate } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
+	import DailyNeeds from '$lib/DailyNeeds.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -299,6 +300,7 @@
 					</ol>
 				</figure>
 			</section>
+			<DailyNeeds totals={date === today ? day.totals : null} />
 
 			{#each meals as m (m)}
 				{@const list = day.entries.filter((e) => e.meal === m)}

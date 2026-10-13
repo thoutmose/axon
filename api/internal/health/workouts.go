@@ -217,5 +217,9 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 	if food == nil {
 		food = []Entry{}
 	}
-	return map[string]any{"food_entries": food, "workouts": workouts}, nil
+	profile, err := GetProfile(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"food_entries": food, "workouts": workouts, "profile": profile}, nil
 }

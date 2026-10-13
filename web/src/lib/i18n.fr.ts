@@ -2592,5 +2592,39 @@ export const fr: Record<string, string> = {
 		'Axon est injoignable. Vérifiez votre connexion et réessayez.',
 	todo: 'à apprendre',
 	soft: 'humaine',
-	hard: 'technique'
+	hard: 'technique',
+	'Sedentary: mostly sitting, little exercise': 'Sédentaire : surtout assis, peu d’exercice',
+	'Light: exercise 1 to 3 days a week': 'Légère : de l’exercice 1 à 3 jours par semaine',
+	'Moderate: exercise 3 to 5 days a week': 'Modérée : de l’exercice 3 à 5 jours par semaine',
+	'Active: hard exercise 6 or 7 days a week':
+		'Active : un exercice soutenu 6 ou 7 jours par semaine',
+	'Very active: hard daily training or a physical job':
+		'Très active : entraînement intense chaque jour ou métier physique',
+	Energy: 'Énergie',
+	'Your daily needs': 'Vos besoins quotidiens',
+	'These are general estimates for healthy adults, worked out from published references. They are not medical or dietary advice: check them with a registered dietitian or nutritionist, especially if you are pregnant or breastfeeding, have a medical condition or take medication, have or had an eating disorder, or are under 18.':
+		'Ce sont des estimations générales pour des adultes en bonne santé, calculées à partir de références publiées. Ce ne sont pas des conseils médicaux ni diététiques : faites-les vérifier par un diététicien ou un nutritionniste, surtout si vous êtes enceinte ou allaitez, avez une maladie ou prenez un traitement, avez ou avez eu un trouble du comportement alimentaire, ou avez moins de 18 ans.',
+	'Birth year': 'Année de naissance',
+	'Sex, for the energy equation': 'Sexe, pour l’équation d’énergie',
+	Female: 'Femme',
+	Male: 'Homme',
+	'Prefer not to say': 'Je préfère ne pas le dire',
+	'Height (cm)': 'Taille (cm)',
+	'Weight (kg)': 'Poids (kg)',
+	'I am pregnant or breastfeeding': 'Je suis enceinte ou j’allaite',
+	'Kept as health data, only with your consent, and deleted with it. Your weight is used for the numbers only; Axon never comments on it.':
+		'Gardé comme donnée de santé, seulement avec votre consentement, et supprimé avec lui. Votre poids ne sert qu’aux calculs ; Axon ne le commente jamais.',
+	'Work out my needs': 'Calculer mes besoins',
+	'Daily needs are not worked out before 18: growth changes them. Ask a doctor or a registered dietitian.':
+		'Les besoins quotidiens ne sont pas calculés avant 18 ans : la croissance les change. Demandez à un médecin ou à un diététicien.',
+	'During pregnancy and breastfeeding, needs change from month to month: ask your midwife, your doctor, or a registered dietitian.':
+		'Pendant la grossesse et l’allaitement, les besoins changent de mois en mois : demandez à votre sage-femme, à votre médecin ou à un diététicien.',
+	'Edit my profile': 'Modifier mon profil',
+	fibre: 'fibres',
+	water: 'eau',
+	'This day against your needs': 'Ce jour face à vos besoins',
+	'{eaten} of {need} {unit}': '{eaten} sur {need} {unit}',
+	'above the reference': 'au-dessus de la référence',
+	'These are needs for keeping your weight, not a diet: Axon sets no weight-loss target. A dietitian can adapt them to you.':
+		'Ce sont des besoins pour garder votre poids, pas un régime : Axon ne fixe aucun objectif de perte de poids. Un diététicien peut les adapter à vous.'
 };

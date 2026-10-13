@@ -854,6 +854,19 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(page.getByText('Lentil soup · 320.5 kcal')).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// Daily needs (EP-88): the warning first, then numbers worked out from a profile.
+	const needs = page.getByRole('region', { name: 'Your daily needs' });
+	await expect(needs.getByRole('note')).toContainText('registered dietitian');
+	await needs.getByLabel('Birth year').fill(String(new Date().getFullYear() - 30));
+	await needs.getByLabel('Sex, for the energy equation').selectOption('male');
+	await needs.getByLabel('Height (cm)').fill('180');
+	await needs.getByLabel('Weight (kg)').fill('80');
+	await needs.getByLabel('Activity').selectOption('moderate');
+	await needs.getByRole('button', { name: 'Work out my needs' }).click();
+	await expect(needs).toContainText('2760');
+	await expect(needs.getByRole('progressbar', { name: 'Energy' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
 	await page.getByRole('link', { name: 'Training' }).click();
 	await page.getByLabel('Title').fill('Full body');
 	await page.getByLabel('Minutes').fill('40');
