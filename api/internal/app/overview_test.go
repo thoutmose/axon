@@ -22,7 +22,10 @@ type overviewJSON struct {
 		ID     string            `json:"id"`
 		Points []json.RawMessage `json:"points"`
 	} `json:"series"`
-	Activity []json.RawMessage `json:"activity"`
+	Activity []struct {
+		Day   string `json:"day"`
+		Value int    `json:"value"`
+	} `json:"activity"`
 	Tables   struct {
 		DueSoon  []struct{ Title string } `json:"due_soon"`
 		Learning []struct{ Title string } `json:"learning"`
@@ -64,6 +67,16 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 	}
 	if kpi["notes_written"] < 8 || kpi["projects_active"] != 3 || kpi["learning"] < 3 {
 		t.Errorf("kpis = %v", kpi)
+	}
+	// A lived-in year: activity on many days, not all on the day of the seed (EP-99).
+	active := 0
+	for _, d := range o.Activity {
+		if d.Value > 0 {
+			active++
+		}
+	}
+	if len(o.Activity) != 365 || active < 60 {
+		t.Errorf("activity on %d of %d days", active, len(o.Activity))
 	}
 	// A month of check-ins with a few misses: high, but honest.
 	if c := kpi["habit_consistency"]; c < 50 || c > 100 {

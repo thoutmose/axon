@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { forceLayout, levels, trend, type NetNode } from './overview';
+import { forceLayout, levels, trend, type NetNode, heatGrid } from './overview';
 
 describe('trend', () => {
 	it('compares with the previous period', () => {
@@ -54,5 +54,30 @@ describe('forceLayout', () => {
 		const start = performance.now();
 		forceLayout(nodes, edges);
 		expect(performance.now() - start).toBeLessThan(2000);
+	});
+});
+
+describe('heatGrid', () => {
+	const year = Array.from({ length: 365 }, (_, i) => {
+		const d = new Date(Date.UTC(2025, 9, 14 + i));
+		return { day: d.toISOString().slice(0, 10), value: i === 364 ? 5 : 0 };
+	});
+
+	it('puts days in Monday-first weeks, ending on today', () => {
+		const g = heatGrid(year, 'en');
+		const last = g.cells[g.cells.length - 1];
+		expect(last.day).toBe('2026-10-13');
+		expect(last.row).toBe(1); // a Tuesday
+		expect(last.col).toBe(g.weeks - 1);
+		expect(g.cells[0].row).toBe(1); // 2025-10-14 is a Tuesday too
+	});
+
+	it('labels each month where it starts, the current one last', () => {
+		const g = heatGrid(year, 'en');
+		expect(g.months[g.months.length - 1].label).toBe('Oct');
+		expect(g.months[0].label).toBe('Nov');
+		const oct = g.cells.find((c) => c.day === '2026-10-01')!;
+		expect(g.months[g.months.length - 1].col).toBe(oct.col);
+		expect(g.months).toHaveLength(12);
 	});
 });

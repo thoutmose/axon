@@ -454,6 +454,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if err := seedJournal(ctx, tx, user, s.today); err != nil {
 		return err
 	}
+	if err := seedHistory(ctx, tx, user, now); err != nil {
+		return err
+	}
 	return seedProposals(ctx, tx, user, review)
 }
 
@@ -537,3 +540,35 @@ const forgettingCurve = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40
 <text x="20" y="130" text-anchor="middle" font-size="14" fill="#333" transform="rotate(-90 20 130)">memory</text>
 <text x="128" y="32" font-size="12" fill="#2c3e50">review</text><text x="228" y="32" font-size="12" fill="#2c3e50">review</text>
 </svg>`
+
+// seedHistory gives the demo a lived-in year for the activity chart
+// (EP-99): everything it holds was created tonight, so each item also gets
+// a few edits over the past eleven months, more of them recently, the same
+// way every night. The event log is append-only: these are added, never
+// rewritten, with time-ordered ids so the vault mirror reads them in turn.
+func seedHistory(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
+	rows, err := tx.Query(ctx, `SELECT id, type FROM entities WHERE user_id = $1 ORDER BY id`, user)
+	if err != nil {
+		return err
+	}
+	type entity struct {
+		ID   uuid.UUID
+		Type string
+	}
+	items, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity])
+	if err != nil {
+		return err
+	}
+	r := rand.New(rand.NewPCG(2026, 99)) //nolint:gosec // reproducible demo data, not security
+	var batch [][]any
+	for _, it := range items {
+		for range 1 + r.IntN(3) {
+			back := int(math.Pow(r.Float64(), 2.2) * 330)
+			at := now.AddDate(0, 0, -back).Add(-time.Duration(r.IntN(10)) * time.Hour)
+			batch = append(batch, []any{uuid.Must(uuid.NewV7()), user, "user", it.Type, it.ID, "updated", []string{}, at})
+		}
+	}
+	_, err = tx.CopyFrom(ctx, pgx.Identifier{"events"}, []string{"id", "user_id", "actor", "entity_type", "entity_id", "kind", "fields", "created_at"},
+		pgx.CopyFromRows(batch))
+	return err
+}
