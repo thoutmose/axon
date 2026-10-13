@@ -262,6 +262,24 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Errorf("the goal is supported by too little: %s", links)
 	}
 
+	// The weekly rhythm is on the calendar, with the first phase's tracks (EP-97).
+	start := first.AddDate(0, 0, -83)
+	var cal struct {
+		Items []struct {
+			Date      string `json:"date"`
+			Type      string `json:"type"`
+			Title     string `json:"title"`
+			RoadmapID string `json:"roadmap_id"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/calendar?types=study&from="+start.Format(time.DateOnly)+"&to="+start.AddDate(0, 0, 6).Format(time.DateOnly), nil), &cal)
+	if len(cal.Items) != 7 || cal.Items[0].Title != "Maths: MIT 6.042J discrete maths · 2–3 h" || cal.Items[0].RoadmapID != rm.ID {
+		t.Fatalf("study blocks = %+v", cal.Items)
+	}
+	if n := alice.mustDo(200, "GET", "/v1/notes?q=mini+Airflow", nil); !bytes.Contains(n, []byte("1-Projects/pipekit/pipekit.md")) {
+		t.Errorf("pipekit's project note is missing: %.300s", n)
+	}
+
 	// Once only.
 	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)); code != 422 || !bytes.Contains(out, []byte("already started")) {
 		t.Fatalf("second start = %d %s", code, out)

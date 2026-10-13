@@ -2759,5 +2759,8 @@ export const fr: Record<string, string> = {
 	'Preview the sky in {hours} h': 'Aperçu du ciel dans {hours} h',
 	'The sun and the moon where they are in your time zone ({zone}).':
 		'Le soleil et la lune là où ils sont dans votre fuseau horaire ({zone}).',
-	'follows the sun': 'suit le soleil'
+	'follows the sun': 'suit le soleil',
+	'Study blocks': 'Blocs d’étude',
+	Study: 'Étude',
+	'Study block': 'Bloc d’étude'
 };

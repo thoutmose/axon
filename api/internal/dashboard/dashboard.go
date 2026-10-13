@@ -21,6 +21,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/l10n"
+	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -213,16 +214,18 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 // Event is one dated item on the calendar.
 type Event struct {
 	Date  tasks.Date `json:"date"`
-	Type  string     `json:"type"` // task, goal, milestone
-	Kind  string     `json:"kind"` // scheduled, due, target, milestone
+	Type  string     `json:"type"` // task, goal, milestone, study
+	Kind  string     `json:"kind"` // scheduled, due, target, milestone, block
 	ID    uuid.UUID  `json:"id"`
 	Title string     `json:"title"`
 	Done  bool       `json:"done"`
 	// GoalID is the milestone's goal, so the calendar can link to it.
 	GoalID *uuid.UUID `json:"goal_id,omitempty"`
+	// RoadmapID is a study block's roadmap (EP-97).
+	RoadmapID *uuid.UUID `json:"roadmap_id,omitempty"`
 }
 
-var allTypes = []string{"task", "goal", "milestone"}
+var allTypes = []string{"task", "goal", "milestone", "study"}
 
 // events returns dated items of the given types between from and to
 // (inclusive), oldest first. Cancelled tasks and archived goals are left out;
@@ -257,10 +260,27 @@ func events(ctx context.Context, q db.Querier, userID uuid.UUID, from, to time.T
 		err := row.Scan(&ev.Date.Time, &ev.Type, &ev.Kind, &ev.ID, &ev.Title, &ev.Done, &ev.GoalID)
 		return ev, err
 	})
+	if err != nil {
+		return nil, err
+	}
+	// A started roadmap's weekly study blocks, worked out from its plan.
+	if slices.Contains(types, "study") {
+		blocks, err := roadmaps.Schedule(ctx, q, userID, from, to)
+		if err != nil {
+			return nil, err
+		}
+		for _, b := range blocks {
+			out = append(out, Event{Date: tasks.Date{Time: b.Date}, Type: "study", Kind: "block", ID: b.RoadmapID, Title: b.Title, RoadmapID: &b.RoadmapID})
+		}
+		slices.SortStableFunc(out, func(a, b Event) int { return a.Date.Compare(b.Date.Time) })
+		if len(out) > limit {
+			out = out[:limit]
+		}
+	}
 	if out == nil {
 		out = []Event{}
 	}
-	return out, err
+	return out, nil
 }
 
 func parseTypes(s string) ([]string, bool) {
@@ -290,7 +310,7 @@ func (h *Handlers) calendar(w http.ResponseWriter, r *http.Request) {
 	}
 	types, ok := parseTypes(q.Get("types"))
 	if !ok {
-		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, and milestone.")
+		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, milestone, and study.")
 		return
 	}
 	items, err := events(r.Context(), h.db, who.UserID, from, to, types, false, 2000)

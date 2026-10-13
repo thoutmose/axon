@@ -2196,7 +2196,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Dated tasks, goal target dates, and milestones in a range (at most 92 days) */
+		/** Dated tasks, goal target dates, milestones, and a started roadmap's study blocks in a range (at most 92 days) */
 		get: operations['getCalendar'];
 		put?: never;
 		post?: never;
@@ -4420,9 +4420,9 @@ export interface components {
 			/** Format: date */
 			date: string;
 			/** @enum {unknown} */
-			type: 'task' | 'goal' | 'milestone';
+			type: 'task' | 'goal' | 'milestone' | 'study';
 			/** @enum {unknown} */
-			kind: 'scheduled' | 'due' | 'target' | 'milestone';
+			kind: 'scheduled' | 'due' | 'target' | 'milestone' | 'block';
 			/** Format: uuid */
 			id: string;
 			title: string;
@@ -4432,12 +4432,17 @@ export interface components {
 			 * @description The milestone's goal.
 			 */
 			goal_id?: string;
+			/**
+			 * Format: uuid
+			 * @description A study block's roadmap: the day's block of its weekly rhythm, with the tracks of the phase it falls in.
+			 */
+			roadmap_id?: string;
 		};
 		CalendarFeed: {
 			/** Format: uuid */
 			id: string;
 			name: string;
-			types: ('task' | 'goal' | 'milestone')[];
+			types: ('task' | 'goal' | 'milestone' | 'study')[];
 			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
@@ -10700,7 +10705,7 @@ export interface operations {
 			query: {
 				from: string;
 				to: string;
-				/** @description Comma-separated subset of task, goal, milestone (default all). */
+				/** @description Comma-separated subset of task, goal, milestone, study (default all). */
 				types?: string;
 			};
 			header?: never;
@@ -10760,7 +10765,7 @@ export interface operations {
 				'application/json': {
 					/** @example Phone */
 					name: string;
-					types: ('task' | 'goal' | 'milestone')[];
+					types: ('task' | 'goal' | 'milestone' | 'study')[];
 				};
 			};
 		};

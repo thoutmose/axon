@@ -3750,13 +3750,13 @@ paths:
     get:
       tags: [dashboard]
       operationId: getCalendar
-      summary: Dated tasks, goal target dates, and milestones in a range (at most 92 days)
+      summary: Dated tasks, goal target dates, milestones, and a started roadmap's study blocks in a range (at most 92 days)
       parameters:
         - { name: from, in: query, required: true, schema: { type: string, format: date } }
         - { name: to, in: query, required: true, schema: { type: string, format: date } }
         - name: types
           in: query
-          description: Comma-separated subset of task, goal, milestone (default all).
+          description: Comma-separated subset of task, goal, milestone, study (default all).
           schema: { type: string, example: "task,milestone" }
       responses:
         "200":
@@ -3803,7 +3803,7 @@ paths:
               additionalProperties: false
               properties:
                 name: { type: string, minLength: 1, maxLength: 100, example: Phone }
-                types: { type: array, minItems: 1, items: { enum: [task, goal, milestone] } }
+                types: { type: array, minItems: 1, items: { enum: [task, goal, milestone, study] } }
       responses:
         "201":
           description: Created. Subscribe to path on this server; it is not shown again.
@@ -7220,19 +7220,20 @@ components:
       required: [date, type, kind, id, title, done]
       properties:
         date: { type: string, format: date }
-        type: { enum: [task, goal, milestone] }
-        kind: { enum: [scheduled, due, target, milestone] }
+        type: { enum: [task, goal, milestone, study] }
+        kind: { enum: [scheduled, due, target, milestone, block] }
         id: { type: string, format: uuid }
         title: { type: string }
         done: { type: boolean }
         goal_id: { type: string, format: uuid, description: The milestone's goal. }
+        roadmap_id: { type: string, format: uuid, description: "A study block's roadmap: the day's block of its weekly rhythm, with the tracks of the phase it falls in." }
     CalendarFeed:
       type: object
       required: [id, name, types, created_at, last_used_at]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-        types: { type: array, items: { enum: [task, goal, milestone] } }
+        types: { type: array, items: { enum: [task, goal, milestone, study] } }
         created_at: { type: string, format: date-time }
         last_used_at: { type: [string, "null"], format: date-time }
     AgentStatus:
