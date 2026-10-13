@@ -1899,9 +1899,9 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	// The year ends on the current month, with a legend for its colours (EP-99).
 	await expect(overview.getByText('No activity')).toBeVisible();
 	const year = overview.getByRole('region', { name: /The last 12 months, scrollable/ });
-	expect(
-		await year.evaluate((el) => el.scrollLeft + el.clientWidth >= el.scrollWidth - 2)
-	).toBe(true);
+	expect(await year.evaluate((el) => el.scrollLeft + el.clientWidth >= el.scrollWidth - 2)).toBe(
+		true
+	);
 	const network = overview.getByRole('group', {
 		name: /Skills network: \d+ hard skills and \d+ soft skills/
 	});
