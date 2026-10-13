@@ -85,6 +85,12 @@ test('home page is accessible and offers registration', async () => {
 	expect(foreign).toEqual([]);
 	await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 	await expect(page.getByRole('status').filter({ hasText: 'Server running' })).toBeVisible();
+	// With the demo on, a teaser from Axon's own server, with captions (EP-84).
+	const teaser = page.getByRole('region', { name: 'Axon in under a minute' });
+	await expect(teaser.locator('video source')).toHaveCount(2);
+	await expect(teaser.locator('video track')).toHaveCount(2);
+	for (const src of ['/teaser/axon.webm', '/teaser/axon.mp4', '/teaser/axon.en.vtt'])
+		expect((await page.request.get(src, { headers: { Range: 'bytes=0-99' } })).status(), src).toBe(206);
 	await noSeriousA11yViolations(page);
 	await page.getByRole('link', { name: 'Create your account' }).click();
 });

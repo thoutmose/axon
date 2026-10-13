@@ -379,7 +379,7 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `DATABASE_URL` | Yes | `postgres://...` | PostgreSQL connection; store as a secret. |
 | `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
 | `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register; `open` allows anyone who can reach Axon. |
-| `AXON_DEMO` | No | `1` | Offer a shared demo account with sample data, reset every night. |
+| `AXON_DEMO` | No | `1` | Offer a shared demo account with sample data, reset every night, and show the one-minute teaser on the home page. |
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
 | `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
 | `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |

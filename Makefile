@@ -2,7 +2,7 @@
 WEB_RUN ?= docker run --rm --network host -u $(shell id -u):$(shell id -g) -e HOME=/tmp -v $(CURDIR):/repo -w /repo/web node:24-alpine
 TEST_DB_URL = postgres://axon:local-dev-only@db:5432/axon_test?sslmode=disable
 
-.PHONY: check check-docs check-scripts check-api check-web test-integration up down
+.PHONY: check check-docs check-scripts check-api check-web test-integration up down teaser
 
 ## check: formatting, linting, and unit tests for API and web
 check: check-docs check-scripts check-api check-web
@@ -37,3 +37,7 @@ up:
 
 down:
 	docker compose down
+
+## teaser: record the home page teaser from the local stack's demo (AXON_DEMO=1)
+teaser:
+	./scripts/teaser/make-teaser.sh http://localhost:3000
