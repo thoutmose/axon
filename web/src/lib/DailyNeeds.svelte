@@ -222,6 +222,13 @@
 </section>
 
 <style>
+	.needs {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		margin: var(--space-4) 0;
+	}
 	.warning {
 		border-left: 4px solid var(--accent);
 		background: var(--accent-soft);

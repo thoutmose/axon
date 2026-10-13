@@ -886,6 +886,14 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await noSeriousA11yViolations(page);
 	await ask.getByRole('button', { name: 'Cancel' }).click();
 
+	// Meal plans (EP-90): the form hands its request to the Chef & Nutritionist.
+	await page.getByText('Plan my meals with the chef').click();
+	await page.getByLabel('People').fill('2');
+	await page.getByLabel('vegetarian').check();
+	await page.getByRole('button', { name: 'Ask the chef for a plan' }).click();
+	await expect(page.getByText('Chef & Nutritionist').first()).toBeVisible();
+	await noSeriousA11yViolations(page);
+
 	await page.getByRole('link', { name: 'Training' }).click();
 	await page.getByLabel('Title').fill('Full body');
 	await page.getByLabel('Minutes').fill('40');

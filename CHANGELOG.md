@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Chef & Nutritionist**: meal plans within your budget, restrictions and allergies, constraints, and cooking time, close to your daily needs, with recipes, a shopping list, and a cost estimate, saved as a note once approved (EP-90).
 - **A photo of a meal**: your AI provider estimates its foods, portions, and macronutrients for you to check before logging, behind a consent of its own; the photo is not kept. A photo of a barcode finds the product (EP-89).
 - **Daily needs**: energy, protein, carbohydrates, fat, fibre, and water for keeping your weight, from your age, sex, size, and activity, each explained with its reference, with a warning to check with a dietitian (EP-88).
 - **French everywhere**: every page of the web app in French, with dates in the interface's language, and what the API writes (errors, explanations, insights, badges) too, with tests that keep it so (EP-85 to EP-87).

@@ -417,6 +417,7 @@ Les contrôles de confidentialité comprennent les registres de consentement, la
 | Médias | Suggérer quoi voir ou lire ensuite, et proposer de nouveaux titres. | Ne voit que votre liste (ni critiques, ni texte de catalogue) ; chaque ajout demande votre approbation. | ✅ |
 | Coach sportif | Proposer les prochaines séances depuis votre journal, en tâches à approuver. | Consentement propre (`health_ai`) ; alertes renvoyées sans appel au modèle ; non médical. | ✅ |
 | Nutritionniste | Suggestions douces depuis votre journal alimentaire, en tâches à approuver. | Consentement propre ; jamais d’objectif calorique, de jeûne ni de diagnostic (imposé, pas seulement demandé). | ✅ |
+| Chef et nutritionniste | Des plans de repas pour les jours choisis, dans votre budget, vos restrictions et allergies, vos contraintes et votre temps de cuisine, au plus près de vos besoins quotidiens, avec recettes, liste de courses et coût estimé ; enregistrés en note une fois approuvés. | Consentement propre ; restrictions strictes, rappel de vérifier les étiquettes ; aucun objectif quotidien sous 1 200 kcal (imposé) ; alertes renvoyées. | ✅ |
 
 Tous les agents partagent une constitution : simple, explicite, petites modifications, lire avant d’écrire, raisonner sur des données, tout tester, ne pas faire le malin. Les compétences sont des fichiers `SKILL.md` versionnés. Chaque tâche se termine par une réflexion, des enseignements, des preuves d’évaluation et, si besoin, une approbation humaine.
 
