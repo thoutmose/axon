@@ -286,7 +286,7 @@ export function render(
 			for (i += 2; i < lines.length && /^\s*\|/.test(lines[i]); i++) rows.push(cells(lines[i]));
 			i--;
 			const td = (tag: string, c: string, k: number) =>
-				`<${tag}${align[k] ? ` style="text-align:${align[k]}"` : ''}>${inline(c, resolve, titleOf, file)}</${tag}>`;
+				`<${tag}${align[k] ? ` class="align-${align[k]}"` : ''}>${inline(c, resolve, titleOf, file)}</${tag}>`;
 			out.push(
 				`<div class="table"><table><thead><tr>${head.map((c, k) => td('th', c, k)).join('')}</tr></thead><tbody>${rows
 					.map((r) => `<tr>${r.map((c, k) => td('td', c, k)).join('')}</tr>`)

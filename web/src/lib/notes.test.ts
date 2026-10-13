@@ -54,8 +54,9 @@ describe('render', () => {
 describe('render extensions', () => {
 	it('renders tables with alignment, escaping cells', () => {
 		const html = render('| Name | Score |\n| :-- | --: |\n| <b>Ada</b> | 10 |', resolve);
-		expect(html).toContain('<th>Name</th><th style="text-align:right">Score</th>');
-		expect(html).toContain('<td>&lt;b&gt;Ada&lt;/b&gt;</td><td style="text-align:right">10</td>');
+		// A class, not a style attribute: the Content Security Policy blocks those.
+		expect(html).toContain('<th>Name</th><th class="align-right">Score</th>');
+		expect(html).toContain('<td>&lt;b&gt;Ada&lt;/b&gt;</td><td class="align-right">10</td>');
 	});
 	it('renders callouts, merged quotes, highlights, strikes, tags, and heading anchors', () => {
 		const html = render(

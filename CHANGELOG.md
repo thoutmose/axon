@@ -16,6 +16,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 
 ### Fixed
 
+- Aligned columns in Markdown tables align again: the alignment was a style attribute, which the Content Security Policy blocks.
 - New accounts start in the browser's time zone instead of UTC, so "today" is right from the first night (EP-69).
 - Sign-in no longer fails on a user agent that is not valid UTF-8; imports, clipped pages, and calendars in other encodings keep their accents (EP-69).
 - Dates no longer show a day early west of UTC; workouts dated after the account's today stay listed (EP-69).
