@@ -233,7 +233,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	}
 	board := alice.mustDo(200, "GET", "/v1/projects/"+pipekit+"/board", nil)
 	for _, want := range []string{`"Phase 1 exit check"`, `"kind":"epic"`, `"OverTheWire Bandit 0–15"`, `"kind":"subtask"`,
-		`"DAG model and topological sort with hypothesis tests"`, `"pipekit: create repo (uv, pytest, mypy, ruff, GitHub Actions CI)"`} {
+		`"Scheduler with retries"`, `"pipekit: create repo (uv, pytest, mypy, ruff, GitHub Actions CI)"`} {
 		if !bytes.Contains(board, []byte(want)) {
 			t.Errorf("pipekit board lacks %s", want)
 		}
