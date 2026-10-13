@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -90,7 +91,13 @@ func IfMatch(w http.ResponseWriter, r *http.Request) (time.Time, bool) {
 		Problem(w, http.StatusPreconditionRequired, "Send If-Match with the ETag you last read, so concurrent edits are not lost.")
 		return time.Time{}, false
 	}
-	n, err := strconv.ParseInt(strings.Trim(h, `"`), 36, 64)
+	// A compressing proxy suffixes the tag with its encoding ("…-zstd"), or
+	// weakens it (W/"…"); the version underneath is the same.
+	tag := strings.Trim(strings.TrimPrefix(strings.TrimSpace(h), "W/"), `"`)
+	if base, enc, ok := strings.Cut(tag, "-"); ok && slices.Contains([]string{"zstd", "gzip", "br", "deflate"}, enc) {
+		tag = base
+	}
+	n, err := strconv.ParseInt(tag, 36, 64)
 	if err != nil {
 		Problem(w, http.StatusPreconditionFailed, "The If-Match value does not match the current version. Reload and try again.")
 		return time.Time{}, false
