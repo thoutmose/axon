@@ -147,6 +147,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-96 | A sky that follows the sun | Owner request: a colour theme that follows the sunlight and the moonlight in the person's time zone, and the home picture following the sun over a landscape of their choice (forest, ocean, earth view, monuments of each continent, desert, mountains). | SHOULD | 5 pts | EP-07, EP-38 | Done |
 | EP-97 | The roadmap on the calendar | Owner request: the roadmap's schedule of which domain to work on each day, following the phases, on the calendar, and its projects created like the vault's. | SHOULD | 3 pts | EP-08, EP-95 | Done |
 | EP-99 | A year you can read | Owner report: the 12-month activity chart did not show the current month and had no legend; the demo showed one active day. | SHOULD | 2 pts | EP-30 | Done |
+| EP-98 | Every page its picture | Owner request: illustrations for each page, type of note, and section, with a short description (paintings, films, games), and a background for each Reflect page. | SHOULD | 3 pts | EP-38 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1873,6 +1874,16 @@ Cross-cutting matrix:
 - [x] **EP-99/IS-99.02** · 1 pt · SHOULD — The demo was all created on the night it resets, so its year had one active day. It now also holds a few edits per item over the past eleven months, more of them recently, added to the append-only event log (never rewritten) with time-ordered ids, the same every night.
 
 **Tests.** `heatGrid` (written first); the overview test wants activity on at least 60 days of the demo's year; the demo e2e test finds the legend and the chart scrolled to its end.
+
+### EP-98 — Every page its picture
+
+**Goal.** The owner asked (2026-10-13) for illustrations on each page, type of note, and section, each with a short description (a painting, a picture, a film scene, an artwork, a video game), and for a background on each Reflect page: Journal, Insights, the weekly review, and Agents.
+
+- [x] **EP-98/IS-98.01** · 1 pt · SHOULD — Four new themed spaces, original and drawn from geometry by `scripts/spaces.py` in light and dark (the earlier drawings are unchanged, byte for byte): evening light through a leaded window on a diary (Journal, after Vermeer), star trails and Galileo's moon sketches over an observatory (Insights), a lighthouse sweeping the sea (the weekly review, after Hopper), and clockwork gears and cams (Agents, after Jaquet-Droz's Writer).
+- [x] **EP-98/IS-98.02** · 1 pt · SHOULD — Every themed page ends with what its picture shows and what it nods to, from Leonardo's notebooks to Celeste's mountain; hidden with themed spaces off.
+- [x] **EP-98/IS-98.03** · 1 pt · SHOULD — Each type of note (permanent, literature, fleeting, daily, weekly, monthly, project, area, resource, roadmap, goal, milestone, habit, media, test, map of content, journal, task, workout, food log, meeting, archive) has a small line drawing and a sentence on what it is for, on the note and on the templates page.
+
+**Tests.** The Reflect pages' spaces, French for every caption and note type (passed by name, so the coverage test cannot see them), and the fallback drawing; the e2e suite runs axe on these pages. Every new space was looked at in light and dark.
 
 ### EP-20 — Analytics & insights
 

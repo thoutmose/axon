@@ -2765,5 +2765,98 @@ export const fr: Record<string, string> = {
 	'Study block': 'Bloc d’étude',
 	'No activity': 'Aucune activité',
 	Less: 'Moins',
-	More: 'Plus'
+	More: 'Plus',
+	'A Da Vinci notebook': 'Un carnet de Léonard de Vinci',
+	'Sepia studies in the margins, mirror writing, a flying machine: after Leonardo’s notebooks (Codex Atlanticus, 1478–1519), where every idea links to the next.':
+		'Des études sépia dans les marges, une écriture en miroir, une machine volante : d’après les carnets de Léonard (Codex Atlanticus, 1478–1519), où chaque idée mène à la suivante.',
+	'An old reading room': 'Une ancienne salle de lecture',
+	'Shelves and a warm lamp, after the Bodleian’s Duke Humfrey’s Library in Oxford, which played Hogwarts’ library on film: a place to learn slowly.':
+		'Des rayonnages et une lampe chaude, d’après la Duke Humfrey’s Library de la Bodléienne à Oxford, qui joua la bibliothèque de Poudlard au cinéma : un lieu pour apprendre sans se presser.',
+	'A blueprint': 'Un plan bleu',
+	'Plans on cyanotype paper, the way engineers drew from the 1840s: projects as something you build, one measured line at a time.':
+		'Des plans sur papier cyanotype, comme les dessinaient les ingénieurs dès les années 1840 : les projets se construisent, une ligne mesurée après l’autre.',
+	'A kitchen garden': 'Un potager',
+	'Leaves and stems that grow a little every day, like the gardens of Monet at Giverny or Stardew Valley’s seasons: habits and health compound.':
+		'Des feuilles et des tiges qui poussent un peu chaque jour, comme les jardins de Monet à Giverny ou les saisons de Stardew Valley : habitudes et santé s’additionnent.',
+	'A contour map': 'Une carte en courbes de niveau',
+	'Contour lines climbing to a summit flag, after the survey maps of the Alps and the mountain in Celeste: goals are climbed, step by step.':
+		'Des courbes de niveau qui montent vers un drapeau au sommet, d’après les cartes d’état-major des Alpes et la montagne de Celeste : un objectif se gravit pas à pas.',
+	'A star almanac': 'Un almanach des étoiles',
+	'Constellations on a night chart, after the old almanacs farmers and sailors planned their year by: the calendar as a map of time.':
+		'Des constellations sur une carte du ciel, d’après les vieux almanachs des paysans et des marins : l’agenda comme carte du temps.',
+	'A ledger': 'Un grand livre',
+	'Green-ruled accounting paper with a red margin, as in the merchants’ books of Luca Pacioli’s double entry (1494): money, written down calmly.':
+		'Du papier comptable ligné de vert avec une marge rouge, comme les livres des marchands de la partie double de Luca Pacioli (1494) : l’argent, noté avec calme.',
+	'An old atlas': 'Un vieil atlas',
+	'Meridians, a coastline, and a compass rose, after the portolan charts of the Age of Sail: areas of life to look after, like lands on a map.':
+		'Des méridiens, une côte et une rose des vents, d’après les portulans de la marine à voile : les domaines de la vie à entretenir, comme des terres sur une carte.',
+	'A dotted notebook': 'Un carnet à points',
+	'A bullet journal’s dot grid on a clean desk: tasks to capture and cross off, without noise.':
+		'La grille à points d’un bullet journal sur un bureau dégagé : des tâches à noter et à rayer, sans bruit.',
+	'Evening light on a desk': 'La lumière du soir sur un bureau',
+	'Light through a leaded window falls on an open diary, after Vermeer’s rooms (The Milkmaid, c. 1658): a quiet moment to write how the day felt.':
+		'La lumière d’une fenêtre à vitraux tombe sur un journal ouvert, d’après les intérieurs de Vermeer (La Laitière, vers 1658) : un moment calme pour écrire comment s’est passée la journée.',
+	'An observatory': 'Un observatoire',
+	'Star trails turning round the pole and Galileo’s sketches of the moon (Sidereus Nuncius, 1610): patterns found by watching patiently.':
+		'Des filés d’étoiles autour du pôle et les dessins de la lune de Galilée (Sidereus Nuncius, 1610) : des régularités trouvées en observant avec patience.',
+	'A lighthouse': 'Un phare',
+	'A beam sweeping the sea from a headland, after Edward Hopper’s lighthouses on the Maine coast: once a week, look back and set the course.':
+		'Un faisceau qui balaie la mer depuis un cap, d’après les phares d’Edward Hopper sur la côte du Maine : une fois par semaine, regarder en arrière et fixer le cap.',
+	'Clockwork automata': 'Des automates à rouages',
+	'Gears and the cams that remember each letter, after Jaquet-Droz’s automaton The Writer (1770s) and the clockwork of Hugo: agents that work for you, and wait for your approval.':
+		'Des engrenages et les cames qui retiennent chaque lettre, d’après l’automate L’Écrivain de Jaquet-Droz (années 1770) et les rouages de Hugo Cabret : des agents qui travaillent pour vous et attendent votre accord.',
+	'A keystone: one idea, in your words, that holds others up, as each of the 90,000 cards in Niklas Luhmann’s slip-box did.':
+		'Une clé de voûte : une idée, dans vos mots, qui en soutient d’autres, comme chacune des 90 000 fiches du Zettelkasten de Niklas Luhmann.',
+	'An open book with a note in the margin, like Fragonard’s Young Girl Reading (c. 1770): what a source says, in your own words.':
+		'Un livre ouvert avec une note dans la marge, comme La Liseuse de Fragonard (vers 1770) : ce que dit une source, dans vos propres mots.',
+	'A feather caught before it drifts away, as in the opening of Forrest Gump: a passing thought, to sort out later.':
+		'Une plume rattrapée avant qu’elle ne s’envole, comme au début de Forrest Gump : une pensée passagère, à trier plus tard.',
+	'Daily note': 'Note du jour',
+	'A sunrise over the day: its three priorities, the tests due, the habits, and what you learned.':
+		'Un lever de soleil sur la journée : ses trois priorités, les tests à faire, les habitudes et ce que vous avez appris.',
+	'Weekly note': 'Note de la semaine',
+	'A wheel of seven days, turned once a week: the GTD weekly review, empty inbox to next actions.':
+		'Une roue de sept jours, tournée une fois par semaine : la revue hebdomadaire GTD, de la boîte vide aux prochaines actions.',
+	'Monthly note': 'Note du mois',
+	'The moon’s phases, a month at a glance: goals, milestones, and the roadmap checked against the plan.':
+		'Les phases de la lune, un mois d’un coup d’œil : objectifs, jalons et parcours comparés au plan.',
+	'A blueprint and a gear: a short effort with a clear outcome and a deadline, its next actions on the board.':
+		'Un plan et un engrenage : un effort court avec un résultat clair et une échéance, ses prochaines actions au tableau.',
+	'A compass rose, as on the portolan charts: an ongoing responsibility with a standard to keep, and no end date.':
+		'Une rose des vents, comme sur les portulans : une responsabilité continue, avec un niveau à tenir et sans date de fin.',
+	'A shelf of books kept for later: a topic of ongoing interest, its links and literature notes.':
+		'Une étagère de livres gardés pour plus tard : un sujet d’intérêt durable, ses liens et ses notes de lecture.',
+	'A winding path from one stage to the next, like the overworld map of Super Mario World: phases, milestones, and the habits that carry you.':
+		'Un chemin sinueux d’une étape à l’autre, comme la carte du monde de Super Mario World : phases, jalons et les habitudes qui vous portent.',
+	'A flag on a summit, as in Celeste’s last climb: a specific, measurable outcome, with its milestones on the way.':
+		'Un drapeau au sommet, comme dans la dernière ascension de Celeste : un résultat précis et mesurable, avec ses jalons en chemin.',
+	'A flag on a step: the definition of done for one stage, and the evidence that it is.':
+		'Un drapeau sur une marche : la définition de « fini » pour une étape, et la preuve qu’elle l’est.',
+	'A sprout that grows a little every day: cue, routine, reward, and the identity it votes for.':
+		'Une pousse qui grandit un peu chaque jour : déclencheur, routine, récompense, et l’identité pour laquelle elle vote.',
+	'A strip of film beside a book: what you want to see or read, are watching, or loved, and why.':
+		'Une pellicule à côté d’un livre : ce que vous voulez voir ou lire, ce que vous regardez, ce que vous avez aimé, et pourquoi.',
+	'Retrieval test': 'Test de rappel',
+	'A pencil and a question, the testing effect that Make It Stick describes: recall from memory, then check.':
+		'Un crayon et une question, l’effet de test que décrit Make It Stick : se rappeler de mémoire, puis vérifier.',
+	'Map of content': 'Carte de contenu',
+	'A hub with spokes, like a station on a metro map: the notes on one theme, gathered.':
+		'Un moyeu et ses rayons, comme une station sur un plan de métro : les notes d’un thème, rassemblées.',
+	'Journal day': 'Jour de journal',
+	'An inkwell and a quill: how the day felt, the night, and what you are grateful for.':
+		'Un encrier et une plume : comment s’est passée la journée, la nuit, et ce dont vous êtes reconnaissant.',
+	'A box to tick: one next action, in its context, with a date if it has one.':
+		'Une case à cocher : une prochaine action, dans son contexte, avec une date si elle en a une.',
+	'A dumbbell: the session, its sets, and how hard it felt.':
+		'Un haltère : la séance, ses séries, et l’effort ressenti.',
+	'Food log': 'Journal alimentaire',
+	'A plate and its cutlery: a day’s meals and what they held.':
+		'Une assiette et ses couverts : les repas d’une journée et ce qu’ils contenaient.',
+	'Two speech bubbles: who was there, what was decided, and the next actions it left.':
+		'Deux bulles de dialogue : qui était là, ce qui a été décidé, et les prochaines actions qui en découlent.',
+	'A box with its lid on: what is finished or paused, kept out of the way but never lost.':
+		'Une boîte fermée : ce qui est fini ou en pause, rangé mais jamais perdu.',
+	'A sheet of paper: anything worth writing down, in plain Markdown that stays yours.':
+		'Une feuille de papier : tout ce qui mérite d’être écrit, en Markdown simple qui reste à vous.',
+	Workout: 'Séance'
 };

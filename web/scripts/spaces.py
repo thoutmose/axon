@@ -222,6 +222,100 @@ def desk(bg, dot, alpha):
     d = f'<pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="1.2" fill="{dot}" fill-opacity="{alpha:.2f}"/></pattern>'
     return svg(f'<rect width="{W}" height="{H}" fill="{bg}"/><rect width="{W}" height="{H}" fill="url(#dots)"/>', d)
 
+
+# --- Diary (journal): a leaded window's evening light on a writing desk, after Vermeer ---
+def diary(wall_hi, wall_lo, lead, light, ink, alpha):
+    d = (f'<linearGradient id="w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{wall_hi}"/><stop offset="1" stop-color="{wall_lo}"/></linearGradient>'
+         f'<linearGradient id="beam" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{light}" stop-opacity="{alpha*1.4:.2f}"/><stop offset="1" stop-color="{light}" stop-opacity="0"/></linearGradient>')
+    b = [f'<rect width="{W}" height="{H}" fill="url(#w)"/>']
+    # the window, top left: a frame of leaded diamond panes
+    x0, y0, ww, wh = 70, 60, 330, 520
+    b.append(f'<rect x="{x0}" y="{y0}" width="{ww}" height="{wh}" fill="{light}" fill-opacity="{alpha*0.9:.2f}"/>')
+    g = [f'<g fill="none" stroke="{lead}" stroke-opacity="{alpha*1.6:.2f}">']
+    g.append(f'<rect x="{x0}" y="{y0}" width="{ww}" height="{wh}" stroke-width="10"/><path d="M{x0+ww/2} {y0} V{y0+wh} M{x0} {y0+wh/2} H{x0+ww}" stroke-width="6"/>')
+    step = 40
+    for k in range(-14, 22):
+        g.append(f'<path d="M{x0+k*step} {y0} l{wh} {wh}" stroke-width="1"/><path d="M{x0+k*step} {y0} l{-wh} {wh}" stroke-width="1"/>')
+    g.append('</g>')
+    clip = f'<clipPath id="win"><rect x="{x0}" y="{y0}" width="{ww}" height="{wh}"/></clipPath>'
+    d += clip
+    g = [g[0].replace('<g ', '<g clip-path="url(#win)" ', 1)] + g[1:]
+    # the light falling across the room onto the desk
+    b.append(f'<path d="M{x0+ww} {y0} L{x0+ww} {y0+wh} L1250 {H} L760 {H} Z" fill="url(#beam)"/>')
+    # the desk and an open diary with lines of writing
+    b.append(f'<path d="M0 760 H{W}" stroke="{ink}" stroke-opacity="{alpha*1.2:.2f}" stroke-width="3"/>')
+    bx, by = 980, 690
+    b.append(f'<path d="M{bx} {by} q160 -40 300 0 q140 -40 300 0 v60 q-150 -30 -300 0 q-150 -30 -300 0 Z" fill="{wall_hi}" fill-opacity=".55" stroke="{ink}" stroke-opacity="{alpha*1.3:.2f}"/>')
+    for row in range(4):
+        y = by + 14 + row * 11
+        b.append(f'<path d="M{bx+30} {y} h{220-row*20} M{bx+330} {y} h{200-row*30}" stroke="{ink}" stroke-opacity="{alpha:.2f}" stroke-dasharray="14 6"/>')
+    # a quill in its inkwell
+    b.append(f'<path d="M1500 740 q-30 -120 30 -240 q-10 120 -20 240" fill="{ink}" fill-opacity="{alpha*0.8:.2f}"/><rect x="1480" y="735" width="44" height="25" rx="6" fill="{ink}" fill-opacity="{alpha*1.2:.2f}"/>')
+    return svg(''.join(b + g), d)
+
+# --- Observatory (insights): star trails around the pole, Galileo's moons ---
+def observatory(sky_hi, sky_lo, line, alpha):
+    d = f'<radialGradient id="s" cx="85%" cy="5%" r="120%"><stop offset="0" stop-color="{sky_hi}"/><stop offset="1" stop-color="{sky_lo}"/></radialGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#s)"/>']
+    g = [f'<g fill="none" stroke="{line}" stroke-opacity="{alpha:.2f}" stroke-linecap="round">']
+    px, py = 1380, 90
+    for k in range(70):
+        r = random.randint(60, 1500)
+        a0 = random.uniform(0, 2 * math.pi)
+        a1 = a0 + random.uniform(0.25, 0.6)
+        g.append(f'<path d="M{f(px+r*math.cos(a0))} {f(py+r*math.sin(a0))} A{r} {r} 0 0 1 {f(px+r*math.cos(a1))} {f(py+r*math.sin(a1))}" stroke-width="{random.choice([0.8, 1.1, 1.5])}"/>')
+    # Galileo's sketches of the moon: a row of phases
+    for i in range(6):
+        cx, cy, r = 120 + i * 95, 130, 34
+        k = math.cos(math.pi * (i + 1) / 7)
+        g.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" stroke-width="1.2"/>')
+        g.append(f'<path d="M{cx} {cy-r} A{r} {r} 0 0 1 {cx} {cy+r} A{f(abs(k)*r)} {r} 0 0 {0 if k > 0 else 1} {cx} {cy-r} Z" fill="{line}" fill-opacity="{alpha*0.7:.2f}" stroke="none"/>')
+    g.append('</g>')
+    # the observatory: a dome with its slit open, on a hill
+    b.append(f'<path d="M0 {H} V880 Q400 820 800 860 T{W} 850 V{H} Z" fill="{line}" fill-opacity="{alpha*0.5:.2f}"/>')
+    b.append(f'<path d="M180 870 V780 A130 130 0 0 1 440 780 V870 Z" fill="{line}" fill-opacity="{alpha*0.9:.2f}"/>')
+    b.append(f'<path d="M300 650 L340 650 L330 780 L310 780 Z" fill="{sky_lo}"/><path d="M318 700 L470 560" stroke="{line}" stroke-opacity="{alpha*1.4:.2f}" stroke-width="14" stroke-linecap="round"/>')
+    return svg(''.join(b + g), d)
+
+# --- Lighthouse (weekly review): a headland and its beam over the sea, after Hopper ---
+def lighthouse(sky_hi, sky_lo, sea, rock, tower, beam, alpha):
+    d = (f'<linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{sky_hi}"/><stop offset="1" stop-color="{sky_lo}"/></linearGradient>'
+         f'<linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{beam}" stop-opacity="{alpha:.2f}"/><stop offset="1" stop-color="{beam}" stop-opacity="0"/></linearGradient>')
+    b = [f'<rect width="{W}" height="{H}" fill="url(#s)"/>']
+    b.append(f'<rect y="700" width="{W}" height="300" fill="{sea}" fill-opacity="{alpha*1.2:.2f}"/>')
+    for k in range(12):
+        y = 720 + k * 22
+        b.append(f'<path d="M{random.randint(0, 300)} {y} q40 -6 80 0 t80 0 t80 0" fill="none" stroke="{rock}" stroke-opacity="{alpha*0.6:.2f}"/>'.replace('M', f'M', 1))
+        b.append(f'<path d="M{random.randint(500, 1500)} {y} q40 -6 80 0 t80 0" fill="none" stroke="{rock}" stroke-opacity="{alpha*0.6:.2f}"/>')
+    # the beam, the headland, the tower and its keeper's house
+    b.append(f'<path d="M1240 380 L{W} 250 L{W} 470 Z" fill="url(#b)"/><path d="M1240 380 L700 300 L700 420 Z" fill="url(#b)" transform="rotate(180 1240 380) scale(1 1)" opacity=".5"/>')
+    b.append(f'<path d="M900 {H} L980 700 Q1100 620 1240 640 Q1420 660 {W} 700 V{H} Z" fill="{rock}" fill-opacity="{alpha*1.6:.2f}"/>')
+    b.append(f'<path d="M1210 640 L1222 420 L1258 420 L1270 640 Z" fill="{tower}" fill-opacity="{alpha*2:.2f}"/><rect x="1216" y="380" width="48" height="40" rx="4" fill="{beam}" fill-opacity="{min(1, alpha*3):.2f}"/><path d="M1206 380 L1240 340 L1274 380 Z" fill="{tower}" fill-opacity="{alpha*2:.2f}"/>')
+    b.append(f'<path d="M1290 640 V590 L1330 560 L1370 590 V640 Z" fill="{tower}" fill-opacity="{alpha*1.6:.2f}"/>')
+    return svg(''.join(b), d)
+
+# --- Automata (agents): clockwork gears and cams, after Jaquet-Droz's Writer ---
+def automata(bg_hi, bg_lo, metal, alpha):
+    d = f'<radialGradient id="s" cx="30%" cy="30%" r="100%"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></radialGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#s)"/>']
+    g = [f'<g fill="none" stroke="{metal}" stroke-opacity="{alpha:.2f}">']
+    for gx, gy, gr, n in [(1300, 300, 170, 28), (1500, 520, 100, 18), (1160, 600, 90, 16), (1400, 820, 130, 22), (160, 860, 120, 20), (330, 760, 60, 12)]:
+        pts = []
+        for k in range(n * 2):
+            a = math.pi * k / n
+            rr = gr + (14 if k % 2 == 0 else 0)
+            pts.append(f'{f(gx+rr*math.cos(a))},{f(gy+rr*math.sin(a))}')
+        g.append(f'<polygon points="{" ".join(pts)}" stroke-width="1.6"/><circle cx="{gx}" cy="{gy}" r="{gr*0.22:.0f}" stroke-width="1.2"/>')
+        for k in range(5):
+            a = 2 * math.pi * k / 5
+            g.append(f'<path d="M{f(gx+gr*0.22*math.cos(a))} {f(gy+gr*0.22*math.sin(a))} L{f(gx+gr*0.8*math.cos(a))} {f(gy+gr*0.8*math.sin(a))}" stroke-width="1"/>')
+    # a cam stack and its follower: the Writer's memory of each letter
+    for k in range(6):
+        g.append(f'<ellipse cx="900" cy="{180+k*26}" rx="{70+k*8}" ry="10" stroke-width="1"/>')
+    g.append(f'<path d="M980 180 L1060 140 L1100 330" stroke-width="2"/><path d="M120 120 q60 -40 120 0 t120 0 t120 0" stroke-dasharray="4 6"/>')
+    g.append('</g>')
+    return svg(''.join(b + g), d)
+
 art = {
   'notebook-light': notebook('#5b3a1a', '#f7ecd2', '#e9d4a8', 0.30),
   'notebook-dark': notebook('#d9b77c', '#2b2318', '#1a140d', 0.22),
@@ -241,6 +335,14 @@ art = {
   'atlas-dark': atlas('#211c14', '#15110b', '#cfae7a', 0.20),
   'desk-light': desk('#f7f7f5', '#5d5d63', 0.35),
   'desk-dark': desk('#141416', '#a0a0a8', 0.25),
+  'diary-light': diary('#f3eadb', '#e6d8c0', '#4a3a28', '#fff2c8', '#3a2a18', 0.22),
+  'diary-dark': diary('#1d1812', '#120e0a', '#c9a96e', '#f2c46d', '#d9b77c', 0.20),
+  'observatory-light': observatory('#e9edf7', '#d9e0f0', '#2f3f73', 0.30),
+  'observatory-dark': observatory('#18203f', '#05070f', '#dfe6ff', 0.45),
+  'lighthouse-light': lighthouse('#eef3f7', '#dde8f0', '#5b86a8', '#3c5568', '#2a3a48', '#ffd27a', 0.22),
+  'lighthouse-dark': lighthouse('#0f1a2a', '#08101c', '#2c4a68', '#9fb4c8', '#c8d4e0', '#ffd27a', 0.28),
+  'automata-light': automata('#f4efe6', '#e6dccb', '#6b5434', 0.26),
+  'automata-dark': automata('#1c1712', '#0f0c09', '#d4b483', 0.24),
 }
 for name, s in art.items():
     open(os.path.join(out, name + '.svg'), 'w').write(s)

@@ -112,6 +112,23 @@
 	--space-art: url('/spaces/desk-light.svg');
 }
 
+:root:not([data-spaces='off'])[data-space='diary'] {
+	--bg: #f1e7d6;
+	--space-art: url('/spaces/diary-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='observatory'] {
+	--bg: #e8ecf6;
+	--space-art: url('/spaces/observatory-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='lighthouse'] {
+	--bg: #ecf2f6;
+	--space-art: url('/spaces/lighthouse-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='automata'] {
+	--bg: #f2ece2;
+	--space-art: url('/spaces/automata-light.svg');
+}
+
 /* Dark tokens per space: the same places at night. */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='notebook'] {
@@ -184,6 +201,22 @@
 	}
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='desk'] {
 		--space-art: url('/spaces/desk-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='diary'] {
+		--bg: #17120d;
+		--space-art: url('/spaces/diary-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='observatory'] {
+		--bg: #0b0f20;
+		--space-art: url('/spaces/observatory-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='lighthouse'] {
+		--bg: #0c1522;
+		--space-art: url('/spaces/lighthouse-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='automata'] {
+		--bg: #16120e;
+		--space-art: url('/spaces/automata-dark.svg');
 	}
 }
 :root[data-theme='dark']:not([data-spaces='off'])[data-space='notebook'] {
@@ -307,6 +340,22 @@
 				170px;
 		animation: space-twinkle 5s ease-in-out infinite alternate;
 	}
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='diary'] {
+	--bg: #17120d;
+	--space-art: url('/spaces/diary-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='observatory'] {
+	--bg: #0b0f20;
+	--space-art: url('/spaces/observatory-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='lighthouse'] {
+	--bg: #0c1522;
+	--space-art: url('/spaces/lighthouse-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='automata'] {
+	--bg: #16120e;
+	--space-art: url('/spaces/automata-dark.svg');
 }
 @keyframes space-drift {
 	to {

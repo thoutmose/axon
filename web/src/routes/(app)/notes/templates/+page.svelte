@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NoteTypeArt from '$lib/NoteTypeArt.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { api, message } from '$lib/api';
@@ -150,6 +151,7 @@
 			{#each g.list as tmpl (tmpl.id)}
 				<li class="tpl">
 					<h3>{t(tmpl.label)}</h3>
+					<NoteTypeArt kind={tmpl.id} />
 					<p class="small">{t(tmpl.hint)}</p>
 					{#if sections(show(tmpl)).length}
 						<ul class="chips" aria-label={t('Sections of {label}', { label: t(tmpl.label) })}>

@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Every page its picture**: Journal, Insights, the weekly review, and Agents get their own scenery (Vermeer's evening light, an observatory, a lighthouse, clockwork automata); every themed page says what its picture shows and the painting, film, or game it nods to; each type of note has a small drawing and a sentence on what it is for (EP-98).
 - **A year you can read**: the 12-month activity chart is laid out by Monday-first weeks with month and weekday labels, opens on the current month with today outlined, and has a legend from no activity to more; the demo has a lived-in year (EP-99).
 - **The roadmap on the calendar**: the Top-5% roadmap's weekly rhythm shows as study blocks with each phase's tracks, in the calendar and its iCal feeds, and each phase project has its note in the vault's project template (EP-97).
 - **A sky that follows the sun**: the home page and Today show the sky of your time zone now, with the sun, the moon and its phase, and the stars, over a landscape you choose (nature, the Earth from orbit, or a monument on each continent); a theme follows it, light from dawn to dusk (EP-96).

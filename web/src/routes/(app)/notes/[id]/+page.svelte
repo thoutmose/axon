@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NoteTypeArt from '$lib/NoteTypeArt.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
@@ -286,6 +287,7 @@
 					· <span class="kind">{note.kind}</span>{/if}
 			</p>
 			<h1>{note.title}</h1>
+			{#if note.kind !== 'note'}<NoteTypeArt kind={note.kind} />{/if}
 			{#if note.tags.length}
 				<p class="tags">
 					{#each note.tags as noteTag (noteTag)}<a href="/notes?tag={encodeURIComponent(noteTag)}"

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import '$lib/spaces.css';
-	import { spaceFor } from '$lib/spaces';
+	import { spaceFor, spaceInfo } from '$lib/spaces';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Toaster from '$lib/ui/Toaster.svelte';
@@ -102,8 +102,8 @@
 	}
 
 	// The area's scenery, and a scroll offset for its parallax.
+	const space = $derived(spaceFor(page.url.pathname));
 	$effect(() => {
-		const space = spaceFor(page.url.pathname);
 		if (space) document.documentElement.dataset.space = space;
 		else delete document.documentElement.dataset.space;
 	});
@@ -314,6 +314,13 @@
 
 <main id="main" class:wide>
 	{@render children()}
+	{#if space}
+		<!-- What the page's picture shows, and what it nods to (EP-98). -->
+		<p class="space-credit">
+			<strong>{t(spaceInfo[space].title)}.</strong>
+			{t(spaceInfo[space].about)}
+		</p>
+	{/if}
 </main>
 <Toaster />
 
@@ -537,5 +544,15 @@
 	}
 	.account img {
 		border-radius: 50%;
+	}
+	.space-credit {
+		max-width: var(--content-width, 60rem);
+		margin: var(--space-12) auto var(--space-6);
+		padding: 0 var(--gutter);
+		font-size: var(--text-sm);
+		color: var(--muted);
+	}
+	:global(:root[data-spaces='off']) .space-credit {
+		display: none;
 	}
 </style>
