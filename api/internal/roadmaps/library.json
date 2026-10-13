@@ -1050,8 +1050,6 @@
 							{
 								"title": "pipekit v0.1 released, CI green, coverage ≥ 90%",
 								"parts": [
-									"Repository with uv, pytest, mypy, ruff, and GitHub Actions CI",
-									"DAG model and topological sort with hypothesis tests",
 									"Scheduler with retries",
 									"CLI and plugins",
 									"Release v0.1 on PyPI"

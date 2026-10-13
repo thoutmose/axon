@@ -60,7 +60,7 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 		}
 	}
 
-	// The first week's tasks are done but one; the pipekit repository too.
+	// The first week's tasks are done but one.
 	for i, id := range plan.Tasks {
 		if i == 8 {
 			continue
@@ -70,11 +70,6 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 			return plan, err
 		}
 	}
-	if _, err := tx.Exec(ctx, `UPDATE tasks t SET status = 'done', completed_at = $3 FROM entities e
-		WHERE e.id = t.id AND e.user_id = $1 AND e.title = $2`, user, "Repository with uv, pytest, mypy, ruff, and GitHub Actions CI", start.Add(20*time.Hour)); err != nil {
-		return plan, err
-	}
-
 	// The first course's literature note, and its flashcards with diagrams.
 	note, err := notes.Create(ctx, tx, user, graph.UserActor, "4-Zettelkasten/Literature/MIT 6.042J Mathematics for Computer Science.md", logicNote)
 	if err != nil {
