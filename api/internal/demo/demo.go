@@ -6,6 +6,8 @@ package demo
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand/v2"
 	"time"
 
 	"github.com/google/uuid"
@@ -483,7 +485,50 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if s.err != nil {
 		return fmt.Errorf("demo seed: %w", s.err)
 	}
+	if err := seedJournal(ctx, tx, user, s.today); err != nil {
+		return err
+	}
 	return seedProposals(ctx, tx, user, review)
+}
+
+// seedJournal gives the demo 60 days of journal and some training (EP-91,
+// EP-92), with the links people commonly find: more sleep, a better mood
+// and more energy; a workout, a better mood; less sleep, more stress. The
+// numbers come from a fixed seed, so the demo looks the same every night.
+func seedJournal(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time) error {
+	if _, err := tx.Exec(ctx, `INSERT INTO consents (user_id, purpose, granted) VALUES ($1, 'health_data', true)`, user); err != nil {
+		return err
+	}
+	r := rand.New(rand.NewPCG(2026, 10)) //nolint:gosec // reproducible demo data, not security
+	clamp := func(v float64) int { return int(math.Max(1, math.Min(5, math.Round(v)))) }
+	thanks := []string{"A call with my sister", "Sun on the balcony", "A good book", "Lunch with Sam", "A quiet morning", "Finishing the About page"}
+	for i := range 60 {
+		day := today.AddDate(0, 0, -i)
+		sleep := 5.5 + float64(r.IntN(7))/2
+		trained := r.IntN(3) == 0
+		if trained {
+			if _, err := tx.Exec(ctx, `INSERT INTO workouts (id, user_id, done_on, kind, title, minutes, effort) VALUES ($1, $2, $3, 'cardio', 'Easy run', $4, 5)`,
+				uuid.Must(uuid.NewV7()), user, day.Format(time.DateOnly), 25+r.IntN(20)); err != nil {
+				return err
+			}
+		}
+		lift := 0.0
+		if trained {
+			lift = 0.8
+		}
+		mood := clamp(2.4 + 0.4*(sleep-5.5) + lift + r.NormFloat64()*0.6)
+		energy := clamp(2.3 + 0.5*(sleep-5.5) + r.NormFloat64()*0.6)
+		stress := clamp(3.6 - 0.45*(sleep-5.5) + r.NormFloat64()*0.7)
+		var grateful []string
+		if r.IntN(2) == 0 {
+			grateful = []string{thanks[r.IntN(len(thanks))]}
+		}
+		if _, err := tx.Exec(ctx, `INSERT INTO journal_entries (user_id, day, mood, energy, stress, sleep_hours, gratitude) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			user, day.Format(time.DateOnly), mood, energy, stress, sleep, append([]string{}, grateful...)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // seedProposals adds an agent run with pending proposals, so the approval

@@ -5030,6 +5030,50 @@ paths:
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
+  /v1/journal/helps:
+    get:
+      tags: [wellbeing]
+      operationId: getWhatHelps
+      summary: Which of your days' habits go with a better or worse mood, energy, or stress
+      description: >-
+        Over the last 90 days: Spearman rank correlation between each factor (sleep, training, focus, habits
+        kept, tasks finished, gratitude) and each outcome (mood, energy, stress), a permutation test per pair,
+        and the Benjamini–Hochberg correction. Only clear links are returned, each with the averages behind it.
+        A link is not proof of cause. Needs the health_data consent.
+      responses:
+        "200":
+          description: The analysis.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [days, needed, tested, findings, method]
+                properties:
+                  days: { type: integer, description: Days with something in the journal. }
+                  needed: { type: integer, description: More days needed before anything can be said. }
+                  tested: { type: integer, description: Pairs tested. }
+                  method: { type: string }
+                  findings:
+                    type: array
+                    maxItems: 6
+                    items:
+                      type: object
+                      required: [factor, outcome, rho, p, q, n, mean_with, mean_without, days_with, days_without, strength, sentence]
+                      properties:
+                        factor: { type: string, enum: [sleep, training, focus, habits, tasks, gratitude] }
+                        outcome: { type: string, enum: [mood, energy, stress] }
+                        rho: { type: number }
+                        p: { type: number }
+                        q: { type: number }
+                        n: { type: integer }
+                        mean_with: { type: number }
+                        mean_without: { type: number }
+                        days_with: { type: integer }
+                        days_without: { type: integer }
+                        strength: { type: string, enum: [moderate, strong] }
+                        sentence: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
   /v1/journal/{day}:
     parameters:
       - { name: day, in: path, required: true, schema: { type: string, format: date } }

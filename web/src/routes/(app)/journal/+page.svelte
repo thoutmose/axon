@@ -6,6 +6,7 @@
 	import { emptyDay, hasContent, scales, type JournalFields } from '$lib/journal';
 	import LineChart from '$lib/charts/LineChart.svelte';
 	import Scale from '$lib/Scale.svelte';
+	import WhatHelps from '$lib/WhatHelps.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -183,6 +184,8 @@
 			{#if saved}<Button variant="ghost" onclick={remove}>{t('Delete')}</Button>{/if}
 		</div>
 	</form>
+
+	<WhatHelps />
 
 	{#if entries.length}
 		<section class="card" aria-labelledby="month-title">

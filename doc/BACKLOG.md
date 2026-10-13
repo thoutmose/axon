@@ -140,6 +140,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-89 | A photo of a meal | Owner request: take a picture of the food and get its macronutrients. The person's AI provider estimates each food and portion, which they correct before logging, behind a new `food_photos` consent; the photo is stripped of metadata and never kept. A photo of a barcode is read on the device. | SHOULD | 5 pts | EP-18, EP-44 | Done |
 | EP-90 | Chef & Nutritionist | Owner request: meals by budget, dietary restrictions, constraints, and time, by an AI agent that is a nutritionist and a cook. A planning form on Health, an agent that reads the daily needs and proposes a plan with recipes, a shopping list, and a cost, saved as a note once approved. | SHOULD | 5 pts | EP-44, EP-88 | Done |
 | EP-91 | Daily journal | Mood, energy, and stress on five faces, sleep, three things to be grateful for, and a note, a day at a time, under the health data consent; a Journal page, a Today card, and the last 30 days. | SHOULD | 3 pts | EP-88 | Done |
+| EP-92 | What helps you | Which habits go with better days: sleep, training, focus, habits kept, tasks finished, and gratitude against mood, energy, and stress over 90 days, with rank correlation, a permutation test, and a correction for many tests; only clear links, in plain words, never as causes. Computed on the server, no AI. | SHOULD | 3 pts | EP-91 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1800,6 +1801,15 @@ Cross-cutting matrix:
 - [x] **EP-91/IS-91.02** · 1 pt · SHOULD — Reflect → Journal: three scales of five faces (native radio buttons under the faces, so the keyboard and screen readers work; choosing again clears), sleep, three gratitude lines, a note, and the last 30 days as a mood and energy chart and a list to reopen any day. "How are you today?" can be added to Today; it merges into the day so nothing written is lost.
 
 **Tests.** Field checks (written first); `TestJournal` against PostgreSQL (consent, replace, future day, empty day, other people, export, deletion with the consent); `TestEveryListenerHearsAWithdrawal`; `hasContent`; an e2e test that clicks the faces, saves, and finds the day in the last 30 days, with axe.
+
+### EP-92 — What helps you
+
+**Goal.** A journal is worth keeping when it gives something back: which of a person's habits go with their better days, without reading chance as a pattern or a pattern as a cause (ADR 0029).
+
+- [x] **EP-92/IS-92.01** · 2 pts · SHOULD — `GET /v1/journal/helps` reads the last 90 days in one query (the journal, and per day the minutes trained and focused, habits kept, and tasks finished, in the person's time zone) and tests six habits against mood, energy, and stress: Spearman rank correlation, a permutation test of 2,000 shuffles seeded by the pair, and the Benjamini–Hochberg correction over every pair. A link is kept when q ≤ 0.1 and |ρ| ≥ 0.3, with 14 days and 5 on each side of the split (sleep at 7 h, the least adults need; counts at their median); at most six, strongest first, each as a sentence with the two averages, in the person's language. Before 14 days, it says how many more are needed.
+- [x] **EP-92/IS-92.02** · 1 pt · SHOULD — Journal: a "What helps you" card with each link, its strength, the averages on those days and the others as bars, the correlation and q-value, "a link is not a cause", and the method. The demo has 60 days of journal and runs, so it shows links at once.
+
+**Tests.** Spearman, the permutation test, and Benjamini–Hochberg against reference values from Python (written first); a planted link between sleep and mood found and noise left out, the 9-day case, and French; `TestWhatHelps` against PostgreSQL; the demo shows at least two links; the e2e journal test reads how many more days are needed.
 
 ### EP-20 — Analytics & insights
 

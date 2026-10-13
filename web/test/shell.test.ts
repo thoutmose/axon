@@ -921,6 +921,11 @@ test('the journal: how the day felt, the night, and what you are grateful for', 
 	const month = page.getByRole('region', { name: 'The last 30 days' });
 	await expect(month).toContainText('7.5 h of sleep');
 	await expect(month).toContainText('A call with Sam');
+	// One day is too few to say what helps: the page says how many more it needs.
+	await page.reload();
+	await expect(page.getByRole('region', { name: 'What helps you' })).toContainText(
+		/Write in your journal on \d+ more days/
+	);
 	await noSeriousA11yViolations(page);
 });
 

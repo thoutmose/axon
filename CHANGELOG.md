@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **What helps you**: which of your habits go with your better days, from your journal and logs over 90 days, with statistics that leave chance out and say a link is not a cause; computed on your server, no AI (EP-92).
 - **Daily journal**: mood, energy, stress, sleep, gratitude, and a note, a day at a time, with the last 30 days and a Today card (EP-91).
 - **Chef & Nutritionist**: meal plans within your budget, restrictions and allergies, constraints, and cooking time, close to your daily needs, with recipes, a shopping list, and a cost estimate, saved as a note once approved (EP-90).
 - **A photo of a meal**: your AI provider estimates its foods, portions, and macronutrients for you to check before logging, behind a consent of its own; the photo is not kept. A photo of a barcode finds the product (EP-89).
