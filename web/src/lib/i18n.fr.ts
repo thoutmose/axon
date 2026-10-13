@@ -324,8 +324,8 @@ export const fr: Record<string, string> = {
 	'Keep tasks, goals, milestones, projects, areas, resources, habits, and media as notes in my vault':
 		'Garder tâches, objectifs, jalons, projets, domaines, ressources, habitudes et médias comme notes dans mon coffre',
 	Folder: 'Dossier',
-	'Also write my food and training logs there (health data, one way)':
-		'Y écrire aussi mes journaux d’alimentation et d’entraînement (données de santé, dans un seul sens)',
+	'Also write my food and training logs and my journal there (health data, one way)':
+		'Y écrire aussi mes journaux d’alimentation et d’entraînement, et mon journal quotidien (données de santé, dans un seul sens)',
 	'Each item is a note with its fields in the front matter and its text in sections. Edit either side and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into Archive/ archives it. Health logs also need the health consent and are removed from the vault if you withdraw it.':
 		'Chaque élément est une note, avec ses champs dans l’en-tête et son texte en sections. Modifiez l’un ou l’autre côté, l’autre suit ; une nouvelle note avec un type crée l’élément ; supprimer le fichier le supprime ; le déplacer dans Archive/ l’archive. Les journaux de santé demandent aussi le consentement santé et sont retirés du coffre si vous le retirez.',
 	'See the templates': 'Voir les modèles',

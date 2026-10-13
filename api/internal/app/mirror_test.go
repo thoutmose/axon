@@ -234,6 +234,25 @@ func TestVaultMirror(t *testing.T) {
 	if c := alice.vault()["Axon/Health/Food/Food "+today+".md"].Content; !strings.Contains(c, "| lunch | Lentil soup |") {
 		t.Fatalf("food log note = %q", c)
 	}
+	// A journal day is a daily note, with its scales in the front matter.
+	alice.mustDo(200, "PUT", "/v1/journal/2026-01-15", []byte(`{"mood":4,"energy":3,"sleep_hours":7.5,"gratitude":["Sun on the balcony"],"note":"A calm | day"}`))
+	step()
+	day := "Axon/Health/Journal/Journal 2026-01-15.md"
+	if c := alice.vault()[day].Content; !strings.Contains(c, "type: journal") || !strings.Contains(c, "mood: 4") ||
+		!strings.Contains(c, "sleep_hours: 7.5") || strings.Contains(c, "stress:") ||
+		!strings.Contains(c, "## Grateful for\n- Sun on the balcony") || !strings.Contains(c, "## Note\nA calm | day") {
+		t.Fatalf("journal note = %q", c)
+	}
+	alice.mustDo(204, "DELETE", "/v1/journal/2026-01-15", nil)
+	step()
+	if _, ok := alice.vault()[day]; ok {
+		t.Fatal("journal note kept after the day was deleted")
+	}
+	alice.mustDo(200, "PUT", "/v1/journal/2026-01-16", []byte(`{"mood":2}`))
+	step()
+	if _, ok := alice.vault()["Axon/Health/Journal/Journal 2026-01-16.md"]; !ok {
+		t.Fatal("journal day not mirrored")
+	}
 	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":false}`))
 	step()
 	for p := range alice.vault() {

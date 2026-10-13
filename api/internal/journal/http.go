@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/auth"
@@ -145,7 +146,11 @@ func (h *Handlers) put(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	e, err := Put(r.Context(), h.db, user, d, today, f)
+	var e Entry
+	err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) (err error) {
+		e, err = Put(r.Context(), tx, user, d, today, f)
+		return err
+	})
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -162,7 +167,9 @@ func (h *Handlers) delete(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if err := Delete(r.Context(), h.db, user, d.Format(time.DateOnly)); err != nil {
+	if err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		return Delete(r.Context(), tx, user, d.Format(time.DateOnly))
+	}); err != nil {
 		h.fail(w, err)
 		return
 	}
