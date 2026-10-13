@@ -275,6 +275,7 @@ function keysInTables(): Set<string> {
 		'identity'
 	];
 	const walk = (v: unknown, field = '') => {
+		if (field === 'raw') return; // a vault template's own file, written in its owner's language
 		if (typeof v === 'string') {
 			if (fields.includes(field) || (/[a-z]/.test(v) && /\s/.test(v) && !/^https?:|^\//.test(v)))
 				keys.add(v);

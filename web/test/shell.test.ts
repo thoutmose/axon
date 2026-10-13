@@ -721,14 +721,14 @@ test('note templates live in the vault and fill their placeholders', async () =>
 	await dialog.getByRole('button', { name: 'copy these built-in ones there' }).click();
 	await expect(page.getByText(/The templates are in Templates\//)).toBeVisible();
 	await dialog.getByLabel('Title', { exact: true }).fill('Raft consensus');
-	await dialog
-		.getByRole('radio', { name: /Literature note Templates\/Literature note\.md/ })
-		.check();
+	// The vault's own templates (EP-100), copied as they are: Templates/literature.md.
+	await dialog.getByRole('radio', { name: /^literature .*Templates\/literature\.md/ }).check();
 	await dialog.getByRole('button', { name: 'Create' }).click();
 	await expect(page).toHaveURL(/\/notes\/[0-9a-f-]+\?edit=1/);
 	await expect(page.getByRole('textbox', { name: /Markdown/ })).toHaveValue(
-		/title: Raft consensus/
+		/title: Raft consensus\ncreated: \d{4}-\d{2}-\d{2} \d{2}:\d{2}\n/
 	);
+	await expect(page.getByText(/Zettel\/literature\/\d{12}-raft-consensus\.md/)).toBeVisible();
 });
 
 test('budget: categories, a monthly budget, and exact totals', async () => {
@@ -1060,7 +1060,10 @@ test('templates show their sections, and a task note in the vault becomes a task
 	await expect(page.getByRole('list', { name: 'Sections of Literature note' })).toContainText(
 		'Key ideas'
 	);
-	await expect(page.getByRole('list', { name: 'Sections of Habit' })).toContainText(
+	await expect(page.getByRole('list', { name: 'Sections of Five Ws test' })).toContainText(
+		'My answers'
+	);
+	await expect(page.getByRole('list', { name: 'Sections of Habit', exact: true })).toContainText(
 		'Make it easy (two-minute version)'
 	);
 	await noSeriousA11yViolations(page);

@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Your vault's templates**: the SecondBrain vault's nineteen templates ship as Axon's own, byte for byte (Zettelkasten, PARA, daily, weekly, and monthly notes, roadmaps, goals, milestones, habits, media, and six retrieval tests), filed where the vault keeps them, with their placeholders filled (EP-100).
 - **Every page its picture**: Journal, Insights, the weekly review, and Agents get their own scenery (Vermeer's evening light, an observatory, a lighthouse, clockwork automata); every themed page says what its picture shows and the painting, film, or game it nods to; each type of note has a small drawing and a sentence on what it is for (EP-98).
 - **A year you can read**: the 12-month activity chart is laid out by Monday-first weeks with month and weekday labels, opens on the current month with today outlined, and has a legend from no activity to more; the demo has a lived-in year (EP-99).
 - **The roadmap on the calendar**: the Top-5% roadmap's weekly rhythm shows as study blocks with each phase's tracks, in the calendar and its iCal feeds, and each phase project has its note in the vault's project template (EP-97).
@@ -30,6 +31,8 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **French everywhere**: every page of the web app in French, with dates in the interface's language, and what the API writes (errors, explanations, insights, badges) too, with tests that keep it so (EP-85 to EP-87).
 
 ### Fixed
+
+- Edits of a note or an item large enough to be compressed failed with "changed somewhere else" on their first save: the proxy suffixes the entity tag with its encoding, and the API now reads it through (since EP-74, found in EP-100).
 
 - Aligned columns in Markdown tables align again: the alignment was a style attribute, which the Content Security Policy blocks.
 - New accounts start in the browser's time zone instead of UTC, so "today" is right from the first night (EP-69).

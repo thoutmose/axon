@@ -82,6 +82,30 @@
 			list: templates.filter((t) => t.group === 'para')
 		},
 		{
+			id: 'periodic',
+			title: t('Daily, weekly, and monthly notes'),
+			text: t(
+				'The day’s top three and journal, the GTD weekly review, and the monthly check of goals and the roadmap.'
+			),
+			list: templates.filter((t) => t.group === 'periodic')
+		},
+		{
+			id: 'plans',
+			title: t('Roadmaps, goals, and habits'),
+			text: t(
+				'Plain notes in Roadmaps/ and Tracker/, as in the SecondBrain vault: a roadmap with its phases, goals, milestones, habits, and the media you track.'
+			),
+			list: templates.filter((t) => t.group === 'plans')
+		},
+		{
+			id: 'reviews',
+			title: t('Retrieval tests'),
+			text: t(
+				'Spaced tests of a note, without opening it: the five Ws after an hour, a blank page after a day, flashcards after three days, a cloze after a week, a mixed test after a month, and Feynman after three months.'
+			),
+			list: templates.filter((t) => t.group === 'reviews')
+		},
+		{
 			id: 'items',
 			title: t('Axon items in your vault'),
 			text: t(

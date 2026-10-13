@@ -148,6 +148,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-97 | The roadmap on the calendar | Owner request: the roadmap's schedule of which domain to work on each day, following the phases, on the calendar, and its projects created like the vault's. | SHOULD | 3 pts | EP-08, EP-95 | Done |
 | EP-99 | A year you can read | Owner report: the 12-month activity chart did not show the current month and had no legend; the demo showed one active day. | SHOULD | 2 pts | EP-30 | Done |
 | EP-98 | Every page its picture | Owner request: illustrations for each page, type of note, and section, with a short description (paintings, films, games), and a background for each Reflect page. | SHOULD | 3 pts | EP-38 | Done |
+| EP-100 | Your vault's templates | Owner request: the SecondBrain vault's templates for each type of note, implemented in Axon. | SHOULD | 3 pts | EP-11, EP-48 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1884,6 +1885,15 @@ Cross-cutting matrix:
 - [x] **EP-98/IS-98.03** · 1 pt · SHOULD — Each type of note (permanent, literature, fleeting, daily, weekly, monthly, project, area, resource, roadmap, goal, milestone, habit, media, test, map of content, journal, task, workout, food log, meeting, archive) has a small line drawing and a sentence on what it is for, on the note and on the templates page.
 
 **Tests.** The Reflect pages' spaces, French for every caption and note type (passed by name, so the coverage test cannot see them), and the fallback drawing; the e2e suite runs axe on these pages. Every new space was looked at in light and dark.
+
+### EP-100 — Your vault's templates
+
+**Goal.** The owner asked (2026-10-13) for the templates of their SecondBrain vault, one per type of note, to be implemented in Axon.
+
+- [x] **EP-100/IS-100.01** · 2 pts · SHOULD — The vault's nineteen templates ship byte for byte (kept out of the formatter): literature, permanent, project, area, resource, daily, weekly, monthly, roadmap, goal, milestone, habit, media, and the six retrieval tests, in groups on the templates page and in the new-note dialog, beside Axon's fleeting, archive, meeting, and blank notes. Each files its note where the vault does (`Zettel/literature/<id>-<slug>.md`, `2-Areas/<slug>/<slug>.md`, `Tracker/goals/`, `Weekly/2026-W41.md`, `Reviews/<note>/5w.md`…). Placeholders are filled: `{{created}}` as date and time, `{{slug}}`, a test's `{{note}}`, a media note's kind and status; any other is left blank. Today's daily note uses the daily template. A vault template named like a built-in one (Templates/goal.md) replaces it.
+- [x] **EP-100/IS-100.02** · 1 pt · MUST — Found on the way: since EP-74 the proxy compressed large responses and suffixed their entity tag with the encoding (`"…-zstd"`); the browser sent it back in If-Match and the API answered 412, so a note or item over the compression threshold showed "changed somewhere else" on its first save. The API now reads the suffix and a weak `W/` through.
+
+**Tests.** Paths, contents with no placeholder left, the daily note, the round trip through the vault's templates folder (written first); `TestIfMatchAcceptsWhatTheProxyMadeOfTheTag`; e2e tests that create a note from the vault's literature template and find the retrieval tests' sections.
 
 ### EP-20 — Analytics & insights
 
