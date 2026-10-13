@@ -26,7 +26,7 @@ type overviewJSON struct {
 		Day   string `json:"day"`
 		Value int    `json:"value"`
 	} `json:"activity"`
-	Tables   struct {
+	Tables struct {
 		DueSoon  []struct{ Title string } `json:"due_soon"`
 		Learning []struct{ Title string } `json:"learning"`
 	} `json:"tables"`
