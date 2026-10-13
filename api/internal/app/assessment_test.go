@@ -45,7 +45,7 @@ type assessmentJSON struct {
 }
 
 func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
-	e := newEnv(t, false)
+	e := newEnv(t, true)
 	alice := e.client()
 	alice.register("Alice")
 
@@ -77,27 +77,25 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 		t.Fatalf("assessment = %+v", a)
 	}
 
-	// Placement: Python's first two sections are done, with the reason; Rust starts from zero.
-	var py roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"python","place":true}`)), &py)
+	// Placement on the roadmap: Python, at level 5, is being learnt (its proof is
+	// still to come); Rust, at level 1, starts from the beginning.
+	var top5 roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer","place":true}`)), &top5)
 	var full struct {
 		Description string `json:"description"`
 	}
-	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+py.ID, nil), &full)
-	if py.Done != 3 || !strings.Contains(full.Description, "Placed by your skills assessment") || !strings.Contains(full.Description, "“1 · Start” and “2 · Idioms” are marked done") {
-		t.Fatalf("python placement: done %d, %q", py.Done, full.Description)
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+top5.ID, nil), &full)
+	if !strings.Contains(full.Description, "Placed by your skills assessment: “Python” is at level 3 of 5 or more") {
+		t.Fatalf("placement note: %q", full.Description)
 	}
-	for _, s := range py.Skills {
-		if (s.Section == "3 · Ship") != (s.Status == "todo") {
-			t.Fatalf("skill %s in %s is %s", s.Title, s.Section, s.Status)
+	for _, s := range top5.Skills {
+		if want := map[bool]string{true: "learning", false: "todo"}[s.Title == "Python"]; s.Status != want {
+			t.Fatalf("skill %s is %s", s.Title, s.Status)
 		}
 	}
-	var rs roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"rust","place":true}`)), &rs)
-	if rs.Done != 0 {
-		t.Fatalf("rust placed at %d", rs.Done)
-	}
-	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"cloud","place":true}`)); code != 422 || !bytes.Contains(out, []byte("Take the skills assessment")) {
+	bob := e.client()
+	bob.register("Bob")
+	if code, out := bob.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer","place":true}`)); code != 422 || !bytes.Contains(out, []byte("Take the skills assessment")) {
 		t.Fatalf("unassessed placement = %d %s", code, out)
 	}
 

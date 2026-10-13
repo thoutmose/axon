@@ -158,20 +158,22 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	s.note("Daily/"+s.today.Format(time.DateOnly)+".md", "# "+s.today.Format("Monday 2 January 2006")+"\n\n## Focus\n- Finish the About page\n\n## Notes\n- Read about [[Spaced repetition]] on the train.\n")
 	s.note("0-Inbox/Book ideas.md", "# Book ideas\n\n- *Atomic Habits*, James Clear\n- *How to Take Smart Notes*, Sönke Ahrens\n")
 
-	// Goals with milestones, connected to their work.
-	var health, career goals.Goal
+	// Goals with milestones, connected to their work; the career goal is the
+	// roadmap's (EP-95), started a week ago.
+	var health goals.Goal
 	if s.err == nil {
 		health, s.err = goals.Create(ctx, tx, user, graph.UserActor, goals.Fields{Title: ptr("Run a 10 km race"), Outcome: ptr("Finish the city 10 km in under an hour."), TargetDate: s.day(75)})
 	}
+	var plan roadmaps.Started
 	if s.err == nil {
-		career, s.err = goals.Create(ctx, tx, user, graph.UserActor, goals.Fields{Title: ptr("Become a backend engineer"), Outcome: ptr("Ship a production service and pass a system design interview."), TargetDate: s.day(240)})
+		plan, s.err = seedRoadmap(ctx, tx, user, s.today, now)
 	}
+	career := plan.Goal
 	for i, ms := range []struct {
 		goal  uuid.UUID
 		title string
 		done  bool
-	}{{health.ID, "Run 5 km without stopping", true}, {health.ID, "Run 8 km", false}, {health.ID, "Race day", false},
-		{career.ID, "Finish the Python roadmap", false}, {career.ID, "Read Designing Data-Intensive Applications", false}} {
+	}{{health.ID, "Run 5 km without stopping", true}, {health.ID, "Run 8 km", false}, {health.ID, "Race day", false}} {
 		if s.err == nil {
 			_, s.err = goals.AddMilestone(ctx, tx, user, ms.goal, graph.UserActor, goals.MilestoneFields{Title: ptr(ms.title), Done: ptr(ms.done), DueOn: s.day(20 * (i%3 + 1))})
 		}
@@ -181,7 +183,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	for _, a := range []struct {
 		title, standard string
 		goal            uuid.UUID
-	}{{"Health", "Sleep 7–8 h, move every day, eat mostly plants.", health.ID}, {"Career", "Learn every week and ship work I am proud of.", career.ID}} {
+	}{{"Health", "Sleep 7–8 h, move every day, eat mostly plants.", health.ID}} {
 		var area para.Item
 		if s.err == nil {
 			area, s.err = para.Areas.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(a.title), Description: ptr(a.standard)})
@@ -258,6 +260,21 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: c}, s.today)
 			}
 		}
+		// The roadmap's funds: about $3,000 of exams by 2030, and 20 € a month of rewards (EP-95).
+		for _, f := range []struct {
+			name, note, due string
+			target, month   int64
+		}{
+			{"Certification fund", "LFCS, CCNA, CKA, CKS, AWS SAA, GCP ACE, AZ-104, OCP Java, BSCP: 100 € a month.", "2030-02-24", 300000, 10000},
+			{"Reward fund", "Streak rewards for the study block, and one for every milestone: 20 € a month.", "", 24000, 2000},
+		} {
+			if s.err == nil {
+				pot, s.err = budget.CreatePot(ctx, tx, user, budget.PotFields{Name: ptr(f.name), TargetCents: ptr(f.target), Note: ptr(f.note), TargetDate: ptr(f.due)}, s.today)
+			}
+			if s.err == nil {
+				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: f.month}, s.today)
+			}
+		}
 	}
 	if s.err == nil {
 		groceries := cats["Groceries"]
@@ -330,63 +347,14 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		})
 	}
 
-	// Roadmaps from the library, with progress.
-	var python, design roadmaps.Roadmap
-	if s.err == nil {
-		python, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "python")
+	// The roadmap's skills under way, connected to the rest of life.
+	skill := map[string]uuid.UUID{}
+	for _, sk := range plan.Roadmap.Skills {
+		skill[sk.Title] = sk.ID
 	}
 	if s.err == nil {
-		design, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "system-design")
-	}
-	for i, sk := range python.Skills {
-		if s.err != nil || i > 4 {
-			break
-		}
-		status := "done"
-		if i >= 3 {
-			status = "learning"
-		}
-		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
-	}
-	var soft roadmaps.Roadmap
-	if s.err == nil {
-		soft, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "soft-skills")
-	}
-	for i, sk := range soft.Skills {
-		if s.err != nil || i > 4 {
-			break
-		}
-		status := map[int]string{0: "done", 1: "done", 2: "learning", 3: "done", 4: "learning"}[i]
-		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
-	}
-	if s.err == nil && len(soft.Skills) > 2 {
-		s.link(soft.Skills[2].ID, goals.Supports, career.ID)
-		s.link(soft.Skills[0].ID, graph.RelatesTo, moc)
-	}
-	if s.err == nil && len(python.Skills) > 1 {
-		s.link(python.Skills[1].ID, graph.RelatesTo, project.ID)
-	}
-	if s.err == nil && len(design.Skills) > 0 {
-		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
-	}
-	// Three years of scripting and SQL show on the skills radar (EP-82).
-	for _, d := range []struct {
-		domain   string
-		statuses []string
-	}{
-		{"linux-bash", []string{"done", "done", "learning"}},
-		{"databases", []string{"done", "done", "learning"}},
-	} {
-		var rm roadmaps.Roadmap
-		if s.err == nil {
-			rm, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, d.domain)
-		}
-		for i, status := range d.statuses {
-			if s.err != nil || i >= len(rm.Skills) {
-				break
-			}
-			_, s.err = roadmaps.UpdateSkill(ctx, tx, user, rm.Skills[i].ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
-		}
+		s.link(skill["Learning how to learn"], graph.RelatesTo, moc)
+		s.link(skill["Web development"], graph.RelatesTo, project.ID)
 	}
 
 	// Flashcards from the learning notes, a few already reviewed; the first
@@ -458,26 +426,24 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		_, s.err = tx.Exec(ctx, `INSERT INTO streak_freezes (id, user_id, bought_on) VALUES ($1, $2, $3)`, uuid.Must(uuid.NewV7()), user, s.today)
 	}
 
-	// A skills assessment, as taken before starting the roadmaps.
+	// A skills assessment, as taken before starting the roadmap.
 	if s.err == nil {
 		_, s.err = roadmaps.CreateAssessment(ctx, tx, user, graph.UserActor, roadmaps.AssessmentInput{
-			Profile: roadmaps.Profile{Role: "Support engineer", Experience: "3 years of scripting and SQL",
-				Goals: "Become a backend engineer within a year.", HoursPerWeek: 6, Formats: []string{"book", "practice"}},
-			Interests: []string{"python", "system-design", "soft-skills"},
-			Ratings:   map[string]int{"python": 3, "system-design": 1, "soft-skills": 3},
+			Profile: roadmaps.Profile{Role: "Data engineer", Experience: "Python, SQL, ELT/ETL, Snowflake, Airflow, dbt Core, Docker, Linux, Bash",
+				Goals: "Top 5% in 26 engineering domains by February 2030.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
+			Interests: []string{"python", "dsa", "maths", "linux-bash", "databases", "data-engineering"},
+			Ratings:   map[string]int{"python": 4, "dsa": 2, "maths": 2, "linux-bash": 3, "databases": 3, "data-engineering": 4},
 			Answers:   map[string]int{},
 		}, now)
 	}
 
 	// Everything connects.
 	if s.err == nil {
-		s.link(project.ID, goals.Supports, career.ID)
-		s.link(python.ID, goals.Supports, career.ID)
-		s.link(design.ID, goals.Supports, career.ID)
+		s.link(project.ID, goals.Supports, career)
 		s.link(habitIDs[1], goals.Supports, health.ID)
-		s.link(habitIDs[0], goals.Supports, career.ID)
+		s.link(habitIDs[0], goals.Supports, career)
 		s.link(site, graph.RelatesTo, project.ID)
-		s.link(moc, graph.RelatesTo, python.ID)
+		s.link(moc, graph.RelatesTo, plan.Roadmap.ID)
 		s.link(spaced, graph.RelatesTo, habitIDs[0])
 		s.link(call, graph.RelatesTo, health.ID)
 		s.link(cardIDs[1], graph.RelatesTo, site)

@@ -3691,7 +3691,7 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/** Import the OSSU curriculum or a curated library domain; roadmap.sh content may not be redistributed */
+		/** Start a roadmap of the library, with its whole plan (goal, milestones, projects, habits, tasks); roadmap.sh content may not be redistributed */
 		post: operations['importRoadmap'];
 		delete?: never;
 		options?: never;
@@ -3773,28 +3773,6 @@ export interface paths {
 		head?: never;
 		/** Change a roadmap's title or description */
 		patch: operations['updateRoadmap'];
-		trace?: never;
-	};
-	'/v1/roadmaps/{id}/regroup': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				id: components['parameters']['ID'];
-			};
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/**
-		 * Group an older import (one skill per course or book) into skills with their resources
-		 * @description Progress is combined (done when every part is done, learning once any part is started), connections move to the skill that absorbs them, and skills added by hand are kept. Running it again changes nothing.
-		 */
-		post: operations['regroupRoadmap'];
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
 		trace?: never;
 	};
 	'/v1/roadmaps/{id}/skills': {
@@ -14124,10 +14102,10 @@ export interface operations {
 		requestBody: {
 			content: {
 				'application/json': {
-					/** @example ossu */
+					/** @example top5-engineer */
 					source: string;
 					/**
-					 * @description Library domains only: mark the first sections done as far as your latest skills assessment of the domain justifies, and explain why in the description.
+					 * @description Start the skills whose assessment domain you reached level 3 of 5 in as being learnt, and explain why in the description. Needs a skills assessment.
 					 * @default false
 					 */
 					place?: boolean;
@@ -14370,32 +14348,6 @@ export interface operations {
 				};
 			};
 			400: components['responses']['Problem'];
-			401: components['responses']['Problem'];
-			403: components['responses']['Problem'];
-			404: components['responses']['Problem'];
-			422: components['responses']['Problem'];
-		};
-	};
-	regroupRoadmap: {
-		parameters: {
-			query?: never;
-			header?: never;
-			path: {
-				id: components['parameters']['ID'];
-			};
-			cookie?: never;
-		};
-		requestBody?: never;
-		responses: {
-			/** @description The regrouped roadmap. */
-			200: {
-				headers: {
-					[name: string]: unknown;
-				};
-				content: {
-					'application/json': components['schemas']['Roadmap'];
-				};
-			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];

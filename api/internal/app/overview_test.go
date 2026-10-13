@@ -62,7 +62,7 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 			t.Errorf("missing KPI %s", id)
 		}
 	}
-	if kpi["notes_written"] < 8 || kpi["projects_active"] != 1 || kpi["learning"] < 3 {
+	if kpi["notes_written"] < 8 || kpi["projects_active"] != 3 || kpi["learning"] < 3 {
 		t.Errorf("kpis = %v", kpi)
 	}
 	// A month of check-ins with a few misses: high, but honest.
@@ -92,8 +92,8 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 	var legacy struct {
 		ID string `json:"id"`
 	}
-	_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Old OSSU import"}`)), &legacy)
-	for _, course := range []struct{ title, status string }{{"Systematic Program Design", "learning"}, {"Class-based Program Design", "done"}} {
+	_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Old library import"}`)), &legacy)
+	for _, course := range []struct{ title, status string }{{"MIT 6.006 Introduction to Algorithms", "learning"}, {"Algorithms", "done"}} {
 		var sk struct {
 			ID string `json:"id"`
 		}
@@ -105,7 +105,7 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 	for _, n := range o.Skills.Nodes {
 		if n.RoadmapID != nil && *n.RoadmapID == legacy.ID {
 			merged++
-			if n.Title != "Systematic program design" || n.Status == nil || *n.Status != "done" {
+			if n.Title != "Data structures and algorithms" || n.Status == nil || *n.Status != "done" {
 				t.Fatalf("legacy node = %+v", n)
 			}
 		}

@@ -46,25 +46,6 @@
 	const needs = (sid: string) => edges.filter((e) => e.from === sid).map((e) => titleOf(e.to));
 	const selected = $derived(skills.find((s) => s.id === selectedId) ?? null);
 	const sections = $derived([...new Set(skills.map((s) => s.section).filter(Boolean))]);
-	// Imports from before skills were competencies list one book or course per node.
-	const ungrouped = $derived(
-		(roadmap?.source === 'library' || roadmap?.source === 'ossu') &&
-			skills.length > 0 &&
-			skills.every((s) => s.resources.length === 0)
-	);
-	let regrouping = $state(false);
-
-	async function regroup() {
-		regrouping = true;
-		try {
-			roadmap = await api<Roadmap>(`/v1/roadmaps/${id}/regroup`, { method: 'POST' });
-			toast(t('Grouped into skills. Your progress and connections were kept.'));
-		} catch (err) {
-			toast(message(err), 'error');
-		} finally {
-			regrouping = false;
-		}
-	}
 	const statusNames: Record<string, string> = $derived({
 		todo: t('To learn'),
 		learning: t('Learning'),
@@ -219,19 +200,6 @@
 			<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 		</div>
 	</div>
-
-	{#if ungrouped}
-		<div class="upgrade card glass" role="note">
-			<p>
-				{t(
-					'This roadmap was imported when each book or course was its own node. Group them into the skills they teach, with the resources listed under each skill. Progress and connections are kept.'
-				)}
-			</p>
-			<Button variant="secondary" busy={regrouping} onclick={regroup}
-				>{t('Group into skills')}</Button
-			>
-		</div>
-	{/if}
 
 	<nav class="tabs" aria-label={t('View')}>
 		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>{t('List')}</a>
@@ -626,17 +594,5 @@
 	}
 	.resources li {
 		display: grid;
-	}
-	.upgrade {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-4);
-		flex-wrap: wrap;
-		margin-bottom: var(--space-4);
-	}
-	.upgrade p {
-		margin: 0;
-		max-width: 60rem;
 	}
 </style>

@@ -36,25 +36,15 @@ func TestRoadmapsImportManualEditingAndProgress(t *testing.T) {
 	alice := e.client()
 	alice.register("Alice")
 
-	src := alice.mustDo(200, "GET", "/v1/roadmaps/sources", nil)
-	if !bytes.Contains(src, []byte(`"license_url":"https://github.com/ossu/computer-science/blob/master/LICENSE"`)) {
-		t.Fatalf("sources = %s", src)
-	}
 	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"roadmap.sh"}`)); code != 422 || !bytes.Contains(out, []byte("may not be redistributed")) {
 		t.Fatalf("roadmap.sh import = %d %s", code, out)
 	}
-	var ossu roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"ossu"}`)), &ossu)
-	// 63 courses grouped into 42 skills: the three calculus courses are one skill.
-	if ossu.Source != "ossu" || len(ossu.Skills) != 42 || len(ossu.Edges) != 13 || ossu.Total != 42 ||
-		!bytes.Contains([]byte(ossu.Attribution), []byte("MIT License")) {
-		t.Fatalf("ossu = %d skills, %d edges, %+v", len(ossu.Skills), len(ossu.Edges), ossu.Attribution)
+	var other roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Other"}`)), &other)
+	var elsewhere struct {
+		ID string `json:"id"`
 	}
-	for _, s := range ossu.Skills {
-		if s.Title == "Calculus" && len(s.Resources) != 3 {
-			t.Fatalf("calculus resources = %+v", s.Resources)
-		}
-	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+other.ID+"/skills", []byte(`{"title":"Elsewhere"}`)), &elsewhere)
 
 	// A manual roadmap with prerequisites.
 	var rm roadmapJSON
@@ -66,7 +56,7 @@ func TestRoadmapsImportManualEditingAndProgress(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"300 kanji","section":"Vocabulary","requires":["`+kana.ID+`"]}`)), &kanji)
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"Te-form","section":"Grammar"}`)), &grammar)
 	alice.link(grammar.ID, "requires", kana.ID)
-	alice.mustDo(422, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"x","requires":["`+ossu.Skills[0].ID+`"]}`))
+	alice.mustDo(422, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"x","requires":["`+elsewhere.ID+`"]}`))
 	alice.mustDo(422, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"x","url":"javascript:alert(1)"}`))
 	alice.mustDo(422, "PATCH", "/v1/skills/"+kana.ID, []byte(`{"status":"mastered"}`))
 
@@ -120,63 +110,6 @@ func TestLargeRoadmapStaysFast(t *testing.T) {
 	}
 }
 
-// Roadmaps imported before skills were competencies (one skill per book or
-// course) can be regrouped: progress and connections survive, and skills
-// the person added by hand stay.
-func TestRegroupTurnsAnOlderImportIntoSkills(t *testing.T) {
-	e := newEnv(t, false)
-	alice := e.client()
-	alice.register("Alice")
-
-	var rm roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Python"}`)), &rm)
-	if _, err := pool.Exec(context.Background(), `UPDATE roadmaps SET source = 'library' WHERE id = $1`, rm.ID); err != nil {
-		t.Fatal(err)
-	}
-	add := func(title, status string) string {
-		var s struct {
-			ID string `json:"id"`
-		}
-		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"`+title+`","status":"`+status+`"}`)), &s)
-		return s.ID
-	}
-	tutorial := add("The Python Tutorial", "done")
-	add("Python for Everybody", "learning")
-	fluent := add("Fluent Python, 2nd edition", "todo")
-	alice.link(fluent, "requires", tutorial)
-	add("Write a CLI tool", "learning")
-	var goal struct {
-		ID string `json:"id"`
-	}
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals", []byte(`{"title":"Ship a Python package"}`)), &goal)
-	alice.link(fluent, "supports", goal.ID)
-
-	alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/regroup", nil)
-	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/regroup", nil), &rm) // twice changes nothing
-	got := map[string]string{}
-	var idiomatic string
-	for _, s := range rm.Skills {
-		got[s.Title] = s.Status
-		if s.Title == "Idiomatic Python" {
-			idiomatic = s.ID
-		}
-	}
-	want := map[string]string{"Python fundamentals": "learning", "Idiomatic Python": "todo", "Write a CLI tool": "learning",
-		"Automation with Python": "todo", "Packaging and distribution": "todo", "Application architecture in Python": "todo"}
-	if fmt.Sprint(got) != fmt.Sprint(want) || rm.Skills[len(rm.Skills)-1].Title != "Write a CLI tool" {
-		t.Fatalf("regrouped = %v", got)
-	}
-	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/entities/"+idiomatic+"/links", nil), []byte(goal.ID)) {
-		t.Error("the goal connection did not move to the skill")
-	}
-	if len(rm.Edges) < 3 {
-		t.Errorf("edges = %+v", rm.Edges)
-	}
-	var manual roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Mine"}`)), &manual)
-	alice.mustDo(422, "POST", "/v1/roadmaps/"+manual.ID+"/regroup", nil)
-}
-
 // The skills radar counts acquired skills by area, for each kind, and never
 // another person's.
 func TestSkillsRadar(t *testing.T) {
@@ -186,10 +119,11 @@ func TestSkillsRadar(t *testing.T) {
 	bob.register("Bob")
 
 	var soft roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"soft-skills"}`)), &soft)
-	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[0].ID, []byte(`{"status":"done"}`))
-	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[1].ID, []byte(`{"status":"learning"}`))
-	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[5].ID, []byte(`{"status":"skipped"}`))
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Soft skills for engineers"}`)), &soft)
+	for i, sk := range []string{`"1 · Learn","status":"done"`, `"1 · Learn","status":"learning"`, `"2 · Communicate"`, `"2 · Communicate"`,
+		`"3 · Craft"`, `"3 · Craft","status":"skipped"`} {
+		alice.mustDo(201, "POST", "/v1/roadmaps/"+soft.ID+"/skills", []byte(fmt.Sprintf(`{"title":"Skill %d","kind":"soft","section":%s}`, i, sk)))
+	}
 	for _, title := range []string{"Go", "SQL", "Linux"} {
 		var rm roadmapJSON
 		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"`+title+`"}`)), &rm)
@@ -217,5 +151,119 @@ func TestSkillsRadar(t *testing.T) {
 	}
 	if out := bob.mustDo(200, "GET", "/v1/roadmaps/radar", nil); string(out) != `{"hard":{"by":"section","spokes":[]},"soft":{"by":"section","spokes":[]}}`+"\n" {
 		t.Fatalf("bob = %s", out)
+	}
+}
+
+// Starting the Top-5% roadmap (EP-95) starts the whole plan: the goal and
+// its measure, a milestone and a project per phase with the exit check on
+// its board, the 42 side project, the habits, the first tasks, areas,
+// resources, and the roadmap's note, all connected; once only.
+func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+
+	src := alice.mustDo(200, "GET", "/v1/roadmaps/sources", nil)
+	if bytes.Count(src, []byte(`"id":`)) != 1 || !bytes.Contains(src, []byte(`"id":"top5-engineer"`)) {
+		t.Fatalf("sources = %s", src)
+	}
+	var rm roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
+	if rm.Source != "library" || len(rm.Skills) != 32 || len(rm.Edges) < 8 {
+		t.Fatalf("roadmap = %d skills, %d edges", len(rm.Skills), len(rm.Edges))
+	}
+	var radar struct {
+		Hard, Soft struct{ Spokes []struct{ Label string } }
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/radar", nil), &radar)
+	if len(radar.Hard.Spokes) != 7 || len(radar.Soft.Spokes) != 3 {
+		t.Fatalf("radar = %+v", radar)
+	}
+
+	var goals struct {
+		Items []struct {
+			ID         string `json:"id"`
+			Title      string `json:"title"`
+			TargetDate string `json:"target_date"`
+			Measure    *struct {
+				Unit   string  `json:"unit"`
+				Target float64 `json:"target"`
+			} `json:"measure"`
+			Milestones []struct {
+				Title string `json:"title"`
+				DueOn string `json:"due_on"`
+			} `json:"milestones"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals", nil), &goals)
+	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 26 || len(goals.Items[0].Milestones) != 14 {
+		t.Fatalf("goals = %+v", goals)
+	}
+	g := goals.Items[0]
+	first, _ := time.Parse(time.DateOnly, g.Milestones[0].DueOn)
+	second, _ := time.Parse(time.DateOnly, g.Milestones[1].DueOn)
+	if !bytes.HasPrefix([]byte(g.Milestones[0].Title), []byte("Phase 1:")) || second.Sub(first) != 84*24*time.Hour {
+		t.Fatalf("milestones = %+v", g.Milestones[:2])
+	}
+
+	var projects struct {
+		Items []struct {
+			ID     string `json:"id"`
+			Title  string `json:"title"`
+			Status string `json:"status"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects", nil), &projects)
+	var later struct{ Items []struct{} }
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects?status=on_hold", nil), &later)
+	active, pipekit, side := 0, "", ""
+	for _, p := range projects.Items {
+		if p.Status == "active" {
+			active++
+		}
+		switch {
+		case bytes.HasPrefix([]byte(p.Title), []byte("pipekit")):
+			pipekit = p.ID
+		case p.Title == "42 cursus (self-taught)":
+			side = p.ID
+		}
+	}
+	if len(later.Items) != 13 || active != 2 || pipekit == "" || side == "" {
+		t.Fatalf("projects = %+v", projects.Items)
+	}
+	board := alice.mustDo(200, "GET", "/v1/projects/"+pipekit+"/board", nil)
+	for _, want := range []string{`"Phase 1 exit check"`, `"kind":"epic"`, `"OverTheWire Bandit 0–15"`, `"kind":"subtask"`,
+		`"DAG model and topological sort with hypothesis tests"`, `"pipekit: create repo (uv, pytest, mypy, ruff, GitHub Actions CI)"`} {
+		if !bytes.Contains(board, []byte(want)) {
+			t.Errorf("pipekit board lacks %s", want)
+		}
+	}
+	if b := alice.mustDo(200, "GET", "/v1/projects/"+side+"/board", nil); !bytes.Contains(b, []byte(`"libft (~25 h)"`)) {
+		t.Errorf("42 board = %s", b)
+	}
+
+	habits := alice.mustDo(200, "GET", "/v1/habits?status=active", nil)
+	if bytes.Count(habits, []byte(`"title":`)) != 4 || !bytes.Contains(habits, []byte("Weekly reflection and roadmap check")) {
+		t.Errorf("habits = %s", habits)
+	}
+	if next := alice.mustDo(200, "GET", "/v1/tasks?status=next&limit=100", nil); !bytes.Contains(next, []byte("6.042J lectures 1–3")) {
+		t.Errorf("next tasks lack the first week")
+	}
+	if a := alice.mustDo(200, "GET", "/v1/areas", nil); !bytes.Contains(a, []byte("Engineering mastery")) || !bytes.Contains(a, []byte(`"Maths"`)) {
+		t.Errorf("areas = %s", a)
+	}
+	if r := alice.mustDo(200, "GET", "/v1/resources", nil); !bytes.Contains(r, []byte("42 subjects and testers")) {
+		t.Errorf("resources = %s", r)
+	}
+	if n := alice.mustDo(200, "GET", "/v1/notes?q=Domain+coverage+matrix", nil); !bytes.Contains(n, []byte("Roadmaps/top5-engineer.md")) {
+		t.Errorf("the roadmap's note is missing: %s", n)
+	}
+	if links := alice.mustDo(200, "GET", "/v1/entities/"+g.ID+"/links?direction=incoming&limit=100", nil); bytes.Count(links, []byte(`"supports"`)) < 20 {
+		t.Errorf("the goal is supported by too little: %s", links)
+	}
+
+	// Once only.
+	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)); code != 422 || !bytes.Contains(out, []byte("already started")) {
+		t.Fatalf("second start = %d %s", code, out)
 	}
 }

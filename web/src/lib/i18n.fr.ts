@@ -487,19 +487,10 @@ export const fr: Record<string, string> = {
 	'{done} of {total} skills': '{done} compétences sur {total}',
 	'from the library': 'de la bibliothèque',
 	'drafted by the Tutor': 'rédigé par le Tuteur',
-	'No roadmaps yet. Create one above, or start from an open curriculum below.':
-		'Aucun parcours pour l’instant. Créez-en un ci-dessus, ou partez d’un cursus ouvert ci-dessous.',
 	'The library': 'La bibliothèque',
 	"Roadmaps built from the world's most recommended books, papers, university lectures, courses, and channels, one per domain. Import one, then make it yours: rename, reorder, add, or remove anything. Or ask the Tutor agent on the":
 		'Des parcours bâtis à partir des livres, articles, cours universitaires, formations et chaînes les plus recommandés au monde, un par domaine. Importez-en un, puis faites-le vôtre : renommez, réordonnez, ajoutez ou retirez ce que vous voulez. Ou demandez à l’agent Tuteur sur la page',
-	'page to draft one for your goal.': 'd’en rédiger un pour votre objectif.',
-	'Filter domains': 'Filtrer les domaines',
-	'Filter domains, e.g. kubernetes, data, rust…':
-		'Filtrer les domaines, par ex. kubernetes, data, rust…',
 	'{skills} skills · {count} resources': '{skills} compétences · {count} ressources',
-	'Import {title}': 'Importer {title}',
-	'No domain matches “{filter}”.': 'Aucun domaine ne correspond à « {filter} ».',
-	'Start from an open curriculum': 'Partir d’un cursus ouvert',
 	Licence: 'Licence',
 	'roadmap.sh roadmaps are not imported: their licence allows personal viewing but not copying into other apps. Open them at':
 		'Les parcours de roadmap.sh ne sont pas importés : leur licence permet de les consulter pour soi, pas de les copier dans d’autres applications. Ouvrez-les sur',
@@ -2118,16 +2109,11 @@ export const fr: Record<string, string> = {
 	'Finish the review': 'Terminer la revue',
 	Back: 'Retour',
 	'Next step': 'Étape suivante',
-	'Grouped into skills. Your progress and connections were kept.':
-		'Regroupé en compétences. Votre progression et vos liens ont été gardés.',
 	'To learn': 'À apprendre',
 	Skipped: 'Ignorées',
 	'← Roadmaps': '← Parcours',
 	'Loading roadmap…': 'Chargement du parcours…',
 	'{done} of {total} skills done': '{done} compétences sur {total} acquises',
-	'This roadmap was imported when each book or course was its own node. Group them into the skills they teach, with the resources listed under each skill. Progress and connections are kept.':
-		'Ce parcours a été importé quand chaque livre ou cours était son propre nœud. Regroupez-les dans les compétences qu’ils enseignent, avec les ressources listées sous chacune. La progression et les liens sont gardés.',
-	'Group into skills': 'Regrouper en compétences',
 	View: 'Vue',
 	'Skill graph': 'Graphe des compétences',
 	'No skills yet. Add the first one below.':
@@ -2185,8 +2171,6 @@ export const fr: Record<string, string> = {
 	Level: 'Niveau',
 	Action: 'Action',
 	'Level {level} of 5': 'Niveau {level} sur 5',
-	'Start {title} at my level': 'Commencer {title} à mon niveau',
-	'Start here': 'Commencer ici',
 	'Suggested first:': 'À commencer d’abord :',
 	'(lowest level first).': '(niveau le plus bas d’abord).',
 	'Your levels over time': 'Vos niveaux au fil du temps',
@@ -2749,5 +2733,13 @@ export const fr: Record<string, string> = {
 	'Goals and habits': 'Objectifs et habitudes',
 	'Health and well-being': 'Santé et bien-être',
 	Money: 'Argent',
-	'A shared home': 'Un foyer partagé'
+	'A shared home': 'Un foyer partagé',
+	'No roadmaps yet. Create one above, or start the roadmap below.':
+		'Aucun parcours pour l’instant. Créez-en un ci-dessus, ou démarrez le parcours ci-dessous.',
+	'Starting it adds the goal, a milestone and a project per phase with its exit check, the 42 projects, the habits, the first week’s tasks, its areas, resources, and note.':
+		'Le démarrer ajoute l’objectif, un jalon et un projet par phase avec son examen de sortie, les projets 42, les habitudes, les tâches de la première semaine, ses domaines, ses ressources et sa note.',
+	'Open the roadmap': 'Ouvrir le parcours',
+	'Start this roadmap': 'Démarrer ce parcours',
+	'Start at my level': 'Démarrer à mon niveau',
+	'Start the roadmap at my level': 'Démarrer le parcours à mon niveau'
 };

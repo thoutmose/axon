@@ -1,4536 +1,1945 @@
 {
- "attribution": "Curated by the Axon project from widely recommended books, papers, courses, and channels. Each resource belongs to its authors; Axon stores only titles and links. Free resources are marked.",
- "roadmaps": [
-  {
-   "id": "cs",
-   "title": "Computer science foundations",
-   "description": "From how a computer works to programs, abstraction, and systems: the core every other roadmap builds on.",
-   "skills": [
-    {
-     "title": "Computational thinking",
-     "section": "1 · Start",
-     "description": "Break problems down, write first programs, and use the tools every programmer needs."
-    },
-    {
-     "title": "How computers work",
-     "section": "1 · Start",
-     "description": "Bits, logic gates, and how hardware runs software."
-    },
-    {
-     "title": "Abstraction and program design",
-     "section": "2 · Programs",
-     "description": "Functions, recursion, data abstraction, and interpreters.",
-     "requires": [
-      "Computational thinking"
-     ]
-    },
-    {
-     "title": "Language implementation",
-     "section": "2 · Programs",
-     "description": "Scanning, parsing, and evaluating a language you build yourself.",
-     "requires": [
-      "Abstraction and program design"
-     ]
-    },
-    {
-     "title": "Computer systems",
-     "section": "3 · Machines",
-     "description": "Build a computer from gates, then see how C programs meet the machine.",
-     "requires": [
-      "How computers work"
-     ]
-    },
-    {
-     "title": "Discrete mathematics",
-     "section": "4 · Theory",
-     "description": "Proofs, sets, graphs, counting, and probability for computing."
-    },
-    {
-     "title": "Algorithms",
-     "section": "4 · Theory",
-     "description": "Analyse and design algorithms with asymptotic reasoning.",
-     "requires": [
-      "Discrete mathematics"
-     ]
-    },
-    {
-     "title": "Self-directed study plan",
-     "section": "5 · Map",
-     "description": "Choose what to study next across the whole field."
-    }
-   ],
-   "resources": [
-    {
-     "title": "CS50x: Introduction to Computer Science",
-     "kind": "course",
-     "by": "Harvard, David J. Malan",
-     "free": true,
-     "url": "https://cs50.harvard.edu/x/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Computational thinking"
-    },
-    {
-     "title": "The Missing Semester of Your CS Education",
-     "kind": "course",
-     "by": "MIT CSAIL",
-     "free": true,
-     "url": "https://missing.csail.mit.edu/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Computational thinking"
-    },
-    {
-     "title": "Code: The Hidden Language of Computer Hardware and Software",
-     "kind": "book",
-     "by": "Charles Petzold",
-     "free": false,
-     "url": "https://www.charlespetzold.com/code/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "How computers work"
-    },
-    {
-     "title": "CS61A: Structure and Interpretation of Computer Programs",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://cs61a.org/",
-     "section": "2 · Programs",
-     "requires": [
-      "CS50x: Introduction to Computer Science"
-     ],
-     "skill": "Abstraction and program design"
-    },
-    {
-     "title": "Structure and Interpretation of Computer Programs (SICP)",
-     "kind": "book",
-     "by": "Abelson & Sussman",
-     "free": true,
-     "url": "https://sarabander.github.io/sicp/",
-     "section": "2 · Programs",
-     "requires": [
-      "CS50x: Introduction to Computer Science"
-     ],
-     "skill": "Abstraction and program design"
-    },
-    {
-     "title": "Crafting Interpreters",
-     "kind": "book",
-     "by": "Robert Nystrom",
-     "free": true,
-     "url": "https://craftinginterpreters.com/",
-     "section": "2 · Programs",
-     "requires": [
-      "CS61A: Structure and Interpretation of Computer Programs"
-     ],
-     "skill": "Language implementation"
-    },
-    {
-     "title": "CS50's Introduction to Programming with Python",
-     "kind": "course",
-     "by": "Harvard",
-     "free": true,
-     "url": "https://cs50.harvard.edu/python/",
-     "section": "2 · Programs",
-     "skill": "Computational thinking"
-    },
-    {
-     "title": "From Nand to Tetris",
-     "kind": "course",
-     "by": "Nisan & Schocken",
-     "free": true,
-     "url": "https://www.nand2tetris.org/",
-     "section": "3 · Machines",
-     "requires": [
-      "Code: The Hidden Language of Computer Hardware and Software"
-     ],
-     "skill": "Computer systems"
-    },
-    {
-     "title": "Computer Systems: A Programmer's Perspective (CS:APP)",
-     "kind": "book",
-     "by": "Bryant & O'Hallaron, CMU",
-     "free": false,
-     "url": "https://csapp.cs.cmu.edu/",
-     "section": "3 · Machines",
-     "requires": [
-      "From Nand to Tetris"
-     ],
-     "skill": "Computer systems"
-    },
-    {
-     "title": "Mathematics for Computer Science (MIT 6.042J)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/",
-     "section": "4 · Theory",
-     "requires": [],
-     "skill": "Discrete mathematics"
-    },
-    {
-     "title": "Introduction to Algorithms (MIT 6.006)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
-     "section": "4 · Theory",
-     "requires": [
-      "Mathematics for Computer Science (MIT 6.042J)"
-     ],
-     "skill": "Algorithms"
-    },
-    {
-     "title": "Teach Yourself Computer Science",
-     "kind": "site",
-     "by": "Oz Nova & Myles Byrne",
-     "free": true,
-     "url": "https://teachyourselfcs.com/",
-     "section": "5 · Map",
-     "requires": [],
-     "skill": "Self-directed study plan"
-    }
-   ]
-  },
-  {
-   "id": "dsa",
-   "title": "Algorithms and data structures",
-   "description": "Reason about cost, pick the right structure, and solve problems with proven techniques.",
-   "skills": [
-    {
-     "title": "Core data structures",
-     "section": "1 · Learn",
-     "description": "Arrays, lists, stacks, queues, trees, heaps, and hash tables, and when to use each."
-    },
-    {
-     "title": "Sorting, searching, and complexity",
-     "section": "1 · Learn",
-     "description": "Big-O, sorting, binary search, and union-find."
-    },
-    {
-     "title": "Algorithm design paradigms",
-     "section": "2 · Deepen",
-     "description": "Divide and conquer, greedy, dynamic programming, and graph algorithms.",
-     "requires": [
-      "Core data structures",
-      "Sorting, searching, and complexity"
-     ]
-    },
-    {
-     "title": "Problem solving under constraints",
-     "section": "3 · Practise",
-     "description": "Recognise patterns and solve problems fast.",
-     "requires": [
-      "Sorting, searching, and complexity"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Algorithms, 4th edition (book site and code)",
-     "kind": "book",
-     "by": "Sedgewick & Wayne, Princeton",
-     "free": true,
-     "url": "https://algs4.cs.princeton.edu/home/",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Core data structures"
-    },
-    {
-     "title": "Algorithms, Part I",
-     "kind": "course",
-     "by": "Princeton on Coursera",
-     "free": true,
-     "url": "https://www.coursera.org/learn/algorithms-part1",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Sorting, searching, and complexity"
-    },
-    {
-     "title": "Abdul Bari: algorithms lectures",
-     "kind": "channel",
-     "by": "Abdul Bari",
-     "free": true,
-     "url": "https://www.youtube.com/@abdul_bari",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Sorting, searching, and complexity"
-    },
-    {
-     "title": "VisuAlgo: animated data structures",
-     "kind": "site",
-     "by": "NUS, Steven Halim",
-     "free": true,
-     "url": "https://visualgo.net/",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Core data structures"
-    },
-    {
-     "title": "Introduction to Algorithms (CLRS), 4th edition",
-     "kind": "book",
-     "by": "Cormen, Leiserson, Rivest & Stein",
-     "free": false,
-     "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/",
-     "section": "2 · Deepen",
-     "requires": [
-      "Algorithms, 4th edition (book site and code)"
-     ],
-     "skill": "Algorithm design paradigms"
-    },
-    {
-     "title": "Algorithms (free textbook)",
-     "kind": "book",
-     "by": "Jeff Erickson, UIUC",
-     "free": true,
-     "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
-     "section": "2 · Deepen",
-     "requires": [
-      "Algorithms, Part I"
-     ],
-     "skill": "Algorithm design paradigms"
-    },
-    {
-     "title": "Design and Analysis of Algorithms (MIT 6.046J)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/6-046j-design-and-analysis-of-algorithms-spring-2015/",
-     "section": "2 · Deepen",
-     "requires": [
-      "Algorithms, Part I"
-     ],
-     "skill": "Algorithm design paradigms"
-    },
-    {
-     "title": "The Algorithm Design Manual",
-     "kind": "book",
-     "by": "Steven Skiena",
-     "free": false,
-     "url": "https://www.algorist.com/",
-     "section": "2 · Deepen",
-     "requires": [],
-     "skill": "Algorithm design paradigms"
-    },
-    {
-     "title": "CS 161: Design and Analysis of Algorithms",
-     "kind": "course",
-     "by": "Stanford, Tim Roughgarden (Algorithms Illuminated)",
-     "free": true,
-     "url": "https://www.algorithmsilluminated.org/",
-     "section": "2 · Deepen",
-     "requires": [
-      "Algorithms, Part I"
-     ],
-     "skill": "Algorithm design paradigms"
-    },
-    {
-     "title": "Competitive Programmer's Handbook",
-     "kind": "book",
-     "by": "Antti Laaksonen",
-     "free": true,
-     "url": "https://cses.fi/book/book.pdf",
-     "section": "3 · Practise",
-     "requires": [
-      "Algorithms, Part I"
-     ],
-     "skill": "Problem solving under constraints"
-    },
-    {
-     "title": "CSES Problem Set",
-     "kind": "practice",
-     "by": "CSES",
-     "free": true,
-     "url": "https://cses.fi/problemset/",
-     "section": "3 · Practise",
-     "requires": [
-      "Competitive Programmer's Handbook"
-     ],
-     "skill": "Problem solving under constraints"
-    },
-    {
-     "title": "NeetCode roadmap",
-     "kind": "practice",
-     "by": "NeetCode",
-     "free": true,
-     "url": "https://neetcode.io/roadmap",
-     "section": "3 · Practise",
-     "requires": [],
-     "skill": "Problem solving under constraints"
-    }
-   ]
-  },
-  {
-   "id": "maths",
-   "title": "Mathematics for computing",
-   "description": "Proofs, discrete maths, linear algebra, calculus, and probability, with intuition first.",
-   "skills": [
-    {
-     "title": "Mathematical intuition",
-     "section": "1 · Intuition",
-     "description": "See what the maths means before formalising it."
-    },
-    {
-     "title": "Proof writing",
-     "section": "2 · Proof",
-     "description": "Direct proof, contradiction, induction, and sets."
-    },
-    {
-     "title": "Linear algebra",
-     "section": "3 · Core",
-     "description": "Vectors, matrices, eigenvalues, and vector spaces.",
-     "requires": [
-      "Mathematical intuition"
-     ]
-    },
-    {
-     "title": "Calculus",
-     "section": "3 · Core",
-     "description": "Limits, derivatives, integrals, and series.",
-     "requires": [
-      "Mathematical intuition"
-     ]
-    },
-    {
-     "title": "Probability and statistics",
-     "section": "3 · Core",
-     "description": "Random variables, distributions, inference, and Bayes."
-    },
-    {
-     "title": "Mathematics for machine learning",
-     "section": "4 · Apply",
-     "description": "The linear algebra, calculus, and probability behind ML.",
-     "requires": [
-      "Linear algebra",
-      "Probability and statistics"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Khan Academy: Math",
-     "kind": "course",
-     "by": "Khan Academy",
-     "free": true,
-     "url": "https://www.khanacademy.org/math",
-     "section": "1 · Intuition",
-     "requires": [],
-     "skill": "Mathematical intuition"
-    },
-    {
-     "title": "Essence of linear algebra",
-     "kind": "video",
-     "by": "3Blue1Brown",
-     "free": true,
-     "url": "https://www.3blue1brown.com/topics/linear-algebra",
-     "section": "1 · Intuition",
-     "requires": [],
-     "skill": "Mathematical intuition"
-    },
-    {
-     "title": "Essence of calculus",
-     "kind": "video",
-     "by": "3Blue1Brown",
-     "free": true,
-     "url": "https://www.3blue1brown.com/topics/calculus",
-     "section": "1 · Intuition",
-     "requires": [],
-     "skill": "Mathematical intuition"
-    },
-    {
-     "title": "Book of Proof",
-     "kind": "book",
-     "by": "Richard Hammack",
-     "free": true,
-     "url": "https://www.people.vcu.edu/~rhammack/BookOfProof/",
-     "section": "2 · Proof",
-     "requires": [],
-     "skill": "Proof writing"
-    },
-    {
-     "title": "Mathematics for Computer Science (book)",
-     "kind": "book",
-     "by": "Lehman, Leighton & Meyer, MIT",
-     "free": true,
-     "url": "https://courses.csail.mit.edu/6.042/spring18/mcs.pdf",
-     "section": "2 · Proof",
-     "requires": [
-      "Book of Proof"
-     ],
-     "skill": "Proof writing"
-    },
-    {
-     "title": "Linear Algebra (MIT 18.06SC)",
-     "kind": "course",
-     "by": "Gilbert Strang, MIT",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
-     "section": "3 · Core",
-     "requires": [
-      "Essence of linear algebra"
-     ],
-     "skill": "Linear algebra"
-    },
-    {
-     "title": "Single Variable Calculus (MIT 18.01SC)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
-     "section": "3 · Core",
-     "requires": [
-      "Essence of calculus"
-     ],
-     "skill": "Calculus"
-    },
-    {
-     "title": "Statistics 110: Probability",
-     "kind": "course",
-     "by": "Joe Blitzstein, Harvard",
-     "free": true,
-     "url": "https://projects.iq.harvard.edu/stat110",
-     "section": "3 · Core",
-     "requires": [],
-     "skill": "Probability and statistics"
-    },
-    {
-     "title": "Seeing Theory: visual probability",
-     "kind": "site",
-     "by": "Brown University",
-     "free": true,
-     "url": "https://seeing-theory.brown.edu/",
-     "section": "3 · Core",
-     "requires": [],
-     "skill": "Probability and statistics"
-    },
-    {
-     "title": "CS109: Probability for Computer Scientists",
-     "kind": "course",
-     "by": "Stanford, Chris Piech",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs109/",
-     "section": "3 · Core",
-     "skill": "Probability and statistics"
-    },
-    {
-     "title": "Introduction to Probability and Statistics (MIT 18.05)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/",
-     "section": "3 · Core",
-     "skill": "Probability and statistics"
-    },
-    {
-     "title": "Linear Algebra Done Right",
-     "kind": "book",
-     "by": "Sheldon Axler",
-     "free": true,
-     "url": "https://linear.axler.net/",
-     "section": "4 · Apply",
-     "requires": [
-      "Linear Algebra (MIT 18.06SC)"
-     ],
-     "skill": "Linear algebra"
-    },
-    {
-     "title": "Mathematics for Machine Learning",
-     "kind": "book",
-     "by": "Deisenroth, Faisal & Ong",
-     "free": true,
-     "url": "https://mml-book.github.io/",
-     "section": "4 · Apply",
-     "requires": [
-      "Linear Algebra (MIT 18.06SC)",
-      "Statistics 110: Probability"
-     ],
-     "skill": "Mathematics for machine learning"
-    }
-   ]
-  },
-  {
-   "id": "os",
-   "title": "Operating systems",
-   "description": "Processes, memory, concurrency, and file systems, then build and read real kernels.",
-   "skills": [
-    {
-     "title": "Processes and scheduling",
-     "section": "1 · Concepts",
-     "description": "Processes, threads, scheduling, and the CPU abstraction."
-    },
-    {
-     "title": "Memory, concurrency, and persistence",
-     "section": "1 · Concepts",
-     "description": "Virtual memory, locks, and file systems in a real course."
-    },
-    {
-     "title": "Kernel development",
-     "section": "2 · Build",
-     "description": "Build and modify a teaching kernel.",
-     "requires": [
-      "Processes and scheduling"
-     ]
-    },
-    {
-     "title": "Systems programming",
-     "section": "3 · Systems programming",
-     "description": "System calls, signals, I/O, and processes from user space.",
-     "requires": [
-      "Processes and scheduling"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Operating Systems: Three Easy Pieces (OSTEP)",
-     "kind": "book",
-     "by": "Remzi & Andrea Arpaci-Dusseau",
-     "free": true,
-     "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Processes and scheduling"
-    },
-    {
-     "title": "CS162: Operating Systems and Systems Programming",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://cs162.org/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Memory, concurrency, and persistence"
-    },
-    {
-     "title": "Operating System Concepts (book site)",
-     "kind": "book",
-     "by": "Silberschatz, Galvin & Gagne",
-     "free": false,
-     "url": "https://www.os-book.com/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Processes and scheduling"
-    },
-    {
-     "title": "15-213: Introduction to Computer Systems",
-     "kind": "course",
-     "by": "Carnegie Mellon University",
-     "free": true,
-     "url": "https://www.cs.cmu.edu/~213/",
-     "section": "1 · Concepts",
-     "skill": "Memory, concurrency, and persistence"
-    },
-    {
-     "title": "6.1810: Operating System Engineering (xv6)",
-     "kind": "course",
-     "by": "MIT PDOS",
-     "free": true,
-     "url": "https://pdos.csail.mit.edu/6.1810/",
-     "section": "2 · Build",
-     "requires": [
-      "Operating Systems: Three Easy Pieces (OSTEP)"
-     ],
-     "skill": "Kernel development"
-    },
-    {
-     "title": "Writing an OS in Rust",
-     "kind": "site",
-     "by": "Philipp Oppermann",
-     "free": true,
-     "url": "https://os.phil-opp.com/",
-     "section": "2 · Build",
-     "requires": [
-      "Operating Systems: Three Easy Pieces (OSTEP)"
-     ],
-     "skill": "Kernel development"
-    },
-    {
-     "title": "OSDev Wiki",
-     "kind": "site",
-     "by": "OSDev community",
-     "free": true,
-     "url": "https://wiki.osdev.org/",
-     "section": "2 · Build",
-     "requires": [],
-     "skill": "Kernel development"
-    },
-    {
-     "title": "The Linux Programming Interface",
-     "kind": "book",
-     "by": "Michael Kerrisk",
-     "free": false,
-     "url": "https://man7.org/tlpi/",
-     "section": "3 · Systems programming",
-     "requires": [
-      "Operating Systems: Three Easy Pieces (OSTEP)"
-     ],
-     "skill": "Systems programming"
-    },
-    {
-     "title": "Computer Systems: A Programmer's Perspective (CS:APP)",
-     "kind": "book",
-     "by": "Bryant & O'Hallaron, CMU",
-     "free": false,
-     "url": "https://csapp.cs.cmu.edu/",
-     "section": "3 · Systems programming",
-     "requires": [],
-     "skill": "Systems programming"
-    }
-   ]
-  },
-  {
-   "id": "linux-bash",
-   "title": "Linux and Bash",
-   "description": "Live comfortably on the command line, script safely, and understand how Linux fits together.",
-   "skills": [
-    {
-     "title": "Command-line fluency",
-     "section": "1 · Start",
-     "description": "Navigate, inspect, and manage a Linux system from the shell."
-    },
-    {
-     "title": "Bash scripting",
-     "section": "2 · Shell",
-     "description": "Write correct, safe, and readable shell scripts.",
-     "requires": [
-      "Command-line fluency"
-     ]
-    },
-    {
-     "title": "Shell problem solving",
-     "section": "2 · Shell",
-     "description": "Find your way through unfamiliar systems with the shell.",
-     "requires": [
-      "Command-line fluency"
-     ]
-    },
-    {
-     "title": "Linux internals and administration",
-     "section": "3 · Deepen",
-     "description": "Boot, services, packages, devices, and networking.",
-     "requires": [
-      "Command-line fluency"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Linux Journey",
-     "kind": "site",
-     "by": "Linux Journey",
-     "free": true,
-     "url": "https://linuxjourney.com/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Command-line fluency"
-    },
-    {
-     "title": "The Linux Command Line",
-     "kind": "book",
-     "by": "William Shotts",
-     "free": true,
-     "url": "https://linuxcommand.org/tlcl.php",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Command-line fluency"
-    },
-    {
-     "title": "Introduction to Linux (LFS101)",
-     "kind": "course",
-     "by": "The Linux Foundation",
-     "free": true,
-     "url": "https://training.linuxfoundation.org/training/introduction-to-linux/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Command-line fluency"
-    },
-    {
-     "title": "BashGuide",
-     "kind": "site",
-     "by": "Greg's Wiki",
-     "free": true,
-     "url": "https://mywiki.wooledge.org/BashGuide",
-     "section": "2 · Shell",
-     "requires": [
-      "The Linux Command Line"
-     ],
-     "skill": "Bash scripting"
-    },
-    {
-     "title": "GNU Bash Reference Manual",
-     "kind": "site",
-     "by": "GNU Project",
-     "free": true,
-     "url": "https://www.gnu.org/software/bash/manual/",
-     "section": "2 · Shell",
-     "requires": [],
-     "skill": "Bash scripting"
-    },
-    {
-     "title": "ShellCheck: shell script analysis",
-     "kind": "practice",
-     "by": "Vidar Holen",
-     "free": true,
-     "url": "https://www.shellcheck.net/",
-     "section": "2 · Shell",
-     "requires": [
-      "BashGuide"
-     ],
-     "skill": "Bash scripting"
-    },
-    {
-     "title": "OverTheWire: Bandit",
-     "kind": "practice",
-     "by": "OverTheWire",
-     "free": true,
-     "url": "https://overthewire.org/wargames/bandit/",
-     "section": "2 · Shell",
-     "requires": [
-      "The Linux Command Line"
-     ],
-     "skill": "Shell problem solving"
-    },
-    {
-     "title": "How Linux Works, 3rd edition",
-     "kind": "book",
-     "by": "Brian Ward",
-     "free": false,
-     "url": "https://nostarch.com/howlinuxworks3",
-     "section": "3 · Deepen",
-     "requires": [
-      "The Linux Command Line"
-     ],
-     "skill": "Linux internals and administration"
-    },
-    {
-     "title": "ArchWiki",
-     "kind": "site",
-     "by": "Arch Linux community",
-     "free": true,
-     "url": "https://wiki.archlinux.org/",
-     "section": "3 · Deepen",
-     "requires": [],
-     "skill": "Linux internals and administration"
-    },
-    {
-     "title": "Linux From Scratch",
-     "kind": "practice",
-     "by": "LFS project",
-     "free": true,
-     "url": "https://www.linuxfromscratch.org/",
-     "section": "3 · Deepen",
-     "requires": [
-      "How Linux Works, 3rd edition"
-     ],
-     "skill": "Linux internals and administration"
-    }
-   ]
-  },
-  {
-   "id": "c-cpp",
-   "title": "C and C++",
-   "description": "Memory, pointers, and undefined behaviour in C, then modern, safe C++.",
-   "skills": [
-    {
-     "title": "C programming and memory",
-     "section": "1 · C",
-     "description": "Pointers, memory management, and undefined behaviour."
-    },
-    {
-     "title": "Modern C++",
-     "section": "2 · C++",
-     "description": "RAII, the standard library, templates, and value semantics."
-    },
-    {
-     "title": "Idiomatic, safe C++",
-     "section": "2 · C++",
-     "description": "Move semantics, smart pointers, and the Core Guidelines.",
-     "requires": [
-      "Modern C++"
-     ]
-    },
-    {
-     "title": "C++ tooling and performance",
-     "section": "3 · Tools",
-     "description": "Read compiler output, look things up, and keep learning."
-    }
-   ],
-   "resources": [
-    {
-     "title": "Beej's Guide to C Programming",
-     "kind": "book",
-     "by": "Brian \"Beej\" Hall",
-     "free": true,
-     "url": "https://beej.us/guide/bgc/",
-     "section": "1 · C",
-     "requires": [],
-     "skill": "C programming and memory"
-    },
-    {
-     "title": "The C Programming Language (K&R)",
-     "kind": "book",
-     "by": "Kernighan & Ritchie",
-     "free": false,
-     "url": "https://en.wikipedia.org/wiki/The_C_Programming_Language",
-     "section": "1 · C",
-     "requires": [],
-     "skill": "C programming and memory"
-    },
-    {
-     "title": "Modern C",
-     "kind": "book",
-     "by": "Jens Gustedt",
-     "free": true,
-     "url": "https://gustedt.gitlabpages.inria.fr/modern-c/",
-     "section": "1 · C",
-     "requires": [
-      "Beej's Guide to C Programming"
-     ],
-     "skill": "C programming and memory"
-    },
-    {
-     "title": "LearnCpp.com",
-     "kind": "site",
-     "by": "Alex & Nascardriver",
-     "free": true,
-     "url": "https://www.learncpp.com/",
-     "section": "2 · C++",
-     "requires": [],
-     "skill": "Modern C++"
-    },
-    {
-     "title": "A Tour of C++, 3rd edition",
-     "kind": "book",
-     "by": "Bjarne Stroustrup",
-     "free": false,
-     "url": "https://www.stroustrup.com/tour3.html",
-     "section": "2 · C++",
-     "requires": [
-      "LearnCpp.com"
-     ],
-     "skill": "Modern C++"
-    },
-    {
-     "title": "Effective Modern C++",
-     "kind": "book",
-     "by": "Scott Meyers",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/effective-modern-c/9781491908419/",
-     "section": "2 · C++",
-     "requires": [
-      "A Tour of C++, 3rd edition"
-     ],
-     "skill": "Idiomatic, safe C++"
-    },
-    {
-     "title": "C++ Core Guidelines",
-     "kind": "site",
-     "by": "Stroustrup & Sutter",
-     "free": true,
-     "url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
-     "section": "2 · C++",
-     "requires": [
-      "LearnCpp.com"
-     ],
-     "skill": "Idiomatic, safe C++"
-    },
-    {
-     "title": "CS106L: Standard C++ Programming",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs106l/",
-     "section": "2 · C++",
-     "requires": [
-      "LearnCpp.com"
-     ],
-     "skill": "Modern C++"
-    },
-    {
-     "title": "cppreference.com",
-     "kind": "site",
-     "by": "cppreference community",
-     "free": true,
-     "url": "https://en.cppreference.com/",
-     "section": "3 · Tools",
-     "requires": [],
-     "skill": "C++ tooling and performance"
-    },
-    {
-     "title": "Compiler Explorer",
-     "kind": "practice",
-     "by": "Matt Godbolt",
-     "free": true,
-     "url": "https://godbolt.org/",
-     "section": "3 · Tools",
-     "requires": [],
-     "skill": "C++ tooling and performance"
-    },
-    {
-     "title": "CppCon talks",
-     "kind": "channel",
-     "by": "CppCon",
-     "free": true,
-     "url": "https://www.youtube.com/@CppCon",
-     "section": "3 · Tools",
-     "requires": [],
-     "skill": "C++ tooling and performance"
-    }
-   ]
-  },
-  {
-   "id": "java",
-   "title": "Java",
-   "description": "The language, the JVM, concurrency, and building services with Spring.",
-   "skills": [
-    {
-     "title": "Java fundamentals",
-     "section": "1 · Start",
-     "description": "Syntax, objects, collections, and the standard library."
-    },
-    {
-     "title": "Idiomatic Java",
-     "section": "2 · Mastery",
-     "description": "Design APIs and classes the way experienced Java developers do.",
-     "requires": [
-      "Java fundamentals"
-     ]
-    },
-    {
-     "title": "Java concurrency",
-     "section": "2 · Mastery",
-     "description": "Threads, safety, and the java.util.concurrent toolkit.",
-     "requires": [
-      "Idiomatic Java"
-     ]
-    },
-    {
-     "title": "Services with Spring",
-     "section": "3 · Services",
-     "description": "Build and test web services on the JVM.",
-     "requires": [
-      "Java fundamentals"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Java Programming MOOC",
-     "kind": "course",
-     "by": "University of Helsinki",
-     "free": true,
-     "url": "https://java-programming.mooc.fi/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Java fundamentals"
-    },
-    {
-     "title": "Learn Java (dev.java)",
-     "kind": "site",
-     "by": "Oracle",
-     "free": true,
-     "url": "https://dev.java/learn/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Java fundamentals"
-    },
-    {
-     "title": "Head First Java, 3rd edition",
-     "kind": "book",
-     "by": "Sierra, Bates & Gee",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/head-first-java/9781492091646/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Java fundamentals"
-    },
-    {
-     "title": "Effective Java, 3rd edition",
-     "kind": "book",
-     "by": "Joshua Bloch",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/",
-     "section": "2 · Mastery",
-     "requires": [
-      "Java Programming MOOC"
-     ],
-     "skill": "Idiomatic Java"
-    },
-    {
-     "title": "Java Concurrency in Practice",
-     "kind": "book",
-     "by": "Brian Goetz et al.",
-     "free": false,
-     "url": "https://jcip.net/",
-     "section": "2 · Mastery",
-     "requires": [
-      "Effective Java, 3rd edition"
-     ],
-     "skill": "Java concurrency"
-    },
-    {
-     "title": "The Java Language and JVM Specifications",
-     "kind": "site",
-     "by": "Oracle",
-     "free": true,
-     "url": "https://docs.oracle.com/javase/specs/",
-     "section": "2 · Mastery",
-     "requires": [],
-     "skill": "Idiomatic Java"
-    },
-    {
-     "title": "Spring guides",
-     "kind": "site",
-     "by": "VMware Tanzu",
-     "free": true,
-     "url": "https://spring.io/guides",
-     "section": "3 · Services",
-     "requires": [
-      "Java Programming MOOC"
-     ],
-     "skill": "Services with Spring"
-    },
-    {
-     "title": "Baeldung",
-     "kind": "site",
-     "by": "Baeldung",
-     "free": true,
-     "url": "https://www.baeldung.com/",
-     "section": "3 · Services",
-     "requires": [],
-     "skill": "Services with Spring"
-    }
-   ]
-  },
-  {
-   "id": "python",
-   "title": "Python",
-   "description": "From first scripts to idiomatic, packaged, well-architected Python.",
-   "skills": [
-    {
-     "title": "Python fundamentals",
-     "section": "1 · Start",
-     "description": "Syntax, data types, functions, and the standard library."
-    },
-    {
-     "title": "Automation with Python",
-     "section": "1 · Start",
-     "description": "Scripts that handle files, the web, and spreadsheets."
-    },
-    {
-     "title": "Idiomatic Python",
-     "section": "2 · Idioms",
-     "description": "The data model, iterators, generators, and typing.",
-     "requires": [
-      "Python fundamentals"
-     ]
-    },
-    {
-     "title": "Packaging and distribution",
-     "section": "3 · Ship",
-     "description": "Package, version, and publish Python projects.",
-     "requires": [
-      "Idiomatic Python"
-     ]
-    },
-    {
-     "title": "Application architecture in Python",
-     "section": "3 · Ship",
-     "description": "Layers, dependency inversion, and testable domain models.",
-     "requires": [
-      "Idiomatic Python"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "The Python Tutorial",
-     "kind": "site",
-     "by": "Python Software Foundation",
-     "free": true,
-     "url": "https://docs.python.org/3/tutorial/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Python fundamentals"
-    },
-    {
-     "title": "Introduction to CS and Programming using Python (MIT 6.100L)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/6-100l-introduction-to-cs-and-programming-using-python-fall-2022/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Python fundamentals"
-    },
-    {
-     "title": "Python for Everybody",
-     "kind": "course",
-     "by": "Charles Severance",
-     "free": true,
-     "url": "https://www.py4e.com/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Python fundamentals"
-    },
-    {
-     "title": "Automate the Boring Stuff with Python",
-     "kind": "book",
-     "by": "Al Sweigart",
-     "free": true,
-     "url": "https://automatetheboringstuff.com/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Automation with Python"
-    },
-    {
-     "title": "Think Python, 3rd edition",
-     "kind": "book",
-     "by": "Allen B. Downey",
-     "free": true,
-     "url": "https://allendowney.github.io/ThinkPython/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Python fundamentals"
-    },
-    {
-     "title": "Fluent Python, 2nd edition",
-     "kind": "book",
-     "by": "Luciano Ramalho",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/fluent-python-2nd/9781492056348/",
-     "section": "2 · Idioms",
-     "requires": [
-      "The Python Tutorial"
-     ],
-     "skill": "Idiomatic Python"
-    },
-    {
-     "title": "Effective Python",
-     "kind": "book",
-     "by": "Brett Slatkin",
-     "free": false,
-     "url": "https://effectivepython.com/",
-     "section": "2 · Idioms",
-     "requires": [
-      "The Python Tutorial"
-     ],
-     "skill": "Idiomatic Python"
-    },
-    {
-     "title": "Real Python",
-     "kind": "site",
-     "by": "Real Python",
-     "free": true,
-     "url": "https://realpython.com/",
-     "section": "2 · Idioms",
-     "requires": [],
-     "skill": "Idiomatic Python"
-    },
-    {
-     "title": "Python Packaging User Guide",
-     "kind": "site",
-     "by": "PyPA",
-     "free": true,
-     "url": "https://packaging.python.org/",
-     "section": "3 · Ship",
-     "requires": [
-      "Fluent Python, 2nd edition"
-     ],
-     "skill": "Packaging and distribution"
-    },
-    {
-     "title": "Architecture Patterns with Python",
-     "kind": "book",
-     "by": "Percival & Gregory",
-     "free": true,
-     "url": "https://www.cosmicpython.com/",
-     "section": "3 · Ship",
-     "requires": [
-      "Fluent Python, 2nd edition"
-     ],
-     "skill": "Application architecture in Python"
-    },
-    {
-     "title": "PyCon US talks",
-     "kind": "channel",
-     "by": "PyCon US",
-     "free": true,
-     "url": "https://www.youtube.com/@PyConUS",
-     "section": "3 · Ship",
-     "requires": [],
-     "skill": "Application architecture in Python"
-    }
-   ]
-  },
-  {
-   "id": "rust",
-   "title": "Rust",
-   "description": "Ownership, traits, async, and unsafe Rust, then production services.",
-   "skills": [
-    {
-     "title": "Ownership and borrowing",
-     "section": "1 · Start",
-     "description": "The core of Rust: ownership, lifetimes, and the borrow checker."
-    },
-    {
-     "title": "Traits and advanced types",
-     "section": "2 · Deepen",
-     "description": "Generics, traits, and API design in Rust.",
-     "requires": [
-      "Ownership and borrowing"
-     ]
-    },
-    {
-     "title": "Async Rust",
-     "section": "2 · Deepen",
-     "description": "Futures, executors, and async I/O.",
-     "requires": [
-      "Ownership and borrowing"
-     ]
-    },
-    {
-     "title": "Unsafe Rust",
-     "section": "2 · Deepen",
-     "description": "When and how to write unsafe code soundly.",
-     "requires": [
-      "Traits and advanced types"
-     ]
-    },
-    {
-     "title": "Production Rust services",
-     "section": "3 · Ship",
-     "description": "Build, test, and deploy a web service in Rust.",
-     "requires": [
-      "Ownership and borrowing"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "The Rust Programming Language",
-     "kind": "book",
-     "by": "Klabnik, Nichols & Krycho",
-     "free": true,
-     "url": "https://doc.rust-lang.org/book/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Ownership and borrowing"
-    },
-    {
-     "title": "Rust by Example",
-     "kind": "site",
-     "by": "The Rust Project",
-     "free": true,
-     "url": "https://doc.rust-lang.org/rust-by-example/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Ownership and borrowing"
-    },
-    {
-     "title": "Rustlings",
-     "kind": "practice",
-     "by": "The Rust Project",
-     "free": true,
-     "url": "https://github.com/rust-lang/rustlings",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Ownership and borrowing"
-    },
-    {
-     "title": "Comprehensive Rust",
-     "kind": "course",
-     "by": "Google Android team",
-     "free": true,
-     "url": "https://google.github.io/comprehensive-rust/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Ownership and borrowing"
-    },
-    {
-     "title": "Rust for Rustaceans",
-     "kind": "book",
-     "by": "Jon Gjengset",
-     "free": false,
-     "url": "https://nostarch.com/rust-rustaceans",
-     "section": "2 · Deepen",
-     "requires": [
-      "The Rust Programming Language"
-     ],
-     "skill": "Traits and advanced types"
-    },
-    {
-     "title": "Asynchronous Programming in Rust",
-     "kind": "book",
-     "by": "The Rust Project",
-     "free": true,
-     "url": "https://rust-lang.github.io/async-book/",
-     "section": "2 · Deepen",
-     "requires": [
-      "The Rust Programming Language"
-     ],
-     "skill": "Async Rust"
-    },
-    {
-     "title": "The Rustonomicon",
-     "kind": "book",
-     "by": "The Rust Project",
-     "free": true,
-     "url": "https://doc.rust-lang.org/nomicon/",
-     "section": "2 · Deepen",
-     "requires": [
-      "Rust for Rustaceans"
-     ],
-     "skill": "Unsafe Rust"
-    },
-    {
-     "title": "Jon Gjengset: Crust of Rust",
-     "kind": "channel",
-     "by": "Jon Gjengset",
-     "free": true,
-     "url": "https://www.youtube.com/@jonhoo",
-     "section": "2 · Deepen",
-     "requires": [],
-     "skill": "Traits and advanced types"
-    },
-    {
-     "title": "CS110L: Safety in Systems Programming",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://reberhardt.com/cs110l/spring-2020/",
-     "section": "2 · Deepen",
-     "requires": [
-      "The Rust Programming Language"
-     ],
-     "skill": "Traits and advanced types"
-    },
-    {
-     "title": "Zero To Production in Rust",
-     "kind": "book",
-     "by": "Luca Palmieri",
-     "free": false,
-     "url": "https://www.zero2prod.com/",
-     "section": "3 · Ship",
-     "requires": [
-      "The Rust Programming Language"
-     ],
-     "skill": "Production Rust services"
-    },
-    {
-     "title": "Exercism Rust track",
-     "kind": "practice",
-     "by": "Exercism",
-     "free": true,
-     "url": "https://exercism.org/tracks/rust",
-     "section": "3 · Ship",
-     "requires": [],
-     "skill": "Production Rust services"
-    }
-   ]
-  },
-  {
-   "id": "networking",
-   "title": "Computer networking",
-   "description": "How packets move, from links to TCP, HTTP, and the web, with hands-on labs.",
-   "skills": [
-    {
-     "title": "Network fundamentals",
-     "section": "1 · Concepts",
-     "description": "Layers, addressing, routing, and the protocols that glue the Internet."
-    },
-    {
-     "title": "Implementing network protocols",
-     "section": "2 · Build",
-     "description": "Build TCP and a router yourself.",
-     "requires": [
-      "Network fundamentals"
-     ]
-    },
-    {
-     "title": "Socket programming",
-     "section": "2 · Build",
-     "description": "Write networked programs with the sockets API."
-    },
-    {
-     "title": "TCP and HTTP in depth",
-     "section": "3 · Protocols",
-     "description": "Performance of TCP, TLS, and HTTP/2 and HTTP/3.",
-     "requires": [
-      "Network fundamentals"
-     ]
-    },
-    {
-     "title": "Packet analysis",
-     "section": "3 · Protocols",
-     "description": "Capture and read traffic to debug networks."
-    }
-   ],
-   "resources": [
-    {
-     "title": "Computer Networking: A Top-Down Approach",
-     "kind": "book",
-     "by": "Kurose & Ross",
-     "free": false,
-     "url": "https://gaia.cs.umass.edu/kurose_ross/index.php",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Network fundamentals"
-    },
-    {
-     "title": "Computer Networks: A Systems Approach",
-     "kind": "book",
-     "by": "Peterson & Davie",
-     "free": true,
-     "url": "https://book.systemsapproach.org/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Network fundamentals"
-    },
-    {
-     "title": "Cloudflare Learning Center",
-     "kind": "site",
-     "by": "Cloudflare",
-     "free": true,
-     "url": "https://www.cloudflare.com/learning/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Network fundamentals"
-    },
-    {
-     "title": "Professor Messer: Network+ training",
-     "kind": "video",
-     "by": "James Messer",
-     "free": true,
-     "url": "https://www.professormesser.com/",
-     "section": "1 · Concepts",
-     "requires": [],
-     "skill": "Network fundamentals"
-    },
-    {
-     "title": "CS144: Introduction to Computer Networking",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://cs144.github.io/",
-     "section": "2 · Build",
-     "requires": [
-      "Computer Networking: A Top-Down Approach"
-     ],
-     "skill": "Implementing network protocols"
-    },
-    {
-     "title": "Beej's Guide to Network Programming",
-     "kind": "book",
-     "by": "Brian \"Beej\" Hall",
-     "free": true,
-     "url": "https://beej.us/guide/bgnet/",
-     "section": "2 · Build",
-     "requires": [],
-     "skill": "Socket programming"
-    },
-    {
-     "title": "High Performance Browser Networking",
-     "kind": "book",
-     "by": "Ilya Grigorik",
-     "free": true,
-     "url": "https://hpbn.co/",
-     "section": "3 · Protocols",
-     "requires": [
-      "Computer Networking: A Top-Down Approach"
-     ],
-     "skill": "TCP and HTTP in depth"
-    },
-    {
-     "title": "RFC 9293: Transmission Control Protocol",
-     "kind": "paper",
-     "by": "IETF",
-     "free": true,
-     "url": "https://www.rfc-editor.org/rfc/rfc9293",
-     "section": "3 · Protocols",
-     "requires": [],
-     "skill": "TCP and HTTP in depth"
-    },
-    {
-     "title": "Wireshark documentation",
-     "kind": "site",
-     "by": "Wireshark Foundation",
-     "free": true,
-     "url": "https://www.wireshark.org/docs/",
-     "section": "3 · Protocols",
-     "requires": [],
-     "skill": "Packet analysis"
-    }
-   ]
-  },
-  {
-   "id": "devops",
-   "title": "DevOps and GitOps",
-   "description": "Flow, feedback, and learning: version control, CI/CD, infrastructure as code, reliability, and GitOps.",
-   "skills": [
-    {
-     "title": "DevOps principles",
-     "section": "1 · Principles",
-     "description": "Flow, feedback, learning, and the metrics that predict delivery performance."
-    },
-    {
-     "title": "Version control with Git",
-     "section": "2 · Delivery",
-     "description": "Branching, merging, history, and collaboration."
-    },
-    {
-     "title": "Continuous integration and delivery",
-     "section": "2 · Delivery",
-     "description": "Automated build, test, and deployment pipelines.",
-     "requires": [
-      "Version control with Git"
-     ]
-    },
-    {
-     "title": "Infrastructure as code",
-     "section": "3 · Infrastructure",
-     "description": "Provision and configure infrastructure from versioned code."
-    },
-    {
-     "title": "Site reliability engineering",
-     "section": "3 · Infrastructure",
-     "description": "SLOs, error budgets, incident response, and toil.",
-     "requires": [
-      "DevOps principles"
-     ]
-    },
-    {
-     "title": "GitOps",
-     "section": "4 · GitOps",
-     "description": "Pull-based, declarative delivery from Git.",
-     "requires": [
-      "Continuous integration and delivery"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "The DevOps Handbook, 2nd edition",
-     "kind": "book",
-     "by": "Kim, Humble, Debois, Willis & Forsgren",
-     "free": false,
-     "url": "https://itrevolution.com/product/the-devops-handbook-second-edition/",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "DevOps principles"
-    },
-    {
-     "title": "Accelerate",
-     "kind": "book",
-     "by": "Forsgren, Humble & Kim",
-     "free": false,
-     "url": "https://itrevolution.com/product/accelerate/",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "DevOps principles"
-    },
-    {
-     "title": "DORA research and capabilities",
-     "kind": "site",
-     "by": "DORA, Google Cloud",
-     "free": true,
-     "url": "https://dora.dev/",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "DevOps principles"
-    },
-    {
-     "title": "The Twelve-Factor App",
-     "kind": "site",
-     "by": "Adam Wiggins",
-     "free": true,
-     "url": "https://12factor.net/",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "DevOps principles"
-    },
-    {
-     "title": "Pro Git",
-     "kind": "book",
-     "by": "Chacon & Straub",
-     "free": true,
-     "url": "https://git-scm.com/book/en/v2",
-     "section": "2 · Delivery",
-     "requires": [],
-     "skill": "Version control with Git"
-    },
-    {
-     "title": "Continuous Delivery",
-     "kind": "book",
-     "by": "Humble & Farley",
-     "free": false,
-     "url": "https://continuousdelivery.com/",
-     "section": "2 · Delivery",
-     "requires": [
-      "Pro Git"
-     ],
-     "skill": "Continuous integration and delivery"
-    },
-    {
-     "title": "GitHub Actions documentation",
-     "kind": "site",
-     "by": "GitHub",
-     "free": true,
-     "url": "https://docs.github.com/en/actions",
-     "section": "2 · Delivery",
-     "requires": [
-      "Pro Git"
-     ],
-     "skill": "Continuous integration and delivery"
-    },
-    {
-     "title": "Terraform tutorials",
-     "kind": "course",
-     "by": "HashiCorp",
-     "free": true,
-     "url": "https://developer.hashicorp.com/terraform/tutorials",
-     "section": "3 · Infrastructure",
-     "requires": [],
-     "skill": "Infrastructure as code"
-    },
-    {
-     "title": "Ansible documentation",
-     "kind": "site",
-     "by": "Red Hat",
-     "free": true,
-     "url": "https://docs.ansible.com/",
-     "section": "3 · Infrastructure",
-     "requires": [],
-     "skill": "Infrastructure as code"
-    },
-    {
-     "title": "Site Reliability Engineering books",
-     "kind": "book",
-     "by": "Google",
-     "free": true,
-     "url": "https://sre.google/books/",
-     "section": "3 · Infrastructure",
-     "requires": [
-      "The DevOps Handbook, 2nd edition"
-     ],
-     "skill": "Site reliability engineering"
-    },
-    {
-     "title": "OpenGitOps principles",
-     "kind": "site",
-     "by": "CNCF OpenGitOps",
-     "free": true,
-     "url": "https://opengitops.dev/",
-     "section": "4 · GitOps",
-     "requires": [
-      "Continuous Delivery"
-     ],
-     "skill": "GitOps"
-    },
-    {
-     "title": "Argo CD documentation",
-     "kind": "site",
-     "by": "Argo Project",
-     "free": true,
-     "url": "https://argo-cd.readthedocs.io/",
-     "section": "4 · GitOps",
-     "requires": [
-      "OpenGitOps principles"
-     ],
-     "skill": "GitOps"
-    },
-    {
-     "title": "Flux documentation",
-     "kind": "site",
-     "by": "Flux, CNCF",
-     "free": true,
-     "url": "https://fluxcd.io/flux/",
-     "section": "4 · GitOps",
-     "requires": [
-      "OpenGitOps principles"
-     ],
-     "skill": "GitOps"
-    }
-   ]
-  },
-  {
-   "id": "containers",
-   "title": "Docker, Podman, and Kubernetes",
-   "description": "Containers from first principles, then orchestration, packaging, and securing clusters.",
-   "skills": [
-    {
-     "title": "Containers",
-     "section": "1 · Containers",
-     "description": "Images, containers, volumes, and networks with Docker and Podman."
-    },
-    {
-     "title": "Container standards",
-     "section": "1 · Containers",
-     "description": "What an image and a runtime are, per the OCI specifications."
-    },
-    {
-     "title": "Kubernetes fundamentals",
-     "section": "2 · Kubernetes",
-     "description": "Pods, deployments, services, and configuration.",
-     "requires": [
-      "Containers"
-     ]
-    },
-    {
-     "title": "Packaging for Kubernetes",
-     "section": "2 · Kubernetes",
-     "description": "Package and release applications with charts.",
-     "requires": [
-      "Kubernetes fundamentals"
-     ]
-    },
-    {
-     "title": "Cluster administration",
-     "section": "3 · Deepen",
-     "description": "Build a cluster by hand and operate it.",
-     "requires": [
-      "Kubernetes fundamentals"
-     ]
-    },
-    {
-     "title": "Container security",
-     "section": "3 · Deepen",
-     "description": "Isolation, image hygiene, and least privilege.",
-     "requires": [
-      "Containers"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Docker: Get started",
-     "kind": "course",
-     "by": "Docker",
-     "free": true,
-     "url": "https://docs.docker.com/get-started/",
-     "section": "1 · Containers",
-     "requires": [],
-     "skill": "Containers"
-    },
-    {
-     "title": "Podman documentation",
-     "kind": "site",
-     "by": "Podman project",
-     "free": true,
-     "url": "https://docs.podman.io/",
-     "section": "1 · Containers",
-     "requires": [],
-     "skill": "Containers"
-    },
-    {
-     "title": "Open Container Initiative specifications",
-     "kind": "site",
-     "by": "OCI, Linux Foundation",
-     "free": true,
-     "url": "https://opencontainers.org/",
-     "section": "1 · Containers",
-     "requires": [],
-     "skill": "Container standards"
-    },
-    {
-     "title": "DevOps with Docker",
-     "kind": "course",
-     "by": "University of Helsinki",
-     "free": true,
-     "url": "https://devopswithdocker.com/",
-     "section": "1 · Containers",
-     "skill": "Containers"
-    },
-    {
-     "title": "Kubernetes tutorials",
-     "kind": "course",
-     "by": "Kubernetes project",
-     "free": true,
-     "url": "https://kubernetes.io/docs/tutorials/",
-     "section": "2 · Kubernetes",
-     "requires": [
-      "Docker: Get started"
-     ],
-     "skill": "Kubernetes fundamentals"
-    },
-    {
-     "title": "Introduction to Kubernetes (LFS158)",
-     "kind": "course",
-     "by": "The Linux Foundation",
-     "free": true,
-     "url": "https://training.linuxfoundation.org/training/introduction-to-kubernetes/",
-     "section": "2 · Kubernetes",
-     "requires": [
-      "Docker: Get started"
-     ],
-     "skill": "Kubernetes fundamentals"
-    },
-    {
-     "title": "Kubernetes: Up and Running, 3rd edition",
-     "kind": "book",
-     "by": "Burns, Beda, Hightower & Evenson",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/kubernetes-up-and/9781098110192/",
-     "section": "2 · Kubernetes",
-     "requires": [
-      "Kubernetes tutorials"
-     ],
-     "skill": "Kubernetes fundamentals"
-    },
-    {
-     "title": "Helm documentation",
-     "kind": "site",
-     "by": "Helm, CNCF",
-     "free": true,
-     "url": "https://helm.sh/docs/",
-     "section": "2 · Kubernetes",
-     "requires": [
-      "Kubernetes tutorials"
-     ],
-     "skill": "Packaging for Kubernetes"
-    },
-    {
-     "title": "DevOps with Kubernetes",
-     "kind": "course",
-     "by": "University of Helsinki",
-     "free": true,
-     "url": "https://devopswithkubernetes.com/",
-     "section": "2 · Kubernetes",
-     "requires": [
-      "DevOps with Docker"
-     ],
-     "skill": "Kubernetes fundamentals"
-    },
-    {
-     "title": "Kubernetes The Hard Way",
-     "kind": "practice",
-     "by": "Kelsey Hightower",
-     "free": true,
-     "url": "https://github.com/kelseyhightower/kubernetes-the-hard-way",
-     "section": "3 · Deepen",
-     "requires": [
-      "Kubernetes: Up and Running, 3rd edition"
-     ],
-     "skill": "Cluster administration"
-    },
-    {
-     "title": "Container Security",
-     "kind": "book",
-     "by": "Liz Rice",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/container-security/9781492056690/",
-     "section": "3 · Deepen",
-     "requires": [
-      "Docker: Get started"
-     ],
-     "skill": "Container security"
-    },
-    {
-     "title": "CNCF certification curricula (CKA, CKAD, CKS)",
-     "kind": "site",
-     "by": "CNCF",
-     "free": true,
-     "url": "https://github.com/cncf/curriculum",
-     "section": "3 · Deepen",
-     "requires": [
-      "Kubernetes tutorials"
-     ],
-     "skill": "Cluster administration"
-    },
-    {
-     "title": "CNCF Landscape",
-     "kind": "site",
-     "by": "CNCF",
-     "free": true,
-     "url": "https://landscape.cncf.io/",
-     "section": "3 · Deepen",
-     "requires": [],
-     "skill": "Cluster administration"
-    }
-   ]
-  },
-  {
-   "id": "web",
-   "title": "Web development and full stack",
-   "description": "HTML, CSS, JavaScript, TypeScript, and accessible, secure full-stack applications.",
-   "skills": [
-    {
-     "title": "HTML and CSS",
-     "section": "1 · Foundations",
-     "description": "Semantic markup, layout, and responsive design."
-    },
-    {
-     "title": "JavaScript",
-     "section": "2 · JavaScript",
-     "description": "The language, the DOM, and asynchronous code.",
-     "requires": [
-      "HTML and CSS"
-     ]
-    },
-    {
-     "title": "TypeScript",
-     "section": "2 · JavaScript",
-     "description": "Static types for JavaScript applications.",
-     "requires": [
-      "JavaScript"
-     ]
-    },
-    {
-     "title": "Full-stack applications",
-     "section": "3 · Full stack",
-     "description": "Front end, back end, databases, and deployment together.",
-     "requires": [
-      "JavaScript",
-      "HTML and CSS"
-     ]
-    },
-    {
-     "title": "Front-end frameworks",
-     "section": "3 · Full stack",
-     "description": "Components, state, and routing with a modern framework.",
-     "requires": [
-      "TypeScript"
-     ]
-    },
-    {
-     "title": "Accessibility",
-     "section": "4 · Quality",
-     "description": "Build interfaces everyone can use."
-    },
-    {
-     "title": "Web security",
-     "section": "4 · Quality",
-     "description": "Defend web applications against common attacks."
-    }
-   ],
-   "resources": [
-    {
-     "title": "MDN: Learn web development",
-     "kind": "course",
-     "by": "Mozilla",
-     "free": true,
-     "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "HTML and CSS"
-    },
-    {
-     "title": "The Odin Project",
-     "kind": "course",
-     "by": "The Odin Project",
-     "free": true,
-     "url": "https://www.theodinproject.com/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "HTML and CSS"
-    },
-    {
-     "title": "freeCodeCamp curriculum",
-     "kind": "course",
-     "by": "freeCodeCamp",
-     "free": true,
-     "url": "https://www.freecodecamp.org/learn/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "HTML and CSS"
-    },
-    {
-     "title": "web.dev Learn",
-     "kind": "course",
-     "by": "Google Chrome team",
-     "free": true,
-     "url": "https://web.dev/learn",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "HTML and CSS"
-    },
-    {
-     "title": "The Modern JavaScript Tutorial",
-     "kind": "site",
-     "by": "Ilya Kantor",
-     "free": true,
-     "url": "https://javascript.info/",
-     "section": "2 · JavaScript",
-     "requires": [
-      "MDN: Learn web development"
-     ],
-     "skill": "JavaScript"
-    },
-    {
-     "title": "Eloquent JavaScript, 4th edition",
-     "kind": "book",
-     "by": "Marijn Haverbeke",
-     "free": true,
-     "url": "https://eloquentjavascript.net/",
-     "section": "2 · JavaScript",
-     "requires": [
-      "MDN: Learn web development"
-     ],
-     "skill": "JavaScript"
-    },
-    {
-     "title": "TypeScript Handbook",
-     "kind": "site",
-     "by": "Microsoft",
-     "free": true,
-     "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
-     "section": "2 · JavaScript",
-     "requires": [
-      "The Modern JavaScript Tutorial"
-     ],
-     "skill": "TypeScript"
-    },
-    {
-     "title": "Full Stack Open",
-     "kind": "course",
-     "by": "University of Helsinki",
-     "free": true,
-     "url": "https://fullstackopen.com/en/",
-     "section": "3 · Full stack",
-     "requires": [
-      "The Modern JavaScript Tutorial"
-     ],
-     "skill": "Full-stack applications"
-    },
-    {
-     "title": "CS50's Web Programming with Python and JavaScript",
-     "kind": "course",
-     "by": "Harvard",
-     "free": true,
-     "url": "https://cs50.harvard.edu/web/",
-     "section": "3 · Full stack",
-     "requires": [
-      "MDN: Learn web development"
-     ],
-     "skill": "Full-stack applications"
-    },
-    {
-     "title": "Svelte tutorial",
-     "kind": "course",
-     "by": "Svelte team",
-     "free": true,
-     "url": "https://svelte.dev/tutorial",
-     "section": "3 · Full stack",
-     "requires": [
-      "TypeScript Handbook"
-     ],
-     "skill": "Front-end frameworks"
-    },
-    {
-     "title": "CS142: Web Applications",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs142/",
-     "section": "3 · Full stack",
-     "requires": [
-      "The Modern JavaScript Tutorial"
-     ],
-     "skill": "Full-stack applications"
-    },
-    {
-     "title": "Web Content Accessibility Guidelines (WCAG)",
-     "kind": "site",
-     "by": "W3C WAI",
-     "free": true,
-     "url": "https://www.w3.org/WAI/standards-guidelines/wcag/",
-     "section": "4 · Quality",
-     "requires": [],
-     "skill": "Accessibility"
-    },
-    {
-     "title": "OWASP Top 10",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owasp.org/www-project-top-ten/",
-     "section": "4 · Quality",
-     "requires": [],
-     "skill": "Web security"
-    },
-    {
-     "title": "CS253: Web Security",
-     "kind": "course",
-     "by": "Stanford, Feross Aboukhadijeh",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs253/",
-     "section": "4 · Quality",
-     "skill": "Web security"
-    }
-   ]
-  },
-  {
-   "id": "api-design",
-   "title": "API design",
-   "description": "HTTP semantics, resource modelling, errors, versioning, and secure, documented APIs.",
-   "skills": [
-    {
-     "title": "HTTP semantics",
-     "section": "1 · Foundations",
-     "description": "Methods, status codes, caching, and conditional requests."
-    },
-    {
-     "title": "REST architecture",
-     "section": "1 · Foundations",
-     "description": "Resources, representations, and constraints of REST."
-    },
-    {
-     "title": "Resource-oriented API design",
-     "section": "2 · Guidelines",
-     "description": "Naming, pagination, errors, and versioning that age well.",
-     "requires": [
-      "HTTP semantics"
-     ]
-    },
-    {
-     "title": "API contracts and errors",
-     "section": "3 · Contracts",
-     "description": "Describe APIs with OpenAPI and report errors consistently.",
-     "requires": [
-      "HTTP semantics"
-     ]
-    },
-    {
-     "title": "GraphQL and gRPC",
-     "section": "3 · Contracts",
-     "description": "When to choose query languages or RPC instead of REST."
-    },
-    {
-     "title": "API security",
-     "section": "4 · Security",
-     "description": "Authorisation, rate limits, and the API-specific top risks."
-    }
-   ],
-   "resources": [
-    {
-     "title": "RFC 9110: HTTP Semantics",
-     "kind": "paper",
-     "by": "IETF",
-     "free": true,
-     "url": "https://www.rfc-editor.org/rfc/rfc9110",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "HTTP semantics"
-    },
-    {
-     "title": "Architectural Styles and the Design of Network-based Software Architectures (REST)",
-     "kind": "paper",
-     "by": "Roy T. Fielding",
-     "free": true,
-     "url": "https://ics.uci.edu/~fielding/pubs/dissertation/top.htm",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "REST architecture"
-    },
-    {
-     "title": "Google API design guide",
-     "kind": "site",
-     "by": "Google Cloud",
-     "free": true,
-     "url": "https://cloud.google.com/apis/design",
-     "section": "2 · Guidelines",
-     "requires": [
-      "RFC 9110: HTTP Semantics"
-     ],
-     "skill": "Resource-oriented API design"
-    },
-    {
-     "title": "API Improvement Proposals (AIP)",
-     "kind": "site",
-     "by": "Google",
-     "free": true,
-     "url": "https://google.aip.dev/",
-     "section": "2 · Guidelines",
-     "requires": [
-      "Google API design guide"
-     ],
-     "skill": "Resource-oriented API design"
-    },
-    {
-     "title": "Microsoft REST API Guidelines",
-     "kind": "site",
-     "by": "Microsoft",
-     "free": true,
-     "url": "https://github.com/microsoft/api-guidelines",
-     "section": "2 · Guidelines",
-     "requires": [],
-     "skill": "Resource-oriented API design"
-    },
-    {
-     "title": "Zalando RESTful API Guidelines",
-     "kind": "site",
-     "by": "Zalando",
-     "free": true,
-     "url": "https://opensource.zalando.com/restful-api-guidelines/",
-     "section": "2 · Guidelines",
-     "requires": [],
-     "skill": "Resource-oriented API design"
-    },
-    {
-     "title": "API Design Patterns",
-     "kind": "book",
-     "by": "JJ Geewax",
-     "free": false,
-     "url": "https://www.manning.com/books/api-design-patterns",
-     "section": "2 · Guidelines",
-     "requires": [
-      "Google API design guide"
-     ],
-     "skill": "Resource-oriented API design"
-    },
-    {
-     "title": "OpenAPI Specification",
-     "kind": "site",
-     "by": "OpenAPI Initiative",
-     "free": true,
-     "url": "https://spec.openapis.org/oas/latest.html",
-     "section": "3 · Contracts",
-     "requires": [],
-     "skill": "API contracts and errors"
-    },
-    {
-     "title": "RFC 9457: Problem Details for HTTP APIs",
-     "kind": "paper",
-     "by": "IETF",
-     "free": true,
-     "url": "https://www.rfc-editor.org/rfc/rfc9457",
-     "section": "3 · Contracts",
-     "requires": [
-      "RFC 9110: HTTP Semantics"
-     ],
-     "skill": "API contracts and errors"
-    },
-    {
-     "title": "GraphQL: Learn",
-     "kind": "site",
-     "by": "GraphQL Foundation",
-     "free": true,
-     "url": "https://graphql.org/learn/",
-     "section": "3 · Contracts",
-     "requires": [],
-     "skill": "GraphQL and gRPC"
-    },
-    {
-     "title": "gRPC documentation",
-     "kind": "site",
-     "by": "gRPC, CNCF",
-     "free": true,
-     "url": "https://grpc.io/docs/",
-     "section": "3 · Contracts",
-     "requires": [],
-     "skill": "GraphQL and gRPC"
-    },
-    {
-     "title": "OWASP API Security Top 10",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owasp.org/API-Security/",
-     "section": "4 · Security",
-     "requires": [],
-     "skill": "API security"
-    }
-   ]
-  },
-  {
-   "id": "system-design",
-   "title": "System design and data-intensive applications",
-   "description": "Scalability, reliability, replication, consensus, and the trade-offs behind real systems.",
-   "skills": [
-    {
-     "title": "Data-intensive application design",
-     "section": "1 · Foundations",
-     "description": "Reliability, scalability, and maintainability; storage, replication, and partitioning."
-    },
-    {
-     "title": "Scalable system design",
-     "section": "1 · Foundations",
-     "description": "Load balancing, caching, queues, and the trade-offs between them."
-    },
-    {
-     "title": "Distributed systems",
-     "section": "2 · Distributed systems",
-     "description": "Replication, fault tolerance, and consistency in practice.",
-     "requires": [
-      "Data-intensive application design"
-     ]
-    },
-    {
-     "title": "Consensus",
-     "section": "2 · Distributed systems",
-     "description": "How replicated state machines agree.",
-     "requires": [
-      "Data-intensive application design"
-     ]
-    },
-    {
-     "title": "Consistency testing",
-     "section": "3 · Practice",
-     "description": "How real databases break under partitions.",
-     "requires": [
-      "Distributed systems"
-     ]
-    },
-    {
-     "title": "Storage engine internals",
-     "section": "3 · Practice",
-     "description": "B-trees, LSM trees, and distributed storage.",
-     "requires": [
-      "Data-intensive application design"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Designing Data-Intensive Applications",
-     "kind": "book",
-     "by": "Martin Kleppmann",
-     "free": false,
-     "url": "https://dataintensive.net/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Data-intensive application design"
-    },
-    {
-     "title": "The System Design Primer",
-     "kind": "site",
-     "by": "Donne Martin",
-     "free": true,
-     "url": "https://github.com/donnemartin/system-design-primer",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Scalable system design"
-    },
-    {
-     "title": "Understanding Distributed Systems",
-     "kind": "book",
-     "by": "Roberto Vitillo",
-     "free": false,
-     "url": "https://understandingdistributed.systems/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Data-intensive application design"
-    },
-    {
-     "title": "6.5840: Distributed Systems",
-     "kind": "course",
-     "by": "MIT PDOS",
-     "free": true,
-     "url": "https://pdos.csail.mit.edu/6.824/",
-     "section": "2 · Distributed systems",
-     "requires": [
-      "Designing Data-Intensive Applications"
-     ],
-     "skill": "Distributed systems"
-    },
-    {
-     "title": "Raft consensus algorithm",
-     "kind": "paper",
-     "by": "Ongaro & Ousterhout",
-     "free": true,
-     "url": "https://raft.github.io/",
-     "section": "2 · Distributed systems",
-     "requires": [
-      "Designing Data-Intensive Applications"
-     ],
-     "skill": "Consensus"
-    },
-    {
-     "title": "Dynamo: Amazon's Highly Available Key-value Store",
-     "kind": "paper",
-     "by": "DeCandia et al., Amazon",
-     "free": true,
-     "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
-     "section": "2 · Distributed systems",
-     "requires": [],
-     "skill": "Distributed systems"
-    },
-    {
-     "title": "MapReduce: Simplified Data Processing on Large Clusters",
-     "kind": "paper",
-     "by": "Dean & Ghemawat, Google",
-     "free": true,
-     "url": "https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/",
-     "section": "2 · Distributed systems",
-     "requires": [],
-     "skill": "Distributed systems"
-    },
-    {
-     "title": "Amazon Builders' Library",
-     "kind": "site",
-     "by": "Amazon",
-     "free": true,
-     "url": "https://aws.amazon.com/builders-library/",
-     "section": "3 · Practice",
-     "requires": [],
-     "skill": "Scalable system design"
-    },
-    {
-     "title": "Jepsen analyses",
-     "kind": "site",
-     "by": "Kyle Kingsbury",
-     "free": true,
-     "url": "https://jepsen.io/analyses",
-     "section": "3 · Practice",
-     "requires": [
-      "6.5840: Distributed Systems"
-     ],
-     "skill": "Consistency testing"
-    },
-    {
-     "title": "ByteByteGo",
-     "kind": "site",
-     "by": "Alex Xu",
-     "free": false,
-     "url": "https://bytebytego.com/",
-     "section": "3 · Practice",
-     "requires": [],
-     "skill": "Scalable system design"
-    },
-    {
-     "title": "Database Internals",
-     "kind": "book",
-     "by": "Alex Petrov",
-     "free": false,
-     "url": "https://www.databass.dev/",
-     "section": "3 · Practice",
-     "requires": [
-      "Designing Data-Intensive Applications"
-     ],
-     "skill": "Storage engine internals"
-    }
-   ]
-  },
-  {
-   "id": "databases",
-   "title": "Database architecture and administration",
-   "description": "Relational modelling, SQL, indexes, internals, and running PostgreSQL in production.",
-   "skills": [
-    {
-     "title": "SQL querying",
-     "section": "1 · SQL",
-     "description": "Select, join, aggregate, and window functions."
-    },
-    {
-     "title": "Relational modelling",
-     "section": "1 · SQL",
-     "description": "Entities, normal forms, and constraints."
-    },
-    {
-     "title": "Database internals",
-     "section": "2 · Architecture",
-     "description": "Storage, indexing, query processing, transactions, and recovery.",
-     "requires": [
-      "Relational modelling"
-     ]
-    },
-    {
-     "title": "Advanced database architecture",
-     "section": "2 · Architecture",
-     "description": "Modern analytical and transactional engines.",
-     "requires": [
-      "Database internals"
-     ]
-    },
-    {
-     "title": "PostgreSQL administration",
-     "section": "3 · Administration",
-     "description": "Configure, back up, monitor, and tune PostgreSQL.",
-     "requires": [
-      "SQL querying"
-     ]
-    },
-    {
-     "title": "Indexing and query tuning",
-     "section": "3 · Administration",
-     "description": "Read plans and design indexes for real workloads.",
-     "requires": [
-      "SQL querying"
-     ]
-    },
-    {
-     "title": "MySQL administration",
-     "section": "3 · Administration",
-     "description": "Replication, backups, and performance for MySQL."
-    }
-   ],
-   "resources": [
-    {
-     "title": "SQLBolt",
-     "kind": "practice",
-     "by": "SQLBolt",
-     "free": true,
-     "url": "https://sqlbolt.com/",
-     "section": "1 · SQL",
-     "requires": [],
-     "skill": "SQL querying"
-    },
-    {
-     "title": "Select Star SQL",
-     "kind": "practice",
-     "by": "Zi Chong Kao",
-     "free": true,
-     "url": "https://selectstarsql.com/",
-     "section": "1 · SQL",
-     "requires": [],
-     "skill": "SQL querying"
-    },
-    {
-     "title": "Database System Concepts (book site)",
-     "kind": "book",
-     "by": "Silberschatz, Korth & Sudarshan",
-     "free": false,
-     "url": "https://www.db-book.com/",
-     "section": "1 · SQL",
-     "requires": [],
-     "skill": "Relational modelling"
-    },
-    {
-     "title": "CS50's Introduction to Databases with SQL",
-     "kind": "course",
-     "by": "Harvard",
-     "free": true,
-     "url": "https://cs50.harvard.edu/sql/",
-     "section": "1 · SQL",
-     "skill": "SQL querying"
-    },
-    {
-     "title": "CMU 15-445/645: Database Systems",
-     "kind": "course",
-     "by": "Carnegie Mellon University",
-     "free": true,
-     "url": "https://15445.courses.cs.cmu.edu/",
-     "section": "2 · Architecture",
-     "requires": [
-      "Database System Concepts (book site)"
-     ],
-     "skill": "Database internals"
-    },
-    {
-     "title": "CMU Database Group lectures",
-     "kind": "channel",
-     "by": "CMU Database Group",
-     "free": true,
-     "url": "https://www.youtube.com/@CMUDatabaseGroup",
-     "section": "2 · Architecture",
-     "requires": [],
-     "skill": "Database internals"
-    },
-    {
-     "title": "Readings in Database Systems (the Red Book)",
-     "kind": "paper",
-     "by": "Bailis, Hellerstein & Stonebraker",
-     "free": true,
-     "url": "http://www.redbook.io/",
-     "section": "2 · Architecture",
-     "requires": [
-      "CMU 15-445/645: Database Systems"
-     ],
-     "skill": "Advanced database architecture"
-    },
-    {
-     "title": "Database Internals",
-     "kind": "book",
-     "by": "Alex Petrov",
-     "free": false,
-     "url": "https://www.databass.dev/",
-     "section": "2 · Architecture",
-     "requires": [
-      "CMU 15-445/645: Database Systems"
-     ],
-     "skill": "Database internals"
-    },
-    {
-     "title": "CS186: Introduction to Database Systems",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://cs186berkeley.net/",
-     "section": "2 · Architecture",
-     "requires": [
-      "Database System Concepts (book site)"
-     ],
-     "skill": "Database internals"
-    },
-    {
-     "title": "CMU 15-721: Advanced Database Systems",
-     "kind": "course",
-     "by": "Carnegie Mellon University",
-     "free": true,
-     "url": "https://15721.courses.cs.cmu.edu/",
-     "section": "2 · Architecture",
-     "requires": [
-      "CMU 15-445/645: Database Systems"
-     ],
-     "skill": "Advanced database architecture"
-    },
-    {
-     "title": "PostgreSQL documentation",
-     "kind": "site",
-     "by": "PostgreSQL Global Development Group",
-     "free": true,
-     "url": "https://www.postgresql.org/docs/current/",
-     "section": "3 · Administration",
-     "requires": [
-      "SQLBolt"
-     ],
-     "skill": "PostgreSQL administration"
-    },
-    {
-     "title": "Use The Index, Luke",
-     "kind": "book",
-     "by": "Markus Winand",
-     "free": true,
-     "url": "https://use-the-index-luke.com/",
-     "section": "3 · Administration",
-     "requires": [
-      "SQLBolt"
-     ],
-     "skill": "Indexing and query tuning"
-    },
-    {
-     "title": "PostgreSQL 14 Internals",
-     "kind": "book",
-     "by": "Egor Rogov, Postgres Professional",
-     "free": true,
-     "url": "https://postgrespro.com/community/books/internals",
-     "section": "3 · Administration",
-     "requires": [
-      "PostgreSQL documentation"
-     ],
-     "skill": "PostgreSQL administration"
-    },
-    {
-     "title": "Don't Do This (PostgreSQL wiki)",
-     "kind": "site",
-     "by": "PostgreSQL community",
-     "free": true,
-     "url": "https://wiki.postgresql.org/wiki/Don%27t_Do_This",
-     "section": "3 · Administration",
-     "requires": [],
-     "skill": "PostgreSQL administration"
-    },
-    {
-     "title": "High Performance MySQL, 4th edition",
-     "kind": "book",
-     "by": "Botros & Tinley",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/high-performance-mysql/9781492080503/",
-     "section": "3 · Administration",
-     "requires": [],
-     "skill": "MySQL administration"
-    }
-   ]
-  },
-  {
-   "id": "data-engineering",
-   "title": "Data engineering, DataOps, and big data",
-   "description": "Pipelines, modelling, batch and streaming at scale, with tested, observable data.",
-   "skills": [
-    {
-     "title": "Data engineering lifecycle",
-     "section": "1 · Foundations",
-     "description": "Generation, ingestion, storage, transformation, and serving."
-    },
-    {
-     "title": "Dimensional modelling",
-     "section": "1 · Foundations",
-     "description": "Facts, dimensions, and warehouse design."
-    },
-    {
-     "title": "Transformation pipelines",
-     "section": "2 · Pipelines",
-     "description": "Tested, versioned SQL transformations.",
-     "requires": [
-      "Dimensional modelling"
-     ]
-    },
-    {
-     "title": "Workflow orchestration",
-     "section": "2 · Pipelines",
-     "description": "Schedule, retry, and monitor pipelines.",
-     "requires": [
-      "Data engineering lifecycle"
-     ]
-    },
-    {
-     "title": "Batch processing at scale",
-     "section": "3 · Big data",
-     "description": "Distributed batch processing and large-scale data mining.",
-     "requires": [
-      "Data engineering lifecycle"
-     ]
-    },
-    {
-     "title": "Stream processing",
-     "section": "4 · Streaming",
-     "description": "Event logs, windows, and exactly-once processing."
-    },
-    {
-     "title": "Data architecture",
-     "section": "4 · Streaming",
-     "description": "Domain ownership and data as a product."
-    }
-   ],
-   "resources": [
-    {
-     "title": "Fundamentals of Data Engineering",
-     "kind": "book",
-     "by": "Joe Reis & Matt Housley",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/fundamentals-of-data-engineering/9781098108298/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Data engineering lifecycle"
-    },
-    {
-     "title": "Data Engineering Zoomcamp",
-     "kind": "course",
-     "by": "DataTalksClub",
-     "free": true,
-     "url": "https://github.com/DataTalksClub/data-engineering-zoomcamp",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Data engineering lifecycle"
-    },
-    {
-     "title": "The Data Warehouse Toolkit, 3rd edition",
-     "kind": "book",
-     "by": "Ralph Kimball & Margy Ross",
-     "free": false,
-     "url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Dimensional modelling"
-    },
-    {
-     "title": "dbt Learn",
-     "kind": "course",
-     "by": "dbt Labs",
-     "free": true,
-     "url": "https://learn.getdbt.com/",
-     "section": "2 · Pipelines",
-     "requires": [
-      "The Data Warehouse Toolkit, 3rd edition"
-     ],
-     "skill": "Transformation pipelines"
-    },
-    {
-     "title": "Apache Airflow documentation",
-     "kind": "site",
-     "by": "Apache Software Foundation",
-     "free": true,
-     "url": "https://airflow.apache.org/docs/",
-     "section": "2 · Pipelines",
-     "requires": [
-      "Data Engineering Zoomcamp"
-     ],
-     "skill": "Workflow orchestration"
-    },
-    {
-     "title": "The DataOps Manifesto",
-     "kind": "site",
-     "by": "DataOps community",
-     "free": true,
-     "url": "https://dataopsmanifesto.org/en/",
-     "section": "2 · Pipelines",
-     "requires": [],
-     "skill": "Workflow orchestration"
-    },
-    {
-     "title": "MapReduce: Simplified Data Processing on Large Clusters",
-     "kind": "paper",
-     "by": "Dean & Ghemawat, Google",
-     "free": true,
-     "url": "https://research.google/pubs/mapreduce-simplified-data-processing-on-large-clusters/",
-     "section": "3 · Big data",
-     "requires": [],
-     "skill": "Batch processing at scale"
-    },
-    {
-     "title": "Apache Spark documentation",
-     "kind": "site",
-     "by": "Apache Software Foundation",
-     "free": true,
-     "url": "https://spark.apache.org/docs/latest/",
-     "section": "3 · Big data",
-     "requires": [
-      "Data Engineering Zoomcamp"
-     ],
-     "skill": "Batch processing at scale"
-    },
-    {
-     "title": "Spark: The Definitive Guide",
-     "kind": "book",
-     "by": "Chambers & Zaharia",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/spark-the-definitive/9781491912201/",
-     "section": "3 · Big data",
-     "requires": [
-      "Apache Spark documentation"
-     ],
-     "skill": "Batch processing at scale"
-    },
-    {
-     "title": "CS246: Mining Massive Data Sets",
-     "kind": "course",
-     "by": "Stanford, Leskovec, Rajaraman & Ullman",
-     "free": true,
-     "url": "https://www.mmds.org/",
-     "section": "3 · Big data",
-     "skill": "Batch processing at scale"
-    },
-    {
-     "title": "Apache Kafka documentation",
-     "kind": "site",
-     "by": "Apache Software Foundation",
-     "free": true,
-     "url": "https://kafka.apache.org/documentation/",
-     "section": "4 · Streaming",
-     "requires": [],
-     "skill": "Stream processing"
-    },
-    {
-     "title": "Streaming Systems",
-     "kind": "book",
-     "by": "Akidau, Chernyak & Lax",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/streaming-systems/9781491983867/",
-     "section": "4 · Streaming",
-     "requires": [
-      "Apache Kafka documentation"
-     ],
-     "skill": "Stream processing"
-    },
-    {
-     "title": "Data Mesh principles",
-     "kind": "site",
-     "by": "Zhamak Dehghani on martinfowler.com",
-     "free": true,
-     "url": "https://martinfowler.com/articles/data-mesh-principles.html",
-     "section": "4 · Streaming",
-     "requires": [],
-     "skill": "Data architecture"
-    }
-   ]
-  },
-  {
-   "id": "data-analysis",
-   "title": "Data analysis",
-   "description": "Ask questions of data with SQL, pandas, and statistics, and show the answers clearly.",
-   "skills": [
-    {
-     "title": "Data wrangling with pandas",
-     "section": "1 · Tools",
-     "description": "Load, clean, reshape, and join data in Python."
-    },
-    {
-     "title": "Analytical SQL",
-     "section": "1 · Tools",
-     "description": "Answer business questions with SQL."
-    },
-    {
-     "title": "Data wrangling with R",
-     "section": "2 · Analysis",
-     "description": "The tidyverse for import, tidy, transform, and visualise."
-    },
-    {
-     "title": "Descriptive and inferential statistics",
-     "section": "2 · Analysis",
-     "description": "Summaries, sampling, confidence intervals, and tests."
-    },
-    {
-     "title": "Data visualisation and storytelling",
-     "section": "3 · Communicate",
-     "description": "Choose the right chart and explain what it shows.",
-     "requires": [
-      "Data wrangling with pandas"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Kaggle Learn",
-     "kind": "course",
-     "by": "Kaggle",
-     "free": true,
-     "url": "https://www.kaggle.com/learn",
-     "section": "1 · Tools",
-     "requires": [],
-     "skill": "Data wrangling with pandas"
-    },
-    {
-     "title": "Google Data Analytics Professional Certificate",
-     "kind": "course",
-     "by": "Google on Coursera",
-     "free": false,
-     "url": "https://www.coursera.org/professional-certificates/google-data-analytics",
-     "section": "1 · Tools",
-     "requires": [],
-     "skill": "Analytical SQL"
-    },
-    {
-     "title": "Select Star SQL",
-     "kind": "practice",
-     "by": "Zi Chong Kao",
-     "free": true,
-     "url": "https://selectstarsql.com/",
-     "section": "1 · Tools",
-     "requires": [],
-     "skill": "Analytical SQL"
-    },
-    {
-     "title": "Python for Data Analysis, 3rd edition",
-     "kind": "book",
-     "by": "Wes McKinney",
-     "free": true,
-     "url": "https://wesmckinney.com/book/",
-     "section": "2 · Analysis",
-     "requires": [],
-     "skill": "Data wrangling with pandas"
-    },
-    {
-     "title": "pandas documentation",
-     "kind": "site",
-     "by": "pandas team",
-     "free": true,
-     "url": "https://pandas.pydata.org/docs/",
-     "section": "2 · Analysis",
-     "requires": [],
-     "skill": "Data wrangling with pandas"
-    },
-    {
-     "title": "R for Data Science, 2nd edition",
-     "kind": "book",
-     "by": "Wickham, Çetinkaya-Rundel & Grolemund",
-     "free": true,
-     "url": "https://r4ds.hadley.nz/",
-     "section": "2 · Analysis",
-     "requires": [],
-     "skill": "Data wrangling with R"
-    },
-    {
-     "title": "Tidy Data",
-     "kind": "paper",
-     "by": "Hadley Wickham",
-     "free": true,
-     "url": "https://www.jstatsoft.org/article/view/v059i10",
-     "section": "2 · Analysis",
-     "requires": [],
-     "skill": "Data wrangling with pandas"
-    },
-    {
-     "title": "OpenIntro Statistics",
-     "kind": "book",
-     "by": "Diez, Çetinkaya-Rundel & Barr",
-     "free": true,
-     "url": "https://www.openintro.org/book/os/",
-     "section": "2 · Analysis",
-     "requires": [],
-     "skill": "Descriptive and inferential statistics"
-    },
-    {
-     "title": "Fundamentals of Data Visualization",
-     "kind": "book",
-     "by": "Claus O. Wilke",
-     "free": true,
-     "url": "https://clauswilke.com/dataviz/",
-     "section": "3 · Communicate",
-     "requires": [
-      "Python for Data Analysis, 3rd edition"
-     ],
-     "skill": "Data visualisation and storytelling"
-    },
-    {
-     "title": "Storytelling with Data",
-     "kind": "book",
-     "by": "Cole Nussbaumer Knaflic",
-     "free": false,
-     "url": "https://www.storytellingwithdata.com/books",
-     "section": "3 · Communicate",
-     "requires": [],
-     "skill": "Data visualisation and storytelling"
-    }
-   ]
-  },
-  {
-   "id": "data-science",
-   "title": "Data science",
-   "description": "Statistical thinking, modelling, causal inference, and reproducible notebooks.",
-   "skills": [
-    {
-     "title": "Statistical thinking",
-     "section": "1 · Foundations",
-     "description": "Distributions, estimation, and hypothesis testing with code."
-    },
-    {
-     "title": "Data science workflow",
-     "section": "1 · Foundations",
-     "description": "Collect, clean, explore, model, and communicate.",
-     "requires": [
-      "Statistical thinking"
-     ]
-    },
-    {
-     "title": "Statistical learning",
-     "section": "2 · Modelling",
-     "description": "Regression, classification, resampling, and regularisation.",
-     "requires": [
-      "Statistical thinking"
-     ]
-    },
-    {
-     "title": "Bayesian modelling",
-     "section": "3 · Deepen",
-     "description": "Build and criticise Bayesian models.",
-     "requires": [
-      "Statistical thinking"
-     ]
-    },
-    {
-     "title": "Causal inference",
-     "section": "3 · Deepen",
-     "description": "Tell correlation from causation with designs and models.",
-     "requires": [
-      "Statistical learning"
-     ]
-    },
-    {
-     "title": "Applied modelling practice",
-     "section": "4 · Practise",
-     "description": "Work on real problems against a leaderboard."
-    }
-   ],
-   "resources": [
-    {
-     "title": "Data 8: The Foundations of Data Science",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://www.data8.org/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Statistical thinking"
-    },
-    {
-     "title": "Think Stats, 3rd edition",
-     "kind": "book",
-     "by": "Allen B. Downey",
-     "free": true,
-     "url": "https://allendowney.github.io/ThinkStats/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Statistical thinking"
-    },
-    {
-     "title": "StatQuest",
-     "kind": "channel",
-     "by": "Josh Starmer",
-     "free": true,
-     "url": "https://www.youtube.com/@statquest",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Statistical thinking"
-    },
-    {
-     "title": "Data 100: Principles and Techniques of Data Science",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://ds100.org/",
-     "section": "1 · Foundations",
-     "requires": [
-      "Data 8: The Foundations of Data Science"
-     ],
-     "skill": "Data science workflow"
-    },
-    {
-     "title": "An Introduction to Statistical Learning (ISLR / ISLP)",
-     "kind": "book",
-     "by": "James, Witten, Hastie, Tibshirani & Taylor",
-     "free": true,
-     "url": "https://www.statlearning.com/",
-     "section": "2 · Modelling",
-     "requires": [
-      "Think Stats, 3rd edition"
-     ],
-     "skill": "Statistical learning"
-    },
-    {
-     "title": "Python Data Science Handbook",
-     "kind": "book",
-     "by": "Jake VanderPlas",
-     "free": true,
-     "url": "https://jakevdp.github.io/PythonDataScienceHandbook/",
-     "section": "2 · Modelling",
-     "requires": [],
-     "skill": "Data science workflow"
-    },
-    {
-     "title": "Data Science from Scratch, 2nd edition",
-     "kind": "book",
-     "by": "Joel Grus",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/data-science-from/9781492041122/",
-     "section": "2 · Modelling",
-     "requires": [],
-     "skill": "Data science workflow"
-    },
-    {
-     "title": "The Elements of Statistical Learning",
-     "kind": "book",
-     "by": "Hastie, Tibshirani & Friedman",
-     "free": true,
-     "url": "https://hastie.su.domains/ElemStatLearn/",
-     "section": "3 · Deepen",
-     "requires": [
-      "An Introduction to Statistical Learning (ISLR / ISLP)"
-     ],
-     "skill": "Statistical learning"
-    },
-    {
-     "title": "Statistical Rethinking (2024 lectures)",
-     "kind": "course",
-     "by": "Richard McElreath",
-     "free": true,
-     "url": "https://github.com/rmcelreath/stat_rethinking_2024",
-     "section": "3 · Deepen",
-     "requires": [
-      "Think Stats, 3rd edition"
-     ],
-     "skill": "Bayesian modelling"
-    },
-    {
-     "title": "Causal Inference: The Mixtape",
-     "kind": "book",
-     "by": "Scott Cunningham",
-     "free": true,
-     "url": "https://mixtape.scunning.com/",
-     "section": "3 · Deepen",
-     "requires": [
-      "An Introduction to Statistical Learning (ISLR / ISLP)"
-     ],
-     "skill": "Causal inference"
-    },
-    {
-     "title": "Kaggle competitions",
-     "kind": "practice",
-     "by": "Kaggle",
-     "free": true,
-     "url": "https://www.kaggle.com/competitions",
-     "section": "4 · Practise",
-     "requires": [],
-     "skill": "Applied modelling practice"
-    }
-   ]
-  },
-  {
-   "id": "machine-learning",
-   "title": "Machine learning and deep learning",
-   "description": "Classical ML, neural networks, transformers, and the maths underneath.",
-   "skills": [
-    {
-     "title": "Machine learning fundamentals",
-     "section": "1 · Foundations",
-     "description": "Supervised and unsupervised learning, evaluation, and overfitting."
-    },
-    {
-     "title": "Neural networks",
-     "section": "1 · Foundations",
-     "description": "Backpropagation and how networks learn, from scratch."
-    },
-    {
-     "title": "Deep learning",
-     "section": "2 · Deep learning",
-     "description": "Train modern deep networks in practice.",
-     "requires": [
-      "Machine learning fundamentals"
-     ]
-    },
-    {
-     "title": "Machine learning theory",
-     "section": "3 · University",
-     "description": "The mathematics of learning algorithms.",
-     "requires": [
-      "Machine learning fundamentals"
-     ]
-    },
-    {
-     "title": "Computer vision",
-     "section": "3 · University",
-     "description": "Convolutional networks and visual recognition.",
-     "requires": [
-      "Machine learning theory"
-     ]
-    },
-    {
-     "title": "Natural language processing",
-     "section": "3 · University",
-     "description": "Word vectors, sequence models, and transformers for language.",
-     "requires": [
-      "Machine learning theory"
-     ]
-    },
-    {
-     "title": "Transformers and large language models",
-     "section": "4 · Frontier",
-     "description": "Attention, pre-training, and building language models.",
-     "requires": [
-      "Neural networks",
-      "Natural language processing"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Machine Learning Specialization",
-     "kind": "course",
-     "by": "Andrew Ng, Stanford & DeepLearning.AI",
-     "free": false,
-     "url": "https://www.coursera.org/specializations/machine-learning-introduction",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Machine learning fundamentals"
-    },
-    {
-     "title": "Neural networks (visual series)",
-     "kind": "video",
-     "by": "3Blue1Brown",
-     "free": true,
-     "url": "https://www.3blue1brown.com/topics/neural-networks",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Neural networks"
-    },
-    {
-     "title": "scikit-learn user guide",
-     "kind": "site",
-     "by": "scikit-learn developers",
-     "free": true,
-     "url": "https://scikit-learn.org/stable/user_guide.html",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Machine learning fundamentals"
-    },
-    {
-     "title": "Hands-On Machine Learning with Scikit-Learn, Keras and TensorFlow, 3rd edition",
-     "kind": "book",
-     "by": "Aurélien Géron",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Machine learning fundamentals"
-    },
-    {
-     "title": "CS50's Introduction to Artificial Intelligence with Python",
-     "kind": "course",
-     "by": "Harvard",
-     "free": true,
-     "url": "https://cs50.harvard.edu/ai/",
-     "section": "1 · Foundations",
-     "skill": "Machine learning fundamentals"
-    },
-    {
-     "title": "Practical Deep Learning for Coders",
-     "kind": "course",
-     "by": "fast.ai",
-     "free": true,
-     "url": "https://course.fast.ai/",
-     "section": "2 · Deep learning",
-     "requires": [
-      "Machine Learning Specialization"
-     ],
-     "skill": "Deep learning"
-    },
-    {
-     "title": "Neural Networks: Zero to Hero",
-     "kind": "video",
-     "by": "Andrej Karpathy",
-     "free": true,
-     "url": "https://karpathy.ai/zero-to-hero.html",
-     "section": "2 · Deep learning",
-     "requires": [
-      "Neural networks (visual series)"
-     ],
-     "skill": "Neural networks"
-    },
-    {
-     "title": "Dive into Deep Learning",
-     "kind": "book",
-     "by": "Zhang, Lipton, Li & Smola",
-     "free": true,
-     "url": "https://d2l.ai/",
-     "section": "2 · Deep learning",
-     "requires": [
-      "Machine Learning Specialization"
-     ],
-     "skill": "Deep learning"
-    },
-    {
-     "title": "Deep Learning",
-     "kind": "book",
-     "by": "Goodfellow, Bengio & Courville",
-     "free": true,
-     "url": "https://www.deeplearningbook.org/",
-     "section": "2 · Deep learning",
-     "requires": [
-      "Dive into Deep Learning"
-     ],
-     "skill": "Deep learning"
-    },
-    {
-     "title": "MIT 6.S191: Introduction to Deep Learning",
-     "kind": "course",
-     "by": "MIT",
-     "free": true,
-     "url": "http://introtodeeplearning.com/",
-     "section": "2 · Deep learning",
-     "skill": "Deep learning"
-    },
-    {
-     "title": "CS229: Machine Learning",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://cs229.stanford.edu/",
-     "section": "3 · University",
-     "requires": [
-      "Machine Learning Specialization"
-     ],
-     "skill": "Machine learning theory"
-    },
-    {
-     "title": "CS231n: Deep Learning for Computer Vision",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://cs231n.stanford.edu/",
-     "section": "3 · University",
-     "requires": [
-      "CS229: Machine Learning"
-     ],
-     "skill": "Computer vision"
-    },
-    {
-     "title": "CS224n: Natural Language Processing with Deep Learning",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs224n/",
-     "section": "3 · University",
-     "requires": [
-      "CS229: Machine Learning"
-     ],
-     "skill": "Natural language processing"
-    },
-    {
-     "title": "Pattern Recognition and Machine Learning",
-     "kind": "book",
-     "by": "Christopher Bishop",
-     "free": true,
-     "url": "https://www.microsoft.com/en-us/research/people/cmbishop/prml-book/",
-     "section": "3 · University",
-     "requires": [
-      "CS229: Machine Learning"
-     ],
-     "skill": "Machine learning theory"
-    },
-    {
-     "title": "Attention Is All You Need",
-     "kind": "paper",
-     "by": "Vaswani et al.",
-     "free": true,
-     "url": "https://arxiv.org/abs/1706.03762",
-     "section": "4 · Frontier",
-     "requires": [
-      "Neural Networks: Zero to Hero"
-     ],
-     "skill": "Transformers and large language models"
-    },
-    {
-     "title": "Hugging Face Learn",
-     "kind": "course",
-     "by": "Hugging Face",
-     "free": true,
-     "url": "https://huggingface.co/learn",
-     "section": "4 · Frontier",
-     "requires": [
-      "Attention Is All You Need"
-     ],
-     "skill": "Transformers and large language models"
-    },
-    {
-     "title": "CS336: Language Modeling from Scratch",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://stanford-cs336.github.io/",
-     "section": "4 · Frontier",
-     "requires": [
-      "CS224n: Natural Language Processing with Deep Learning"
-     ],
-     "skill": "Transformers and large language models"
-    }
-   ]
-  },
-  {
-   "id": "mlops",
-   "title": "MLOps",
-   "description": "Take models to production: data and model versioning, pipelines, serving, and monitoring.",
-   "skills": [
-    {
-     "title": "ML system design",
-     "section": "1 · Principles",
-     "description": "Frame problems, choose data and metrics, and design for production."
-    },
-    {
-     "title": "ML technical debt",
-     "section": "1 · Principles",
-     "description": "Recognise and avoid the hidden costs of ML systems."
-    },
-    {
-     "title": "ML in production",
-     "section": "2 · Practice",
-     "description": "Testing, deployment, monitoring, and iteration of ML products.",
-     "requires": [
-      "ML system design"
-     ]
-    },
-    {
-     "title": "ML pipelines and platforms",
-     "section": "3 · Platforms",
-     "description": "Automate training, tracking, and serving.",
-     "requires": [
-      "ML in production"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Designing Machine Learning Systems",
-     "kind": "book",
-     "by": "Chip Huyen",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "ML system design"
-    },
-    {
-     "title": "Rules of Machine Learning",
-     "kind": "site",
-     "by": "Martin Zinkevich, Google",
-     "free": true,
-     "url": "https://developers.google.com/machine-learning/guides/rules-of-ml",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "ML system design"
-    },
-    {
-     "title": "Hidden Technical Debt in Machine Learning Systems",
-     "kind": "paper",
-     "by": "Sculley et al., Google",
-     "free": true,
-     "url": "https://proceedings.neurips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html",
-     "section": "1 · Principles",
-     "requires": [],
-     "skill": "ML technical debt"
-    },
-    {
-     "title": "Made With ML",
-     "kind": "course",
-     "by": "Goku Mohandas",
-     "free": true,
-     "url": "https://madewithml.com/",
-     "section": "2 · Practice",
-     "requires": [
-      "Designing Machine Learning Systems"
-     ],
-     "skill": "ML in production"
-    },
-    {
-     "title": "MLOps Zoomcamp",
-     "kind": "course",
-     "by": "DataTalksClub",
-     "free": true,
-     "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
-     "section": "2 · Practice",
-     "requires": [],
-     "skill": "ML in production"
-    },
-    {
-     "title": "Full Stack Deep Learning",
-     "kind": "course",
-     "by": "FSDL",
-     "free": true,
-     "url": "https://fullstackdeeplearning.com/",
-     "section": "2 · Practice",
-     "requires": [],
-     "skill": "ML in production"
-    },
-    {
-     "title": "CS 329S: Machine Learning Systems Design",
-     "kind": "course",
-     "by": "Stanford",
-     "free": true,
-     "url": "https://stanford-cs329s.github.io/",
-     "section": "2 · Practice",
-     "requires": [
-      "Designing Machine Learning Systems"
-     ],
-     "skill": "ML system design"
-    },
-    {
-     "title": "Machine Learning in Production (17-445/645)",
-     "kind": "course",
-     "by": "Carnegie Mellon University, Christian Kästner",
-     "free": true,
-     "url": "https://mlip-cmu.github.io/",
-     "section": "2 · Practice",
-     "skill": "ML in production"
-    },
-    {
-     "title": "MLOps: continuous delivery and automation pipelines",
-     "kind": "site",
-     "by": "Google Cloud Architecture Center",
-     "free": true,
-     "url": "https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning",
-     "section": "3 · Platforms",
-     "requires": [
-      "Made With ML"
-     ],
-     "skill": "ML pipelines and platforms"
-    },
-    {
-     "title": "MLflow documentation",
-     "kind": "site",
-     "by": "MLflow, Linux Foundation",
-     "free": true,
-     "url": "https://mlflow.org/docs/latest/",
-     "section": "3 · Platforms",
-     "requires": [],
-     "skill": "ML pipelines and platforms"
-    },
-    {
-     "title": "Kubeflow documentation",
-     "kind": "site",
-     "by": "Kubeflow, CNCF",
-     "free": true,
-     "url": "https://www.kubeflow.org/docs/",
-     "section": "3 · Platforms",
-     "requires": [],
-     "skill": "ML pipelines and platforms"
-    }
-   ]
-  },
-  {
-   "id": "security",
-   "title": "Cyber security and DevSecOps",
-   "description": "Attack and defend: web security, cryptography, systems security, and security built into delivery.",
-   "skills": [
-    {
-     "title": "Security principles",
-     "section": "1 · Foundations",
-     "description": "Threats, policies, and how secure systems fail."
-    },
-    {
-     "title": "Systems security",
-     "section": "1 · Foundations",
-     "description": "Memory safety, isolation, and privilege separation."
-    },
-    {
-     "title": "Cryptography",
-     "section": "1 · Foundations",
-     "description": "Ciphers, MACs, key exchange, and how to use them correctly."
-    },
-    {
-     "title": "Web application security",
-     "section": "2 · Offence",
-     "description": "Find and fix injection, XSS, CSRF, and access-control flaws."
-    },
-    {
-     "title": "Offensive security",
-     "section": "2 · Offence",
-     "description": "Exploitation and penetration testing in labs."
-    },
-    {
-     "title": "Threat detection and defence",
-     "section": "3 · Defence",
-     "description": "Adversary techniques, frameworks, and hardening."
-    },
-    {
-     "title": "DevSecOps",
-     "section": "4 · DevSecOps",
-     "description": "Threat modelling and supply-chain security in delivery."
-    }
-   ],
-   "resources": [
-    {
-     "title": "Security Engineering, 3rd edition",
-     "kind": "book",
-     "by": "Ross Anderson",
-     "free": true,
-     "url": "https://www.cl.cam.ac.uk/~rja14/book.html",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Security principles"
-    },
-    {
-     "title": "Computer Systems Security (MIT 6.858)",
-     "kind": "course",
-     "by": "MIT OpenCourseWare",
-     "free": true,
-     "url": "https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Systems security"
-    },
-    {
-     "title": "Cryptography I",
-     "kind": "course",
-     "by": "Dan Boneh, Stanford on Coursera",
-     "free": true,
-     "url": "https://www.coursera.org/learn/crypto",
-     "section": "1 · Foundations",
-     "requires": [],
-     "skill": "Cryptography"
-    },
-    {
-     "title": "CS161: Computer Security",
-     "kind": "course",
-     "by": "UC Berkeley",
-     "free": true,
-     "url": "https://cs161.org/",
-     "section": "1 · Foundations",
-     "skill": "Systems security"
-    },
-    {
-     "title": "CS50's Introduction to Cybersecurity",
-     "kind": "course",
-     "by": "Harvard",
-     "free": true,
-     "url": "https://cs50.harvard.edu/cybersecurity/",
-     "section": "1 · Foundations",
-     "skill": "Security principles"
-    },
-    {
-     "title": "PortSwigger Web Security Academy",
-     "kind": "practice",
-     "by": "PortSwigger",
-     "free": true,
-     "url": "https://portswigger.net/web-security",
-     "section": "2 · Offence",
-     "requires": [],
-     "skill": "Web application security"
-    },
-    {
-     "title": "pwn.college",
-     "kind": "practice",
-     "by": "Arizona State University",
-     "free": true,
-     "url": "https://pwn.college/",
-     "section": "2 · Offence",
-     "requires": [],
-     "skill": "Offensive security"
-    },
-    {
-     "title": "TryHackMe",
-     "kind": "practice",
-     "by": "TryHackMe",
-     "free": false,
-     "url": "https://tryhackme.com/",
-     "section": "2 · Offence",
-     "requires": [],
-     "skill": "Offensive security"
-    },
-    {
-     "title": "Hack The Box",
-     "kind": "practice",
-     "by": "Hack The Box",
-     "free": false,
-     "url": "https://www.hackthebox.com/",
-     "section": "2 · Offence",
-     "requires": [
-      "TryHackMe"
-     ],
-     "skill": "Offensive security"
-    },
-    {
-     "title": "OWASP Application Security Verification Standard",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owasp.org/www-project-application-security-verification-standard/",
-     "section": "3 · Defence",
-     "requires": [
-      "PortSwigger Web Security Academy"
-     ],
-     "skill": "Web application security"
-    },
-    {
-     "title": "MITRE ATT&CK",
-     "kind": "site",
-     "by": "MITRE",
-     "free": true,
-     "url": "https://attack.mitre.org/",
-     "section": "3 · Defence",
-     "requires": [],
-     "skill": "Threat detection and defence"
-    },
-    {
-     "title": "NIST Cybersecurity Framework",
-     "kind": "site",
-     "by": "NIST",
-     "free": true,
-     "url": "https://www.nist.gov/cyberframework",
-     "section": "3 · Defence",
-     "requires": [],
-     "skill": "Threat detection and defence"
-    },
-    {
-     "title": "CIS Benchmarks",
-     "kind": "site",
-     "by": "Center for Internet Security",
-     "free": true,
-     "url": "https://www.cisecurity.org/cis-benchmarks",
-     "section": "3 · Defence",
-     "requires": [],
-     "skill": "Threat detection and defence"
-    },
-    {
-     "title": "OWASP DevSecOps Guideline",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owasp.org/www-project-devsecops-guideline/",
-     "section": "4 · DevSecOps",
-     "requires": [],
-     "skill": "DevSecOps"
-    },
-    {
-     "title": "SLSA: supply-chain levels for software artifacts",
-     "kind": "site",
-     "by": "OpenSSF",
-     "free": true,
-     "url": "https://slsa.dev/",
-     "section": "4 · DevSecOps",
-     "requires": [
-      "OWASP DevSecOps Guideline"
-     ],
-     "skill": "DevSecOps"
-    },
-    {
-     "title": "Threat Modeling Manifesto",
-     "kind": "site",
-     "by": "Threat Modeling Manifesto group",
-     "free": true,
-     "url": "https://www.threatmodelingmanifesto.org/",
-     "section": "4 · DevSecOps",
-     "requires": [],
-     "skill": "DevSecOps"
-    }
-   ]
-  },
-  {
-   "id": "cloud",
-   "title": "Cloud computing",
-   "description": "Design, build, and run systems on AWS, Google Cloud, and Azure, and keep the bill in check.",
-   "skills": [
-    {
-     "title": "Cloud fundamentals",
-     "section": "1 · Start",
-     "description": "Compute, storage, networking, and identity on a real cloud."
-    },
-    {
-     "title": "Cloud architecture",
-     "section": "2 · Architecture",
-     "description": "Design reliable, secure, and efficient cloud systems.",
-     "requires": [
-      "Cloud fundamentals"
-     ]
-    },
-    {
-     "title": "Infrastructure as code",
-     "section": "3 · Operate",
-     "description": "Provision cloud resources from versioned code."
-    },
-    {
-     "title": "Cloud cost management",
-     "section": "3 · Operate",
-     "description": "Understand and control the bill.",
-     "requires": [
-      "Cloud architecture"
-     ]
-    },
-    {
-     "title": "Cloud-native ecosystem",
-     "section": "3 · Operate",
-     "description": "The CNCF projects behind cloud-native platforms."
-    }
-   ],
-   "resources": [
-    {
-     "title": "The Cloud Resume Challenge",
-     "kind": "practice",
-     "by": "Forrest Brazeal",
-     "free": true,
-     "url": "https://cloudresumechallenge.dev/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Cloud fundamentals"
-    },
-    {
-     "title": "AWS Skill Builder",
-     "kind": "course",
-     "by": "Amazon Web Services",
-     "free": true,
-     "url": "https://skillbuilder.aws/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Cloud fundamentals"
-    },
-    {
-     "title": "Microsoft Learn training",
-     "kind": "course",
-     "by": "Microsoft",
-     "free": true,
-     "url": "https://learn.microsoft.com/en-us/training/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Cloud fundamentals"
-    },
-    {
-     "title": "Google Cloud Skills Boost",
-     "kind": "course",
-     "by": "Google Cloud",
-     "free": true,
-     "url": "https://www.cloudskillsboost.google/",
-     "section": "1 · Start",
-     "requires": [],
-     "skill": "Cloud fundamentals"
-    },
-    {
-     "title": "AWS Well-Architected Framework",
-     "kind": "site",
-     "by": "Amazon Web Services",
-     "free": true,
-     "url": "https://aws.amazon.com/architecture/well-architected/",
-     "section": "2 · Architecture",
-     "requires": [
-      "AWS Skill Builder"
-     ],
-     "skill": "Cloud architecture"
-    },
-    {
-     "title": "Google Cloud Architecture Center",
-     "kind": "site",
-     "by": "Google Cloud",
-     "free": true,
-     "url": "https://cloud.google.com/architecture",
-     "section": "2 · Architecture",
-     "requires": [],
-     "skill": "Cloud architecture"
-    },
-    {
-     "title": "Azure Architecture Center",
-     "kind": "site",
-     "by": "Microsoft",
-     "free": true,
-     "url": "https://learn.microsoft.com/en-us/azure/architecture/",
-     "section": "2 · Architecture",
-     "requires": [],
-     "skill": "Cloud architecture"
-    },
-    {
-     "title": "The Open Guide to AWS",
-     "kind": "site",
-     "by": "Open Guides community",
-     "free": true,
-     "url": "https://github.com/open-guides/og-aws",
-     "section": "2 · Architecture",
-     "requires": [],
-     "skill": "Cloud architecture"
-    },
-    {
-     "title": "Terraform tutorials",
-     "kind": "course",
-     "by": "HashiCorp",
-     "free": true,
-     "url": "https://developer.hashicorp.com/terraform/tutorials",
-     "section": "3 · Operate",
-     "requires": [],
-     "skill": "Infrastructure as code"
-    },
-    {
-     "title": "What is FinOps?",
-     "kind": "site",
-     "by": "FinOps Foundation",
-     "free": true,
-     "url": "https://www.finops.org/introduction/what-is-finops/",
-     "section": "3 · Operate",
-     "requires": [
-      "AWS Well-Architected Framework"
-     ],
-     "skill": "Cloud cost management"
-    },
-    {
-     "title": "Cloud Native Computing Foundation",
-     "kind": "site",
-     "by": "CNCF",
-     "free": true,
-     "url": "https://www.cncf.io/",
-     "section": "3 · Operate",
-     "requires": [],
-     "skill": "Cloud-native ecosystem"
-    }
-   ]
-  },
-  {
-   "id": "soft-skills",
-   "title": "Soft skills for engineers",
-   "description": "Learning, writing, focus, collaboration, and leadership: the skills that multiply the others.",
-   "skills": [
-    {
-     "title": "Learning how to learn",
-     "section": "1 · Learn",
-     "description": "Focus, chunking, and spaced practice."
-    },
-    {
-     "title": "Habit building",
-     "section": "1 · Learn",
-     "description": "Make good routines easy and bad ones hard."
-    },
-    {
-     "title": "Technical writing",
-     "section": "2 · Communicate",
-     "description": "Clear docs, design notes, and reviews."
-    },
-    {
-     "title": "Empathic communication",
-     "section": "2 · Communicate",
-     "description": "Listen, observe without judging, and ask for what you need."
-    },
-    {
-     "title": "Software craftsmanship",
-     "section": "3 · Craft",
-     "description": "Pragmatic habits of effective programmers."
-    },
-    {
-     "title": "Engineering leadership",
-     "section": "4 · Lead",
-     "description": "Lead people or lead technically.",
-     "requires": [
-      "Software craftsmanship"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Learning How to Learn",
-     "kind": "course",
-     "by": "Barbara Oakley & Terrence Sejnowski",
-     "free": true,
-     "url": "https://www.coursera.org/learn/learning-how-to-learn",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Learning how to learn"
-    },
-    {
-     "title": "Atomic Habits",
-     "kind": "book",
-     "by": "James Clear",
-     "free": false,
-     "url": "https://jamesclear.com/atomic-habits",
-     "section": "1 · Learn",
-     "requires": [],
-     "skill": "Habit building"
-    },
-    {
-     "title": "Technical Writing courses",
-     "kind": "course",
-     "by": "Google for Developers",
-     "free": true,
-     "url": "https://developers.google.com/tech-writing",
-     "section": "2 · Communicate",
-     "requires": [],
-     "skill": "Technical writing"
-    },
-    {
-     "title": "Nonviolent Communication",
-     "kind": "site",
-     "by": "Center for Nonviolent Communication",
-     "free": true,
-     "url": "https://www.cnvc.org/",
-     "section": "2 · Communicate",
-     "requires": [],
-     "skill": "Empathic communication"
-    },
-    {
-     "title": "The Pragmatic Programmer, 20th anniversary edition",
-     "kind": "book",
-     "by": "Thomas & Hunt",
-     "free": false,
-     "url": "https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/",
-     "section": "3 · Craft",
-     "requires": [],
-     "skill": "Software craftsmanship"
-    },
-    {
-     "title": "The Manager's Path",
-     "kind": "book",
-     "by": "Camille Fournier",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/the-managers-path/9781491973882/",
-     "section": "4 · Lead",
-     "requires": [
-      "The Pragmatic Programmer, 20th anniversary edition"
-     ],
-     "skill": "Engineering leadership"
-    },
-    {
-     "title": "The Staff Engineer's Path",
-     "kind": "book",
-     "by": "Tanya Reilly",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/the-staff-engineers/9781098118723/",
-     "section": "4 · Lead",
-     "requires": [
-      "The Pragmatic Programmer, 20th anniversary edition"
-     ],
-     "skill": "Engineering leadership"
-    }
-   ]
-  },
-  {
-   "id": "gitops",
-   "title": "GitOps",
-   "description": "Git as the single source of truth: declarative infrastructure, pull-based delivery, and drift correction on Kubernetes.",
-   "skills": [
-    {
-     "title": "Git workflows",
-     "section": "1 · Git",
-     "description": "Branches, merges, and reviews: Git as the source of truth."
-    },
-    {
-     "title": "Declarative Kubernetes configuration",
-     "section": "2 · Declarative",
-     "description": "Describe the desired state with manifests, overlays, and charts."
-    },
-    {
-     "title": "GitOps delivery",
-     "section": "3 · GitOps",
-     "description": "Pull-based reconciliation and drift correction.",
-     "requires": [
-      "Git workflows"
-     ]
-    },
-    {
-     "title": "Secrets and policy as code",
-     "section": "4 · Secrets and policy",
-     "description": "Keep secrets and rules in Git safely.",
-     "requires": [
-      "GitOps delivery"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "Pro Git",
-     "kind": "book",
-     "by": "Chacon & Straub",
-     "free": true,
-     "url": "https://git-scm.com/book/en/v2",
-     "section": "1 · Git",
-     "skill": "Git workflows"
-    },
-    {
-     "title": "Learn Git Branching",
-     "kind": "practice",
-     "by": "Peter Cottle",
-     "free": true,
-     "url": "https://learngitbranching.js.org/",
-     "section": "1 · Git",
-     "skill": "Git workflows"
-    },
-    {
-     "title": "Kubernetes tutorials",
-     "kind": "course",
-     "by": "Kubernetes project",
-     "free": true,
-     "url": "https://kubernetes.io/docs/tutorials/",
-     "section": "2 · Declarative",
-     "skill": "Declarative Kubernetes configuration"
-    },
-    {
-     "title": "Kustomize documentation",
-     "kind": "site",
-     "by": "Kubernetes SIG CLI",
-     "free": true,
-     "url": "https://kubectl.docs.kubernetes.io/",
-     "section": "2 · Declarative",
-     "requires": [
-      "Kubernetes tutorials"
-     ],
-     "skill": "Declarative Kubernetes configuration"
-    },
-    {
-     "title": "Helm documentation",
-     "kind": "site",
-     "by": "Helm, CNCF",
-     "free": true,
-     "url": "https://helm.sh/docs/",
-     "section": "2 · Declarative",
-     "requires": [
-      "Kubernetes tutorials"
-     ],
-     "skill": "Declarative Kubernetes configuration"
-    },
-    {
-     "title": "OpenGitOps principles",
-     "kind": "site",
-     "by": "CNCF OpenGitOps",
-     "free": true,
-     "url": "https://opengitops.dev/",
-     "section": "3 · GitOps",
-     "requires": [
-      "Pro Git"
-     ],
-     "skill": "GitOps delivery"
-    },
-    {
-     "title": "GitOps and Kubernetes",
-     "kind": "book",
-     "by": "Yuen, Matyushentsev, Ekenstam & Suen",
-     "free": false,
-     "url": "https://www.manning.com/books/gitops-and-kubernetes",
-     "section": "3 · GitOps",
-     "requires": [
-      "OpenGitOps principles"
-     ],
-     "skill": "GitOps delivery"
-    },
-    {
-     "title": "Argo CD documentation",
-     "kind": "site",
-     "by": "Argo Project",
-     "free": true,
-     "url": "https://argo-cd.readthedocs.io/",
-     "section": "3 · GitOps",
-     "requires": [
-      "OpenGitOps principles"
-     ],
-     "skill": "GitOps delivery"
-    },
-    {
-     "title": "Flux documentation",
-     "kind": "site",
-     "by": "Flux, CNCF",
-     "free": true,
-     "url": "https://fluxcd.io/flux/",
-     "section": "3 · GitOps",
-     "requires": [
-      "OpenGitOps principles"
-     ],
-     "skill": "GitOps delivery"
-    },
-    {
-     "title": "Sealed Secrets",
-     "kind": "site",
-     "by": "Bitnami",
-     "free": true,
-     "url": "https://github.com/bitnami-labs/sealed-secrets",
-     "section": "4 · Secrets and policy",
-     "requires": [
-      "Argo CD documentation"
-     ],
-     "skill": "Secrets and policy as code"
-    },
-    {
-     "title": "Open Policy Agent documentation",
-     "kind": "site",
-     "by": "OPA, CNCF",
-     "free": true,
-     "url": "https://www.openpolicyagent.org/docs/latest/",
-     "section": "4 · Secrets and policy",
-     "skill": "Secrets and policy as code"
-    }
-   ]
-  },
-  {
-   "id": "dataops",
-   "title": "DataOps",
-   "description": "Treat data pipelines like software: versioned, tested, orchestrated, observable, and delivered continuously.",
-   "skills": [
-    {
-     "title": "DataOps principles",
-     "section": "1 · Principles",
-     "description": "Agile, lean, and DevOps applied to data."
-    },
-    {
-     "title": "Data testing and versioning",
-     "section": "2 · Version and test",
-     "description": "Test transformations and version data alongside code."
-    },
-    {
-     "title": "Pipeline orchestration",
-     "section": "3 · Orchestrate",
-     "description": "Schedule and observe pipelines as code.",
-     "requires": [
-      "DataOps principles"
-     ]
-    },
-    {
-     "title": "Data observability and governance",
-     "section": "4 · Observe",
-     "description": "Lineage, ownership, and data products.",
-     "requires": [
-      "Pipeline orchestration"
-     ]
-    }
-   ],
-   "resources": [
-    {
-     "title": "The DataOps Manifesto",
-     "kind": "site",
-     "by": "DataOps community",
-     "free": true,
-     "url": "https://dataopsmanifesto.org/en/",
-     "section": "1 · Principles",
-     "skill": "DataOps principles"
-    },
-    {
-     "title": "Fundamentals of Data Engineering",
-     "kind": "book",
-     "by": "Joe Reis & Matt Housley",
-     "free": false,
-     "url": "https://www.oreilly.com/library/view/fundamentals-of-data/9781098108298/",
-     "section": "1 · Principles",
-     "skill": "DataOps principles"
-    },
-    {
-     "title": "dbt Learn",
-     "kind": "course",
-     "by": "dbt Labs",
-     "free": true,
-     "url": "https://learn.getdbt.com/",
-     "section": "2 · Version and test",
-     "skill": "Data testing and versioning"
-    },
-    {
-     "title": "Great Expectations documentation",
-     "kind": "site",
-     "by": "GX",
-     "free": true,
-     "url": "https://docs.greatexpectations.io/",
-     "section": "2 · Version and test",
-     "requires": [
-      "dbt Learn"
-     ],
-     "skill": "Data testing and versioning"
-    },
-    {
-     "title": "DVC documentation",
-     "kind": "site",
-     "by": "Iterative",
-     "free": true,
-     "url": "https://dvc.org/doc",
-     "section": "2 · Version and test",
-     "skill": "Data testing and versioning"
-    },
-    {
-     "title": "Apache Airflow documentation",
-     "kind": "site",
-     "by": "Apache Software Foundation",
-     "free": true,
-     "url": "https://airflow.apache.org/docs/",
-     "section": "3 · Orchestrate",
-     "requires": [
-      "The DataOps Manifesto"
-     ],
-     "skill": "Pipeline orchestration"
-    },
-    {
-     "title": "Dagster documentation",
-     "kind": "site",
-     "by": "Dagster Labs",
-     "free": true,
-     "url": "https://docs.dagster.io/",
-     "section": "3 · Orchestrate",
-     "requires": [
-      "The DataOps Manifesto"
-     ],
-     "skill": "Pipeline orchestration"
-    },
-    {
-     "title": "Data Engineering Zoomcamp",
-     "kind": "course",
-     "by": "DataTalksClub",
-     "free": true,
-     "url": "https://github.com/DataTalksClub/data-engineering-zoomcamp",
-     "section": "3 · Orchestrate",
-     "skill": "Pipeline orchestration"
-    },
-    {
-     "title": "OpenLineage",
-     "kind": "site",
-     "by": "LF AI & Data",
-     "free": true,
-     "url": "https://openlineage.io/",
-     "section": "4 · Observe",
-     "requires": [
-      "Apache Airflow documentation"
-     ],
-     "skill": "Data observability and governance"
-    },
-    {
-     "title": "Data Mesh principles",
-     "kind": "site",
-     "by": "Zhamak Dehghani on martinfowler.com",
-     "free": true,
-     "url": "https://martinfowler.com/articles/data-mesh-principles.html",
-     "section": "4 · Observe",
-     "skill": "Data observability and governance"
-    }
-   ]
-  },
-  {
-   "id": "devsecops",
-   "title": "DevSecOps",
-   "description": "Security built into every step of delivery: threat modelling, secure code, supply chain, and runtime defence.",
-   "skills": [
-    {
-     "title": "Secure development lifecycle",
-     "section": "1 · Principles",
-     "description": "Practices and maturity models for building software securely."
-    },
-    {
-     "title": "Threat modelling and secure design",
-     "section": "2 · Design",
-     "description": "Find design flaws before they ship."
-    },
-    {
-     "title": "Software supply-chain security",
-     "section": "3 · Supply chain",
-     "description": "Provenance, signing, and scanning of what you ship.",
-     "requires": [
-      "Secure development lifecycle"
-     ]
-    },
-    {
-     "title": "Runtime and infrastructure hardening",
-     "section": "4 · Runtime",
-     "description": "Secure containers and hosts in production."
-    }
-   ],
-   "resources": [
-    {
-     "title": "OWASP DevSecOps Guideline",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owasp.org/www-project-devsecops-guideline/",
-     "section": "1 · Principles",
-     "skill": "Secure development lifecycle"
-    },
-    {
-     "title": "NIST Secure Software Development Framework (SP 800-218)",
-     "kind": "paper",
-     "by": "NIST",
-     "free": true,
-     "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
-     "section": "1 · Principles",
-     "skill": "Secure development lifecycle"
-    },
-    {
-     "title": "OWASP SAMM",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://owaspsamm.org/",
-     "section": "1 · Principles",
-     "skill": "Secure development lifecycle"
-    },
-    {
-     "title": "Threat Modeling Manifesto",
-     "kind": "site",
-     "by": "Threat Modeling Manifesto group",
-     "free": true,
-     "url": "https://www.threatmodelingmanifesto.org/",
-     "section": "2 · Design",
-     "skill": "Threat modelling and secure design"
-    },
-    {
-     "title": "CS253: Web Security",
-     "kind": "course",
-     "by": "Stanford, Feross Aboukhadijeh",
-     "free": true,
-     "url": "https://web.stanford.edu/class/cs253/",
-     "section": "2 · Design",
-     "skill": "Threat modelling and secure design"
-    },
-    {
-     "title": "OWASP Cheat Sheet Series",
-     "kind": "site",
-     "by": "OWASP Foundation",
-     "free": true,
-     "url": "https://cheatsheetseries.owasp.org/",
-     "section": "2 · Design",
-     "skill": "Threat modelling and secure design"
-    },
-    {
-     "title": "SLSA: supply-chain levels for software artifacts",
-     "kind": "site",
-     "by": "OpenSSF",
-     "free": true,
-     "url": "https://slsa.dev/",
-     "section": "3 · Supply chain",
-     "requires": [
-      "OWASP DevSecOps Guideline"
-     ],
-     "skill": "Software supply-chain security"
-    },
-    {
-     "title": "Sigstore documentation",
-     "kind": "site",
-     "by": "OpenSSF",
-     "free": true,
-     "url": "https://docs.sigstore.dev/",
-     "section": "3 · Supply chain",
-     "requires": [
-      "SLSA: supply-chain levels for software artifacts"
-     ],
-     "skill": "Software supply-chain security"
-    },
-    {
-     "title": "Trivy documentation",
-     "kind": "site",
-     "by": "Aqua Security",
-     "free": true,
-     "url": "https://trivy.dev/",
-     "section": "3 · Supply chain",
-     "skill": "Software supply-chain security"
-    },
-    {
-     "title": "Container Security",
-     "kind": "book",
-     "by": "Liz Rice",
-     "free": false,
-     "url": "https://containersecurity.tech/",
-     "section": "4 · Runtime",
-     "skill": "Runtime and infrastructure hardening"
-    },
-    {
-     "title": "CIS Benchmarks",
-     "kind": "site",
-     "by": "Center for Internet Security",
-     "free": true,
-     "url": "https://www.cisecurity.org/cis-benchmarks",
-     "section": "4 · Runtime",
-     "skill": "Runtime and infrastructure hardening"
-    }
-   ]
-  }
- ]
+	"attribution": "A roadmap written by the Axon maintainer for their own study, with the courses, books, and certifications it uses. Each resource belongs to its authors; Axon stores only titles and links. Free resources are marked.",
+	"roadmaps": [
+		{
+			"id": "top5-engineer",
+			"title": "Top-5% in 26 engineering domains",
+			"description": "Top 5% in all of: CS, DSA, OS, data engineering, data analysis, machine learning, maths, statistics, probability, web development, DevOps, DataOps, Linux, C/C++, Java, Rust, Python, software engineering, Bash, network, API design, containerization (Docker, Podman, Kubernetes), cloud (Google, AWS, Azure), cybersecurity, databases, and database administration.\n\n14 phases, about 3,700 hours at 22 hours a week, from 2026-10-05 to 2030-02-24. Each phase has a project that builds on the previous one, and each domain has an external proof. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday maths, Tuesday CS, Wednesday the language track, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
+			"skills": [
+				{
+					"title": "Computer science",
+					"section": "1 · Foundations",
+					"description": "Architecture, compilers, theory, and distributed systems (phases 2, 3, 6, 13). Proof: nand2tetris 12 projects, CS:APP labs, MIT 6.5840 all labs, both Crafting Interpreters interpreters, 18.404 problem sets.",
+					"assess": "cs"
+				},
+				{
+					"title": "Data structures and algorithms",
+					"section": "1 · Foundations",
+					"description": "Phases 1 and 2, then 3–5 problems a week in every phase. Proof: at least 400 LeetCode problems and a contest rating in the top 5%, shown on the profile.",
+					"assess": "dsa"
+				},
+				{
+					"title": "Maths",
+					"section": "1 · Foundations",
+					"description": "Discrete maths, calculus, linear algebra, theory (phases 1, 2, 3, 11, 13). Proof: 6.042J, 18.01, 18.02, 18.06, and 18.404 finals at 80% or more.",
+					"assess": "maths"
+				},
+				{
+					"title": "Probability",
+					"section": "1 · Foundations",
+					"description": "Phases 3 and 5. Proof: Stat 110 final at 80% or more.",
+					"assess": "maths"
+				},
+				{
+					"title": "Statistics",
+					"section": "1 · Foundations",
+					"description": "Phases 5, 6, 7. Proof: 18.650 final at 80% or more, Bayesian and experimentation projects.",
+					"assess": "data-science",
+					"requires": [
+						"Probability"
+					]
+				},
+				{
+					"title": "C and C++",
+					"section": "2 · Systems",
+					"description": "Phases 2, 5, 13. Proof: CS:APP labs, all BusTub projects (C++), the sqlc-cpp compiler clang-tidy clean.",
+					"assess": "c-cpp"
+				},
+				{
+					"title": "Operating systems",
+					"section": "2 · Systems",
+					"description": "Phases 2 and 3. Proof: every MIT 6.1810 xv6 lab passes make grade.",
+					"assess": "os",
+					"requires": [
+						"C and C++"
+					]
+				},
+				{
+					"title": "Linux",
+					"section": "2 · Systems",
+					"description": "Phases 1 and 4. Proof: LFCS.",
+					"assess": "linux-bash"
+				},
+				{
+					"title": "Bash",
+					"section": "2 · Systems",
+					"description": "Phases 1 and 4. Proof: OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.",
+					"assess": "linux-bash",
+					"requires": [
+						"Linux"
+					]
+				},
+				{
+					"title": "Network",
+					"section": "2 · Systems",
+					"description": "Phases 3, 4, 12. Proof: CCNA.",
+					"assess": "networking"
+				},
+				{
+					"title": "Python",
+					"section": "3 · Languages",
+					"description": "Phase 1. Proof: pipekit on PyPI and merged pull requests in Python open source.",
+					"assess": "python"
+				},
+				{
+					"title": "Java",
+					"section": "3 · Languages",
+					"description": "Phase 10. Proof: OCP Java SE 21 (1Z0-830).",
+					"assess": "java"
+				},
+				{
+					"title": "Rust",
+					"section": "3 · Languages",
+					"description": "Phase 5. Proof: rustkv and a merged pull request in a Rust data project.",
+					"assess": "rust"
+				},
+				{
+					"title": "Databases",
+					"section": "4 · Data",
+					"description": "Phases 5 and 6. Proof: all CMU 15-445 projects and an advanced SQL portfolio.",
+					"assess": "databases"
+				},
+				{
+					"title": "Database administration",
+					"section": "4 · Data",
+					"description": "Phases 5 and 6. Proof: PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.",
+					"assess": "databases",
+					"requires": [
+						"Databases"
+					]
+				},
+				{
+					"title": "Data engineering",
+					"section": "4 · Data",
+					"description": "Phases 1, 5, 6, 7. Proof: streamhouse in production on Kubernetes and at least 3 merged pull requests in data engineering open source (Airflow, dbt, Iceberg, DuckDB, Polars…).",
+					"assess": "data-engineering"
+				},
+				{
+					"title": "DataOps",
+					"section": "4 · Data",
+					"description": "Phase 7. Proof: contracts, data CI/CD, and observability in streamhouse, and a merged pull request in Great Expectations or OpenLineage.",
+					"assess": "dataops",
+					"requires": [
+						"Data engineering"
+					]
+				},
+				{
+					"title": "Data analysis",
+					"section": "4 · Data",
+					"description": "Phases 7 and 11. Proof: 3 published analyses (EDA, visualisation, dashboard, A/B test) and a Kaggle silver.",
+					"assess": "data-analysis",
+					"requires": [
+						"Statistics"
+					]
+				},
+				{
+					"title": "Machine learning",
+					"section": "4 · Data",
+					"description": "Phases 11 and 14. Proof: a Kaggle silver medal in a competition of 1,000+ teams (the top 5%).",
+					"assess": "machine-learning",
+					"requires": [
+						"Statistics"
+					]
+				},
+				{
+					"title": "Software engineering",
+					"section": "5 · Software",
+					"description": "Phases 1 and 10. Proof: design docs and reviewed open-source pull requests, Software Engineering at Google practices applied.",
+					"assess": "system-design"
+				},
+				{
+					"title": "API design",
+					"section": "5 · Software",
+					"description": "Phase 10. Proof: REST and gRPC APIs clean against the Google AIP and Zalando rules, with a public design doc.",
+					"assess": "api-design"
+				},
+				{
+					"title": "Web development",
+					"section": "5 · Software",
+					"description": "Phase 10. Proof: Full Stack Open, every part, with the certificate.",
+					"assess": "web"
+				},
+				{
+					"title": "Containerization",
+					"section": "6 · Infrastructure",
+					"description": "Docker, Podman, Kubernetes (phases 8 and 12). Proof: CKA and CKS, and a rootless Podman build pipeline.",
+					"assess": "containers",
+					"requires": [
+						"Linux"
+					]
+				},
+				{
+					"title": "DevOps",
+					"section": "6 · Infrastructure",
+					"description": "Phases 8 and 9. Proof: CKA and your own pipelines at DORA elite level (deploys on demand, lead time under an hour).",
+					"assess": "devops",
+					"requires": [
+						"Containerization"
+					]
+				},
+				{
+					"title": "Cloud",
+					"section": "6 · Infrastructure",
+					"description": "Google Cloud, AWS, Azure (phases 8 and 9). Proof: AWS SAA, GCP ACE, and AZ-104.",
+					"assess": "cloud",
+					"requires": [
+						"Containerization"
+					]
+				},
+				{
+					"title": "Cybersecurity",
+					"section": "7 · Security",
+					"description": "Phase 12. Proof: BSCP, every PortSwigger lab, and the MIT 6.566 labs.",
+					"assess": "security",
+					"requires": [
+						"Network"
+					]
+				},
+				{
+					"title": "Technical writing",
+					"section": "8 · Communication",
+					"description": "Design docs, 14 project write-ups, and permanent notes a stranger can follow.",
+					"assess": "",
+					"kind": "soft"
+				},
+				{
+					"title": "Explaining simply",
+					"section": "8 · Communication",
+					"description": "Feynman tests every three months: explain each idea to a twelve-year-old, then study the gaps.",
+					"assess": "",
+					"kind": "soft"
+				},
+				{
+					"title": "Code review and open source",
+					"section": "9 · Collaboration",
+					"description": "Reviewed, merged pull requests in projects other people maintain.",
+					"assess": "",
+					"kind": "soft"
+				},
+				{
+					"title": "Consistency",
+					"section": "10 · Self-management",
+					"description": "A daily study block with a streak and earned rest days: never miss twice.",
+					"assess": "",
+					"kind": "soft"
+				},
+				{
+					"title": "Planning and reflection",
+					"section": "10 · Self-management",
+					"description": "A weekly reflection and a monthly roadmap check: hours against plan, the matrix, the next phase resized.",
+					"assess": "",
+					"kind": "soft"
+				},
+				{
+					"title": "Learning how to learn",
+					"section": "10 · Self-management",
+					"description": "Literature notes, permanent notes, spaced tests, interleaving, and a running project.",
+					"assess": "",
+					"kind": "soft"
+				}
+			],
+			"resources": [
+				{
+					"title": "MIT 6.006 Introduction to Algorithms",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "MIT 6.042J Mathematics for Computer Science",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Fluent Python, 2nd edition",
+					"kind": "book",
+					"by": "Luciano Ramalho",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/-/9781492056348",
+					"section": "3 · Languages",
+					"skill": "Python"
+				},
+				{
+					"title": "Cosmic Python: Architecture Patterns with Python",
+					"kind": "book",
+					"by": "Harry Percival and Bob Gregory",
+					"free": true,
+					"url": "https://cosmicpython.com/",
+					"section": "5 · Software",
+					"skill": "Software engineering"
+				},
+				{
+					"title": "The Linux Command Line",
+					"kind": "book",
+					"by": "William Shotts",
+					"free": true,
+					"url": "https://linuxcommand.org/tlcl.php",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "The Missing Semester of Your CS Education",
+					"kind": "course",
+					"by": "MIT CSAIL",
+					"free": true,
+					"url": "https://missing.csail.mit.edu/",
+					"section": "2 · Systems",
+					"skill": "Bash"
+				},
+				{
+					"title": "BashGuide",
+					"kind": "site",
+					"by": "Greg's Wiki",
+					"free": true,
+					"url": "https://mywiki.wooledge.org/BashGuide",
+					"section": "2 · Systems",
+					"skill": "Bash"
+				},
+				{
+					"title": "BashPitfalls",
+					"kind": "site",
+					"by": "Greg's Wiki",
+					"free": true,
+					"url": "https://mywiki.wooledge.org/BashPitfalls",
+					"section": "2 · Systems",
+					"skill": "Bash"
+				},
+				{
+					"title": "ShellCheck",
+					"kind": "practice",
+					"by": "Vidar Holen",
+					"free": true,
+					"url": "https://www.shellcheck.net/",
+					"section": "2 · Systems",
+					"skill": "Bash"
+				},
+				{
+					"title": "OverTheWire wargames: Bandit",
+					"kind": "practice",
+					"by": "OverTheWire",
+					"free": true,
+					"url": "https://overthewire.org/wargames/",
+					"section": "2 · Systems",
+					"skill": "Bash"
+				},
+				{
+					"title": "Hello Algo",
+					"kind": "book",
+					"by": "krahets and contributors",
+					"free": true,
+					"url": "https://github.com/krahets/hello-algo",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "Nand to Tetris",
+					"kind": "course",
+					"by": "Noam Nisan and Shimon Schocken",
+					"free": true,
+					"url": "https://www.nand2tetris.org/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
+					"title": "Computer Systems: A Programmer's Perspective, 3rd edition, and its labs",
+					"kind": "book",
+					"by": "Randal Bryant and David O'Hallaron",
+					"free": false,
+					"url": "https://csapp.cs.cmu.edu/3e/labs.html",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "Modern C",
+					"kind": "book",
+					"by": "Jens Gustedt",
+					"free": true,
+					"url": "https://gustedt.gitlabpages.inria.fr/modern-c/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "Algorithms",
+					"kind": "book",
+					"by": "Jeff Erickson",
+					"free": true,
+					"url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "MIT 18.01SC Single Variable Calculus",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "MIT 18.02SC Multivariable Calculus",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Exo7: exercises in French",
+					"kind": "practice",
+					"by": "Exo7",
+					"free": true,
+					"url": "http://exo7.emath.fr/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Operating Systems: Three Easy Pieces",
+					"kind": "book",
+					"by": "Remzi and Andrea Arpaci-Dusseau",
+					"free": true,
+					"url": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
+					"title": "MIT 6.1810 Operating System Engineering (xv6 labs)",
+					"kind": "course",
+					"by": "MIT PDOS",
+					"free": true,
+					"url": "https://pdos.csail.mit.edu/6.1810/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
+					"title": "Computer Networking: A Top-Down Approach, with the Wireshark labs",
+					"kind": "book",
+					"by": "James Kurose and Keith Ross",
+					"free": false,
+					"url": "https://gaia.cs.umass.edu/kurose_ross/index.php",
+					"section": "2 · Systems",
+					"skill": "Network"
+				},
+				{
+					"title": "Beej's Guide to Network Programming",
+					"kind": "book",
+					"by": "Brian Hall",
+					"free": true,
+					"url": "https://beej.us/guide/bgnet/",
+					"section": "2 · Systems",
+					"skill": "Network"
+				},
+				{
+					"title": "MIT 18.06SC Linear Algebra",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Stat 110: Probability",
+					"kind": "course",
+					"by": "Joe Blitzstein, Harvard",
+					"free": true,
+					"url": "https://stat110.hsites.harvard.edu/",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
+					"title": "Introduction to Probability",
+					"kind": "book",
+					"by": "Joe Blitzstein and Jessica Hwang",
+					"free": true,
+					"url": "http://probabilitybook.net",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
+					"title": "UNIX and Linux System Administration Handbook, 5th edition",
+					"kind": "book",
+					"by": "Evi Nemeth and others",
+					"free": false,
+					"url": "https://www.pearson.com/en-us/subject-catalog/p/Nemeth-UNIX-and-Linux-System-Administration-Handbook-5th-Edition/P200000000513",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "LFCS: Linux Foundation Certified System Administrator",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "Jeremy's IT Lab free CCNA course",
+					"kind": "video",
+					"by": "Jeremy's IT Lab",
+					"free": true,
+					"url": "https://github.com/dadavidson/CCNA-200-301-Course-Jeremys-IT-Lab",
+					"section": "2 · Systems",
+					"skill": "Network"
+				},
+				{
+					"title": "CCNA exam topics",
+					"kind": "site",
+					"by": "Cisco",
+					"free": true,
+					"url": "https://learningnetwork.cisco.com/s/ccna-exam-topics",
+					"section": "2 · Systems",
+					"skill": "Network"
+				},
+				{
+					"title": "CMU 15-445/645 Database Systems, with BusTub",
+					"kind": "course",
+					"by": "Andy Pavlo, Carnegie Mellon",
+					"free": true,
+					"url": "https://15445.courses.cs.cmu.edu/fall2025/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
+					"title": "Designing Data-Intensive Applications, 2nd edition",
+					"kind": "book",
+					"by": "Martin Kleppmann",
+					"free": false,
+					"url": "https://martin.kleppmann.com/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
+					"title": "PostgreSQL 14 Internals",
+					"kind": "book",
+					"by": "Egor Rogov",
+					"free": true,
+					"url": "https://edu.postgrespro.com/postgresql_internals-14_parts1-4_en.pdf",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
+					"title": "The Rust Programming Language",
+					"kind": "book",
+					"by": "Steve Klabnik and Carol Nichols",
+					"free": true,
+					"url": "https://doc.rust-lang.org/stable/book/",
+					"section": "3 · Languages",
+					"skill": "Rust"
+				},
+				{
+					"title": "Rustlings",
+					"kind": "practice",
+					"by": "The Rust community",
+					"free": true,
+					"url": "https://github.com/rust-lang/rustlings",
+					"section": "3 · Languages",
+					"skill": "Rust"
+				},
+				{
+					"title": "MIT 18.650 Statistics for Applications",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-650-statistics-for-applications-fall-2016/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "MIT 6.5840 Distributed Systems",
+					"kind": "course",
+					"by": "MIT PDOS",
+					"free": true,
+					"url": "https://pdos.csail.mit.edu/6.824/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
+					"title": "Use The Index, Luke",
+					"kind": "site",
+					"by": "Markus Winand",
+					"free": true,
+					"url": "https://use-the-index-luke.com/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
+					"title": "MySQL 8.4 Reference Manual",
+					"kind": "site",
+					"by": "Oracle",
+					"free": true,
+					"url": "https://dev.mysql.com/doc/refman/8.4/en/",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
+					"title": "MongoDB University",
+					"kind": "course",
+					"by": "MongoDB",
+					"free": true,
+					"url": "https://learn.mongodb.com/",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
+					"title": "Redis University",
+					"kind": "course",
+					"by": "Redis",
+					"free": true,
+					"url": "https://redis.io/tutorials/university/",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
+					"title": "Apache Cassandra documentation",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://cassandra.apache.org/doc/latest/",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
+					"title": "Think Bayes 2",
+					"kind": "book",
+					"by": "Allen Downey",
+					"free": true,
+					"url": "https://allendowney.github.io/ThinkBayes2/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "Fundamentals of Data Engineering",
+					"kind": "book",
+					"by": "Joe Reis and Matt Housley",
+					"free": false,
+					"url": "https://books.google.com/books/about/Fundamentals_of_Data_Engineering.html?id=Z_TFzgEACAAJ",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "Apache Kafka documentation",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://kafka.apache.org/documentation/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "Spark Structured Streaming guide",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://spark.apache.org/docs/latest/streaming/index.html",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "Apache Iceberg table spec",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://iceberg.apache.org/spec/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "OpenLineage documentation",
+					"kind": "site",
+					"by": "OpenLineage",
+					"free": true,
+					"url": "https://openlineage.io/docs/",
+					"section": "4 · Data",
+					"skill": "DataOps"
+				},
+				{
+					"title": "GX Core documentation",
+					"kind": "site",
+					"by": "Great Expectations",
+					"free": true,
+					"url": "https://docs.greatexpectations.io/docs/core/introduction/gx_overview/",
+					"section": "4 · Data",
+					"skill": "DataOps"
+				},
+				{
+					"title": "Python for Data Analysis, 3rd edition",
+					"kind": "book",
+					"by": "Wes McKinney",
+					"free": true,
+					"url": "https://wesmckinney.com/book/",
+					"section": "4 · Data",
+					"skill": "Data analysis"
+				},
+				{
+					"title": "Think Stats, 3rd edition",
+					"kind": "book",
+					"by": "Allen Downey",
+					"free": true,
+					"url": "https://allendowney.github.io/ThinkStats/",
+					"section": "4 · Data",
+					"skill": "Data analysis"
+				},
+				{
+					"title": "Fundamentals of Data Visualization",
+					"kind": "book",
+					"by": "Claus Wilke",
+					"free": true,
+					"url": "https://clauswilke.com/dataviz",
+					"section": "4 · Data",
+					"skill": "Data analysis"
+				},
+				{
+					"title": "Kubernetes documentation",
+					"kind": "site",
+					"by": "The Kubernetes project",
+					"free": true,
+					"url": "https://kubernetes.io/docs/home/",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "Kubernetes The Hard Way",
+					"kind": "practice",
+					"by": "Kelsey Hightower",
+					"free": true,
+					"url": "https://github.com/kelseyhightower/kubernetes-the-hard-way",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "Docker: get started",
+					"kind": "site",
+					"by": "Docker",
+					"free": true,
+					"url": "https://docs.docker.com/get-started/",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "Podman tutorials",
+					"kind": "site",
+					"by": "The Podman project",
+					"free": true,
+					"url": "https://docs.podman.io/en/latest/Tutorials.html",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "CKA: Certified Kubernetes Administrator",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "Terraform tutorials",
+					"kind": "course",
+					"by": "HashiCorp",
+					"free": true,
+					"url": "https://developer.hashicorp.com/terraform/tutorials",
+					"section": "6 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "Google SRE books",
+					"kind": "book",
+					"by": "Google",
+					"free": true,
+					"url": "https://sre.google/books/",
+					"section": "6 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "The DevOps Handbook, 2nd edition",
+					"kind": "book",
+					"by": "Gene Kim, Jez Humble, Patrick Debois, John Willis, Nicole Forsgren",
+					"free": false,
+					"url": "https://itrevolution.com/product/the-devops-handbook-second-edition/",
+					"section": "6 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "AWS Certified Solutions Architect – Associate exam guide",
+					"kind": "site",
+					"by": "Amazon Web Services",
+					"free": true,
+					"url": "https://d1.awsstatic.com/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide_C03.pdf",
+					"section": "6 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Google Skills (formerly Cloud Skills Boost)",
+					"kind": "course",
+					"by": "Google Cloud",
+					"free": true,
+					"url": "https://www.skills.google/",
+					"section": "6 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Associate Cloud Engineer certification",
+					"kind": "site",
+					"by": "Google Cloud",
+					"free": true,
+					"url": "https://cloud.google.com/learn/certification/cloud-engineer",
+					"section": "6 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "AZ-104 study guide",
+					"kind": "site",
+					"by": "Microsoft Learn",
+					"free": true,
+					"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
+					"section": "6 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "dev.java: learn Java",
+					"kind": "site",
+					"by": "Oracle",
+					"free": true,
+					"url": "https://dev.java/learn/",
+					"section": "3 · Languages",
+					"skill": "Java"
+				},
+				{
+					"title": "Effective Java, 3rd edition",
+					"kind": "book",
+					"by": "Joshua Bloch",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/",
+					"section": "3 · Languages",
+					"skill": "Java"
+				},
+				{
+					"title": "Google API Improvement Proposals",
+					"kind": "site",
+					"by": "Google",
+					"free": true,
+					"url": "https://google.aip.dev/1",
+					"section": "5 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "Zalando RESTful API Guidelines",
+					"kind": "site",
+					"by": "Zalando",
+					"free": true,
+					"url": "https://opensource.zalando.com/restful-api-guidelines/",
+					"section": "5 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "Full Stack Open",
+					"kind": "course",
+					"by": "University of Helsinki",
+					"free": true,
+					"url": "https://fullstackopen.com/en/",
+					"section": "5 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "MDN: learn web development",
+					"kind": "site",
+					"by": "Mozilla",
+					"free": true,
+					"url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+					"section": "5 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "Software Engineering at Google",
+					"kind": "book",
+					"by": "Titus Winters, Tom Manshreck, Hyrum Wright",
+					"free": true,
+					"url": "https://abseil.io/resources/swe-book",
+					"section": "5 · Software",
+					"skill": "Software engineering"
+				},
+				{
+					"title": "An Introduction to Statistical Learning with Python",
+					"kind": "book",
+					"by": "Gareth James and others",
+					"free": true,
+					"url": "https://www.statlearning.com/",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Mathematics for Machine Learning",
+					"kind": "book",
+					"by": "Marc Deisenroth, Aldo Faisal, Cheng Soon Ong",
+					"free": true,
+					"url": "https://mml-book.github.io/",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Stanford CS229 Machine Learning notes",
+					"kind": "course",
+					"by": "Stanford",
+					"free": true,
+					"url": "https://cs229.stanford.edu/",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Neural Networks: Zero to Hero",
+					"kind": "video",
+					"by": "Andrej Karpathy",
+					"free": true,
+					"url": "https://karpathy.ai/zero-to-hero.html",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Practical Deep Learning for Coders",
+					"kind": "course",
+					"by": "fast.ai",
+					"free": true,
+					"url": "https://course.fast.ai/",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Hands-On Machine Learning with Scikit-Learn and PyTorch",
+					"kind": "book",
+					"by": "Aurélien Géron",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9798341607972/colophon01.html",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Designing Machine Learning Systems",
+					"kind": "book",
+					"by": "Chip Huyen",
+					"free": false,
+					"url": "https://github.com/chiphuyen/dmls-book",
+					"section": "4 · Data",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "MIT 6.566 Computer Systems Security",
+					"kind": "course",
+					"by": "MIT CSAIL",
+					"free": true,
+					"url": "https://css.csail.mit.edu/6.5660/2024/",
+					"section": "7 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "PortSwigger Web Security Academy",
+					"kind": "practice",
+					"by": "PortSwigger",
+					"free": true,
+					"url": "https://portswigger.net/web-security",
+					"section": "7 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "Burp Suite Certified Practitioner",
+					"kind": "site",
+					"by": "PortSwigger",
+					"free": false,
+					"url": "https://portswigger.net/web-security/certification",
+					"section": "7 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "CKS: Certified Kubernetes Security Specialist",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/",
+					"section": "6 · Infrastructure",
+					"skill": "Containerization"
+				},
+				{
+					"title": "LearnCpp",
+					"kind": "site",
+					"by": "Alex",
+					"free": true,
+					"url": "https://www.learncpp.com/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "A Tour of C++, 3rd edition",
+					"kind": "book",
+					"by": "Bjarne Stroustrup",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/a-tour-of/9780136823575/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "C++ Core Guidelines",
+					"kind": "site",
+					"by": "Bjarne Stroustrup and Herb Sutter",
+					"free": true,
+					"url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "Crafting Interpreters",
+					"kind": "book",
+					"by": "Robert Nystrom",
+					"free": true,
+					"url": "https://www.craftinginterpreters.com/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
+					"title": "MIT 18.404J Theory of Computation",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				}
+			],
+			"plan": {
+				"start": "2026-10-05",
+				"end": "2030-02-24",
+				"hours_per_week": "22-26",
+				"budget": "200 EUR/month",
+				"note_path": "Roadmaps/top5-engineer.md",
+				"goal": {
+					"title": "Top-5% in 26 engineering domains",
+					"outcome": "By 2030-02-24, every domain has its proof (the full matrix is in the roadmap):\n\n- [ ] CS: nand2tetris 1–12 · CS:APP labs · MIT 6.5840 all labs · Crafting\n      Interpreters (jlox + clox) · 18.404 problem sets\n- [ ] DSA: ≥ 400 LeetCode problems, contest rating top 5%\n- [ ] OS: all xv6 (MIT 6.1810) labs\n- [ ] Data engineering: streamhouse in production on K8s · ≥ 3 merged PRs in DE\n      OSS\n- [ ] Data analysis: 3 published analyses (EDA, viz, dashboard, A/B)\n- [ ] Machine learning: Kaggle silver in a 1000+ team competition\n- [ ] Maths: 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%\n- [ ] Stats: 18.650 final ≥ 80% · Bayesian A/B project\n- [ ] Probability: Stat 110 final ≥ 80%\n- [ ] Web development: Full Stack Open, all parts\n- [ ] DevOps: CKA · DORA-elite pipelines\n- [ ] DataOps: contracts + data CI/CD + observability · merged PR in GX or\n      OpenLineage\n- [ ] Linux: LFCS\n- [ ] C/C++: CS:APP labs · all BusTub projects · sqlc-cpp clang-tidy clean\n- [ ] Java: OCP Java SE 21 (1Z0-830)\n- [ ] Rust: rustkv · merged PR in a Rust project\n- [ ] Python: pipekit on PyPI · merged PRs in Python OSS\n- [ ] Software engineering: public design docs + reviewed OSS PRs\n- [ ] Bash: OverTheWire Bandit 0–33 · tested ShellCheck-clean library\n- [ ] Network: CCNA\n- [ ] API design: lint-clean REST + gRPC APIs with a public design doc\n- [ ] Containerization: CKA + CKS · rootless Podman pipeline\n- [ ] Cloud: AWS SAA + GCP ACE + AZ-104\n- [ ] Cybersecurity: BSCP · all PortSwigger labs · MIT 6.566 labs\n- [ ] Databases: all CMU 15-445 projects · advanced SQL portfolio\n- [ ] Database administration: PostgreSQL, MySQL, MongoDB, Redis, Cassandra\n      runbooks with recorded drills\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
+				},
+				"phases": [
+					{
+						"n": 1,
+						"slug": "p01-python-dsa-linux",
+						"title": "Phase 1: Python, DSA I, discrete maths, Bash & Linux CLI",
+						"start": "2026-10-05",
+						"end": "2026-12-27",
+						"tracks": "M = MIT 6.042J discrete maths · C = MIT 6.006 algorithms · L = Fluent Python + Cosmic Python · R = TLCL + BashGuide + Missing Semester",
+						"domains": [
+							"Python",
+							"Data structures and algorithms",
+							"Maths",
+							"Software engineering",
+							"Bash",
+							"Linux",
+							"Data engineering"
+						],
+						"project": {
+							"slug": "pipekit",
+							"title": "pipekit: mini orchestrator in Python",
+							"outcome": "Pip-installable mini Airflow: DAG model, topo-sort scheduler, retries, CLI, plugins. mypy strict, pytest + hypothesis ≥ 90% coverage, GitHub Actions CI, Cosmic Python architecture."
+						},
+						"exit": [
+							{
+								"title": "pipekit v0.1 released, CI green, coverage ≥ 90%",
+								"parts": [
+									"Repository with uv, pytest, mypy, ruff, and GitHub Actions CI",
+									"DAG model and topological sort with hypothesis tests",
+									"Scheduler with retries",
+									"CLI and plugins",
+									"Release v0.1 on PyPI"
+								]
+							},
+							{
+								"title": "6.006 problem sets done"
+							},
+							{
+								"title": "6.042J proofs, counting, and graph problem sets done"
+							},
+							{
+								"title": "60 LeetCode (≥ 30 medium)"
+							},
+							{
+								"title": "Topo-sort correctness proof (permanent note)"
+							},
+							{
+								"title": "ShellCheck-clean dev-machine bootstrap script"
+							},
+							{
+								"title": "OverTheWire Bandit 0–15"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "ready_set_boole",
+								"hours": 25,
+								"note": "Boolean algebra and sets, pairs with 6.042J."
+							},
+							{
+								"title": "42 Python piscine modules, checked with Germinette",
+								"hours": 30,
+								"optional": true
+							}
+						]
+					},
+					{
+						"n": 2,
+						"slug": "p02-systems-c-calculus",
+						"title": "Phase 2: Computer architecture, C & systems, DSA II, calculus",
+						"start": "2026-12-28",
+						"end": "2027-03-21",
+						"tracks": "M = 18.01SC → 18.02SC calculus (+ Exo7) · C = CS:APP + labs; Nand to Tetris 1–6 · L = Modern C · R = Erickson Algorithms",
+						"domains": [
+							"Computer science",
+							"C and C++",
+							"Operating systems",
+							"Data structures and algorithms",
+							"Maths"
+						],
+						"project": {
+							"slug": "colstore-c",
+							"title": "colstore-c: columnar storage in C",
+							"outcome": "CSV → columnar binary (mmap, dictionary/RLE), benchmarked against pandas and DuckDB. Built on your own libft + get_next_line."
+						},
+						"exit": [
+							{
+								"title": "Nand to Tetris projects 1–6"
+							},
+							{
+								"title": "CS:APP labs",
+								"parts": [
+									"data lab",
+									"bomb lab",
+									"attack lab",
+									"cache lab",
+									"shell lab",
+									"malloc lab"
+								]
+							},
+							{
+								"title": "colstore-c handles 1 GB CSV, ASan + valgrind clean, benchmark write-up"
+							},
+							{
+								"title": "Erickson greedy/DP/graphs chapters; 110 LeetCode"
+							},
+							{
+								"title": "18.01SC final ≥ 80%"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "libft",
+								"hours": 25
+							},
+							{
+								"title": "ft_printf",
+								"hours": 15
+							},
+							{
+								"title": "get_next_line",
+								"hours": 10
+							},
+							{
+								"title": "BSQ",
+								"hours": 15,
+								"note": "Largest square = dynamic programming."
+							},
+							{
+								"title": "push_swap",
+								"hours": 30,
+								"note": "Sorting with two stacks, within the 42 move limits."
+							},
+							{
+								"title": "examshell rank 02",
+								"hours": 10
+							},
+							{
+								"title": "computorv1",
+								"hours": 10,
+								"optional": true,
+								"note": "Polynomial solver, with calculus."
+							}
+						]
+					},
+					{
+						"n": 3,
+						"slug": "p03-os-networks-linalg",
+						"title": "Phase 3: Operating systems, network theory, linear algebra, probability I",
+						"start": "2027-03-22",
+						"end": "2027-06-13",
+						"tracks": "M = 18.06SC linear algebra; Stat 110 first half · C = OSTEP + xv6 labs · L = Kurose & Ross + Beej sockets in C",
+						"domains": [
+							"Operating systems",
+							"Network",
+							"C and C++",
+							"Maths",
+							"Probability"
+						],
+						"project": {
+							"slug": "tinyhttpd",
+							"title": "tinyhttpd: an HTTP server in C",
+							"outcome": "An epoll + thread-pool HTTP/1.1 server in C that ingests into colstore; load-tested. Follows the 42 webserv spec (config file, multiple ports, CGI)."
+						},
+						"exit": [
+							{
+								"title": "All MIT 6.1810 xv6 labs pass make grade"
+							},
+							{
+								"title": "OSTEP homework done"
+							},
+							{
+								"title": "tinyhttpd: 10k concurrent connections, report"
+							},
+							{
+								"title": "tinyhttpd meets the webserv spec",
+								"parts": [
+									"config file",
+									"multiple ports",
+									"CGI"
+								]
+							},
+							{
+								"title": "Kurose & Ross ch. 1–5 + Wireshark labs"
+							},
+							{
+								"title": "18.02 + 18.06 finals ≥ 80%; Stat 110 first half"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "pipex",
+								"hours": 15
+							},
+							{
+								"title": "minitalk",
+								"hours": 10,
+								"note": "Signals."
+							},
+							{
+								"title": "philosophers",
+								"hours": 25,
+								"note": "Threads and mutexes, no data races under -fsanitize=thread."
+							},
+							{
+								"title": "minishell",
+								"hours": 70,
+								"note": "fork/exec, pipes, redirections."
+							},
+							{
+								"title": "matrix",
+								"hours": 40,
+								"note": "A linear-algebra library, with 18.06."
+							},
+							{
+								"title": "examshell ranks 03–04",
+								"hours": 15
+							},
+							{
+								"title": "ft_malloc",
+								"hours": 30,
+								"optional": true
+							},
+							{
+								"title": "ft_strace",
+								"hours": 25,
+								"optional": true
+							},
+							{
+								"title": "nm",
+								"hours": 20,
+								"optional": true
+							},
+							{
+								"title": "Kernel From Scratch",
+								"hours": 60,
+								"optional": true
+							}
+						]
+					},
+					{
+						"n": 4,
+						"slug": "p04-linux-network-ops",
+						"title": "Phase 4: Linux administration, network operations, Bash automation, probability II",
+						"start": "2027-06-14",
+						"end": "2027-09-05",
+						"tracks": "M = Stat 110 second half · C = ULSAH Linux administration + LFCS prep · L = CCNA (Jeremy's IT Lab + Packet Tracer); Bash library",
+						"domains": [
+							"Linux",
+							"Bash",
+							"Network",
+							"Probability"
+						],
+						"project": {
+							"slug": "homelab-infra",
+							"title": "homelab-infra: a routed, segmented homelab",
+							"outcome": "3+ Linux VMs on a routed/VLAN-segmented virtual network: DNS, DHCP, firewall, WireGuard VPN, NFS and LVM, monitoring and log shipping, all provisioned by a tested, ShellCheck-clean Bash library (bats tests)."
+						},
+						"exit": [
+							{
+								"title": "LFCS passed"
+							},
+							{
+								"title": "CCNA passed"
+							},
+							{
+								"title": "OverTheWire Bandit 0–33"
+							},
+							{
+								"title": "homelab rebuilt from scratch by one script"
+							},
+							{
+								"title": "Stat 110 final ≥ 80%"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "Born2beroot",
+								"hours": 20,
+								"note": "Hardened VM = homelab node 1."
+							},
+							{
+								"title": "NetPractice",
+								"hours": 10,
+								"note": "Every level: subnetting and routing."
+							},
+							{
+								"title": "ft_ping",
+								"hours": 20,
+								"note": "ICMP over raw sockets."
+							}
+						]
+					},
+					{
+						"n": 5,
+						"slug": "p05-databases-rust-stats",
+						"title": "Phase 5: Database internals, PostgreSQL DBA, Rust, statistics",
+						"start": "2027-09-06",
+						"end": "2027-11-28",
+						"tracks": "M = MIT 18.650 statistics · C = CMU 15-445 + BusTub; DDIA · L = Rust Book + Rustlings; PostgreSQL 14 Internals",
+						"domains": [
+							"Databases",
+							"Database administration",
+							"Rust",
+							"C and C++",
+							"Statistics"
+						],
+						"project": {
+							"slug": "rustkv",
+							"title": "rustkv: an LSM key-value store in Rust",
+							"outcome": "WAL, SSTables, bloom filters, compaction, crash recovery. Plus a PostgreSQL lab: replication, failover, PITR, tuning."
+						},
+						"exit": [
+							{
+								"title": "All BusTub projects pass local tests"
+							},
+							{
+								"title": "rustkv crash-recovery test passes; benchmark write-up"
+							},
+							{
+								"title": "PG failover + PITR drill recorded"
+							},
+							{
+								"title": "DDIA ch. 1–9 permanent notes"
+							},
+							{
+								"title": "Rustlings complete"
+							},
+							{
+								"title": "18.650 final ≥ 80%"
+							}
+						],
+						"fortytwo": []
+					},
+					{
+						"n": 6,
+						"slug": "p06-sql-nosql-distributed",
+						"title": "Phase 6: Advanced SQL, polyglot DBA, distributed systems, Bayesian stats",
+						"start": "2027-11-29",
+						"end": "2028-02-20",
+						"tracks": "M = Think Bayes 2 · C = MIT 6.5840 distributed systems (Go) · L = Use The Index, Luke + MySQL/MongoDB/Redis/Cassandra DBA",
+						"domains": [
+							"Databases",
+							"Database administration",
+							"Computer science",
+							"Data engineering",
+							"Statistics"
+						],
+						"project": {
+							"slug": "raft-polystore",
+							"title": "raft-polystore: Raft and a polyglot DBA lab",
+							"outcome": "All 6.5840 labs (sharded fault-tolerant KV). Plus a DBA lab for MySQL (replication, backup), MongoDB (replica set), Redis (sentinel/cluster), and Cassandra (3 nodes, repair), each with a runbook and a recorded failure drill."
+						},
+						"exit": [
+							{
+								"title": "All 6.5840 labs pass repeated test runs",
+								"parts": [
+									"MapReduce",
+									"Raft",
+									"fault-tolerant KV",
+									"sharded KV"
+								]
+							},
+							{
+								"title": "5 DBA runbooks with recorded failover/restore drills",
+								"parts": [
+									"PostgreSQL",
+									"MySQL",
+									"MongoDB",
+									"Redis",
+									"Cassandra"
+								]
+							},
+							{
+								"title": "30 hard SQL problems (windows, recursive CTEs, plan analysis)"
+							},
+							{
+								"title": "Use The Index, Luke done"
+							},
+							{
+								"title": "Bayesian A/B notebook (Think Bayes)"
+							}
+						],
+						"fortytwo": []
+					},
+					{
+						"n": 7,
+						"slug": "p07-data-platform-dataops",
+						"title": "Phase 7: Advanced data engineering, DataOps, data analysis & experimentation",
+						"start": "2028-02-21",
+						"end": "2028-05-14",
+						"tracks": "M = Think Stats + Kohavi experimentation · C = Fundamentals of DE + Kafka/Spark/Iceberg docs · L = Python for Data Analysis + Wilke dataviz; GX + OpenLineage",
+						"domains": [
+							"Data engineering",
+							"DataOps",
+							"Data analysis",
+							"Statistics",
+							"Python"
+						],
+						"project": {
+							"slug": "streamhouse",
+							"title": "streamhouse: a streaming lakehouse",
+							"outcome": "Kafka → Spark → Iceberg → dbt → DuckDB/Trino, with a DataOps layer (data contracts, GX, OpenLineage, data CI/CD, freshness/volume SLOs), a BI dashboard, and 3 published analyses (EDA, viz, A/B with power analysis)."
+						},
+						"exit": [
+							{
+								"title": "make up runs the full platform"
+							},
+							{
+								"title": "A broken data contract fails CI"
+							},
+							{
+								"title": "Lineage graph end-to-end"
+							},
+							{
+								"title": "3 analyses published",
+								"parts": [
+									"EDA",
+									"visualisation and dashboard",
+									"A/B test with power analysis"
+								]
+							},
+							{
+								"title": "First OSS PR opened in a DE/DataOps project"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "Data Science Piscine",
+								"hours": 40,
+								"note": "PostgreSQL in docker compose, ETL, warehouse, analysis: the warm-up before streamhouse."
+							}
+						]
+					},
+					{
+						"n": 8,
+						"slug": "p08-k8s-devops-aws",
+						"title": "Phase 8: Containers, Kubernetes, DevOps, AWS",
+						"start": "2028-05-15",
+						"end": "2028-08-06",
+						"tracks": "M = SRE books (SLOs, error budgets) · C = Kubernetes docs + Kubernetes The Hard Way · L = Terraform + Docker/Podman; AWS SAA prep",
+						"domains": [
+							"Containerization",
+							"DevOps",
+							"Cloud"
+						],
+						"project": {
+							"slug": "streamhouse-on-k8s",
+							"title": "streamhouse-on-k8s: GitOps on Kubernetes",
+							"outcome": "k3s → EKS via Terraform, GitOps, rootless Podman builds, Prometheus/Grafana, SLOs, DORA metrics."
+						},
+						"exit": [
+							{
+								"title": "Kubernetes The Hard Way done"
+							},
+							{
+								"title": "CKA passed"
+							},
+							{
+								"title": "AWS SAA passed"
+							},
+							{
+								"title": "Cluster rebuilt from zero in under 30 min, then destroyed"
+							},
+							{
+								"title": "Game-day post-mortem written"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "Inception",
+								"hours": 30,
+								"note": "NGINX + TLS, WordPress, MariaDB in hand-written Dockerfiles: the first week of the phase."
+							}
+						]
+					},
+					{
+						"n": 9,
+						"slug": "p09-gcp-azure-multicloud",
+						"title": "Phase 9: Google Cloud, Azure, multi-cloud & platform engineering",
+						"start": "2028-08-07",
+						"end": "2028-10-29",
+						"tracks": "M = DevOps Handbook + cloud cost modeling · C = GCP: Google Skills + ACE guide · L = Azure: AZ-104 learning paths; Terraform GCP/Azure",
+						"domains": [
+							"Cloud",
+							"DevOps",
+							"Data engineering"
+						],
+						"project": {
+							"slug": "multicloud-streamhouse",
+							"title": "multicloud-streamhouse: one codebase, three clouds",
+							"outcome": "One Terraform codebase deploying streamhouse to GKE (BigQuery/GCS), AKS (ADLS), and EKS, with a cost and an IAM/networking comparison write-up."
+						},
+						"exit": [
+							{
+								"title": "GCP ACE passed"
+							},
+							{
+								"title": "AZ-104 passed"
+							},
+							{
+								"title": "Same pipeline green on 3 clouds",
+								"parts": [
+									"GKE",
+									"AKS",
+									"EKS"
+								]
+							},
+							{
+								"title": "Cost/IAM/networking comparison published"
+							}
+						],
+						"fortytwo": []
+					},
+					{
+						"n": 10,
+						"slug": "p10-java-api-web",
+						"title": "Phase 10: Software engineering, API design, web development, Java",
+						"start": "2028-10-30",
+						"end": "2029-01-21",
+						"tracks": "M = SWE at Google + A Philosophy of Software Design · C = Google AIPs + Zalando API guidelines · L = Java: dev.java + Effective Java + OCP prep · R = Full Stack Open",
+						"domains": [
+							"Java",
+							"API design",
+							"Web development",
+							"Software engineering"
+						],
+						"project": {
+							"slug": "datacatalog",
+							"title": "datacatalog: a data catalog with lineage",
+							"outcome": "Spring Boot REST + gRPC (AIP-style), React/TS front end, auth, OpenLineage ingestion, on the clusters."
+						},
+						"exit": [
+							{
+								"title": "OCP Java SE 21 (1Z0-830) passed"
+							},
+							{
+								"title": "Full Stack Open certificate, all parts"
+							},
+							{
+								"title": "API spec lint-clean vs Zalando/AIP rules + public design doc"
+							},
+							{
+								"title": "Catalog shows lineage from a real streamhouse run"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "ft_transcendence",
+								"hours": 150,
+								"optional": true,
+								"note": "A real-time multiplayer web app with a team: only if you're ahead."
+							}
+						]
+					},
+					{
+						"n": 11,
+						"slug": "p11-ml-mlops",
+						"title": "Phase 11: Machine learning & MLOps, maths for ML",
+						"start": "2029-01-22",
+						"end": "2029-04-15",
+						"tracks": "M = MML book + CS229 notes · C = ISLP + Zero to Hero · L = Hands-On ML (PyTorch) + Designing ML Systems; fast.ai",
+						"domains": [
+							"Machine learning",
+							"Maths",
+							"Statistics",
+							"Data analysis"
+						],
+						"project": {
+							"slug": "ml-on-streamhouse",
+							"title": "ml-on-streamhouse: ML in production",
+							"outcome": "Feature pipeline, experiment tracking, serving via datacatalog, drift monitoring, and a Kaggle competition."
+						},
+						"exit": [
+							{
+								"title": "micrograd + small GPT from scratch"
+							},
+							{
+								"title": "ISLP labs + MML exercises ch. 2–7"
+							},
+							{
+								"title": "Model in production with drift dashboard"
+							},
+							{
+								"title": "Kaggle bronze or top 10%"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "ft_linear_regression",
+								"hours": 10,
+								"note": "Gradient descent."
+							},
+							{
+								"title": "DSLR",
+								"hours": 30,
+								"note": "Logistic regression, statistics, visualisation."
+							},
+							{
+								"title": "multilayer-perceptron",
+								"hours": 30,
+								"note": "numpy-only backpropagation."
+							}
+						]
+					},
+					{
+						"n": 12,
+						"slug": "p12-security",
+						"title": "Phase 12: Cybersecurity, network security, container security",
+						"start": "2029-04-16",
+						"end": "2029-07-08",
+						"tracks": "M = threat modeling + crypto (6.566 lectures) · C = MIT 6.566 labs · L = PortSwigger Academy → BSCP; CKS prep; OverTheWire",
+						"domains": [
+							"Cybersecurity",
+							"Network",
+							"Containerization",
+							"Linux"
+						],
+						"project": {
+							"slug": "secure-streamhouse",
+							"title": "secure-streamhouse: threat model and pentest",
+							"outcome": "Threat model, pentest, hardening (SAST/DAST, network policies, secrets, IAM least privilege) on all 3 clouds."
+						},
+						"exit": [
+							{
+								"title": "BSCP passed"
+							},
+							{
+								"title": "CKS passed"
+							},
+							{
+								"title": "All PortSwigger labs"
+							},
+							{
+								"title": "MIT 6.566 all 5 labs"
+							},
+							{
+								"title": "OverTheWire Natas/Leviathan/Narnia",
+								"parts": [
+									"Natas",
+									"Leviathan",
+									"Narnia"
+								]
+							},
+							{
+								"title": "Pentest report, all high findings fixed"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "snow-crash",
+								"hours": 30,
+								"note": "A 14-level CTF."
+							},
+							{
+								"title": "darkly",
+								"hours": 25,
+								"note": "Web vulnerabilities."
+							},
+							{
+								"title": "rainfall",
+								"hours": 40,
+								"note": "Binary exploitation and reverse engineering."
+							},
+							{
+								"title": "ft_ssl",
+								"hours": 30,
+								"optional": true,
+								"note": "Hash functions from scratch."
+							}
+						]
+					},
+					{
+						"n": 13,
+						"slug": "p13-cpp-compilers-theory",
+						"title": "Phase 13: C++, compilers, theory of computation",
+						"start": "2029-07-09",
+						"end": "2029-09-30",
+						"tracks": "M = MIT 18.404J theory of computation · C = Crafting Interpreters; Nand to Tetris 7–12 · L = LearnCpp + A Tour of C++ + C++ Core Guidelines",
+						"domains": [
+							"C and C++",
+							"Computer science",
+							"Maths",
+							"Databases"
+						],
+						"project": {
+							"slug": "sqlc-cpp",
+							"title": "sqlc-cpp: a SQL compiler in modern C++",
+							"outcome": "Lexer, parser, planner, and bytecode VM that runs on colstore files, compared with DuckDB."
+						},
+						"exit": [
+							{
+								"title": "jlox + clox complete (Crafting Interpreters)",
+								"parts": [
+									"jlox",
+									"clox"
+								]
+							},
+							{
+								"title": "Nand to Tetris projects 7–12"
+							},
+							{
+								"title": "18.404 problem sets ≥ 80%"
+							},
+							{
+								"title": "sqlc-cpp clang-tidy/ASan clean with benchmark"
+							}
+						],
+						"fortytwo": [
+							{
+								"title": "CPP modules 00–09",
+								"hours": 80,
+								"note": "Classes, polymorphism, templates, STL, before sqlc-cpp."
+							},
+							{
+								"title": "ft_containers",
+								"hours": 60,
+								"optional": true
+							},
+							{
+								"title": "ft_irc",
+								"hours": 60,
+								"optional": true
+							}
+						]
+					},
+					{
+						"n": 14,
+						"slug": "p14-mastery-proof",
+						"title": "Phase 14: Mastery & proof",
+						"start": "2029-10-01",
+						"end": "2030-02-24",
+						"tracks": "M = weakest maths/theory domain from monthly tests · C = LeetCode contests + Kaggle · L = OSS PRs + portfolio write-ups",
+						"domains": [],
+						"project": {
+							"slug": "oss-and-portfolio",
+							"title": "oss-and-portfolio: proof of every domain",
+							"outcome": "Weekly LeetCode contests, a Kaggle silver push, at least 3 merged OSS PRs (DE, Rust/Python, DataOps), and a portfolio site with 14 project write-ups. Retake any failed exam."
+						},
+						"exit": [
+							{
+								"title": "≥ 3 merged OSS PRs"
+							},
+							{
+								"title": "Kaggle silver (1000+ teams)"
+							},
+							{
+								"title": "LeetCode contest rating top 5%"
+							},
+							{
+								"title": "Portfolio live with 14 write-ups"
+							},
+							{
+								"title": "Every domain-matrix row proven"
+							}
+						],
+						"fortytwo": []
+					}
+				],
+				"habits": [
+					{
+						"title": "Daily study block",
+						"stack": "After dinner on weekdays; at 09:00 on weekends",
+						"cue": "At the desk, the phone in another room.",
+						"craving": "Small daily compounding beats heroic weekends.",
+						"two": "Open today's first task and do one 25-minute pomodoro: a day counts after 25 focused minutes.",
+						"reward": "Tick the day and watch the streak grow; +1 rest token every 6 study days (bank up to 4), and streak rewards from the 20 € fund.",
+						"identity": "I'm someone who studies every day.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						]
+					},
+					{
+						"title": "Daily review: spaced tests and the board",
+						"stack": "When I sit down for the study block, before new material",
+						"cue": "The review board open first.",
+						"craving": "Retrieval and spacing make 2.5 years of material stick; without them, phase 1 is gone by phase 4.",
+						"two": "Answer the oldest due test, then move today's tasks to Doing (15 minutes at most).",
+						"reward": "A cleared board; new material only once the old is retrieved.",
+						"identity": "I remember what I learn.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						]
+					},
+					{
+						"title": "Weekly project deep-work session",
+						"stack": "Saturday after coffee",
+						"cue": "No notifications, the current phase project open.",
+						"craving": "Projects turn reading into skill and build the portfolio that proves the top 5%.",
+						"two": "Pick one project task and run the tests; aim for a 4-hour block that ends with a commit.",
+						"reward": "Push to GitHub and enjoy the green CI badge; a finished feature earns the afternoon off from theory.",
+						"identity": "I build what I learn.",
+						"time": "09:00",
+						"place": "at the desk",
+						"days": [
+							6
+						]
+					},
+					{
+						"title": "Weekly reflection and roadmap check",
+						"stack": "Sunday, the last hour of the weekend block",
+						"cue": "This week's note open.",
+						"craving": "A 2.5-year plan only survives if it's re-planned every week.",
+						"two": "Hours done against 22, what I learned, what's stuck, the token bank, next week's 5–8 tasks. Last Sunday of the month: the roadmap check.",
+						"reward": "Sunday evening free, guilt-free.",
+						"identity": "I re-plan every week.",
+						"time": "18:00",
+						"place": "",
+						"days": [
+							7
+						]
+					}
+				],
+				"tasks": [
+					{
+						"title": "Set up the books platform (ACM + Skills Bundle or O'Reilly) and the reward and certification funds",
+						"day": 0,
+						"context": "@computer"
+					},
+					{
+						"title": "pipekit: create repo (uv, pytest, mypy, ruff, GitHub Actions CI)",
+						"day": 0,
+						"context": "@computer",
+						"project": "pipekit"
+					},
+					{
+						"title": "6.042J lectures 1–3 (proofs, induction) + problem set 1",
+						"day": 3,
+						"context": "@computer"
+					},
+					{
+						"title": "6.006 lectures 1–2 + recitations 1–2 → literature notes",
+						"day": 4,
+						"context": "@computer"
+					},
+					{
+						"title": "Fluent Python ch. 1–2 (data model, sequences) → literature notes",
+						"day": 2,
+						"context": "@computer"
+					},
+					{
+						"title": "TLCL part 1 (ch. 1–6) + Missing Semester lecture 1 (shell)",
+						"day": 5,
+						"context": "@computer"
+					},
+					{
+						"title": "8 LeetCode problems (arrays & hashing) in Python",
+						"day": 6,
+						"context": "@computer"
+					},
+					{
+						"title": "pipekit: DAG model + topological sort with hypothesis tests",
+						"day": 6,
+						"context": "@computer",
+						"project": "pipekit"
+					},
+					{
+						"title": "Turn the week's literature notes into ≥ 2 permanent notes + 1 mermaid diagram",
+						"day": 6,
+						"context": "@computer"
+					},
+					{
+						"title": "First weekly reflection (hours, token bank, plan next week)",
+						"day": 6,
+						"context": "@home"
+					},
+					{
+						"title": "Monthly roadmap check: hours vs plan, matrix progress, resize the next phase",
+						"day": 20,
+						"context": "@home",
+						"recurrence": "FREQ=MONTHLY;BYDAY=-1SU"
+					}
+				],
+				"areas": [
+					{
+						"title": "Engineering mastery",
+						"description": "22 hours of deliberate study a week, three tracks interleaved and a project always running; every domain proven by an external check."
+					},
+					{
+						"title": "Maths",
+						"description": "Finals at 80% or more: 6.042J, 18.01, 18.02, 18.06, 18.404; Stat 110 and 18.650 for probability and statistics."
+					}
+				],
+				"resources": [
+					{
+						"title": "42 subjects and testers",
+						"url": "https://github.com/evgenkarlson/ALL_SCHOOL_42",
+						"description": "Never copy solutions; read others' code only after yours passes.\n\n- Subjects: ALL_SCHOOL_42 (last updated 2022: check each subject's version)\n- Newer subjects and testers: GitHub topics 42 (https://github.com/topics/42) and 42-cursus (https://github.com/topics/42-cursus)\n- Exam practice: 42_examshell, ranks 02–06 (https://github.com/terminal-42s/42_examshell)\n- A 42-like environment: 42-Devcontainer (https://github.com/opsec-infosec/42-Devcontainer)\n- Python projects checker: Germinette (https://github.com/ExceptedPrism3/germinette)\n- To compare after yours passes: mcombeau/42_cursus_projects (https://github.com/mcombeau/42_cursus_projects)\n- Not covered by 42: Java, Rust, and database administration, which come from the phase resources."
+					},
+					{
+						"title": "Certification exams",
+						"url": "https://training.linuxfoundation.org/certification/",
+						"description": "About $3,000 of exams over 3.4 years, paid from the 100 €/month certification fund. Watch for Linux Foundation discounts.\n\n- LFCS $445 (phase 4)\n- CCNA $300 (phase 4)\n- CKA $445 (phase 8)\n- AWS SAA $150 (phase 8)\n- GCP ACE $125 (phase 9)\n- AZ-104: check the price for your region (phase 9)\n- Oracle 1Z0-830 $245 (phase 10)\n- BSCP $99, plus a Burp Pro subscription (phase 12)\n- CKS $445 (phase 12)"
+					},
+					{
+						"title": "Books platform",
+						"url": "https://learning.acm.org/e-learning/oreilly",
+						"description": "O'Reilly access through the ACM + Skills Bundle ($75 a year), or O'Reilly directly (https://www.oreilly.com/online-learning/pricing): about 10 € a month."
+					}
+				]
+			}
+		}
+	]
 }
