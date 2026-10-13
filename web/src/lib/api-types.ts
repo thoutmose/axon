@@ -5050,8 +5050,11 @@ export interface components {
 			/** @enum {unknown} */
 			language: 'en' | 'fr';
 			appearance: {
-				/** @enum {unknown} */
-				theme: 'system' | 'light' | 'dark';
+				/**
+				 * @description sun follows the sun and the moon in the person's time zone: light from dawn to dusk.
+				 * @enum {unknown}
+				 */
+				theme: 'system' | 'light' | 'dark' | 'sun';
 				/** @enum {unknown} */
 				font: 'system' | 'serif' | 'rounded' | 'mono';
 				/** @enum {unknown} */
@@ -5065,6 +5068,22 @@ export interface components {
 				 * @enum {unknown}
 				 */
 				spaces?: 'on' | 'off';
+				/**
+				 * @description The landscape under the sky that follows the sun. Mountains when absent.
+				 * @enum {unknown}
+				 */
+				scenery?:
+					| 'mountains'
+					| 'forest'
+					| 'ocean'
+					| 'desert'
+					| 'earth'
+					| 'eiffel-tower'
+					| 'pyramids'
+					| 'taj-mahal'
+					| 'statue-of-liberty'
+					| 'christ-the-redeemer'
+					| 'opera-house';
 			};
 			templates: {
 				/** @description Markdown for new notes; {title} is replaced. */

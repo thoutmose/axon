@@ -1,3 +1,4 @@
+import { skyState } from './skyState.svelte';
 import { applyTheme, type Theme } from './theme';
 
 export type Appearance = {
@@ -8,6 +9,8 @@ export type Appearance = {
 	motion: 'system' | 'reduced' | 'full';
 	/** Themed scenery per area; absent means on. */
 	spaces?: '' | 'on' | 'off';
+	/** The landscape under the sky that follows the sun; absent means mountains. */
+	scenery?: string;
 };
 
 const key = 'axon-appearance';
@@ -21,6 +24,7 @@ export function applyAppearance(a: Appearance) {
 	root.dataset.icons = a.icons;
 	root.dataset.motion = a.motion;
 	root.dataset.spaces = a.spaces === 'off' ? 'off' : 'on';
+	skyState.landscape = a.scenery || 'mountains';
 	try {
 		localStorage.setItem(key, JSON.stringify(a));
 	} catch {

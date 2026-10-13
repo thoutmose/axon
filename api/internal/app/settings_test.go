@@ -202,3 +202,30 @@ func TestTheAPISpeaksFrenchWhenAsked(t *testing.T) {
 		t.Fatalf("fr consents = %d %s", code, out)
 	}
 }
+
+// The theme can follow the sun, and the home picture shows a landscape the
+// person chooses (EP-96).
+func TestTheThemeFollowsTheSunOverAChosenLandscape(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	var doc map[string]any
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+	delete(doc, "ai")
+	put := func(theme, scenery string, want int) []byte {
+		t.Helper()
+		a := doc["appearance"].(map[string]any)
+		a["theme"], a["scenery"] = theme, scenery
+		body, _ := json.Marshal(doc)
+		code, out := alice.do("PUT", "/v1/me/settings", body)
+		if code != want {
+			t.Fatalf("%s over %s = %d %s", theme, scenery, code, out)
+		}
+		return out
+	}
+	if out := put("sun", "taj-mahal", 200); !bytes.Contains(out, []byte(`"theme":"sun"`)) || !bytes.Contains(out, []byte(`"scenery":"taj-mahal"`)) {
+		t.Fatalf("saved = %s", out)
+	}
+	put("sun", "atlantis", 422)
+	put("moon", "forest", 422)
+}

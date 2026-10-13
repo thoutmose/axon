@@ -14,6 +14,7 @@
 	import { flush, loadOutbox, outbox } from '$lib/outbox.svelte';
 	import { watchInstall } from '$lib/install.svelte';
 	import { loadMenu, menu, storedHidden } from '$lib/menu.svelte';
+	import { setZone, startSky } from '$lib/skyState.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
 	let { children } = $props();
@@ -125,10 +126,19 @@
 		applyTheme(theme);
 		setLocale(storedLocale());
 		menu.hidden = storedHidden();
+		// The sky follows the sun in the account's time zone; so does the "sun" theme (EP-96).
+		const stopSky = startSky(() => theme === 'sun' && applyTheme('sun'));
 		api<AuthStatus>('/v1/auth/status')
 			.then((s) => {
 				avatar.signedIn = s.signed_in;
-				if (s.signed_in) loadMenu().catch(() => {});
+				if (!s.signed_in) return;
+				loadMenu().catch(() => {});
+				api<{ timezone: string }>('/v1/me')
+					.then((m) => {
+						setZone(m.timezone);
+						if (theme === 'sun') applyTheme('sun');
+					})
+					.catch(() => {});
 			})
 			.catch(() => {});
 		// Captures kept offline go out as soon as Axon answers again.
@@ -146,13 +156,19 @@
 		const stopInstall = watchInstall();
 		return () => {
 			removeEventListener('online', send);
+			stopSky();
 			stop();
 			stopInstall();
 		};
 	});
 
 	function cycleTheme() {
-		theme = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system';
+		theme = (
+			{ system: 'sun', sun: 'dark', dark: 'light', light: 'system' } as const satisfies Record<
+				Theme,
+				Theme
+			>
+		)[theme];
 		applyTheme(theme);
 	}
 </script>
@@ -248,7 +264,9 @@
 			<button
 				class="theme"
 				onclick={cycleTheme}
-				aria-label={t('Theme: {theme}. Change theme', { theme: t(theme) })}
+				aria-label={t('Theme: {theme}. Change theme', {
+					theme: theme === 'sun' ? t('follows the sun') : t(theme)
+				})}
 			>
 				<svg
 					viewBox="0 0 24 24"
@@ -260,7 +278,11 @@
 					stroke-width="1.8"
 					stroke-linecap="round"
 				>
-					{#if theme === 'dark'}
+					{#if theme === 'sun'}
+						<path
+							d="M3 17h18M6 17a6 6 0 0 1 12 0M12 5v2M4.9 9.9l1.4 1.4M19.1 9.9l-1.4 1.4M7 21h10"
+						/>
+					{:else if theme === 'dark'}
 						<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
 					{:else if theme === 'light'}
 						<circle cx="12" cy="12" r="4" /><path

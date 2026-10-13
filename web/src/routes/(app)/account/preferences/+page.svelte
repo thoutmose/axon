@@ -11,6 +11,8 @@
 	import ProviderSettings from '$lib/ProviderSettings.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Section from '$lib/ui/Section.svelte';
+	import Scenery from '$lib/ui/Scenery.svelte';
+	import { skyState } from '$lib/skyState.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
@@ -95,6 +97,9 @@
 		music: []
 	};
 	let s = $state<Settings | null>(null);
+	// A look at the sky later today, to choose a landscape (EP-96).
+	let previewHours = $state(0);
+	const previewAt = $derived(new Date(skyState.now.getTime() + previewHours * 3_600_000));
 	let error = $state('');
 	let saving = $state(false);
 	let budget = $state('2.00');
@@ -105,7 +110,11 @@
 			const loaded = await api<Schemas['Settings']>('/v1/me/settings');
 			s = {
 				...loaded,
-				appearance: { ...loaded.appearance, spaces: loaded.appearance.spaces ?? 'on' },
+				appearance: {
+					...loaded.appearance,
+					spaces: loaded.appearance.spaces ?? 'on',
+					scenery: loaded.appearance.scenery ?? 'mountains'
+				},
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
 				gamification: loaded.gamification ?? { enabled: false },
@@ -235,7 +244,7 @@
 
 		<Section id="appearance" title={t('Appearance')}>
 			<div class="grid">
-				{#each [['theme', t('Theme'), choice( [['system', t('Follow the system')], ['light', t('Light')], ['dark', t('Dark')]] )], ['font', t('Font'), choice( [['system', t('System sans-serif')], ['serif', t('Serif')], ['rounded', t('Rounded')], ['mono', t('Monospace')]] )], ['font_size', t('Text size'), choice( [['small', t('Small')], ['normal', t('Normal')], ['large', t('Large')]] )], ['icons', t('Icons'), choice( [['emoji', t('Emoji')], ['symbols', t('Symbols')], ['none', t('None')]] )], ['motion', t('Motion'), choice( [['system', t('Follow the system')], ['reduced', t('Reduced')], ['full', t('Full')]] )], ['spaces', t('Themed spaces'), choice( [['on', t('On: a notebook for notes, a library for learning…')], ['off', t('Off')]] )]] as const as [key, label, options] (key)}
+				{#each [['theme', t('Theme'), choice( [['system', t('Follow the system')], ['sun', t('Follow the sun and the moon')], ['light', t('Light')], ['dark', t('Dark')]] )], ['font', t('Font'), choice( [['system', t('System sans-serif')], ['serif', t('Serif')], ['rounded', t('Rounded')], ['mono', t('Monospace')]] )], ['font_size', t('Text size'), choice( [['small', t('Small')], ['normal', t('Normal')], ['large', t('Large')]] )], ['icons', t('Icons'), choice( [['emoji', t('Emoji')], ['symbols', t('Symbols')], ['none', t('None')]] )], ['motion', t('Motion'), choice( [['system', t('Follow the system')], ['reduced', t('Reduced')], ['full', t('Full')]] )], ['spaces', t('Themed spaces'), choice( [['on', t('On: a notebook for notes, a library for learning…')], ['off', t('Off')]] )], ['scenery', t('Landscape under the sky'), choice( [['mountains', t('Mountains')], ['forest', t('Forest')], ['ocean', t('Ocean')], ['desert', t('Desert')], ['earth', t('The Earth from orbit')], ['eiffel-tower', t('Eiffel Tower, Paris (Europe)')], ['pyramids', t('Pyramids of Giza (Africa)')], ['taj-mahal', t('Taj Mahal, Agra (Asia)')], ['statue-of-liberty', t('Statue of Liberty, New York (North America)')], ['christ-the-redeemer', t('Christ the Redeemer, Rio (South America)')], ['opera-house', t('Sydney Opera House (Oceania)')]] )]] as const as [key, label, options] (key)}
 					<div class="field">
 						<label for="pref-{key}">{t(label)}</label>
 						<select id="pref-{key}" bind:value={s.appearance[key]}>
@@ -244,6 +253,20 @@
 					</div>
 				{/each}
 			</div>
+			<figure class="sky-preview">
+				<div class="frame"><Scenery landscape={s.appearance.scenery} at={previewAt} /></div>
+				<figcaption>
+					<label
+						>{t('Preview the sky in {hours} h', { hours: previewHours })}
+						<input type="range" min="0" max="23" bind:value={previewHours} /></label
+					>
+					<span class="muted small"
+						>{t('The sun and the moon where they are in your time zone ({zone}).', {
+							zone: skyState.zone
+						})}</span
+					>
+				</figcaption>
+			</figure>
 		</Section>
 
 		<Section id="menu" title={t('Pages in the menu')}>
@@ -669,5 +692,20 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
 		gap: var(--space-2);
+	}
+	.sky-preview {
+		margin: var(--space-4) 0 0;
+	}
+	.sky-preview .frame {
+		position: relative;
+		height: 10rem;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		border: 1px solid var(--border);
+	}
+	.sky-preview figcaption {
+		display: grid;
+		gap: var(--space-1);
+		margin-top: var(--space-2);
 	}
 </style>

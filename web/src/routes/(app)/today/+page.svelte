@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Welcome from '$lib/Welcome.svelte';
+	import Scenery from '$lib/ui/Scenery.svelte';
 	import JournalToday from '$lib/JournalToday.svelte';
 	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
@@ -191,6 +192,8 @@
 
 <!-- A compact header: the dashboard starts right under the navigation. -->
 <section class="hero" aria-labelledby="today-title">
+	<!-- The sky above the person's day, as it is now (EP-96). -->
+	<div class="sky-strip" aria-hidden="true"><Scenery /></div>
 	<div class="hero-copy">
 		<h1 id="today-title">{greeting()} <span class="date">· {dateLabel}</span></h1>
 		{#if d}
@@ -643,5 +646,14 @@
 	.late {
 		color: var(--bad);
 		font-weight: 600;
+	}
+	.sky-strip {
+		position: relative;
+		max-width: var(--wide-width);
+		height: 5.5rem;
+		margin: var(--space-4) auto 0;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		width: calc(100% - 2 * var(--gutter));
 	}
 </style>
