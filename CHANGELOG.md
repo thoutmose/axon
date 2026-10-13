@@ -4,7 +4,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 ## Unreleased (1.1)
 
-Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-99 in #85.
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-100 in #85.
 
 ### Added
 
@@ -33,7 +33,6 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 ### Fixed
 
 - Edits of a note or an item large enough to be compressed failed with "changed somewhere else" on their first save: the proxy suffixes the entity tag with its encoding, and the API now reads it through (since EP-74, found in EP-100).
-
 - Aligned columns in Markdown tables align again: the alignment was a style attribute, which the Content Security Policy blocks.
 - New accounts start in the browser's time zone instead of UTC, so "today" is right from the first night (EP-69).
 - Sign-in no longer fails on a user agent that is not valid UTF-8; imports, clipped pages, and calendars in other encodings keep their accents (EP-69).
