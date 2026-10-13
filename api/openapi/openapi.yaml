@@ -7564,7 +7564,11 @@ components:
             long_break_minutes: { type: integer, minimum: 1, maximum: 120 }
             rounds: { type: integer, minimum: 1, maximum: 12, description: Work blocks before the long break. }
             sessions: { type: integer, minimum: 1, maximum: 12, description: How many cycles in a row. }
-            sound: { enum: [none, white, pink, brown, rain], description: Focus sound generated in the browser. }
+            sound:
+              enum: [none, white, pink, brown, rain, music, lofi, ambient, piano]
+              description: >-
+                Focus sound generated in the browser: noise, or music composed as it plays ("music"
+                matches the style to what the session is about).
             volume: { type: integer, minimum: 0, maximum: 100 }
             music:
               type: array

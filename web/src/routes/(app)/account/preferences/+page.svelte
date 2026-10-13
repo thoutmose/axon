@@ -5,6 +5,7 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
+	import { soundOptions, type Sound } from '$lib/sounds';
 	import ProviderSettings from '$lib/ProviderSettings.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Section from '$lib/ui/Section.svelte';
@@ -17,7 +18,7 @@
 		long_break_minutes: number;
 		rounds: number;
 		sessions: number;
-		sound: 'none' | 'white' | 'pink' | 'brown' | 'rain';
+		sound: Sound;
 		volume: number;
 		music: { activity: string; url: string }[];
 	};
@@ -416,10 +417,13 @@
 					<label for="focus-sound-pref">{t('Focus sound')}</label>
 					<select id="focus-sound-pref" bind:value={s.focus.sound}>
 						<option value="none">None</option>
-						<option value="white">White noise</option>
-						<option value="pink">Pink noise</option>
-						<option value="brown">Brown noise</option>
-						<option value="rain">Rain</option>
+						{#each soundOptions as g (g.group)}
+							<optgroup label={g.group}>
+								{#each g.items as [value, name] (value)}
+									<option {value}>{name}</option>
+								{/each}
+							</optgroup>
+						{/each}
 					</select>
 				</div>
 				<div class="field">
@@ -430,7 +434,7 @@
 			<h3>{t('Music for focus')}</h3>
 			<p class="muted small">
 				{t(
-					'Links to playlists or streams you like for each kind of work. They open from the Focus page; nothing plays inside Axon.'
+					'Axon composes its own music as you work, with nothing streamed. You can also keep links to playlists you like for each kind of work; they open from the Focus page.'
 				)}
 			</p>
 			{#each s.focus.music as m, i (i)}

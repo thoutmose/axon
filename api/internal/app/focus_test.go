@@ -80,4 +80,16 @@ func TestFocusSessionsLinkToWhatTheyWereFor(t *testing.T) {
 	if code, out := alice.putYAML("version: 1\nfocus:\n  work_minutes: 500\n"); code != 422 || !bytes.Contains(out, []byte("line 3: focus.work_minutes")) {
 		t.Fatalf("bad focus yaml = %d %s", code, out)
 	}
+	// Music composed in the browser is a focus sound like the noises (EP-83).
+	for _, sound := range []string{"music", "lofi", "ambient", "piano", "rain"} {
+		if code, out := alice.putYAML("version: 1\nfocus:\n  sound: " + sound + "\n"); code != 200 {
+			t.Fatalf("sound %s = %d %s", sound, code, out)
+		}
+	}
+	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/me/settings", nil), []byte(`"sound":"rain"`)) {
+		t.Fatal("focus sound not saved")
+	}
+	if code, out := alice.putYAML("version: 1\nfocus:\n  sound: jazz\n"); code != 422 || !bytes.Contains(out, []byte("focus.sound")) {
+		t.Fatalf("unknown sound = %d %s", code, out)
+	}
 }

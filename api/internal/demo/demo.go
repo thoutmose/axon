@@ -445,10 +445,11 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			uuid.Must(uuid.NewV7()), user, now.AddDate(0, 0, -8))
 	}
 
-	// Progress rewards on, with a freeze in stock, so the demo shows them.
+	// Progress rewards on, with a freeze in stock, and music for focus, so the demo shows them.
 	if s.err == nil {
 		doc := settings.Defaults()
 		doc.Gamification.Enabled = true
+		doc.Focus.Sound = "music"
 		s.err = settings.Put(ctx, tx, user, doc)
 	}
 	if s.err == nil {

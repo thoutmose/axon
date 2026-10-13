@@ -52,7 +52,7 @@ Designed with James Clear's *Atomic Habits*:
 
 ## Focus
 
-Pomodoro sessions (25 minutes of focus and 5-minute breaks, four rounds, then a 15-minute break, all adjustable) for a task, project, skill, or note. Focus sounds play in the browser; add your own music links per activity.
+Pomodoro sessions (25 minutes of focus and 5-minute breaks, four rounds, then a 15-minute break, all adjustable) for a task, project, skill, or note. Focus sounds play in the browser: noise, rain, or music Axon composes as you work, without words and never the same twice. "Matched to what you focus on" plays lo-fi beats for a task or project, ambient pads for a note, and calm piano for a skill or flashcards; change it during the session from the timer. Music stops during breaks. You can also keep your own music links per activity.
 
 ## Money: Budget
 

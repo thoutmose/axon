@@ -131,6 +131,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-80 | Other sites kept out | Measured over HTTPS: session cookie, CSP, HSTS, and origin checks were right; two isolation headers were missing and are added. axe found no serious issue on 30 pages in Firefox or Chromium. | SHOULD | 1 pt | EP-79 | Done |
 | EP-81 | Containers without privileges | Every service but PostgreSQL runs with no Linux capability (Caddy keeps only the one its binary carries) and cannot gain privileges; images were already non-root and pinned by digest. | SHOULD | 1 pt | EP-80 | Done |
 | EP-82 | Skills radar | Owner request ("graphe en toile d'araignée"): Roadmaps shows the hard and the soft skills acquired as two radar charts, one spoke per roadmap (or per section under three), done and being learnt, with a table view. | SHOULD | 2 pts | EP-14 | Done |
+| EP-83 | Focus music | Owner request ("listen to the best music for productivity related to what I do during the Pomodoro session"): music composed in the browser, without words, matched to what the session is about (lo-fi beats, ambient, calm piano), chosen before or during a session. | SHOULD | 3 pts | EP-35 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1705,6 +1706,17 @@ Cross-cutting matrix:
 - [x] **EP-82/IS-82.02** · 1 pt · SHOULD — Roadmaps shows "Skills acquired": a radar for hard skills and one for soft skills, the filled shape for skills done and a dashed one adding those being learnt, figures on hover, and the same figures as a table. Under three areas, the table alone. The demo follows a few more roadmaps (Linux and Bash, databases), so its radar has a shape.
 
 **Tests.** `TestRadar*` unit tests (spokes by roadmap, by section, folding into Other, empty), written first; `TestSkillsRadar` against PostgreSQL (a skipped skill is left out, another person sees nothing); `radar.test.ts` for the geometry and labels. Seen in Firefox and Chromium on the demo.
+
+### EP-83 — Focus music
+
+**Goal.** Owner request, first made with the Pomodoro (EP-35): "the ability to listen to the best music for productivity related to what I do during the Pomodoro session". EP-35 shipped noise and links that open elsewhere; nothing musical played in Axon. Streaming from a music service would tell it when and how long the person works, so Axon composes the music itself.
+
+- [x] **EP-83/IS-83.01** · 2 pts · SHOULD — `lib/music`: three styles composed bar by bar in the browser, never the same twice: lo-fi beats (72 BPM, a ii–V–I–vi loop with ninths, swung hats, a record's hiss), ambient (60 BPM, open pads and bells in a long reverb), and calm piano (66 BPM, broken chords through I–V–vi–iii–IV–I–IV–V). No words, which compete with reading and writing; steady, slow tempos; every note in key. "Matched to what you focus on" picks lo-fi for tasks and projects, ambient for notes, resources, and areas, and piano for skills, roadmaps, and flashcards. Settings accept `music`, `lofi`, `ambient`, and `piano`; the demo uses `music`.
+- [x] **EP-83/IS-83.02** · 1 pt · SHOULD — Focus offers music and noise in one list, says what "matched" will play for the chosen item, and keeps a sound picker on the timer to change it mid-session; music stops for breaks as the noise does. One audio context per page, created in the click that starts the session: Safari only lets sound start from a click, and the session is created over the network first.
+
+**Tests.** `music.test.ts` (written first): the style for each type, notes inside their bar, every pitched note in key, drums only in lo-fi, the chord progression bar by bar, a seeded bar replays exactly, calm tempos. `TestFocusSessionsLinkToWhatTheyWereFor` accepts every sound and refuses an unknown one. The e2e Pomodoro test picks matched music for a task. Rendered offline in Chromium and Firefox: no clipping, no silent second, the three styles within 3.5 dB of each other (piano was 12 dB quieter and was raised). A live session runs its audio context in Chromium and WebKit; headless Firefox suspends every audio context, even one made in a click, so it was checked offline only.
+
+**Found on the way.** Aligned columns of Markdown tables never aligned: the alignment was a `style` attribute, which the Content Security Policy blocks; it is a class now.
 
 ### EP-20 — Analytics & insights
 

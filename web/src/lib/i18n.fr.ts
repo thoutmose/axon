@@ -187,8 +187,8 @@ export const fr: Record<string, string> = {
 	'Focus sound': 'Son de concentration',
 	Volume: 'Volume',
 	'Music for focus': 'Musique pour se concentrer',
-	'Links to playlists or streams you like for each kind of work. They open from the Focus page; nothing plays inside Axon.':
-		'Des liens vers vos playlists ou flux préférés pour chaque type de travail. Ils s’ouvrent depuis la page Concentration ; rien n’est joué dans Axon.',
+	'Axon composes its own music as you work, with nothing streamed. You can also keep links to playlists you like for each kind of work; they open from the Focus page.':
+		'Axon compose sa propre musique pendant que vous travaillez, sans rien diffuser depuis Internet. Vous pouvez aussi garder des liens vers vos playlists préférées pour chaque type de travail ; ils s’ouvrent depuis la page Concentration.',
 	'Add a music link': 'Ajouter un lien de musique',
 	French: 'Français',
 	Media: 'Médias',

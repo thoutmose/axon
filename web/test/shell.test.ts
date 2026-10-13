@@ -1552,10 +1552,14 @@ test('a Pomodoro session for a task: start, pause, skip to the break, and save',
 	).toBeVisible();
 	await page.getByLabel('A task, project, skill, note, or anything else').fill('Buy timber');
 	await page.getByRole('button', { name: /Buy timber/ }).click();
+	// Music matched to the work: beats for a task (EP-83).
+	await page.getByLabel('Focus sound').selectOption('music');
+	await expect(page.getByText('Lo-fi beats for this task.')).toBeVisible();
 	await page.getByRole('button', { name: 'Start 100 min of focus' }).click();
 	const timer = page.getByRole('region', { name: 'Focus' });
 	await expect(timer).toContainText('Buy timber');
 	await expect(timer.getByRole('img', { name: /left in Focus/ })).toBeVisible();
+	await expect(timer.getByLabel('Sound', { exact: true })).toHaveValue('music');
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Pause' }).click();
 	await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible();
