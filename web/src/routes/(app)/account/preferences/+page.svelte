@@ -353,7 +353,9 @@
 			</div>
 			<label class="check"
 				><input type="checkbox" bind:checked={s.vault.health} disabled={!s.vault.mirror} />
-				{t('Also write my food and training logs there (health data, one way)')}</label
+				{t(
+					'Also write my food and training logs and my journal there (health data, one way)'
+				)}</label
 			>
 			<p class="muted small">
 				{t(

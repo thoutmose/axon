@@ -26,6 +26,18 @@ func init() {
 	privacy.OnWithdraw(Consent, DeleteAll)
 }
 
+// OnChange, when set, hears which day changed, in the same transaction:
+// "health:journal:YYYY-MM-DD", or "health:*" when the journal was deleted
+// (the vault mirror then rewrites or removes its daily notes).
+var OnChange func(ctx context.Context, q db.Querier, userID uuid.UUID, key string) error
+
+func changed(ctx context.Context, q db.Querier, userID uuid.UUID, key string) error {
+	if OnChange == nil {
+		return nil
+	}
+	return OnChange(ctx, q, userID, key)
+}
+
 // ValidationError carries a message safe to show to people.
 type ValidationError struct{ Msg string }
 
@@ -101,10 +113,14 @@ func Put(ctx context.Context, q db.Querier, userID uuid.UUID, day, today time.Ti
 	if err := f.check(); err != nil {
 		return Entry{}, err
 	}
-	return scan(q.QueryRow(ctx, `INSERT INTO journal_entries (user_id, day, mood, energy, stress, sleep_hours, gratitude, note, updated_at)
+	e, err := scan(q.QueryRow(ctx, `INSERT INTO journal_entries (user_id, day, mood, energy, stress, sleep_hours, gratitude, note, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
 		ON CONFLICT (user_id, day) DO UPDATE SET mood = $3, energy = $4, stress = $5, sleep_hours = $6, gratitude = $7, note = $8, updated_at = now()
 		RETURNING `+columns, userID, day.Format(time.DateOnly), f.Mood, f.Energy, f.Stress, f.SleepHours, f.Gratitude, f.Note))
+	if err != nil {
+		return e, err
+	}
+	return e, changed(ctx, q, userID, "health:journal:"+e.Day)
 }
 
 // Get returns the entry for a day.
@@ -133,16 +149,21 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, from, to string) 
 // Delete removes the entry for a day.
 func Delete(ctx context.Context, q db.Querier, userID uuid.UUID, day string) error {
 	tag, err := q.Exec(ctx, `DELETE FROM journal_entries WHERE user_id = $1 AND day = $2`, userID, day)
-	if err == nil && tag.RowsAffected() == 0 {
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
 		return ErrNotFound
 	}
-	return err
+	return changed(ctx, q, userID, "health:journal:"+day)
 }
 
 // DeleteAll removes the person's whole journal (the consent was withdrawn).
 func DeleteAll(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error {
-	_, err := tx.Exec(ctx, `DELETE FROM journal_entries WHERE user_id = $1`, userID)
-	return err
+	if _, err := tx.Exec(ctx, `DELETE FROM journal_entries WHERE user_id = $1`, userID); err != nil {
+		return err
+	}
+	return changed(ctx, tx, userID, "health:*")
 }
 
 // Export returns the person's journal for their export.

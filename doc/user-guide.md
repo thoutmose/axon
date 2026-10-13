@@ -64,6 +64,8 @@ Firefly III–style personal finance: accounts and balances, income, expenses, t
 
 After two weeks of entries, **What helps you** on the same page shows which of your habits go with your better days: sleeping 7 hours or more, training, a focus session, habits kept, tasks finished, or writing what you are grateful for, against mood, energy, and stress over the last 90 days. A link is shown only when it is unlikely to be chance, as the two averages, with how it was worked out. It is a link, not a cause: take it as something to try. It is computed on your server; no AI is involved.
 
+If your vault mirror writes health logs (Preferences → Vault), each journal day is also a daily note in `Axon/Health/Journal/`, with mood, energy, stress, and sleep in the front matter, ready for queries in Obsidian.
+
 ## Media and health
 
 - **Media**: films, series, and books you want, are on, have finished, or dropped, with ratings, progress, and reviews. **Up next** explains each suggestion. Searching sends only the typed title to Open Library or TMDB, after you allow lookups.

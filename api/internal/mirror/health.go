@@ -12,6 +12,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/health"
+	"github.com/thoutmose/axon/api/internal/journal"
 )
 
 // Health notes are written one way, from Axon to the vault, and only when
@@ -81,4 +82,36 @@ func renderWorkout(ctx context.Context, q db.Querier, user, id uuid.UUID) (rende
 	}
 	return rendered{folder: "Health/Training", page: page{fm: []kv{{"type", "workout"}, {"date", w.DoneOn}, {"kind", w.Kind},
 		{"minutes", minutes}, {"effort", effort}}, title: w.DoneOn + " " + w.Title, footer: healthFooter, sections: secs}}, true, nil
+}
+
+// renderJournalDay returns a journal day as a daily note, its scales in the
+// front matter for queries in the vault, or ok=false when the day is gone.
+func renderJournalDay(ctx context.Context, q db.Querier, user uuid.UUID, day string) (rendered, bool, error) {
+	e, err := journal.Get(ctx, q, user, day)
+	if errors.Is(err, journal.ErrNotFound) {
+		return rendered{}, false, nil
+	}
+	if err != nil {
+		return rendered{}, false, err
+	}
+	fm := []kv{{"type", "journal"}, {"date", e.Day}}
+	for _, s := range []struct {
+		k string
+		v *int
+	}{{"mood", e.Mood}, {"energy", e.Energy}, {"stress", e.Stress}} {
+		if s.v != nil {
+			fm = append(fm, kv{s.k, strconv.Itoa(*s.v)})
+		}
+	}
+	if e.SleepHours != nil {
+		fm = append(fm, kv{"sleep_hours", num(e.SleepHours)})
+	}
+	var secs []section
+	if len(e.Gratitude) > 0 {
+		secs = append(secs, section{heading: "Grateful for", body: "- " + strings.Join(e.Gratitude, "\n- "), readOnly: true})
+	}
+	if e.Note != "" {
+		secs = append(secs, section{heading: "Note", body: e.Note, readOnly: true})
+	}
+	return rendered{folder: "Health/Journal", page: page{fm: fm, title: "Journal " + e.Day, footer: healthFooter, sections: secs}}, true, nil
 }

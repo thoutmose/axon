@@ -5130,7 +5130,7 @@ export interface components {
 			gamification?: {
 				enabled: boolean;
 			};
-			/** @description The vault mirror: tasks, goals, milestones, projects, areas, resources, habits, and media as Markdown notes under folder, both ways. Health logs only when health is on, one way. */
+			/** @description The vault mirror: tasks, goals, milestones, projects, areas, resources, habits, and media as Markdown notes under folder, both ways. Health logs and journal days only when health is on, one way. */
 			vault?: {
 				mirror: boolean;
 				folder: string;

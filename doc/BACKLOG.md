@@ -141,6 +141,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-90 | Chef & Nutritionist | Owner request: meals by budget, dietary restrictions, constraints, and time, by an AI agent that is a nutritionist and a cook. A planning form on Health, an agent that reads the daily needs and proposes a plan with recipes, a shopping list, and a cost, saved as a note once approved. | SHOULD | 5 pts | EP-44, EP-88 | Done |
 | EP-91 | Daily journal | Mood, energy, and stress on five faces, sleep, three things to be grateful for, and a note, a day at a time, under the health data consent; a Journal page, a Today card, and the last 30 days. | SHOULD | 3 pts | EP-88 | Done |
 | EP-92 | What helps you | Which habits go with better days: sleep, training, focus, habits kept, tasks finished, and gratitude against mood, energy, and stress over 90 days, with rank correlation, a permutation test, and a correction for many tests; only clear links, in plain words, never as causes. Computed on the server, no AI. | SHOULD | 3 pts | EP-91 | Done |
+| EP-93 | Journal days in the vault | Each journal day becomes a daily note in the vault, with its scales in the front matter, written one way when health notes are on, and removed with the day or the consent. | SHOULD | 1 pt | EP-48, EP-91 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1810,6 +1811,14 @@ Cross-cutting matrix:
 - [x] **EP-92/IS-92.02** · 1 pt · SHOULD — Journal: a "What helps you" card with each link, its strength, the averages on those days and the others as bars, the correlation and q-value, "a link is not a cause", and the method. The demo has 60 days of journal and runs, so it shows links at once.
 
 **Tests.** Spearman, the permutation test, and Benjamini–Hochberg against reference values from Python (written first); a planted link between sleep and mood found and noise left out, the 9-day case, and French; `TestWhatHelps` against PostgreSQL; the demo shows at least two links; the e2e journal test reads how many more days are needed.
+
+### EP-93 — Journal days in the vault
+
+**Goal.** Everything in Axon is a note in the vault (EP-48), but the journal was not: people who keep daily notes in Obsidian could not see or query their days there.
+
+- [x] **EP-93/IS-93.01** · 1 pt · SHOULD — With health notes turned on, each journal day is `Axon/Health/Journal/Journal YYYY-MM-DD.md`: `type: journal`, the date, and mood, energy, stress, and sleep hours in the front matter (only those given), then "Grateful for" and "Note". Written one way like the other health notes, in the same transaction as the change, rewritten when the day changes, and removed when it is deleted or the consent is withdrawn. Turning health notes on writes every existing day.
+
+**Tests.** `TestVaultMirror` (written first): a day becomes a note with its front matter and sections, deleting it removes the note, and withdrawing the consent removes every health note.
 
 ### EP-20 — Analytics & insights
 

@@ -7,7 +7,8 @@
 // front matter, or editable sections updates the item; a new note with a
 // known type under the folder creates an item; deleting the note deletes
 // the item. Moving a note into or out of Archive/ archives or restores it.
-// Health logs are written one way and only when the person turned them on.
+// Health logs and journal days are written one way and only when the
+// person turned them on.
 //
 // A single background worker reads the event log (and a small queue for
 // habit check-ins and health logs) every few seconds, so no request ever
@@ -29,6 +30,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
 	"github.com/thoutmose/axon/api/internal/health"
+	"github.com/thoutmose/axon/api/internal/journal"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/settings"
@@ -45,6 +47,7 @@ func init() {
 		_ = enqueue(ctx, q, user, habit.String())
 	}
 	health.OnChange = enqueue
+	journal.OnChange = enqueue
 }
 
 // Worker runs the mirror.
@@ -198,7 +201,8 @@ func (w *Worker) syncAll(ctx context.Context, id uuid.UUID, u user) error {
 
 func (w *Worker) syncHealth(ctx context.Context, id uuid.UUID, u user) error {
 	rows, err := w.db.Query(ctx, `SELECT 'health:food:' || to_char(eaten_on, 'YYYY-MM-DD') FROM food_entries WHERE user_id = $1
-		UNION SELECT 'health:workout:' || id FROM workouts WHERE user_id = $1`, id)
+		UNION SELECT 'health:workout:' || id FROM workouts WHERE user_id = $1
+		UNION SELECT 'health:journal:' || to_char(day, 'YYYY-MM-DD') FROM journal_entries WHERE user_id = $1`, id)
 	if err != nil {
 		return err
 	}
@@ -285,6 +289,8 @@ func (w *Worker) refreshHealth(ctx context.Context, id uuid.UUID, u user, key st
 			return nil
 		}
 		r, ok, err = renderWorkout(ctx, w.db, id, wid)
+	case strings.HasPrefix(key, "health:journal:"):
+		r, ok, err = renderJournalDay(ctx, w.db, id, strings.TrimPrefix(key, "health:journal:"))
 	default:
 		return nil
 	}
