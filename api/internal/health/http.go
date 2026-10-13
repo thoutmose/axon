@@ -54,6 +54,9 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/health/foods/search", h.search)
 	r.Get("/v1/health/foods/barcode/{code}", h.barcode)
 	r.Get("/v1/health/needs", h.needs)
+	r.Get("/v1/health/water", h.water)
+	r.Post("/v1/health/water", h.addWater)
+	r.Delete("/v1/health/water/{id}", h.deleteWater)
 	r.Put("/v1/health/profile", h.putProfile)
 	r.Get("/v1/health/workouts", h.workouts)
 	r.Post("/v1/health/workouts", h.createWorkout)
@@ -375,4 +378,80 @@ func (h *Handlers) putProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, h.needsBody(r, &p))
+}
+
+// date reads ?date= or a body's date, defaulting to the person's today.
+func (h *Handlers) dateOr(w http.ResponseWriter, s string, today time.Time) (time.Time, bool) {
+	if s == "" {
+		return today, true
+	}
+	t, err := time.Parse(time.DateOnly, s)
+	if err != nil {
+		h.fail(w, ValidationError{"The date is YYYY-MM-DD."})
+		return t, false
+	}
+	return t, true
+}
+
+func (h *Handlers) water(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	day, ok := h.dateOr(w, r.URL.Query().Get("date"), h.today(r, user))
+	if !ok {
+		return
+	}
+	d, err := Water(r.Context(), h.db, user, day)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, d)
+}
+
+func (h *Handlers) addWater(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	var in struct {
+		ML      int    `json:"ml"`
+		DrunkOn string `json:"drunk_on"`
+	}
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	today := h.today(r, user)
+	day, ok := h.dateOr(w, in.DrunkOn, today)
+	if !ok {
+		return
+	}
+	var e WaterEntry
+	err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) (err error) {
+		e, err = AddWater(r.Context(), tx, user, day, today, in.ML)
+		return err
+	})
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusCreated, e)
+}
+
+func (h *Handlers) deleteWater(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	id, err := pathID(r)
+	if err == nil {
+		err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error { return DeleteWater(r.Context(), tx, user, id) })
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

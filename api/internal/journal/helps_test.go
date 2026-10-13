@@ -69,3 +69,34 @@ func TestHelpsSpeaksFrench(t *testing.T) {
 		t.Fatalf("fr = %+v", h)
 	}
 }
+
+// Water is a factor only on the days it was logged (EP-101): a day with
+// nothing logged is not a dry day.
+func TestWaterGoesWithBetterDays(t *testing.T) {
+	var days []Day
+	for i := range 40 {
+		d := Day{Date: fmt.Sprintf("2026-09-%02d", i%30+1)}
+		mood := float64(2 + (i*7)%2) // alternating, then planted below
+		if i < 30 {
+			w := 800.0
+			if i%2 == 0 {
+				w, mood = 2000, 4
+			} else {
+				mood = 2
+			}
+			d.Water = &w
+		}
+		d.Mood = &mood
+		days = append(days, d)
+	}
+	h := analyse(days, "en")
+	var found *Finding
+	for i := range h.Findings {
+		if h.Findings[i].Factor == "water" && h.Findings[i].Outcome == "mood" {
+			found = &h.Findings[i]
+		}
+	}
+	if found == nil || found.N != 30 || !strings.Contains(found.Sentence, "drank 1.5 L or more") {
+		t.Fatalf("water finding = %+v", found)
+	}
+}

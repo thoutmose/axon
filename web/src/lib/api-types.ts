@@ -2970,6 +2970,44 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/health/water': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Water drunk on a day, its target, and the week to it
+		 * @description The target is the drinks' share (80 %) of the daily water need worked out from the health profile (EFSA adequate intake, drinks and food together); null without a profile, under 18, or during pregnancy and breastfeeding.
+		 */
+		get: operations['getWater'];
+		put?: never;
+		/** Log a drink */
+		post: operations['addWater'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/water/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a drink */
+		delete: operations['deleteWater'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/health/needs': {
 		parameters: {
 			query?: never;
@@ -4647,6 +4685,27 @@ export interface components {
 			carbs_g: number;
 			fat_g: number;
 		};
+		WaterEntry: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date */
+			drunk_on: string;
+			ml: number;
+			/** Format: date-time */
+			created_at: string;
+		};
+		WaterDay: {
+			/** Format: date */
+			date: string;
+			total_ml: number;
+			target_ml: number | null;
+			entries: components['schemas']['WaterEntry'][];
+			week: {
+				/** Format: date */
+				date: string;
+				total_ml: number;
+			}[];
+		};
 		HealthProfile: {
 			birth_year: number;
 			/** @enum {string} */
@@ -5158,6 +5217,7 @@ export interface components {
 					| 'calendar'
 					| 'household'
 					| 'journal'
+					| 'water'
 					| 'overview'
 				)[];
 			};
@@ -12349,6 +12409,91 @@ export interface operations {
 			503: components['responses']['Problem'];
 		};
 	};
+	getWater: {
+		parameters: {
+			query?: {
+				/** @description Defaults to the person's today. */
+				date?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The day. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WaterDay'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	addWater: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example 250 */
+					ml: number;
+					/**
+					 * Format: date
+					 * @description Defaults to the person's today; never a later day.
+					 */
+					drunk_on?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The drink. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WaterEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWater: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
 	getDailyNeeds: {
 		parameters: {
 			query?: never;
@@ -12452,7 +12597,7 @@ export interface operations {
 						method: string;
 						findings: {
 							/** @enum {string} */
-							factor: 'sleep' | 'training' | 'focus' | 'habits' | 'tasks' | 'gratitude';
+							factor: 'sleep' | 'water' | 'training' | 'focus' | 'habits' | 'tasks' | 'gratitude';
 							/** @enum {string} */
 							outcome: 'mood' | 'energy' | 'stress';
 							rho: number;

@@ -4,7 +4,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 ## Unreleased (1.1)
 
-Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-100 in #85.
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-101 in #85.
 
 ### Added
 
@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Water**: log a glass or a bottle in one tap on Health or Today, against the drinks' share of your daily water need (EFSA), with the week, and in What helps you (EP-101).
 - **Your vault's templates**: the SecondBrain vault's nineteen templates ship as Axon's own, byte for byte (Zettelkasten, PARA, daily, weekly, and monthly notes, roadmaps, goals, milestones, habits, media, and six retrieval tests), filed where the vault keeps them, with their placeholders filled (EP-100).
 - **Every page its picture**: Journal, Insights, the weekly review, and Agents get their own scenery (Vermeer's evening light, an observatory, a lighthouse, clockwork automata); every themed page says what its picture shows and the painting, film, or game it nods to; each type of note has a small drawing and a sentence on what it is for (EP-98).
 - **A year you can read**: the 12-month activity chart is laid out by Monday-first weeks with month and weekday labels, opens on the current month with today outlined, and has a legend from no activity to more; the demo has a lived-in year (EP-99).

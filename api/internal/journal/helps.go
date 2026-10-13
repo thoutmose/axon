@@ -35,8 +35,9 @@ type Day struct {
 	Date                 string
 	Mood, Energy, Stress *float64
 	Sleep                *float64
-	Workout, Focus       float64 // minutes
-	Habits, Tasks        float64 // habits kept, tasks finished
+	Water                *float64 // ml drunk, nil on a day nothing was logged
+	Workout, Focus       float64  // minutes
+	Habits, Tasks        float64  // habits kept, tasks finished
 	Gratitude            bool
 }
 
@@ -101,6 +102,15 @@ var factors = []factor{
 	}, func(_ []float64, lang string) (func(float64) bool, string) {
 		// Seven hours: the least adults need, by the AASM and Sleep Research Society.
 		return func(v float64) bool { return v >= 7 }, l10n.Tr(lang, "slept 7 h or more")
+	}},
+	// 1.5 L: about the drinks' share of EFSA's adequate intakes (2.0 and 2.5 L, food included).
+	{"water", func(d Day) (float64, bool) {
+		if d.Water == nil {
+			return 0, false
+		}
+		return *d.Water, true
+	}, func(_ []float64, lang string) (func(float64) bool, string) {
+		return func(v float64) bool { return v >= 1500 }, l10n.Tr(lang, "drank 1.5 L or more")
 	}},
 	{"training", func(d Day) (float64, bool) { return d.Workout, true },
 		func(_ []float64, lang string) (func(float64) bool, string) { return any0(lang, l10n.Mark("trained")) }},
@@ -227,7 +237,8 @@ func Window(ctx context.Context, q db.Querier, userID uuid.UUID, today time.Time
 			(SELECT count(*)::float8 FROM habit_checkins c JOIN entities e ON e.id = c.habit_id
 				WHERE e.user_id = $1 AND c.day = d.day AND c.status IN ('done', 'two_minute')),
 			(SELECT count(*)::float8 FROM tasks t JOIN entities e ON e.id = t.id
-				WHERE e.user_id = $1 AND (t.completed_at AT TIME ZONE $3)::date = d.day)
+				WHERE e.user_id = $1 AND (t.completed_at AT TIME ZONE $3)::date = d.day),
+			(SELECT sum(w.ml)::float8 FROM water_entries w WHERE w.user_id = $1 AND w.drunk_on = d.day)
 		FROM d LEFT JOIN journal_entries j ON j.user_id = $1 AND j.day = d.day ORDER BY d.day`,
 		userID, today.Format(time.DateOnly), tz)
 	if err != nil {
@@ -235,7 +246,7 @@ func Window(ctx context.Context, q db.Querier, userID uuid.UUID, today time.Time
 	}
 	return pgx.CollectRows(rows, func(r pgx.CollectableRow) (Day, error) {
 		var d Day
-		err := r.Scan(&d.Date, &d.Mood, &d.Energy, &d.Stress, &d.Sleep, &d.Gratitude, &d.Workout, &d.Focus, &d.Habits, &d.Tasks)
+		err := r.Scan(&d.Date, &d.Mood, &d.Energy, &d.Stress, &d.Sleep, &d.Gratitude, &d.Workout, &d.Focus, &d.Habits, &d.Tasks, &d.Water)
 		return d, err
 	})
 }
