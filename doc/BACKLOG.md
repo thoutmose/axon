@@ -142,6 +142,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-91 | Daily journal | Mood, energy, and stress on five faces, sleep, three things to be grateful for, and a note, a day at a time, under the health data consent; a Journal page, a Today card, and the last 30 days. | SHOULD | 3 pts | EP-88 | Done |
 | EP-92 | What helps you | Which habits go with better days: sleep, training, focus, habits kept, tasks finished, and gratitude against mood, energy, and stress over 90 days, with rank correlation, a permutation test, and a correction for many tests; only clear links, in plain words, never as causes. Computed on the server, no AI. | SHOULD | 3 pts | EP-91 | Done |
 | EP-93 | Journal days in the vault | Each journal day becomes a daily note in the vault, with its scales in the front matter, written one way when health notes are on, and removed with the day or the consent. | SHOULD | 1 pt | EP-48, EP-91 | Done |
+| EP-94 | Only what you use | A new account is asked what it wants Axon for; the menu and Today show just those pages, and Preferences hides or brings back any page. Fixes Preferences resetting Today's cards. | SHOULD | 3 pts | EP-54, EP-63 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1819,6 +1820,16 @@ Cross-cutting matrix:
 - [x] **EP-93/IS-93.01** · 1 pt · SHOULD — With health notes turned on, each journal day is `Axon/Health/Journal/Journal YYYY-MM-DD.md`: `type: journal`, the date, and mood, energy, stress, and sleep hours in the front matter (only those given), then "Grateful for" and "Note". Written one way like the other health notes, in the same transaction as the change, rewritten when the day changes, and removed when it is deleted or the consent is withdrawn. Turning health notes on writes every existing day.
 
 **Tests.** `TestVaultMirror` (written first): a day becomes a note with its front matter and sections, deleting it removes the note, and withdrawing the consent removes every health note.
+
+### EP-94 — Only what you use
+
+**Goal.** Axon has nineteen pages, and a new account met them all at once: the first minutes decide whether someone stays, and a life OS that shows a budget, a household, and flashcards to someone who came for tasks feels like work before it helps.
+
+- [x] **EP-94/IS-94.01** · 1 pt · SHOULD — Settings gain `menu`: the pages left out of the navigation (any but Today, each once) and whether the person has chosen. A hidden page still opens from a link or a search, and nothing in it changes.
+- [x] **EP-94/IS-94.02** · 1 pt · SHOULD — A new account is first asked, on Today, what it wants Axon for (eight uses, from tasks and projects to a shared home). The answer sets the menu and Today's cards in one save; "Show me everything" keeps both as they are; imports are one link away. The menu is remembered on the device, so it does not flash every page before the settings answer.
+- [x] **EP-94/IS-94.03** · 1 pt · SHOULD — Preferences → Pages in the menu. Preferences sent the settings without Today's cards, and the API fills a part left out with its default, so saving Preferences reset a customised Today; it now sends them back as they are.
+
+**Tests.** `TestMenuPages` (written first: default, saved, duplicates, Today, unknown pages, YAML); `planFor` unit tests; an e2e test that chooses two uses, finds the menu without Budget and Today with the calendar, brings every page back in Preferences, and finds Today unchanged, with axe.
 
 ### EP-20 — Analytics & insights
 

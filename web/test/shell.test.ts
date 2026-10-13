@@ -112,6 +112,41 @@ test('register with a passkey and see recovery codes once', async () => {
 	await noSeriousA11yViolations(page);
 });
 
+test('a new account says what Axon is for, and the menu shows just that', async () => {
+	const welcome = page.getByRole('region', { name: 'What do you want Axon for?' });
+	await welcome.getByLabel('Tasks and projects').check();
+	await welcome.getByLabel('Goals and habits').check();
+	await noSeriousA11yViolations(page);
+	await welcome.getByRole('button', { name: 'Set up my Axon' }).click();
+	await expect(welcome).toBeHidden();
+	await expect(page.getByRole('heading', { name: 'Calendar today' })).toBeVisible();
+	await expect(page.locator('header nav a[href="/budget"]')).toHaveCount(0);
+	await expect(page.locator('header nav a[href="/goals"]')).not.toHaveCount(0);
+	// Preferences bring a page back, and saving them keeps Today as it was set.
+	await page.goto('/account/preferences');
+	const pages = page.getByRole('group', { name: 'Pages in the menu' });
+	// all() does not wait: let the page load its settings before changing them.
+	await page.waitForLoadState('networkidle');
+	for (const box of await pages.getByRole('checkbox').all()) await box.check();
+	await expect(pages.getByRole('checkbox', { checked: false })).toHaveCount(0);
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
+	await expect(page.locator('header nav a[href="/budget"]')).not.toHaveCount(0);
+	await page.goto('/today');
+	await expect(page.getByRole('heading', { name: 'Calendar today' })).toBeVisible();
+	// Back to the default Today for the tests that follow.
+	await page.evaluate(async () => {
+		const doc = await (await fetch('/api/v1/me/settings')).json();
+		delete doc.ai;
+		doc.today = { sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview'] };
+		await fetch('/api/v1/me/settings', {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(doc)
+		});
+	});
+});
+
 test('API answers are sent compressed', async () => {
 	// The roadmap library: the same 12 kB for everyone (under 512 bytes is not worth compressing).
 	const res = await page.request.get('/api/v1/roadmaps/sources', {

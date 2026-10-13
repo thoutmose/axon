@@ -93,7 +93,20 @@ type Doc struct {
 	Learning     Learning     `json:"learning" yaml:"learning"`
 	Reminders    Reminders    `json:"reminders" yaml:"reminders"`
 	Today        Today        `json:"today" yaml:"today"`
+	Menu         Menu         `json:"menu" yaml:"menu"`
 }
+
+// Menu (EP-94) lists the pages left out of the navigation, so a person
+// sees what they use; hidden pages still open from a link or a search.
+// Chosen is set once the person has said what they want Axon for.
+type Menu struct {
+	Hidden []string `json:"hidden" yaml:"hidden"`
+	Chosen bool     `json:"chosen" yaml:"chosen"`
+}
+
+// MenuPages are the pages the menu can leave out (Today always stays).
+var MenuPages = []string{"tasks", "projects", "calendar", "focus", "notes", "areas", "resources", "archive",
+	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "review", "insights", "agents"}
 
 // Today (EP-63) lists the sections the Today page shows, in order.
 type Today struct {
@@ -151,6 +164,7 @@ func Defaults() Doc {
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
 		Reminders: Reminders{Morning: "08:00", Evening: "20:00"},
 		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
+		Menu:      Menu{Hidden: []string{}},
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
@@ -231,6 +245,13 @@ func (d Doc) Validate() error {
 		}
 		seen[sec] = true
 	}
+	seen = map[string]bool{}
+	for _, p := range d.Menu.Hidden {
+		if !slices.Contains(MenuPages, p) || seen[p] {
+			return FieldError{"menu.hidden", "lists each of " + strings.Join(MenuPages, ", ") + " at most once"}
+		}
+		seen[p] = true
+	}
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}
 	}
@@ -270,6 +291,9 @@ func Get(ctx context.Context, q db.Querier, userID uuid.UUID) (Doc, error) {
 func (d *Doc) normalize() {
 	if d.Today.Sections == nil {
 		d.Today.Sections = Defaults().Today.Sections
+	}
+	if d.Menu.Hidden == nil {
+		d.Menu.Hidden = []string{}
 	}
 }
 

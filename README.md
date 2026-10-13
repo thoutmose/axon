@@ -91,6 +91,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ A trash: whatever you delete stays 30 days with what went with it (a goal's milestones, a habit's check-ins), Undo right after deleting, and Account → Trash to restore.
 - ✅ Bulk actions on tasks (status, context, due date, delete), and dragging tasks between days of the calendar or onto it from the undated next actions.
 - ✅ A Today you arrange: choose and order its cards, with learning, habits, today's calendar, and the household among them.
+- ✅ Only what you use: a new account says what it wants Axon for, and the menu and Today show just those pages; any page can be hidden or brought back in Preferences.
 - ✅ Search by meaning, if you want it: choose an embedding service (a local model server, OpenAI, or Voyage AI) and give its own consent; notes are then found by what they mean, in the command center and under "Close in meaning". Off, related notes use local word statistics.
 - ✅ Household sharing: people on the same Axon join with a one-time code and share lists (shopping, chores, anything), with items given to someone; nothing personal is shared.
 - ✅ Imports from other apps: Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX transactions, Notion pages; preview first, and importing again adds nothing twice.

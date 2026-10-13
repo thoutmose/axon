@@ -2732,5 +2732,22 @@ export const fr: Record<string, string> = {
 	'Write in your journal on {n} more days to see what goes with your better days.':
 		'Écrivez dans votre journal encore {n} jours pour voir ce qui accompagne vos meilleurs jours.',
 	'Strong link': 'Lien fort',
-	'Moderate link': 'Lien modéré'
+	'Moderate link': 'Lien modéré',
+	'What do you want Axon for?': 'Pour quoi voulez-vous utiliser Axon ?',
+	'Pick what you use: the menu and Today will show just that. You can change it any time in Preferences.':
+		'Choisissez ce qui vous sert : le menu et Aujourd’hui n’afficheront que cela. Vous pourrez le changer à tout moment dans les Préférences.',
+	'Set up my Axon': 'Préparer mon Axon',
+	'Show me everything': 'Tout afficher',
+	'Coming from another app?': 'Vous venez d’une autre application ?',
+	'Import from Todoist, TickTick, Notion, Goodreads, and more.':
+		'Importez depuis Todoist, TickTick, Notion, Goodreads et d’autres.',
+	'Pages in the menu': 'Pages du menu',
+	'Show only what you use. A hidden page still opens from a link or a search, and nothing in it is deleted.':
+		'N’affichez que ce qui vous sert. Une page masquée s’ouvre toujours depuis un lien ou une recherche, et rien n’y est supprimé.',
+	'Tasks and projects': 'Tâches et projets',
+	'Notes and knowledge': 'Notes et connaissances',
+	'Goals and habits': 'Objectifs et habitudes',
+	'Health and well-being': 'Santé et bien-être',
+	Money: 'Argent',
+	'A shared home': 'Un foyer partagé'
 };

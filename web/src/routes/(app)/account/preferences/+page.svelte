@@ -5,6 +5,8 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
+	import { setHidden } from '$lib/menu.svelte';
+	import { PAGES, pageLabels } from '$lib/uses';
 	import { soundOptions, type Sound } from '$lib/sounds';
 	import ProviderSettings from '$lib/ProviderSettings.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -29,6 +31,8 @@
 		vault: { mirror: boolean; folder: string; health: boolean };
 		learning: { new_per_day: number; retention: number; interleave: boolean; type_answer: boolean };
 		reminders: { enabled: boolean; morning: string; evening: string; email: string };
+		today: { sections: string[] };
+		menu: { hidden: string[]; chosen: boolean };
 	};
 	const remindersDefaults = { enabled: false, morning: '08:00', evening: '20:00', email: '' };
 	type ReminderStatus = {
@@ -107,7 +111,11 @@
 				gamification: loaded.gamification ?? { enabled: false },
 				vault: loaded.vault ?? { mirror: true, folder: t('Axon'), health: false },
 				learning: loaded.learning ?? learningDefaults,
-				reminders: loaded.reminders ?? remindersDefaults
+				reminders: loaded.reminders ?? remindersDefaults,
+				today: loaded.today ?? {
+					sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']
+				},
+				menu: loaded.menu ?? { hidden: [], chosen: false }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -125,8 +133,11 @@
 			gamification: saved.gamification ?? { enabled: false },
 			vault: saved.vault ?? { mirror: true, folder: t('Axon'), health: false },
 			learning: saved.learning ?? learningDefaults,
-			reminders: saved.reminders ?? remindersDefaults
+			reminders: saved.reminders ?? remindersDefaults,
+			today: saved.today ?? s!.today,
+			menu: saved.menu ?? s!.menu
 		};
+		setHidden(s.menu.hidden);
 		setLocale(saved.language);
 		applyAppearance(saved.appearance as Appearance);
 	}
@@ -146,7 +157,9 @@
 				gamification,
 				vault,
 				learning,
-				reminders
+				reminders,
+				today,
+				menu
 			} = s;
 			apply(
 				await api<Settings>('/v1/me/settings', {
@@ -160,7 +173,10 @@
 						gamification,
 						vault,
 						learning,
-						reminders
+						reminders,
+						// Sent back as they are: a part left out would be reset to its default.
+						today,
+						menu
 					}
 				})
 			);
@@ -228,6 +244,30 @@
 					</div>
 				{/each}
 			</div>
+		</Section>
+
+		<Section id="menu" title={t('Pages in the menu')}>
+			<fieldset class="pages">
+				<legend class="visually-hidden">{t('Pages in the menu')}</legend>
+				{#each PAGES as p (p)}
+					<label class="check"
+						><input
+							type="checkbox"
+							checked={!s.menu.hidden.includes(p)}
+							onchange={(e) => {
+								const on = e.currentTarget.checked;
+								s!.menu.hidden = PAGES.filter((x) => (x === p ? !on : s!.menu.hidden.includes(x)));
+							}}
+						/>
+						{t(pageLabels[p])}</label
+					>
+				{/each}
+			</fieldset>
+			<p class="muted small">
+				{t(
+					'Show only what you use. A hidden page still opens from a link or a search, and nothing in it is deleted.'
+				)}
+			</p>
 		</Section>
 
 		<Section id="keyboard" title={t('Keyboard')}>
@@ -621,5 +661,13 @@
 	.upload {
 		display: inline-grid;
 		gap: var(--space-1);
+	}
+	.pages {
+		border: 0;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+		gap: var(--space-2);
 	}
 </style>

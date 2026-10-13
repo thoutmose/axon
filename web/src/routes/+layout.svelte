@@ -13,6 +13,7 @@
 	import { avatar, avatarSrc } from '$lib/avatar.svelte';
 	import { flush, loadOutbox, outbox } from '$lib/outbox.svelte';
 	import { watchInstall } from '$lib/install.svelte';
+	import { loadMenu, menu, storedHidden } from '$lib/menu.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
 	let { children } = $props();
@@ -22,10 +23,11 @@
 		page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	let theme = $state<Theme>('system');
 
-	// Eighteen pages in five groups (EP-54): what you do, what you think,
-	// how you grow, the rest of life, and reflecting. Today stays one click away.
+	// Nineteen pages in five groups (EP-54): what you do, what you think,
+	// how you grow, the rest of life, and reflecting. Today stays one click
+	// away; the pages a person hid are left out, and so is an empty group (EP-94).
 	type NavLink = { href: string; label: string; also?: string[] };
-	const groups: { id: string; label: string; links: NavLink[] }[] = $derived([
+	const allGroups: { id: string; label: string; links: NavLink[] }[] = $derived([
 		{
 			id: 'do',
 			label: t('Do'),
@@ -76,6 +78,11 @@
 			]
 		}
 	]);
+	const groups = $derived(
+		allGroups
+			.map((g) => ({ ...g, links: g.links.filter((l) => !menu.hidden.includes(l.href.slice(1))) }))
+			.filter((g) => g.links.length > 0)
+	);
 	const inSection = (l: NavLink) => current(l.href) || (l.also ?? []).some(current);
 	let openGroup = $state<string | null>(null);
 	// Narrow screens get one Menu button and every group in a sheet.
@@ -117,8 +124,12 @@
 		theme = storedTheme();
 		applyTheme(theme);
 		setLocale(storedLocale());
+		menu.hidden = storedHidden();
 		api<AuthStatus>('/v1/auth/status')
-			.then((s) => (avatar.signedIn = s.signed_in))
+			.then((s) => {
+				avatar.signedIn = s.signed_in;
+				if (s.signed_in) loadMenu().catch(() => {});
+			})
 			.catch(() => {});
 		// Captures kept offline go out as soon as Axon answers again.
 		loadOutbox();

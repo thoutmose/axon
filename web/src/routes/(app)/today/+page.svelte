@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Welcome from '$lib/Welcome.svelte';
 	import JournalToday from '$lib/JournalToday.svelte';
 	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
@@ -57,10 +58,13 @@
 	let household = $state<Household | null>(null);
 	let me = $state('');
 
-	api<{ today?: { sections: string[] | null } }>('/v1/me/settings')
+	// A new account is first asked what it wants Axon for (EP-94).
+	let chosen = $state(true);
+	api<{ today?: { sections: string[] | null }; menu?: { chosen: boolean } }>('/v1/me/settings')
 		.then((s) => {
 			// Without a list (an older document), the defaults stay.
 			if (Array.isArray(s.today?.sections)) sections = s.today.sections;
+			chosen = s.menu?.chosen ?? true;
 		})
 		.catch(() => {});
 	api<{ id: string }>('/v1/me')
@@ -208,6 +212,14 @@
 	{:else if !d}
 		<Status kind="loading" message={t('Loading your day…')} />
 	{:else}
+		{#if firstRun && !chosen}
+			<Welcome
+				ondone={(s) => {
+					chosen = true;
+					if (s) sections = s;
+				}}
+			/>
+		{/if}
 		{#if firstRun}
 			<section class="card start" aria-labelledby="start-title">
 				<h2 id="start-title">{t('Get started')}</h2>
