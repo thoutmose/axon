@@ -4,7 +4,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 ## Unreleased (1.1)
 
-Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83.
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84.
 
 ### Added
 
