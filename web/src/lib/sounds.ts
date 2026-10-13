@@ -1,17 +1,38 @@
 /**
  * Focus sounds generated in the browser (EP-35): white, pink, and brown
- * noise, and rain. Nothing is downloaded, so no third-party audio is loaded
- * unless the person adds their own music links.
+ * noise, rain, and music (EP-83). Nothing is downloaded, so no third-party
+ * audio is loaded unless the person opens their own music links.
  */
 
-export type Sound = 'none' | 'white' | 'pink' | 'brown' | 'rain';
+import { playMusic, styleFor } from './music';
+
+type Noise = 'white' | 'pink' | 'brown' | 'rain';
+export type Sound = 'none' | Noise | 'music' | 'lofi' | 'ambient' | 'piano';
+
+/** The choices, in the order the Focus and Preferences pages offer them. */
+export const soundOptions: { group: string; items: [Sound, string][] }[] = [
+	{
+		group: 'Music',
+		items: [
+			['music', 'Matched to what you focus on'],
+			['lofi', 'Lo-fi beats'],
+			['ambient', 'Ambient'],
+			['piano', 'Calm piano']
+		]
+	},
+	{
+		group: 'Noise',
+		items: [
+			['white', 'White noise'],
+			['pink', 'Pink noise'],
+			['brown', 'Brown noise'],
+			['rain', 'Rain']
+		]
+	}
+];
 
 /** Fills a buffer with noise; pure, so it is unit-tested. */
-export function noise(
-	kind: Exclude<Sound, 'none'>,
-	length: number,
-	random = Math.random
-): Float32Array {
+export function noise(kind: Noise, length: number, random = Math.random): Float32Array {
 	const out = new Float32Array(length);
 	let b0 = 0,
 		b1 = 0,
@@ -42,10 +63,31 @@ export function noise(
 	return out;
 }
 
-/** Starts a looping sound; returns a function that stops it. */
-export function play(kind: Sound, volume: number): () => void {
-	if (kind === 'none' || typeof AudioContext === 'undefined') return () => {};
-	const ctx = new AudioContext();
+let shared: AudioContext | null = null;
+
+/**
+ * The page's one audio context. Browsers (Safari above all) only let sound
+ * start from a click, so call this in the click handler itself, before any
+ * await; later sounds reuse it.
+ */
+export function audio(): AudioContext | null {
+	if (typeof AudioContext === 'undefined') return null;
+	if (!shared || shared.state === 'closed') shared = new AudioContext();
+	if (shared.state === 'suspended') shared.resume().catch(() => {});
+	return shared;
+}
+
+/**
+ * Starts a sound; returns a function that stops it. "music" picks the style
+ * for the type of what the session is about.
+ */
+export function play(kind: Sound, volume: number, about?: string): () => void {
+	if (kind === 'none') return () => {};
+	const ctx = audio();
+	if (!ctx) return () => {};
+	if (kind === 'music') return playMusic(ctx, styleFor(about), volume);
+	if (kind === 'lofi' || kind === 'ambient' || kind === 'piano')
+		return playMusic(ctx, kind, volume);
 	const seconds = 4;
 	const buffer = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
 	buffer.copyToChannel(noise(kind, buffer.length) as Float32Array<ArrayBuffer>, 0);
@@ -58,14 +100,14 @@ export function play(kind: Sound, volume: number): () => void {
 	src.start();
 	return () => {
 		src.stop();
-		ctx.close();
+		gain.disconnect();
 	};
 }
 
 /** A short, gentle chime at the end of a phase. */
 export function chime(volume: number) {
-	if (typeof AudioContext === 'undefined') return;
-	const ctx = new AudioContext();
+	const ctx = audio();
+	if (!ctx) return;
 	const osc = ctx.createOscillator();
 	const gain = ctx.createGain();
 	osc.frequency.value = 660;
@@ -74,5 +116,5 @@ export function chime(volume: number) {
 	osc.connect(gain).connect(ctx.destination);
 	osc.start();
 	osc.stop(ctx.currentTime + 1.2);
-	osc.onended = () => ctx.close();
+	osc.onended = () => gain.disconnect();
 }

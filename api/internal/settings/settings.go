@@ -71,7 +71,7 @@ type Focus struct {
 	LongBreak   int         `json:"long_break_minutes" yaml:"long_break_minutes"`
 	Rounds      int         `json:"rounds" yaml:"rounds"`     // work blocks before the long break
 	Sessions    int         `json:"sessions" yaml:"sessions"` // how many of those cycles in a row
-	Sound       string      `json:"sound" yaml:"sound"`       // none, white, pink, brown, rain
+	Sound       string      `json:"sound" yaml:"sound"`       // none, noise (white, pink, brown, rain), or music (music: matched; lofi, ambient, piano)
 	Volume      int         `json:"volume" yaml:"volume"`     // 0–100
 	Music       []MusicLink `json:"music" yaml:"music"`
 }
@@ -205,7 +205,7 @@ func (d Doc) Validate() error {
 	case len(f.Music) > 20:
 		return FieldError{"focus.music", "has up to 20 links"}
 	}
-	if err := oneOf("focus.sound", f.Sound, "none", "white", "pink", "brown", "rain"); err != nil {
+	if err := oneOf("focus.sound", f.Sound, "none", "white", "pink", "brown", "rain", "music", "lofi", "ambient", "piano"); err != nil {
 		return err
 	}
 	for _, m := range f.Music {

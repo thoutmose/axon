@@ -20,7 +20,8 @@
 		type FocusConfig,
 		type Timer
 	} from '$lib/pomodoro';
-	import { chime, play, type Sound } from '$lib/sounds';
+	import { styleFor } from '$lib/music';
+	import { audio, chime, play, soundOptions, type Sound } from '$lib/sounds';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -62,6 +63,11 @@
 	const phase = $derived(timer && !finished(timer) ? timer.phases[timer.index] : null);
 	const left = $derived(timer ? remaining(timer, now) : 0);
 	const progress = $derived(phase ? 1 - left / (phase.minutes * 60_000) : 0);
+	const soundNames = Object.fromEntries(soundOptions.flatMap((g) => g.items));
+	// What "matched" music plays: the style for the type of what the session is about.
+	const playing = $derived(
+		sound === 'music' ? soundNames[styleFor(session?.target?.type)] : soundNames[sound]
+	);
 
 	async function loadHistory() {
 		try {
@@ -127,7 +133,9 @@
 	function syncSound() {
 		stopSound();
 		stopSound =
-			timer && !timer.paused && phase?.kind === 'work' ? play(sound, config.volume) : () => {};
+			timer && !timer.paused && phase?.kind === 'work'
+				? play(sound, config.volume, session?.target?.type)
+				: () => {};
 	}
 
 	function search() {
@@ -148,6 +156,7 @@
 	}
 
 	async function start() {
+		audio(); // while the click still counts, so the sound may start after the request
 		try {
 			session = await api<Session>('/v1/focus-sessions', {
 				method: 'POST',
@@ -211,6 +220,17 @@
 	const C = 2 * Math.PI * R;
 </script>
 
+{#snippet soundChoices()}
+	<option value="none">None</option>
+	{#each soundOptions as g (g.group)}
+		<optgroup label={g.group}>
+			{#each g.items as [value, name] (value)}
+				<option {value}>{name}</option>
+			{/each}
+		</optgroup>
+	{/each}
+{/snippet}
+
 <svelte:head><title>{t('Focus')} · Axon</title></svelte:head>
 
 <h1>{t('Focus')}</h1>
@@ -265,6 +285,15 @@
 			<Button variant="secondary" onclick={next}>Skip to next</Button>
 			<Button variant="ghost" onclick={() => finish('stopped')}>Stop and save</Button>
 		</div>
+		<div class="field sound">
+			<label for="focus-sound-now">Sound</label>
+			<select id="focus-sound-now" bind:value={sound} onchange={syncSound}>
+				{@render soundChoices()}
+			</select>
+			{#if playing && phase?.kind !== 'work'}<span class="muted small"
+					>Resumes with the next focus.</span
+				>{/if}
+		</div>
 		<p class="muted small">
 			{workedMinutes(timer, now)} min worked · round {Math.min(
 				rounds(timer) + 1,
@@ -310,12 +339,15 @@
 		<div class="field">
 			<label for="focus-sound">Focus sound</label>
 			<select id="focus-sound" bind:value={sound}>
-				<option value="none">None</option>
-				<option value="white">White noise</option>
-				<option value="pink">Pink noise</option>
-				<option value="brown">Brown noise</option>
-				<option value="rain">Rain</option>
+				{@render soundChoices()}
 			</select>
+			{#if sound === 'music'}
+				<span class="muted small"
+					>{target
+						? `${soundNames[styleFor(target.type)]} for this ${typeNames[target.type]?.toLowerCase() ?? 'item'}.`
+						: 'Lo-fi beats for tasks and projects, ambient for notes, calm piano for skills and cards.'}</span
+				>
+			{/if}
 		</div>
 		{#if config.music.length}
 			<p class="small">

@@ -4945,10 +4945,11 @@ export interface components {
 				/** @description How many cycles in a row. */
 				sessions: number;
 				/**
-				 * @description Focus sound generated in the browser.
+				 * @description Focus sound generated in the browser: noise, or music composed as it plays ("music" matches the style to what the session is about).
 				 * @enum {unknown}
 				 */
-				sound: 'none' | 'white' | 'pink' | 'brown' | 'rain';
+				sound:
+					'none' | 'white' | 'pink' | 'brown' | 'rain' | 'music' | 'lofi' | 'ambient' | 'piano';
 				volume: number;
 				music: {
 					/** @example coding */

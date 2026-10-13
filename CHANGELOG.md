@@ -13,6 +13,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Connections**: follow other calendars (ICS, CalDAV), imports from Todoist, TickTick, Goodreads, Letterboxd, Firefly III, OFX, and Notion, household lists shared with others, search by meaning with a chosen embedding service, and share to Axon from any app or page (EP-58, EP-60, EP-61, EP-62, EP-67).
 - **Safety nets**: a guided weekly review, and a trash: every deletion can be undone for 30 days (EP-59, EP-66).
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
+- **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 
 ### Fixed
 
