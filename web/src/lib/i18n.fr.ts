@@ -2762,5 +2762,8 @@ export const fr: Record<string, string> = {
 	'follows the sun': 'suit le soleil',
 	'Study blocks': 'Blocs d’étude',
 	Study: 'Étude',
-	'Study block': 'Bloc d’étude'
+	'Study block': 'Bloc d’étude',
+	'No activity': 'Aucune activité',
+	Less: 'Moins',
+	More: 'Plus'
 };

@@ -1,15 +1,33 @@
 <script lang="ts">
 	import { appLocale } from '\$lib/dates';
 	import { t } from '$lib/i18n.svelte';
-	import { levels, type DayCount } from '$lib/overview';
+	import { heatGrid, type DayCount } from '$lib/overview';
+	import { localDate } from '$lib/dates';
 
 	let { days, title = t('Activity') }: { days: DayCount[]; title?: string } = $props();
 	const CELL = 12;
 	const GAP = 3;
-	// Columns are weeks starting on Monday; rows are weekdays.
-	const offset = $derived(days.length ? (new Date(days[0].day + 'T00:00:00').getDay() + 6) % 7 : 0);
-	const lv = $derived(levels(days));
-	const weeks = $derived(Math.ceil((days.length + offset) / 7));
+	const LEFT = 0;
+	const TOP = 16; // month labels
+	// Columns are weeks starting on Monday, rows weekdays, the current week last (EP-99).
+	const grid = $derived(heatGrid(days, appLocale() ?? 'en'));
+	const weeks = $derived(grid.weeks);
+	const today = localDate(new Date());
+	const weekdayLabels = $derived(
+		[0, 2, 4].map((row) => ({
+			row,
+			label: new Date(Date.UTC(2024, 0, 1 + row)).toLocaleDateString(appLocale(), {
+				weekday: 'short',
+				timeZone: 'UTC'
+			})
+		}))
+	);
+	// Open on the current month: the scroll starts at the end.
+	let scroller = $state<HTMLElement>();
+	$effect(() => {
+		void days;
+		if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+	});
 	const total = $derived(days.reduce((a, d) => a + d.value, 0));
 	const active = $derived(days.filter((d) => d.value > 0).length);
 	const months = $derived.by(() => {
@@ -37,31 +55,68 @@
 			length: days.length
 		})}
 	</figcaption>
-	<!-- svelte-ignore a11y_no_noninteractive_tabindex (a scrollable region must be reachable by keyboard) -->
-	<div class="scroll" role="region" aria-label={t('{title}, scrollable', { title })} tabindex="0">
-		<svg
-			width={weeks * (CELL + GAP)}
-			height={7 * (CELL + GAP)}
-			role="img"
-			aria-label={t('{title}: {total} changes on {active} of {length} days', {
-				title,
-				total,
-				active,
-				length: days.length
-			})}
-		>
-			{#each days as d, i (d.day)}
-				<rect
-					x={Math.floor((i + offset) / 7) * (CELL + GAP)}
-					y={((i + offset) % 7) * (CELL + GAP)}
-					width={CELL}
-					height={CELL}
-					rx="2"
-					class="l{lv[i]}"><title>{d.day}: {d.value}</title></rect
-				>
+	<div class="grid">
+		<!-- Weekday labels stay in view while the weeks scroll. -->
+		<svg class="days" width="30" height={TOP + 7 * (CELL + GAP)} aria-hidden="true">
+			{#each weekdayLabels as w (w.row)}
+				<text class="label" x="0" y={TOP + w.row * (CELL + GAP) + 10}>{w.label}</text>
 			{/each}
 		</svg>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex (a scrollable region must be reachable by keyboard) -->
+		<div
+			class="scroll"
+			role="region"
+			aria-label={t('{title}, scrollable', { title })}
+			tabindex="0"
+			bind:this={scroller}
+		>
+			<svg
+				width={LEFT + weeks * (CELL + GAP)}
+				height={TOP + 7 * (CELL + GAP)}
+				role="img"
+				aria-label={t('{title}: {total} changes on {active} of {length} days', {
+					title,
+					total,
+					active,
+					length: days.length
+				})}
+			>
+				{#each grid.months as m (m.col)}
+					<text class="label" x={LEFT + m.col * (CELL + GAP)} y="11">{m.label}</text>
+				{/each}
+				{#each grid.cells as c (c.day)}
+					<rect
+						x={LEFT + c.col * (CELL + GAP)}
+						y={TOP + c.row * (CELL + GAP)}
+						width={CELL}
+						height={CELL}
+						rx="2"
+						class="l{c.level}"
+						class:today={c.day === today}><title>{c.day}: {c.value}</title></rect
+					>
+				{/each}
+			</svg>
+		</div>
 	</div>
+	<p class="legend">
+		<span
+			><svg width="12" height="12" aria-hidden="true"
+				><rect width="12" height="12" rx="2" class="l0" /></svg
+			>{t('No activity')}</span
+		>
+		<span
+			>{t('Less')}
+			{#each [1, 2, 3, 4] as l (l)}<svg width="12" height="12" aria-hidden="true"
+					><rect width="12" height="12" rx="2" class="l{l}" /></svg
+				>{/each}
+			{t('More')}</span
+		>
+		<span
+			><svg width="12" height="12" aria-hidden="true"
+				><rect x="1" y="1" width="10" height="10" rx="2" class="l0 today" /></svg
+			>{t('Today')}</span
+		>
+	</p>
 	<details>
 		<summary>{t('Show by month')}</summary>
 		<table>
@@ -89,11 +144,39 @@
 		font-weight: 650;
 		margin-bottom: var(--space-2);
 	}
+	.grid {
+		display: flex;
+	}
+	.days {
+		flex: none;
+	}
 	.scroll {
 		overflow-x: auto;
+		min-width: 0;
 	}
 	rect.l0 {
-		fill: var(--accent-soft);
+		fill: color-mix(in srgb, var(--muted) 18%, transparent);
+	}
+	rect.today {
+		stroke: var(--fg);
+		stroke-width: 1.5;
+	}
+	.label {
+		font-size: 10px;
+		fill: var(--muted);
+	}
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-4);
+		font-size: var(--text-sm);
+		color: var(--muted);
+		margin: var(--space-2) 0;
+	}
+	.legend span {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
 	}
 	rect.l1 {
 		fill: color-mix(in srgb, var(--ok) 35%, transparent);

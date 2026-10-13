@@ -146,6 +146,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-95 | The Top-5% roadmap | Owner request: the owner's roadmap from their vault is the only roadmap, used by default and in the demo, with its tasks, subtasks, projects, goal, milestones, side projects, habits, and resources. | MUST | 8 pts | EP-14, EP-27, EP-41 | Done |
 | EP-96 | A sky that follows the sun | Owner request: a colour theme that follows the sunlight and the moonlight in the person's time zone, and the home picture following the sun over a landscape of their choice (forest, ocean, earth view, monuments of each continent, desert, mountains). | SHOULD | 5 pts | EP-07, EP-38 | Done |
 | EP-97 | The roadmap on the calendar | Owner request: the roadmap's schedule of which domain to work on each day, following the phases, on the calendar, and its projects created like the vault's. | SHOULD | 3 pts | EP-08, EP-95 | Done |
+| EP-99 | A year you can read | Owner report: the 12-month activity chart did not show the current month and had no legend; the demo showed one active day. | SHOULD | 2 pts | EP-30 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1863,6 +1864,15 @@ Cross-cutting matrix:
 - [x] **EP-97/IS-97.02** · 1 pt · SHOULD — Each phase project has its note in `1-Projects/<project>/<project>.md`, in the vault's project template (outcome, next actions on the board, tracks, log), unless the vault has one already.
 
 **Tests.** The rhythm by weekday and phase, shifted plans, and nothing outside the plan (written first); the integration test reads a week of blocks and the pipekit note; the e2e test finds the blocks on the calendar, linking to the roadmap.
+
+### EP-99 — A year you can read
+
+**Goal.** The owner reported (2026-10-13) that the 12-month activity chart did not show the current month and had no labels for its colours; the demo read "970 changes on 1 of 365 days".
+
+- [x] **EP-99/IS-99.01** · 1 pt · SHOULD — The chart is laid out by Monday-first weeks (worked out in `heatGrid`, tested), labels each month at the week it starts and the weekdays beside it (kept in view while the weeks scroll), opens scrolled to the current month with today outlined, and has a legend: no activity, less to more, today.
+- [x] **EP-99/IS-99.02** · 1 pt · SHOULD — The demo was all created on the night it resets, so its year had one active day. It now also holds a few edits per item over the past eleven months, more of them recently, added to the append-only event log (never rewritten) with time-ordered ids, the same every night.
+
+**Tests.** `heatGrid` (written first); the overview test wants activity on at least 60 days of the demo's year; the demo e2e test finds the legend and the chart scrolled to its end.
 
 ### EP-20 — Analytics & insights
 

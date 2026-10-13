@@ -141,3 +141,30 @@ export function nodeHref(node: NetNode): string {
 			return `/roadmaps/${node.roadmap_id}?view=graph&skill=${node.id}`;
 	}
 }
+
+/**
+ * A year of days as a calendar grid (EP-99): columns are Monday-first weeks,
+ * rows weekdays, the last column the current week. Months are labelled at
+ * the column of their first day; a month cut at the start is not.
+ */
+export function heatGrid(days: DayCount[], locale: string) {
+	const weekday = (iso: string) => (new Date(iso + 'T00:00:00Z').getUTCDay() + 6) % 7;
+	const offset = days.length ? weekday(days[0].day) : 0;
+	const lv = levels(days);
+	const cells = days.map((d, i) => ({
+		...d,
+		level: lv[i],
+		col: Math.floor((i + offset) / 7),
+		row: (i + offset) % 7
+	}));
+	const months = cells
+		.filter((c) => c.day.endsWith('-01'))
+		.map((c) => ({
+			col: c.col,
+			label: new Date(c.day + 'T00:00:00Z').toLocaleDateString(locale, {
+				month: 'short',
+				timeZone: 'UTC'
+			})
+		}));
+	return { cells, months, weeks: Math.ceil((days.length + offset) / 7) };
+}
