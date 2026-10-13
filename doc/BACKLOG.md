@@ -132,6 +132,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-81 | Containers without privileges | Every service but PostgreSQL runs with no Linux capability (Caddy keeps only the one its binary carries) and cannot gain privileges; images were already non-root and pinned by digest. | SHOULD | 1 pt | EP-80 | Done |
 | EP-82 | Skills radar | Owner request ("graphe en toile d'araignée"): Roadmaps shows the hard and the soft skills acquired as two radar charts, one spoke per roadmap (or per section under three), done and being learnt, with a table view. | SHOULD | 2 pts | EP-14 | Done |
 | EP-83 | Focus music | Owner request ("listen to the best music for productivity related to what I do during the Pomodoro session"): music composed in the browser, without words, matched to what the session is about (lo-fi beats, ambient, calm piano), chosen before or during a session. | SHOULD | 3 pts | EP-35 | Done |
+| EP-84 | Teaser on the home page | Owner request: with the demo on, the home page shows "Axon in under a minute", a tour of the demo with Axon's own music, captions in English and French, served by Axon itself; recorded by a script anyone can run again. | SHOULD | 2 pts | EP-82, EP-83 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1717,6 +1718,15 @@ Cross-cutting matrix:
 **Tests.** `music.test.ts` (written first): the style for each type, notes inside their bar, every pitched note in key, drums only in lo-fi, the chord progression bar by bar, a seeded bar replays exactly, calm tempos. `TestFocusSessionsLinkToWhatTheyWereFor` accepts every sound and refuses an unknown one. The e2e Pomodoro test picks matched music for a task. Rendered offline in Chromium and Firefox: no clipping, no silent second, the three styles within 3.5 dB of each other (piano was 12 dB quieter and was raised). A live session runs its audio context in Chromium and WebKit; headless Firefox suspends every audio context, even one made in a click, so it was checked offline only.
 
 **Found on the way.** Aligned columns of Markdown tables never aligned: the alignment was a `style` attribute, which the Content Security Policy blocks; it is a class now.
+
+### EP-84 — Teaser on the home page
+
+**Goal.** Owner request: "insert the movie teaser on the main page in the demo". Visitors to a demo saw a hero and five illustrated cards, never the app itself until they signed in.
+
+- [x] **EP-84/IS-84.01** · 1 pt · SHOULD — `make teaser` (`scripts/teaser/make-teaser.sh`) records a 55-second tour of the demo in Chromium: Today, tasks, the Zettelkasten graph, goals, the skills radar, Learn, a focus session, the media shelf, and a closing card, each with a caption. Frames come from the browser's screencast (sharper text than a recorded video); the soundtrack is the lo-fi focus music rendered offline; the English and French caption files are timed from the tour itself. Encoded as VP9/Opus (WebM) and H.264/AAC (MP4, for Safari), 2.1 MB each, with a poster.
+- [x] **EP-84/IS-84.02** · 1 pt · SHOULD — When the demo is on, the home page shows "Axon in under a minute" under the hero: the video with controls, played only on request (`preload="none"`: nothing downloads, nothing moves on its own), WebM first and MP4 as the fallback, both caption tracks. It comes from Axon's own server, like everything else on the page; the service worker leaves it out of the offline install.
+
+**Tests.** `offlineShell` leaves `/teaser/` out (written first). The home page e2e test finds two sources and two tracks and gets partial content (206) for each file, as Safari asks for it. Played on the home page in Chromium, Firefox, and WebKit: each picks the WebM and plays; caption tracks load. ShellCheck passes on the script.
 
 ### EP-20 — Analytics & insights
 

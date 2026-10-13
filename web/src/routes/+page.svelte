@@ -99,6 +99,21 @@
 	</div>
 </section>
 
+{#if status?.demo_available}
+	<section class="teaser" aria-labelledby="teaser-title">
+		<h2 id="teaser-title">{t('Axon in under a minute')}</h2>
+		<p>{t('A tour of the demo, with music Axon composed itself.')}</p>
+		<!-- Played on request: nothing downloads until then, and nothing moves on its own.
+		     Its captions are drawn into the picture; the tracks hold the same text, in two languages. -->
+		<video controls preload="none" playsinline poster="/teaser/axon.jpg" width="1280" height="720">
+			<source src="/teaser/axon.webm" type="video/webm" />
+			<source src="/teaser/axon.mp4" type="video/mp4" />
+			<track kind="captions" src="/teaser/axon.en.vtt" srclang="en" label="English" />
+			<track kind="captions" src="/teaser/axon.fr.vtt" srclang="fr" label="Français" />
+		</video>
+	</section>
+{/if}
+
 <div class="features">
 	{#each features as f, i (f.id)}
 		<section class="feature" class:flip={i % 2 === 1} aria-labelledby="f-{f.id}">
@@ -184,6 +199,29 @@
 		color: rgb(255 255 255 / 0.92);
 		text-shadow: 0 1px 12px rgb(0 0 0 / 0.5);
 		margin-top: var(--space-3);
+	}
+	.teaser {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--space-16) var(--gutter) 0;
+		text-align: center;
+	}
+	.teaser h2 {
+		font-size: var(--text-3xl);
+		letter-spacing: -0.03em;
+	}
+	.teaser p {
+		color: var(--muted);
+		font-size: var(--text-lg);
+	}
+	.teaser video {
+		width: 100%;
+		height: auto;
+		margin-top: var(--space-6);
+		border-radius: var(--radius-xl);
+		border: 1px solid var(--border);
+		box-shadow: var(--shadow);
+		background: #000;
 	}
 	.features {
 		max-width: var(--wide-width);

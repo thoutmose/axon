@@ -20,4 +20,9 @@ describe('offlineShell', () => {
 			])
 		).toEqual(['/favicon.svg']);
 	});
+	it('leaves out the teaser: a 2 MB video watched online', () => {
+		expect(offlineShell(['/teaser/axon.mp4', '/teaser/axon.jpg', '/favicon.svg'])).toEqual([
+			'/favicon.svg'
+		]);
+	});
 });
