@@ -166,7 +166,11 @@ func ICal(evs []Event, now time.Time) string {
 	stamp := now.UTC().Format("20060102T150405Z")
 	for _, ev := range evs {
 		line("BEGIN:VEVENT")
-		line(fmt.Sprintf("UID:%s-%s@axon", ev.ID, ev.Kind))
+		uid := fmt.Sprintf("%s-%s", ev.ID, ev.Kind)
+		if ev.Kind == "block" { // one roadmap, a block a day
+			uid += "-" + ev.Date.Format("20060102")
+		}
+		line("UID:" + uid + "@axon")
 		line("DTSTAMP:" + stamp)
 		line("DTSTART;VALUE=DATE:" + ev.Date.Format("20060102"))
 		line("DTEND;VALUE=DATE:" + ev.Date.AddDate(0, 0, 1).Format("20060102"))

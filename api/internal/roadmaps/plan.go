@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/habits"
@@ -46,6 +47,65 @@ type Plan struct {
 	Tasks     []PlanTask     `json:"tasks"`
 	Areas     []PlanArea     `json:"areas"`
 	Resources []PlanResource `json:"resources"`
+	Rhythm    []PlanDay      `json:"rhythm"`
+}
+
+// PlanDay is a weekday's study block (1 Monday to 7 Sunday): {M}, {C},
+// {L}, and {R} are the phase's tracks ({R} falls back to {L}), {P} its project.
+type PlanDay struct {
+	Day   int    `json:"day"`
+	Hours string `json:"hours"`
+	Block string `json:"block"`
+}
+
+// Block is one day's study on the calendar.
+type Block struct {
+	Date  time.Time
+	Title string
+	Phase int
+}
+
+// tracks reads "M = … · C = … · L = …" into its tracks.
+func tracks(s string) map[string]string {
+	out := map[string]string{}
+	for _, part := range strings.Split(s, " · ") {
+		if k, v, ok := strings.Cut(part, " = "); ok {
+			out[strings.TrimSpace(k)] = strings.TrimSpace(v)
+		}
+	}
+	if out["R"] == "" {
+		out["R"] = out["L"]
+	}
+	return out
+}
+
+// Blocks are the study blocks from one day to another, the plan moved by
+// shift days: each weekday's block with the tracks of its phase.
+func (p Plan) Blocks(shift int, from, to time.Time) []Block {
+	var out []Block
+	for _, ph := range p.Phases {
+		start, end := day(ph.Start).AddDate(0, 0, shift), day(ph.End).AddDate(0, 0, shift)
+		tr := tracks(ph.Tracks)
+		fill := strings.NewReplacer("{M}", tr["M"], "{C}", tr["C"], "{L}", tr["L"], "{R}", tr["R"], "{P}", ph.Project.Slug)
+		if start.Before(from) {
+			start = from
+		}
+		if end.After(to) {
+			end = to
+		}
+		for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+			wd := int(d.Weekday())
+			if wd == 0 {
+				wd = 7
+			}
+			for _, r := range p.Rhythm {
+				if r.Day == wd {
+					out = append(out, Block{Date: d, Title: fill.Replace(r.Block) + " · " + r.Hours, Phase: ph.N})
+				}
+			}
+		}
+	}
+	return out
 }
 
 // Phase is a stretch of the plan with its milestone, project, and exit check.
@@ -167,6 +227,9 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	if err != nil {
 		return s, err
 	}
+	if _, err := tx.Exec(ctx, `UPDATE roadmaps SET plan_id = $2, plan_start = $3 WHERE id = $1`, rm.ID, d.ID, at(p.Start)); err != nil {
+		return s, err
+	}
 	link := func(from uuid.UUID, rel string, to uuid.UUID) error {
 		_, err := graph.CreateLink(ctx, tx, userID, actor, from, rel, to)
 		if errors.Is(err, graph.ErrDuplicate) {
@@ -277,6 +340,9 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 			return s, err
 		}
 		s.Projects[ph.Project.Slug] = pr.ID
+		if err := projectNote(ctx, tx, userID, actor, pr.ID, ph, at(ph.Start), end, current); err != nil {
+			return s, err
+		}
 		if err := link(pr.ID, goals.Supports, g.ID); err != nil {
 			return s, err
 		}
@@ -390,4 +456,92 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	}
 	s.Roadmap, err = Get(ctx, tx, userID, rm.ID)
 	return s, err
+}
+
+// projectNote writes a phase project's note in its docs folder, in the
+// vault's project template, unless the vault already has one.
+func projectNote(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, project uuid.UUID, ph Phase, start, end *time.Time, current bool) error {
+	path := "1-Projects/" + ph.Project.Slug + "/" + ph.Project.Slug + ".md"
+	n, err := notes.GetByPath(ctx, tx, userID, path)
+	if errors.Is(err, graph.ErrNotFound) {
+		status := "someday"
+		if current {
+			status = "active"
+		}
+		n, err = notes.Create(ctx, tx, userID, actor, path, fmt.Sprintf(`---
+type: project
+title: %s
+created: %s
+status: %s
+deadline: %s
+area: "[[engineering-mastery]]"
+goal: "[[top5-engineer-2029]]"
+roadmap: "[[top5-engineer]]"
+---
+> PARA **Project**: a short-term effort with a clear outcome and a deadline.
+> Deliverable of milestone [[%s]].
+
+## Outcome (what does "done" look like?)
+
+%s
+
+## Next actions
+
+Tasks live on the project's board in Axon: the phase's exit check, its issues, and their subtasks.
+
+## Resources & notes
+
+- Tracks: %s
+- Links in [[top5-engineer]]
+
+## Log
+
+- %s created
+`, ph.Project.Title, start.Format(time.DateOnly), status, end.Format(time.DateOnly), ph.Slug, ph.Project.Outcome, ph.Tracks, start.Format(time.DateOnly)))
+	}
+	if err != nil {
+		return err
+	}
+	_, err = graph.CreateLink(ctx, tx, userID, actor, n.ID, graph.RelatesTo, project)
+	if errors.Is(err, graph.ErrDuplicate) {
+		return nil
+	}
+	return err
+}
+
+// ScheduledBlock is a study block of one of the person's roadmaps.
+type ScheduledBlock struct {
+	Block
+	RoadmapID uuid.UUID
+}
+
+// Schedule is the study blocks of the person's started plans in a range.
+func Schedule(ctx context.Context, q db.Querier, userID uuid.UUID, from, to time.Time) ([]ScheduledBlock, error) {
+	rows, err := q.Query(ctx, `SELECT r.id, r.plan_id, r.plan_start FROM roadmaps r JOIN entities e ON e.id = r.id
+		WHERE e.user_id = $1 AND r.plan_id IS NOT NULL`, userID)
+	if err != nil {
+		return nil, err
+	}
+	type started struct {
+		ID    uuid.UUID
+		Plan  string
+		Start time.Time
+	}
+	plans, err := pgx.CollectRows(rows, pgx.RowToStructByPos[started])
+	if err != nil {
+		return nil, err
+	}
+	var out []ScheduledBlock
+	for _, sp := range plans {
+		for _, d := range lib.Roadmaps {
+			if d.ID != sp.Plan || d.Plan == nil {
+				continue
+			}
+			shift := int(sp.Start.Sub(day(d.Plan.Start)).Hours() / 24)
+			for _, b := range d.Plan.Blocks(shift, from, to) {
+				out = append(out, ScheduledBlock{b, sp.ID})
+			}
+		}
+	}
+	return out, nil
 }

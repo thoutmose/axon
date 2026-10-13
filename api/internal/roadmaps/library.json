@@ -1936,6 +1936,43 @@
 						"url": "https://learning.acm.org/e-learning/oreilly",
 						"description": "O'Reilly access through the ACM + Skills Bundle ($75 a year), or O'Reilly directly (https://www.oreilly.com/online-learning/pricing): about 10 € a month."
 					}
+				],
+				"rhythm": [
+					{
+						"day": 1,
+						"hours": "2–3 h",
+						"block": "Maths: {M}"
+					},
+					{
+						"day": 2,
+						"hours": "2–3 h",
+						"block": "Computer science: {C}"
+					},
+					{
+						"day": 3,
+						"hours": "2–3 h",
+						"block": "Language: {L}"
+					},
+					{
+						"day": 4,
+						"hours": "2–3 h",
+						"block": "Catch up whichever is behind: {M}, or {C}"
+					},
+					{
+						"day": 5,
+						"hours": "2 h",
+						"block": "Spaced tests and 3 DSA problems"
+					},
+					{
+						"day": 6,
+						"hours": "7 h",
+						"block": "Project {P} 4 h, DSA 2 h, notes 1 h"
+					},
+					{
+						"day": 7,
+						"hours": "7 h",
+						"block": "Project {P} 3 h, reading 2 h: {R}, Zettel 1 h, weekly reflection 1 h"
+					}
 				]
 			}
 		}

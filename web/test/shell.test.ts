@@ -618,6 +618,23 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(page.getByRole('link', { name: '42 cursus (self-taught)' })).toBeVisible();
 	await page.goto('/habits');
 	await expect(page.getByText('Daily study block').first()).toBeVisible();
+
+	// The weekly rhythm is on the calendar, each block opening the roadmap (EP-97).
+	const month = new Date().toISOString().slice(0, 7);
+	await page.goto(`/calendar?types=study&month=${month}`);
+	const blocks = page.locator('.grid .ev.study');
+	if ((await blocks.count()) === 0) {
+		const [y, m] = month.split('-').map(Number);
+		await page.goto(
+			`/calendar?types=study&month=${new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7)}`
+		);
+	}
+	await expect(blocks.first()).toBeVisible();
+	await expect(page.getByRole('link', { name: /^Maths: .* · 2–3 h$/ }).first()).toHaveAttribute(
+		'href',
+		/^\/roadmaps\//
+	);
+	await noSeriousA11yViolations(page);
 });
 
 test('tasks open on a GTD board, and a Kanban board moves work along', async () => {

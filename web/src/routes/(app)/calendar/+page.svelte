@@ -23,18 +23,20 @@
 	type Source = Schemas['CalendarSource'];
 	type Event = Own | External;
 	type Feed = Schemas['CalendarFeed'];
-	type Kind = 'task' | 'goal' | 'milestone';
+	type Kind = 'task' | 'goal' | 'milestone' | 'study';
 
 	const kinds: { id: Kind; label: string }[] = $derived([
 		{ id: 'task', label: t('Tasks') },
 		{ id: 'goal', label: t('Goal target dates') },
-		{ id: 'milestone', label: t('Milestones') }
+		{ id: 'milestone', label: t('Milestones') },
+		{ id: 'study', label: t('Study blocks') }
 	]);
 	const prefix: Record<string, string> = $derived({
 		scheduled: '',
 		due: t('Due'),
 		target: t('Goal target'),
-		milestone: t('Milestone')
+		milestone: t('Milestone'),
+		block: t('Study')
 	});
 
 	const todayISO = localDate(new Date());
@@ -53,7 +55,7 @@
 		return `?${u}`;
 	};
 	const shown = $derived(
-		(page.url.searchParams.get('types') ?? 'task,goal,milestone').split(',') as Kind[]
+		(page.url.searchParams.get('types') ?? 'task,goal,milestone,study').split(',') as Kind[]
 	);
 	let own = $state<Own[] | null>(null);
 	let occurrences = $state<Occurrence[]>([]);
@@ -230,6 +232,8 @@
 		if (e.type === 'goal') return `/goals/${e.id}`;
 		if (e.type === 'milestone' && e.goal_id) return `/goals/${e.goal_id}`;
 		if (e.type === 'task') return `/tasks/${e.id}`;
+		// A roadmap's weekly rhythm (EP-97): the day's block opens the roadmap.
+		if (e.type === 'study' && e.roadmap_id) return `/roadmaps/${e.roadmap_id}`;
 		return null;
 	}
 
@@ -367,7 +371,9 @@
 	<p class="legend">
 		<span class="ev task">{t('Task')}</span><span class="ev goal">{t('Goal target')}</span><span
 			class="ev milestone">{t('Milestone')}</span
-		>{#each sources as src (src.id)}<span class="ev external" style:--c={src.color}>{src.name}</span
+		><span class="ev study">{t('Study block')}</span>{#each sources as src (src.id)}<span
+				class="ev external"
+				style:--c={src.color}>{src.name}</span
 			>{/each}
 	</p>
 {:else if events.length === 0}
@@ -786,6 +792,11 @@
 	}
 	.ev.milestone {
 		border-left-color: var(--chart-3);
+	}
+	/* A study block is a plan, not a commitment: the task colour, dashed. */
+	.ev.study {
+		border-left-style: dashed;
+		background: transparent;
 	}
 	.ev.done {
 		text-decoration: line-through; /* no opacity: the text keeps its contrast */
