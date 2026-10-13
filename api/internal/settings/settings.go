@@ -101,7 +101,7 @@ type Today struct {
 }
 
 // TodaySections are the sections Today can show.
-var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "overview"}
+var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "journal", "overview"}
 
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them

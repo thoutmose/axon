@@ -1,4 +1,5 @@
 <script lang="ts">
+	import JournalToday from '$lib/JournalToday.svelte';
 	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
@@ -38,6 +39,7 @@
 		habits: t('Habits today'),
 		calendar: t('Calendar today'),
 		household: t('Household'),
+		journal: t('How are you today?'),
 		overview: t('Your progress')
 	});
 	const all = $derived(Object.keys(labels));
@@ -394,6 +396,8 @@
 							</ul>
 						{/if}
 					</section>
+				{:else if id === 'journal'}
+					<JournalToday />
 				{:else if id === 'household'}
 					<section class="card" aria-labelledby="household-title">
 						<h2 id="household-title">{t('Household')}</h2>

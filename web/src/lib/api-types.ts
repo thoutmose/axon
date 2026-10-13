@@ -3007,6 +3007,47 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/journal': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Journal entries from one day to another, newest first
+		 * @description The last 30 days by default. Needs the health_data consent (mood and sleep are health data).
+		 */
+		get: operations['listJournal'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/journal/{day}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				day: string;
+			};
+			cookie?: never;
+		};
+		/** One day of the journal */
+		get: operations['getJournalEntry'];
+		/** Write the day's entry, replacing what was there */
+		put: operations['putJournalEntry'];
+		post?: never;
+		/** Delete the day's entry */
+		delete: operations['deleteJournalEntry'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/health/workouts': {
 		parameters: {
 			query?: never;
@@ -4638,6 +4679,21 @@ export interface components {
 				url: string;
 			}[];
 		};
+		JournalEntry: {
+			/** Format: date */
+			day: string;
+			/** @description 1 (low) to 5 (great). */
+			mood: number | null;
+			/** @description 1 (drained) to 5 (full of energy). */
+			energy: number | null;
+			/** @description 1 (calm) to 5 (very stressed). */
+			stress: number | null;
+			sleep_hours: number | null;
+			gratitude: string[];
+			note: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
 		FoodEntry: {
 			/** Format: uuid */
 			id: string;
@@ -5079,6 +5135,7 @@ export interface components {
 					| 'habits'
 					| 'calendar'
 					| 'household'
+					| 'journal'
 					| 'overview'
 				)[];
 			};
@@ -12291,6 +12348,123 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listJournal: {
+		parameters: {
+			query?: {
+				from?: string;
+				to?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The entries, and today in your time zone. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['JournalEntry'][];
+						/** Format: date */
+						today: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	getJournalEntry: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The entry. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['JournalEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	putJournalEntry: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					mood?: number | null;
+					energy?: number | null;
+					stress?: number | null;
+					sleep_hours?: number | null;
+					gratitude?: string[];
+					note?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The entry. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['JournalEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteJournalEntry: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				day: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	listWorkouts: {

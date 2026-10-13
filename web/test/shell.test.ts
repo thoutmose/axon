@@ -904,6 +904,26 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await noSeriousA11yViolations(page);
 });
 
+test('the journal: how the day felt, the night, and what you are grateful for', async () => {
+	await page.goto('/journal');
+	const entry = page.getByRole('form', { name: 'Today' });
+	// The faces are what people click; the radios underneath carry the names.
+	const mood = entry.getByRole('group', { name: 'Mood' });
+	await mood.locator('label', { hasText: 'Good' }).click();
+	await expect(mood.getByRole('radio', { name: 'Good' })).toBeChecked();
+	const energy = entry.getByRole('group', { name: 'Energy' });
+	await energy.locator('label', { hasText: 'Tired' }).click();
+	await expect(energy.getByRole('radio', { name: 'Tired' })).toBeChecked();
+	await entry.getByLabel('Hours of sleep last night').fill('7.5');
+	await entry.getByLabel('Grateful for, 1 of 3').fill('A call with Sam');
+	await entry.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Saved.')).toBeVisible();
+	const month = page.getByRole('region', { name: 'The last 30 days' });
+	await expect(month).toContainText('7.5 h of sleep');
+	await expect(month).toContainText('A call with Sam');
+	await noSeriousA11yViolations(page);
+});
+
 test('savings pots: put money aside for a later purchase', async () => {
 	await page.goto('/budget/pots');
 	await page.getByLabel('What it is for').fill('New bike');

@@ -37,12 +37,24 @@ var Purposes = []Purpose{
 }
 
 // onWithdraw holds what must happen when a consent is withdrawn, such as
-// deleting the data that only that consent allowed to keep.
-var onWithdraw = map[string]func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error{}
+// deleting the data that only that consent allowed to keep. Several
+// packages may keep data under one consent (health logs and the journal
+// under health_data), so each purpose has a list.
+var onWithdraw = map[string][]func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error{}
 
 // OnWithdraw registers fn to run, in the same transaction, when purpose is withdrawn.
 func OnWithdraw(purpose string, fn func(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error) {
-	onWithdraw[purpose] = fn
+	onWithdraw[purpose] = append(onWithdraw[purpose], fn)
+}
+
+// withdrawn runs everything registered for purpose.
+func withdrawn(ctx context.Context, tx pgx.Tx, userID uuid.UUID, purpose string) error {
+	for _, fn := range onWithdraw[purpose] {
+		if err := fn(ctx, tx, userID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Purpose is one consentable use of data.
@@ -179,8 +191,8 @@ func (s *Service) setConsent(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		if fn := onWithdraw[purpose]; fn != nil && !*body.Granted {
-			if err := fn(r.Context(), tx, id.UserID); err != nil {
+		if !*body.Granted {
+			if err := withdrawn(r.Context(), tx, id.UserID, purpose); err != nil {
 				return err
 			}
 		}

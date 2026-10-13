@@ -2,9 +2,19 @@ package l10n
 
 // catalog is the French for every string the API writes to people.
 var catalog = map[string]string{
-	"Photos are limited to 10 MB.": "Les photos sont limitées à 10 Mo.",
+	"?from= comes before ?to=, at most 400 days apart.":                                                 "?from= vient avant ?to=, à 400 jours d’écart au plus.",
+	"Each thing you are grateful for is up to 300 characters.":                                          "Chaque chose pour laquelle vous êtes reconnaissant fait jusqu’à 300 caractères.",
+	"Mood, energy, and stress are 1 to 5.":                                                              "L’humeur, l’énergie et le stress vont de 1 à 5.",
+	"Nothing written that day.":                                                                         "Rien d’écrit ce jour-là.",
+	"Sleep is 0 to 24 hours.":                                                                           "Le sommeil va de 0 à 24 heures.",
+	"The journal keeps health data (mood and sleep). Turn on the health data consent to keep it.":       "Le journal garde des données de santé (humeur et sommeil). Activez le consentement aux données de santé pour le tenir.",
+	"The note is up to 10,000 characters.":                                                              "La note fait jusqu’à 10 000 caractères.",
+	"Up to three things you are grateful for.":                                                          "Jusqu’à trois choses pour lesquelles vous êtes reconnaissant.",
+	"Write about today or a day before it.":                                                             "Écrivez sur aujourd’hui ou un jour passé.",
+	"Write something about the day: a mood, your sleep, a thank-you, or a note.":                        "Écrivez quelque chose sur la journée : une humeur, votre sommeil, un merci ou une note.",
+	"Photos are limited to 10 MB.":                                                                      "Les photos sont limitées à 10 Mo.",
 	"Photos are not analysed in the shared demo, so nobody spends AI credit. Type the meal in instead.": "Les photos ne sont pas analysées dans la démo partagée, pour que personne ne dépense de crédit d’IA. Saisissez plutôt le repas.",
-	"Send a JPEG or PNG photo.": "Envoyez une photo JPEG ou PNG.",
+	"Send a JPEG or PNG photo.":                                                                         "Envoyez une photo JPEG ou PNG.",
 	"Send a photo of a meal to the AI provider you set up, to estimate what it contains. The photo is not kept, and its camera and location details are removed first.": "Envoyer la photo d’un repas au fournisseur d’IA que vous avez configuré, pour estimer ce qu’il contient. La photo n’est pas conservée, et ses informations d’appareil et de lieu sont retirées avant.",
 	"The photo could not be read as a meal. Try a closer, brighter photo, or type it in.":                                                                               "La photo n’a pas pu être lue comme un repas. Essayez une photo plus proche et plus lumineuse, ou saisissez-le.",
 	"Your AI provider could not look at the photo. Check that its model can read images, or type the meal in.":                                                          "Votre fournisseur d’IA n’a pas pu regarder la photo. Vérifiez que son modèle sait lire les images, ou saisissez le repas.",

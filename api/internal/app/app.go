@@ -30,6 +30,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/idem"
 	"github.com/thoutmose/axon/api/internal/imports"
 	"github.com/thoutmose/axon/api/internal/insights"
+	"github.com/thoutmose/axon/api/internal/journal"
 	"github.com/thoutmose/axon/api/internal/knowledge"
 	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/learning"
@@ -76,6 +77,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	}
 	healthAPI := health.NewHandlers(pool, log, health.NewCatalogs(pool, version, contact, os.Getenv("USDA_API_KEY")))
 	priv.Register("health", health.Export)
+	journalAPI := journal.NewHandlers(pool, log)
+	priv.Register("journal", journal.Export)
 	mediaAPI := media.NewHandlers(pool, log, media.NewCatalogs(pool, version, contact, os.Getenv("TMDB_API_KEY")))
 	var sealer *auth.Sealer
 	if cfg.EncryptionKey != "" {
@@ -170,6 +173,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				budgetAPI.Routes(r)
 				mediaAPI.Routes(r)
 				healthAPI.Routes(r)
+				journalAPI.Routes(r)
 				knowledgeAPI.Routes(r)
 				dashboardAPI.Routes(r)
 				insightsAPI.Routes(r)
