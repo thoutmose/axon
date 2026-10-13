@@ -15,7 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
-- **French everywhere**: every page of the web app in French, with dates in the interface's language, and tests that keep it so (EP-85, EP-86).
+- **French everywhere**: every page of the web app in French, with dates in the interface's language, and what the API writes (errors, explanations, insights, badges) too, with tests that keep it so (EP-85 to EP-87).
 
 ### Fixed
 

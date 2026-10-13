@@ -3,6 +3,8 @@ name: task-manager
 title: Task Manager
 version: 1.0.0
 description: Triages your inbox and proposes next actions, contexts, and dates. You approve every change.
+title_fr: Gestionnaire de tâches
+description_fr: Trie votre boîte de réception et propose prochaines actions, contextes et dates. Vous approuvez chaque changement.
 model: claude-opus-5-5
 effort: medium
 tools: list_tasks, get_task, update_task, create_task, remember

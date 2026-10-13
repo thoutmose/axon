@@ -15,6 +15,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
@@ -200,7 +201,7 @@ func List(ctx context.Context, q db.Querier, userID uuid.UUID, status string) ([
 		return nil, err
 	}
 	for i, g := range out {
-		out[i].Progress = compute(g.Measure, done[g.ID], total[g.ID])
+		out[i].Progress = compute(g.Measure, done[g.ID], total[g.ID], l10n.Lang(ctx))
 	}
 	return out, nil
 }
@@ -287,31 +288,35 @@ func Explain(ctx context.Context, q db.Querier, userID uuid.UUID, g Goal) (Expla
 			ex.Done++
 		}
 	}
-	ex.Progress = compute(g.Measure, ex.Done, ex.Total)
+	ex.Progress = compute(g.Measure, ex.Done, ex.Total, l10n.Lang(ctx))
 	return ex, nil
 }
 
 // compute turns the inputs into a figure and a sentence saying how.
-func compute(m *Measure, done, total int) Progress {
+func compute(m *Measure, done, total int, lang string) Progress {
 	p := Progress{Done: done, Total: total}
 	switch {
 	case m != nil:
 		pct := int(math.Floor(math.Max(0, math.Min(1, (m.Current-m.Start)/(m.Target-m.Start))) * 100))
 		p.Method, p.Percent = "measure", &pct
-		p.Summary = fmt.Sprintf("%s of %s %s (from %s)", num(m.Current), num(m.Target), m.Unit, num(m.Start))
+		p.Summary = l10n.Tr(lang, "%s of %s %s (from %s)", num(m.Current, lang), num(m.Target, lang), m.Unit, num(m.Start, lang))
 	case total > 0:
 		pct := done * 100 / total
 		p.Method, p.Percent = "items", &pct
-		p.Summary = fmt.Sprintf("%d of %d milestones and linked tasks done", done, total)
+		p.Summary = l10n.Tr(lang, "%d of %d milestones and linked tasks done", done, total)
 	default:
 		p.Method = "none"
-		p.Summary = "Add a measure, a milestone, or a linked task to track progress."
+		p.Summary = l10n.Tr(lang, "Add a measure, a milestone, or a linked task to track progress.")
 	}
 	return p
 }
 
-func num(f float64) string {
-	return strings.TrimSuffix(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")
+func num(f float64, lang string) string {
+	s := strings.TrimSuffix(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")
+	if lang == "fr" {
+		s = strings.Replace(s, ".", ",", 1)
+	}
+	return s
 }
 
 // Fields are the editable parts of a goal; nil means "not provided".

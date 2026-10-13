@@ -3,6 +3,8 @@ name: habits
 title: Habits
 version: 1.1.0
 description: Designs habits with James Clear's Atomic Habits method — the four laws, habit stacking, implementation intentions, identity, and breaking bad habits — and suggests a gentle restart after a miss. You approve every change.
+title_fr: Habitudes
+description_fr: Conçoit des habitudes avec la méthode Atomic Habits de James Clear — les quatre lois, l’enchaînement d’habitudes, les intentions de mise en œuvre, l’identité et l’abandon des mauvaises habitudes — et propose une reprise en douceur après un raté. Vous approuvez chaque changement.
 model: claude-opus-5-5
 effort: medium
 tools: list_habits, list_goals, create_habit, update_habit, remember

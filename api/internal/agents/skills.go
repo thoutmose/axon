@@ -16,18 +16,29 @@ var skillFiles embed.FS
 // Skill is a versioned agent definition: its instructions, model, and the
 // only tools it may call.
 type Skill struct {
-	Name        string   `json:"name"`
-	Title       string   `json:"title"`
-	Version     string   `json:"version"`
-	Description string   `json:"description"`
-	Model       string   `json:"-"`
-	Effort      string   `json:"-"`
-	Tools       []string `json:"tools"`
+	Name        string `json:"name"`
+	Title       string `json:"title"`
+	Version     string `json:"version"`
+	Description string `json:"description"`
+	// TitleFr and DescriptionFr are what people read in French (EP-87).
+	TitleFr       string   `json:"-"`
+	DescriptionFr string   `json:"-"`
+	Model         string   `json:"-"`
+	Effort        string   `json:"-"`
+	Tools         []string `json:"tools"`
 	// Consents are needed on top of ai_agents (health coaches need health_data and health_ai).
 	Consents []string `json:"consents"`
 	// Safety "health" turns on the red-flag referral and the unsafe-advice guards.
 	Safety string `json:"safety,omitempty"`
 	Prompt string `json:"-"`
+}
+
+// In is the skill as people read it in lang.
+func (s Skill) In(lang string) Skill {
+	if lang == "fr" && s.TitleFr != "" && s.DescriptionFr != "" {
+		s.Title, s.Description = s.TitleFr, s.DescriptionFr
+	}
+	return s
 }
 
 // ParseSkill reads a SKILL.md: "---" front matter of key: value lines, then the prompt.
@@ -54,6 +65,10 @@ func ParseSkill(src string) (Skill, error) {
 			s.Version = v
 		case "description":
 			s.Description = v
+		case "title_fr":
+			s.TitleFr = v
+		case "description_fr":
+			s.DescriptionFr = v
 		case "model":
 			s.Model = v
 		case "effort":

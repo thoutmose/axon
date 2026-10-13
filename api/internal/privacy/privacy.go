@@ -22,16 +22,17 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Purposes a user can consent to. Everything is off until the user turns it on.
 var Purposes = []Purpose{
-	{"ai_agents", "Send selected data to the configured AI provider so agents can draft suggestions."},
-	{"external_metadata", "Look up films, series, and books with TMDB and Open Library."},
-	{"health_data", "Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data."},
-	{"health_ai", "Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you."},
-	{"food_lookups", "Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them."},
-	{"ai_embeddings", "Send the text of your notes to the embedding service you chose, to search them by meaning. Turning it off deletes the stored embeddings."},
+	{"ai_agents", l10n.Mark("Send selected data to the configured AI provider so agents can draft suggestions.")},
+	{"external_metadata", l10n.Mark("Look up films, series, and books with TMDB and Open Library.")},
+	{"health_data", l10n.Mark("Store food, training, and other health data (special-category data under GDPR Art. 9). Turning it off deletes that data.")},
+	{"health_ai", l10n.Mark("Let the Personal Trainer and Nutritionist agents send your food and training logs to the AI provider you set up, to coach you.")},
+	{"food_lookups", l10n.Mark("Search foods in Open Food Facts and USDA FoodData Central; the food name or barcode you type is sent to them.")},
+	{"ai_embeddings", l10n.Mark("Send the text of your notes to the embedding service you chose, to search them by meaning. Turning it off deletes the stored embeddings.")},
 }
 
 // onWithdraw holds what must happen when a consent is withdrawn, such as
@@ -123,6 +124,7 @@ func consents(ctx context.Context, q db.Querier, userID uuid.UUID) ([]consent, e
 	}
 	out := make([]consent, len(Purposes))
 	for i, p := range Purposes {
+		p.Description = l10n.T(ctx, p.Description)
 		out[i] = consent{Purpose: p}
 		for _, sv := range saved {
 			if sv.Purpose == p.ID {

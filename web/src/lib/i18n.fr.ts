@@ -2587,5 +2587,10 @@ export const fr: Record<string, string> = {
 	Tomorrow: 'Demain',
 	Yesterday: 'Hier',
 	'last {score} on {date}': 'dernier {score} le {date}',
-	never: 'jamais'
+	never: 'jamais',
+	'Axon is unreachable. Check your connection and try again.':
+		'Axon est injoignable. Vérifiez votre connexion et réessayez.',
+	todo: 'à apprendre',
+	soft: 'humaine',
+	hard: 'technique'
 };

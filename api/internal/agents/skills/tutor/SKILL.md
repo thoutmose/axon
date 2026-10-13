@@ -3,6 +3,8 @@ name: tutor
 title: Tutor
 version: 1.1.0
 description: Interviews you about what you want to learn, then drafts a roadmap where every skill cites a recognised source. Nothing is created until you approve it.
+title_fr: Tuteur
+description_fr: Vous interroge sur ce que vous voulez apprendre, puis rédige un parcours dont chaque compétence cite une source reconnue. Rien n’est créé avant votre approbation.
 model: claude-opus-5-5
 effort: high
 tools: get_assessment, list_library, search_library, fetch_page, list_roadmaps, get_roadmap, list_goals, draft_roadmap, suggest_resources, remember

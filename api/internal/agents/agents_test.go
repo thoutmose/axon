@@ -49,3 +49,19 @@ func TestCost(t *testing.T) {
 		t.Error("worst case")
 	}
 }
+
+// Every agent is introduced to people in French too (EP-87).
+func TestEverySkillSpeaksFrench(t *testing.T) {
+	skills, err := LoadSkills()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, s := range skills {
+		if s.TitleFr == "" || s.DescriptionFr == "" {
+			t.Errorf("%s has no title_fr or description_fr", name)
+		}
+		if fr := s.In("fr"); fr.Title != s.TitleFr || s.In("en").Title != s.Title {
+			t.Errorf("%s: In does not pick the language", name)
+		}
+	}
+}

@@ -17,6 +17,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/settings"
 )
 
@@ -71,15 +72,15 @@ func (h *Handlers) fail(w http.ResponseWriter, err error) {
 func message(st Streak) string {
 	switch st.State {
 	case Active:
-		return "Today counts. Nice."
+		return l10n.Mark("Today counts. Nice.")
 	case AtRisk:
-		return "Any small step today keeps your run going: a task, a habit check-in, a few cards, or a short focus session."
+		return l10n.Mark("Any small step today keeps your run going: a task, a habit check-in, a few cards, or a short focus session.")
 	case Frozen:
-		return "A freeze covered the day you missed. Pick up whenever you are ready."
+		return l10n.Mark("A freeze covered the day you missed. Pick up whenever you are ready.")
 	case Broken:
-		return "Fresh start: one small action today begins a new run."
+		return l10n.Mark("Fresh start: one small action today begins a new run.")
 	default:
-		return "Points appear as you complete tasks, keep habits, focus, review cards, write notes, and learn skills."
+		return l10n.Mark("Points appear as you complete tasks, keep habits, focus, review cards, write notes, and learn skills.")
 	}
 }
 
@@ -128,7 +129,7 @@ func Compute(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, tod
 	}
 	s.Streak = &st
 	s.Points = s.XP - FreezeCost*len(freezes)
-	s.Message = message(st)
+	s.Message = l10n.T(ctx, message(st))
 	s.Badges, err = Badges(ctx, q, userID, tz, days)
 	return s, err
 }
@@ -193,8 +194,13 @@ func (h *Handlers) ledger(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
-func (h *Handlers) rules(w http.ResponseWriter, _ *http.Request) {
-	httpx.JSON(w, http.StatusOK, map[string]any{"items": Rules, "freeze_cost": FreezeCost, "max_freezes": MaxFreezes})
+func (h *Handlers) rules(w http.ResponseWriter, r *http.Request) {
+	items := make([]Rule, len(Rules))
+	for i, rule := range Rules {
+		rule.Description = l10n.T(r.Context(), rule.Description)
+		items[i] = rule
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"items": items, "freeze_cost": FreezeCost, "max_freezes": MaxFreezes})
 }
 
 func (h *Handlers) buyFreeze(w http.ResponseWriter, r *http.Request) {

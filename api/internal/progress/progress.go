@@ -3,13 +3,13 @@ package progress
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Rule is one way to earn points, shown to the person as is.
@@ -21,18 +21,18 @@ type Rule struct {
 
 // Rules are every way points are earned; nothing else gives points.
 var Rules = []Rule{
-	{"task_done", "Complete a task", 10},
-	{"task_on_time", "Complete a task on or before its due date (bonus)", 5},
-	{"habit_kept", "Check in a habit", 5},
-	{"habit_two_minute", "Check in a habit's two-minute version", 3},
-	{"focus", "Every 5 minutes worked in a focus session", 1},
-	{"card_review", "Review a flashcard", 1},
-	{"note_written", "Write a note", 3},
-	{"permanent_note", "Write a permanent (Zettelkasten) note (bonus)", 2},
-	{"skill_learned", "Mark a roadmap skill learned", 20},
-	{"milestone_done", "Reach a goal's milestone", 15},
-	{"goal_achieved", "Achieve a goal", 50},
-	{"project_done", "Finish a project", 30},
+	{"task_done", l10n.Mark("Complete a task"), 10},
+	{"task_on_time", l10n.Mark("Complete a task on or before its due date (bonus)"), 5},
+	{"habit_kept", l10n.Mark("Check in a habit"), 5},
+	{"habit_two_minute", l10n.Mark("Check in a habit's two-minute version"), 3},
+	{"focus", l10n.Mark("Every 5 minutes worked in a focus session"), 1},
+	{"card_review", l10n.Mark("Review a flashcard"), 1},
+	{"note_written", l10n.Mark("Write a note"), 3},
+	{"permanent_note", l10n.Mark("Write a permanent (Zettelkasten) note (bonus)"), 2},
+	{"skill_learned", l10n.Mark("Mark a roadmap skill learned"), 20},
+	{"milestone_done", l10n.Mark("Reach a goal's milestone"), 15},
+	{"goal_achieved", l10n.Mark("Achieve a goal"), 50},
+	{"project_done", l10n.Mark("Finish a project"), 30},
 }
 
 // ledger is every point-earning event: rule, points, when, and the item.
@@ -124,14 +124,14 @@ type badgeDef struct {
 }
 
 var badgeDefs = []badgeDef{
-	{"first_task", "First step", "Completed your first task.", "task_done", 1},
-	{"tasks_100", "Centurion", "Completed 100 tasks.", "task_done", 100},
-	{"habit_21", "It sticks", "Kept habits 21 times.", "habit_kept", 21},
-	{"focus_10h", "Deep worker", "Focused for 10 hours (120 focus points).", "focus", 120},
-	{"cards_100", "Remembering", "Reviewed 100 flashcards.", "card_review", 100},
-	{"zettel_10", "Slip-box", "Wrote 10 permanent notes.", "permanent_note", 10},
-	{"skill_first", "Learner", "Learned your first roadmap skill.", "skill_learned", 1},
-	{"goal_first", "Arrived", "Achieved your first goal.", "goal_achieved", 1},
+	{"first_task", l10n.Mark("First step"), l10n.Mark("Completed your first task."), "task_done", 1},
+	{"tasks_100", l10n.Mark("Centurion"), l10n.Mark("Completed 100 tasks."), "task_done", 100},
+	{"habit_21", l10n.Mark("It sticks"), l10n.Mark("Kept habits 21 times."), "habit_kept", 21},
+	{"focus_10h", l10n.Mark("Deep worker"), l10n.Mark("Focused for 10 hours (120 focus points)."), "focus", 120},
+	{"cards_100", l10n.Mark("Remembering"), l10n.Mark("Reviewed 100 flashcards."), "card_review", 100},
+	{"zettel_10", l10n.Mark("Slip-box"), l10n.Mark("Wrote 10 permanent notes."), "permanent_note", 10},
+	{"skill_first", l10n.Mark("Learner"), l10n.Mark("Learned your first roadmap skill."), "skill_learned", 1},
+	{"goal_first", l10n.Mark("Arrived"), l10n.Mark("Achieved your first goal."), "goal_achieved", 1},
 }
 
 // Badges computes every badge: count badges from the ledger (focus counts
@@ -152,14 +152,14 @@ func Badges(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, acti
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return nil, err
 		}
-		out = append(out, Badge{b.id, b.title, b.description, at})
+		out = append(out, Badge{b.id, l10n.T(ctx, b.title), l10n.T(ctx, b.description), at})
 	}
 	for _, s := range []struct {
 		id, title string
 		n         int
-	}{{"streak_7", "A week", 7}, {"streak_30", "A month", 30}, {"streak_100", "A hundred days", 100}} {
+	}{{"streak_7", l10n.Mark("A week"), 7}, {"streak_30", l10n.Mark("A month"), 30}, {"streak_100", l10n.Mark("A hundred days"), 100}} {
 		at := longestRunReaches(activeDays, s.n)
-		out = append(out, Badge{s.id, s.title, fmt.Sprintf("Active %d days in a row.", s.n), at})
+		out = append(out, Badge{s.id, l10n.T(ctx, s.title), l10n.T(ctx, "Active %d days in a row.", s.n), at})
 	}
 	return out, nil
 }

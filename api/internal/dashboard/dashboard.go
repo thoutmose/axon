@@ -20,6 +20,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -78,11 +79,11 @@ type KPI struct {
 var kpis = []struct {
 	id, label, definition, sql string
 }{
-	{"overdue", "Overdue", "Open tasks whose due date is before today.",
+	{"overdue", l10n.Mark("Overdue"), l10n.Mark("Open tasks whose due date is before today."),
 		`count(*) FILTER (WHERE t.status NOT IN ('done', 'cancelled', 'someday') AND t.due_on < $2)`},
-	{"today", "For today", "Open tasks scheduled or due today or earlier, overdue included; someday tasks are left out.",
+	{"today", l10n.Mark("For today"), l10n.Mark("Open tasks scheduled or due today or earlier, overdue included; someday tasks are left out."),
 		`count(*) FILTER (WHERE t.status NOT IN ('done', 'cancelled', 'someday') AND (t.scheduled_on <= $2 OR t.due_on <= $2))`},
-	{"inbox", "Inbox", "Captured tasks you have not clarified yet.",
+	{"inbox", l10n.Mark("Inbox"), l10n.Mark("Captured tasks you have not clarified yet."),
 		`count(*) FILTER (WHERE t.status = 'inbox')`},
 }
 
@@ -139,7 +140,7 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 		Totals     map[string]int     `json:"totals"`
 	}{Today: tasks.Date{Time: day}, Totals: map[string]int{}}
 	for i, k := range kpis {
-		out.KPIs = append(out.KPIs, KPI{ID: k.id, Label: k.label, Value: values[i], Definition: k.definition})
+		out.KPIs = append(out.KPIs, KPI{ID: k.id, Label: l10n.T(ctx, k.label), Value: values[i], Definition: l10n.T(ctx, k.definition)})
 	}
 
 	// Today's tasks: the same set as the "today" count.

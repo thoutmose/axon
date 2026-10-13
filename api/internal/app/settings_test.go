@@ -146,3 +146,23 @@ func TestTodaySectionsAreNeverNull(t *testing.T) {
 		t.Fatalf("saved with no sections: %s", out)
 	}
 }
+
+// The API answers in the language the request prefers (EP-87).
+func TestTheAPISpeaksFrenchWhenAsked(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	missing := "/v1/goals/00000000-0000-7000-8000-000000000000"
+	if code, out := alice.do("GET", missing, nil, "Accept-Language", "fr-FR,fr;q=0.9"); code != 404 || !strings.Contains(string(out), "Objectif ou jalon introuvable.") {
+		t.Fatalf("fr problem = %d %s", code, out)
+	}
+	if code, out := alice.do("GET", missing, nil, "Accept-Language", "en-GB"); code != 404 || !strings.Contains(string(out), "No such goal or milestone.") {
+		t.Fatalf("en problem = %d %s", code, out)
+	}
+	if code, out := alice.do("GET", "/v1/insights", nil, "Accept-Language", "fr"); code != 200 || !strings.Contains(string(out), "Tâches terminées") {
+		t.Fatalf("fr insights = %d %s", code, out)
+	}
+	if code, out := alice.do("GET", "/v1/me/consents", nil, "Accept-Language", "fr"); code != 200 || !strings.Contains(string(out), "Rechercher films, séries et livres") {
+		t.Fatalf("fr consents = %d %s", code, out)
+	}
+}

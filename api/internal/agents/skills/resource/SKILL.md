@@ -3,6 +3,8 @@ name: resource
 title: Resources
 version: 1.1.0
 description: Finds the best books, papers, courses, videos, and channels for a skill or roadmap, with attribution, and proposes adding them. You approve every change.
+title_fr: Ressources
+description_fr: Trouve les meilleurs livres, articles, cours, vidéos et chaînes pour une compétence ou un parcours, avec leur attribution, et propose de les ajouter. Vous approuvez chaque changement.
 model: claude-opus-5-5
 effort: medium
 tools: get_assessment, list_library, search_library, fetch_page, list_roadmaps, get_roadmap, suggest_resources, remember

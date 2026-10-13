@@ -135,6 +135,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-84 | Teaser on the home page | Owner request: with the demo on, the home page shows "Axon in under a minute", a tour of the demo with Axon's own music, captions in English and French, served by Axon itself; recorded by a script anyone can run again. | SHOULD | 2 pts | EP-82, EP-83 | Done |
 | EP-85 | Focus and Roadmaps in French | IS-31.06 says a page is translated when next touched: Focus, Roadmaps, the skills radar, and the focus sounds in Preferences now follow the language setting. | SHOULD | 1 pt | EP-31, EP-82, EP-83 | Done |
 | EP-86 | French everywhere in the web app | The rest of IS-31.06: all 86 remaining components in French (about 1,800 strings), dates in the interface's language, and two tests that keep it so. | SHOULD | 8 pts | EP-85 | Done |
+| EP-87 | The API speaks French | Everything the API writes for people follows `Accept-Language`: 480 French messages (errors, explanations, insights, badges, consents, media reasons) and the agents' introductions, with a test that parses the code and fails on any message without French. | SHOULD | 5 pts | EP-86 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -847,7 +848,7 @@ Cross-cutting matrix:
 - [x] **EP-31/IS-31.06 — French for every page** · 8 pts · SHOULD
   - [x] Shell, landing, sign-in, demo banner, Today and the command dashboard, account tabs, and Preferences are in French.
   - [x] Every other page, dialog, and component (EP-85, EP-86), checked by tests: no text outside `t()` in any template, and a French string for every key the code and Axon's own tables use.
-  - [ ] Text the API writes (dashboard and insight explanations, privacy purposes, badges, media suggestions) is still English: EP-87.
+  - [x] Text the API writes (problem details, validation messages, dashboard and insight explanations, goal progress, privacy purposes, badges, media suggestions, agent introductions) follows the language too: EP-87. The demo's sample data and the agents' tool descriptions, written for the model, stay English.
 
 **Exit evidence.** The integration test covers:
 - defaults, a JSON update, and per-field rejection;
@@ -1748,6 +1749,16 @@ Cross-cutting matrix:
 - [x] **EP-86/IS-86.03** · 1 pt · SHOULD — Dates and numbers follow the interface's language (`appLocale()`: French gives French dates, in the browser's own French when it has one); "Today", "Tomorrow", and "Yesterday" are translated. Before, a French page said "Échéance Fri, Oct 22".
 
 **Tests.** The two coverage tests (each made to fail by adding an untranslated string); `relativeDay` and `formatDate` in French; the 66 English e2e tests unchanged and green; a Firefox walk through 42 pages in French with no page error, whose remaining English is the demo's own data (titles the person wrote) and text the API writes (EP-87).
+
+### EP-87 — The API speaks French
+
+**Goal.** After EP-86 the pages were French but what the API wrote was not: every error and validation message (they show in toasts), the dashboard and insight explanations, goal progress, privacy purposes, badges, and media suggestions. 480 messages in all.
+
+- [x] **EP-87/IS-87.01** · 2 pts · SHOULD — `internal/l10n`: the language from `Accept-Language` (French when it is preferred over English, q-values honoured), put in the request's context and said in `Content-Language`, with `Vary: Accept-Language`. `httpx.Problem` reads `Content-Language` from the response, so the 384 problem and validation messages are translated without touching their call sites. `T`/`Tr` translate (a message with arguments is a format), `Mark` flags strings translated where they are shown, `Num` and `Date` write numbers and dates the French way. The web app sends the stored language, known before the layout applies it, and reloads once when a device first meets an account in another language, so nothing already fetched stays in the old one.
+- [x] **EP-87/IS-87.02** · 2 pts · SHOULD — Dynamic text: dashboard KPIs and their definitions, the task counts, insight titles, formulas, trend sentences (one format per direction, so French phrases each naturally) and the weekly review's highlights, goal progress, point rules, badges, streak messages, consent purposes, and media reasons. Each agent's `SKILL.md` gains `title_fr` and `description_fr`; tool descriptions are written for the model and stay English.
+- [x] **EP-87/IS-87.03** · 1 pt · SHOULD — `catalog_test.go` parses every Go file and fails on a message given to `httpx.Problem`, `ValidationError`, or `l10n.T`/`Tr`/`Mark` without French, on a catalog entry nothing uses, and on a French format whose verbs differ from the English. The French catalog is excluded from the English spell-checker and from gosec's credential guess (a message about tokens).
+
+**Tests.** `l10n` unit tests (negotiation, middleware, catalog, numbers, dates); `TestProblemSpeaksTheResponseLanguage`; trend sentences in French; `TestTheAPISpeaksFrenchWhenAsked` against PostgreSQL (a problem, insights, and consents in French, and in English for `en-GB`); `TestEverySkillSpeaksFrench`; the full Go suite and the 66 e2e tests. A Firefox walk through 42 pages in French leaves only the demo's sample data and the tool descriptions in English.
 
 ### EP-20 — Analytics & insights
 

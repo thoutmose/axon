@@ -5,7 +5,7 @@
 
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
-	import { setLocale, t } from '$lib/i18n.svelte';
+	import { setLocale, storedLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
 	import { goto } from '$app/navigation';
 	import ShortcutsHelp from '$lib/ShortcutsHelp.svelte';
@@ -19,7 +19,11 @@
 			'/v1/me/settings'
 		)
 			.then((s) => {
+				const before = storedLocale();
 				setLocale(s.language);
+				// First visit in another language on this device: what the page
+				// already fetched came in the old one, so fetch it again, once.
+				if (s.language !== before && storedLocale() === s.language) location.reload();
 				applyAppearance(s.appearance);
 				shortcuts = s.keyboard.shortcuts;
 			})

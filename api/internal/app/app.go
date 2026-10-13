@@ -31,6 +31,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/imports"
 	"github.com/thoutmose/axon/api/internal/insights"
 	"github.com/thoutmose/axon/api/internal/knowledge"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/learning"
 	"github.com/thoutmose/axon/api/internal/media"
 	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
@@ -116,7 +117,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("anki_account", ankiAPI.Export)
 	priv.Register("card_reviews", cards.ExportReviews)
 	priv.RegisterFiles("account", avatars.Files)
-	return server.New(version, pool, log, m, func(r chi.Router) {
+	// What the API says to people, in their language (EP-87), on every route.
+	return l10n.Middleware(server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
 			_, _ = w.Write(openapi.Spec)
@@ -173,7 +175,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				agentsAPI.Routes(r)
 			})
 		})
-	}), nil
+	})), nil
 }
 
 // Calendars returns the store that fetches followed calendars (EP-58); the

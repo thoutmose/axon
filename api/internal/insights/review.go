@@ -2,7 +2,6 @@ package insights
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // ReviewMetric is a metric's value for the week and the week before.
@@ -55,7 +55,9 @@ func WeeklyReview(ctx context.Context, q db.Querier, userID uuid.UUID, tz string
 		n := Label(end)
 		r.Next = &n
 	}
+	lang := l10n.Lang(ctx)
 	for _, m := range Metrics {
+		m = m.in(lang)
 		vals, err := values(ctx, q, m, userID, tz, prev, end)
 		if err != nil {
 			return r, err
@@ -63,7 +65,7 @@ func WeeklyReview(ctx context.Context, q db.Querier, userID uuid.UUID, tz string
 		rm := ReviewMetric{ID: m.ID, Title: m.Title, Unit: m.Unit, Formula: m.Formula,
 			Value: vals[monday.Format(time.DateOnly)], Previous: vals[prev.Format(time.DateOnly)]}
 		r.Metrics = append(r.Metrics, rm)
-		if h := highlight(rm); h != "" {
+		if h := highlight(rm, lang); h != "" {
 			r.Highlights = append(r.Highlights, h)
 		}
 		if rm.Value == 0 || m.Unit == "percent" {
@@ -93,18 +95,18 @@ func WeeklyReview(ctx context.Context, q db.Querier, userID uuid.UUID, tz string
 }
 
 // highlight says what changed most, without praise or blame.
-func highlight(m ReviewMetric) string {
+func highlight(m ReviewMetric, lang string) string {
 	switch {
 	case m.Value == 0 && m.Previous == 0:
 		return ""
 	case m.Unit == "percent":
-		return fmt.Sprintf("%s: %.0f %% (%.0f %% the week before).", m.Title, m.Value, m.Previous)
+		return l10n.Tr(lang, "%s: %.0f %% (%.0f %% the week before).", m.Title, m.Value, m.Previous)
 	case m.Previous == 0:
-		return fmt.Sprintf("%s: %.0f, none the week before.", m.Title, m.Value)
+		return l10n.Tr(lang, "%s: %.0f, none the week before.", m.Title, m.Value)
 	}
 	change := math.Round((m.Value - m.Previous) / m.Previous * 100)
 	if math.Abs(change) < 25 {
 		return ""
 	}
-	return fmt.Sprintf("%s: %.0f, %+.0f %% on the week before (%.0f).", m.Title, m.Value, change, m.Previous)
+	return l10n.Tr(lang, "%s: %.0f, %+.0f %% on the week before (%.0f).", m.Title, m.Value, change, m.Previous)
 }

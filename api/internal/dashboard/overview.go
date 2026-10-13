@@ -15,6 +15,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/tasks"
 )
 
@@ -141,27 +142,27 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := func(v int) *int { return &v }
-	period := strconv.Itoa(days) + " days"
+	period := l10n.T(ctx, "%d days", days)
 	consistencyPrev := p(before["habit_consistency"])
 	if before["habit_due"] == 0 {
 		consistencyPrev = nil
 	}
 	kpis := []Trend{
-		{"tasks_done", "Tasks done", now["tasks_done"], p(before["tasks_done"]), "count",
-			"Tasks you completed in the last " + period + ", by completion date in your time zone.", "/tasks?view=done"},
-		{"focus_minutes", "Focus time", now["focus_minutes"], p(before["focus_minutes"]), "minutes",
-			"Minutes worked in focus sessions started in the last " + period + ", breaks left out.", "/focus"},
-		{"habit_consistency", "Habit consistency", now["habit_consistency"], consistencyPrev, "percent",
-			"Check-ins (done or two-minute) on scheduled days, out of the scheduled days of your active habits in the last " + period + ", counted from each habit's start.", "/habits"},
-		{"goal_progress", "Goal progress", goalAvg, nil, "percent",
-			"The average progress of your active goals that have something to measure, as each goal explains it.", "/goals"},
-		{"skills_done", "Skills learned", now["skills_done"], p(before["skills_done"]), "count",
-			"Roadmap skills marked done in the last " + period + ", by their last change.", "/roadmaps"},
-		{"learning", "Learning now", learning, nil, "count", "Roadmap skills with the status Learning.", "/roadmaps"},
-		{"cards_due", "Cards to review", cardsDue, nil, "count", "Flashcards a review would offer now: known cards FSRS has scheduled, and new cards within the day's allowance; suspended cards are left out.", "/learn"},
-		{"notes_written", "Notes written", now["notes_written"], p(before["notes_written"]), "count",
-			"Notes created in the last " + period + ".", "/notes"},
-		{"projects_active", "Active projects", projectsActive, nil, "count", "Projects with the status Active.", "/projects"},
+		{"tasks_done", l10n.T(ctx, "Tasks done"), now["tasks_done"], p(before["tasks_done"]), "count",
+			l10n.T(ctx, "Tasks you completed in the last %s, by completion date in your time zone.", period), "/tasks?view=done"},
+		{"focus_minutes", l10n.T(ctx, "Focus time"), now["focus_minutes"], p(before["focus_minutes"]), "minutes",
+			l10n.T(ctx, "Minutes worked in focus sessions started in the last %s, breaks left out.", period), "/focus"},
+		{"habit_consistency", l10n.T(ctx, "Habit consistency"), now["habit_consistency"], consistencyPrev, "percent",
+			l10n.T(ctx, "Check-ins (done or two-minute) on scheduled days, out of the scheduled days of your active habits in the last %s, counted from each habit's start.", period), "/habits"},
+		{"goal_progress", l10n.T(ctx, "Goal progress"), goalAvg, nil, "percent",
+			l10n.T(ctx, "The average progress of your active goals that have something to measure, as each goal explains it."), "/goals"},
+		{"skills_done", l10n.T(ctx, "Skills learned"), now["skills_done"], p(before["skills_done"]), "count",
+			l10n.T(ctx, "Roadmap skills marked done in the last %s, by their last change.", period), "/roadmaps"},
+		{"learning", l10n.T(ctx, "Learning now"), learning, nil, "count", l10n.T(ctx, "Roadmap skills with the status Learning."), "/roadmaps"},
+		{"cards_due", l10n.T(ctx, "Cards to review"), cardsDue, nil, "count", l10n.T(ctx, "Flashcards a review would offer now: known cards FSRS has scheduled, and new cards within the day's allowance; suspended cards are left out."), "/learn"},
+		{"notes_written", l10n.T(ctx, "Notes written"), now["notes_written"], p(before["notes_written"]), "count",
+			l10n.T(ctx, "Notes created in the last %s.", period), "/notes"},
+		{"projects_active", l10n.T(ctx, "Active projects"), projectsActive, nil, "count", l10n.T(ctx, "Projects with the status Active."), "/projects"},
 	}
 
 	series, err := h.series(ctx, who.UserID, tz, cur)

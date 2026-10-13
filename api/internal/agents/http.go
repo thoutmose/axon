@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/repos"
 )
 
@@ -94,7 +95,7 @@ func (r *Runner) list(w http.ResponseWriter, req *http.Request) {
 	slices.Sort(names)
 	agents := []agentInfo{}
 	for _, n := range names {
-		s := r.Skills[n]
+		s := r.Skills[n].In(l10n.Lang(req.Context()))
 		a := agentInfo{Skill: s, Tools: []toolInfo{}}
 		for _, t := range s.Tools {
 			a.Tools = append(a.Tools, toolInfo{t, registry[t].Description, registry[t].Write})

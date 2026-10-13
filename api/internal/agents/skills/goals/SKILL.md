@@ -3,6 +3,8 @@ name: goals
 title: Goals
 version: 1.0.0
 description: Breaks a goal into measurable milestones and links the tasks that move it. You approve every change.
+title_fr: Objectifs
+description_fr: Découpe un objectif en jalons mesurables et relie les tâches qui le font avancer. Vous approuvez chaque changement.
 model: claude-opus-5-5
 effort: medium
 tools: list_goals, get_goal, list_tasks, add_milestone, link_task_to_goal, remember
