@@ -130,6 +130,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-79 | Key phrases kept | The key phrases of each note (TextRank, a third of the Notes page graph and analysis time) are kept by the hash of its text: at 1,500 notes, the analysis went from 1.84 s to 0.70 s and a repeat visit to the Zettelkasten graph from 2.85 s to 1.68 s. | SHOULD | 1 pt | EP-78 | Done |
 | EP-80 | Other sites kept out | Measured over HTTPS: session cookie, CSP, HSTS, and origin checks were right; two isolation headers were missing and are added. axe found no serious issue on 30 pages in Firefox or Chromium. | SHOULD | 1 pt | EP-79 | Done |
 | EP-81 | Containers without privileges | Every service but PostgreSQL runs with no Linux capability (Caddy keeps only the one its binary carries) and cannot gain privileges; images were already non-root and pinned by digest. | SHOULD | 1 pt | EP-80 | Done |
+| EP-82 | Skills radar | Owner request ("graphe en toile d'araignée"): Roadmaps shows the hard and the soft skills acquired as two radar charts, one spoke per roadmap (or per section under three), done and being learnt, with a table view. | SHOULD | 2 pts | EP-14 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1695,6 +1696,16 @@ Cross-cutting matrix:
 - [x] **EP-81/IS-81.01** · 1 pt · SHOULD — `no-new-privileges` and `cap_drop: [ALL]` for Caddy, the API, the web server, the Anki bridge, and the backup job. Caddy keeps `NET_BIND_SERVICE` alone: its binary carries that file capability, and without it the kernel refuses to start it (found by trying). PostgreSQL keeps its defaults: its entrypoint changes file ownership.
 
 **Tests.** The whole e2e suite on the hardened stack; `docker inspect` shows the dropped capabilities; the backup image's tools (`pg_dump`, `age` encryption, `ssh`, `rsync`) run under the same restrictions as user `backup`.
+
+### EP-82 — Skills radar
+
+**Goal.** Owner request: a spider chart ("graphe en toile d'araignée") of the hard and soft skills acquired. Skills already carried a kind (hard or soft) and a status; only per-roadmap progress bars showed them.
+
+- [x] **EP-82/IS-82.01** · 1 pt · SHOULD — `GET /v1/roadmaps/radar`: for each kind, one spoke per roadmap holding skills of that kind, or one per section when fewer than three roadmaps do (a radar needs three spokes), with skills done, being learnt, and in all; skipped skills are left out, as in a roadmap's progress. Nine spokes at most: the smallest areas add up to "Other". One grouped query.
+- [x] **EP-82/IS-82.02** · 1 pt · SHOULD — Roadmaps shows "Skills acquired": a radar for hard skills and one for soft skills, the filled shape for skills done and a dashed one adding those being learnt, figures on hover, and the same figures as a table. Under three areas, the table alone. The demo follows a few more roadmaps (Linux and Bash, databases), so its radar has a shape.
+
+**Tests.** `TestRadar*` unit tests (spokes by roadmap, by section, folding into Other, empty), written first; `TestSkillsRadar` against PostgreSQL (a skipped skill is left out, another person sees nothing); `radar.test.ts` for the geometry and labels. Seen in Firefox and Chromium on the demo.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.

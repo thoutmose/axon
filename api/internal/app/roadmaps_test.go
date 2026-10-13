@@ -176,3 +176,46 @@ func TestRegroupTurnsAnOlderImportIntoSkills(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Mine"}`)), &manual)
 	alice.mustDo(422, "POST", "/v1/roadmaps/"+manual.ID+"/regroup", nil)
 }
+
+// The skills radar counts acquired skills by area, for each kind, and never
+// another person's.
+func TestSkillsRadar(t *testing.T) {
+	e := newEnv(t, true)
+	alice, bob := e.client(), e.client()
+	alice.register("Alice")
+	bob.register("Bob")
+
+	var soft roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"soft-skills"}`)), &soft)
+	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[0].ID, []byte(`{"status":"done"}`))
+	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[1].ID, []byte(`{"status":"learning"}`))
+	alice.mustDo(200, "PATCH", "/v1/skills/"+soft.Skills[5].ID, []byte(`{"status":"skipped"}`))
+	for _, title := range []string{"Go", "SQL", "Linux"} {
+		var rm roadmapJSON
+		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"`+title+`"}`)), &rm)
+		alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"Basics","status":"done"}`))
+		alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills", []byte(`{"title":"More"}`))
+	}
+
+	type spoke struct {
+		Label, Roadmap        string
+		Done, Learning, Total int
+	}
+	var r struct {
+		Hard, Soft struct {
+			By     string
+			Spokes []spoke
+		}
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/radar", nil), &r)
+	if r.Hard.By != "roadmap" || fmt.Sprint(r.Hard.Spokes) != "[{Go Go 1 0 2} {Linux Linux 1 0 2} {SQL SQL 1 0 2}]" {
+		t.Fatalf("hard = %+v", r.Hard)
+	}
+	// One soft roadmap: a spoke per section; the skipped skill is left out.
+	if r.Soft.By != "section" || fmt.Sprint(r.Soft.Spokes) != "[{Learn Soft skills for engineers 1 1 2} {Communicate Soft skills for engineers 0 0 2} {Craft Soft skills for engineers 0 0 1}]" {
+		t.Fatalf("soft = %+v", r.Soft)
+	}
+	if out := bob.mustDo(200, "GET", "/v1/roadmaps/radar", nil); string(out) != `{"hard":{"by":"section","spokes":[]},"soft":{"by":"section","spokes":[]}}`+"\n" {
+		t.Fatalf("bob = %s", out)
+	}
+}

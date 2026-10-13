@@ -3544,6 +3544,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/roadmaps/radar': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Hard and soft skills acquired, by area, for a radar chart
+		 * @description One spoke per roadmap holding skills of that kind; under three such roadmaps, one spoke per section. Skipped skills are not counted. At most nine spokes: the smallest areas are added up as "Other".
+		 */
+		get: operations['getSkillsRadar'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/import': {
 		parameters: {
 			query?: never;
@@ -4827,6 +4847,28 @@ export interface components {
 			project_id: string | null;
 			/** Format: date-time */
 			created_at: string;
+		};
+		RadarKind: {
+			/**
+			 * @description What one spoke stands for.
+			 * @enum {string}
+			 */
+			by: 'roadmap' | 'section';
+			spokes: {
+				/**
+				 * @description The roadmap, or by section the section.
+				 * @example Python
+				 */
+				label: string;
+				/** @description The roadmap's title; empty for Other. */
+				roadmap: string;
+				/** @description Skills acquired. */
+				done: number;
+				/** @description Skills being learnt. */
+				learning: number;
+				/** @description Skills in the area, skipped ones aside. */
+				total: number;
+			}[];
 		};
 		Roadmap: {
 			/** Format: uuid */
@@ -13577,6 +13619,30 @@ export interface operations {
 							/** @description Skills the courses or resources are grouped into. */
 							skills: number;
 						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	getSkillsRadar: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The radar. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						hard: components['schemas']['RadarKind'];
+						soft: components['schemas']['RadarKind'];
 					};
 				};
 			};

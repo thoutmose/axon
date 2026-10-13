@@ -5996,6 +5996,27 @@ paths:
                         count: { type: integer, description: Courses or resources in it. }
                         skills: { type: integer, description: Skills the courses or resources are grouped into. }
         "401": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/radar:
+    get:
+      tags: [roadmaps]
+      operationId: getSkillsRadar
+      summary: Hard and soft skills acquired, by area, for a radar chart
+      description: >-
+        One spoke per roadmap holding skills of that kind; under three such roadmaps, one spoke
+        per section. Skipped skills are not counted. At most nine spokes: the smallest areas are
+        added up as "Other".
+      responses:
+        "200":
+          description: The radar.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [hard, soft]
+                properties:
+                  hard: { $ref: "#/components/schemas/RadarKind" }
+                  soft: { $ref: "#/components/schemas/RadarKind" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/import:
     post:
       tags: [roadmaps]
@@ -7454,6 +7475,23 @@ components:
         allow_comments: { type: boolean, description: "false (default): the agents only read." }
         project_id: { type: [string, "null"], format: uuid }
         created_at: { type: string, format: date-time }
+    RadarKind:
+      type: object
+      required: [by, spokes]
+      properties:
+        by: { type: string, enum: [roadmap, section], description: What one spoke stands for. }
+        spokes:
+          type: array
+          maxItems: 9
+          items:
+            type: object
+            required: [label, roadmap, done, learning, total]
+            properties:
+              label: { type: string, example: Python, description: "The roadmap, or by section the section." }
+              roadmap: { type: string, description: "The roadmap's title; empty for Other." }
+              done: { type: integer, description: Skills acquired. }
+              learning: { type: integer, description: Skills being learnt. }
+              total: { type: integer, description: "Skills in the area, skipped ones aside." }
     Roadmap:
       type: object
       required: [id, title, description, source, attribution, license_url, done, total, created_at, updated_at]

@@ -47,7 +47,7 @@ Designed with James Clear's *Atomic Habits*:
 ## Learn: Roadmaps and flashcards
 
 - Start with the **assessment**: your situation, job, goals, and current level. It places you on roadmaps.
-- **Roadmaps** are skill graphs (competencies, with the best books, courses, papers, and videos under each), from a curated library across computing, data, maths, and more, or the OSSU curriculum. Create, edit, and remove your own by hand or with the Tutor agent.
+- **Roadmaps** are skill graphs (competencies, with the best books, courses, papers, and videos under each), from a curated library across computing, data, maths, and more, or the OSSU curriculum. Create, edit, and remove your own by hand or with the Tutor agent. "Skills acquired" draws your hard and soft skills as two radar charts: one spoke per roadmap (or per section when you follow fewer than three), the filled shape for skills done, the dashed one adding those you are learning.
 - **Flashcards** (with pictures) are reviewed with FSRS, the Anki scheduler; take practice tests. Export Anki packages or sync to your own `anki-sync-server`. The Teacher agent can draft cards from your notes for your approval.
 
 ## Focus
