@@ -142,7 +142,10 @@
 			<ol class="week">
 				{#each day.week as d (d.date)}
 					<li>
-						<span class="bar" style:height="{(d.total_ml / weekMax) * 100}%" aria-hidden="true"
+						<span
+							class="bar"
+							style:height="{Math.round((d.total_ml / weekMax) * 56)}px"
+							aria-hidden="true"
 						></span>
 						<span class="small">{d.date.slice(5)}</span>
 						<span class="visually-hidden"
