@@ -2,8 +2,29 @@
  * plain Markdown with front matter, so vault sync stays byte for byte. */
 import { localDate as isoDate } from './dates';
 import { stem } from './notes';
+// The owner's vault templates (EP-100), shipped as they are in ~/SecondBrain/Templates.
+import areaMd from './vaultTemplates/area.md?raw';
+import dailyMd from './vaultTemplates/daily.md?raw';
+import goalMd from './vaultTemplates/goal.md?raw';
+import habitMd from './vaultTemplates/habit.md?raw';
+import literatureMd from './vaultTemplates/literature.md?raw';
+import mediaMd from './vaultTemplates/media.md?raw';
+import milestoneMd from './vaultTemplates/milestone.md?raw';
+import monthlyMd from './vaultTemplates/monthly.md?raw';
+import permanentMd from './vaultTemplates/permanent.md?raw';
+import projectMd from './vaultTemplates/project.md?raw';
+import resourceMd from './vaultTemplates/resource.md?raw';
+import roadmapMd from './vaultTemplates/roadmap.md?raw';
+import weeklyMd from './vaultTemplates/weekly.md?raw';
+import test_5wMd from './vaultTemplates/test-5w.md?raw';
+import test_blankMd from './vaultTemplates/test-blank.md?raw';
+import test_cardsMd from './vaultTemplates/test-cards.md?raw';
+import test_clozeMd from './vaultTemplates/test-cloze.md?raw';
+import test_feynmanMd from './vaultTemplates/test-feynman.md?raw';
+import test_monthlyMd from './vaultTemplates/test-monthly.md?raw';
 
-export type Group = 'zettelkasten' | 'para' | 'items' | 'other' | 'vault';
+export type Group =
+	'zettelkasten' | 'para' | 'periodic' | 'plans' | 'reviews' | 'items' | 'other' | 'vault';
 
 export type Template = {
 	id: string;
@@ -12,6 +33,8 @@ export type Template = {
 	group?: Group;
 	path: (title: string, now: Date) => string;
 	content: (title: string, now: Date) => string;
+	/** The template file as it is in the vault, when it comes from one. */
+	raw?: string;
 };
 
 /** "Raft & Paxos!" → "raft-paxos" (as the API slugs titles). */
@@ -37,10 +60,28 @@ export function dailyPath(d: Date): string {
 }
 
 export function dailyContent(d: Date): string {
-	const yesterday = new Date(d);
-	yesterday.setDate(d.getDate() - 1);
-	return `---\ntype: daily\ndate: ${isoDate(d)}\n---\n# ${isoDate(d)}\n\nPrevious: [[${isoDate(yesterday)}]]\n\n## Top three\n- [ ] \n- [ ] \n- [ ] \n\n## Notes\n\n\n## Reflection\n- What went well?\n- What did I learn?\n`;
+	return fill(dailyMd, isoDate(d), d);
 }
+
+/** ISO week: 2026-W41. */
+export function isoWeek(d: Date): string {
+	const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+	const day = t.getUTCDay() || 7;
+	t.setUTCDate(t.getUTCDate() + 4 - day);
+	const year = t.getUTCFullYear();
+	const week = Math.ceil(((t.getTime() - Date.UTC(year, 0, 1)) / 86_400_000 + 1) / 7);
+	return `${year}-W${pad(week)}`;
+}
+
+/** A template from the vault's Templates folder, filled when used. */
+const fromVault = (
+	id: string,
+	group: Group,
+	label: string,
+	hint: string,
+	raw: string,
+	path: (title: string, now: Date) => string
+): Template => ({ id, group, label, hint, raw, path, content: (t, now) => fill(raw, t, now) });
 
 export const templates: Template[] = [
 	{
@@ -51,51 +92,46 @@ export const templates: Template[] = [
 		path: (t, now) => `0-Inbox/${zettelId(now)}-${slug(t)}.md`,
 		content: (t, now) => `---\ntype: fleeting\ncreated: ${isoDate(now)}\n---\n# ${t}\n\n`
 	},
-	{
-		id: 'literature',
-		group: 'zettelkasten',
-		label: 'Literature note',
-		hint: 'What a book, article, or course says, in your own words.',
-		path: (t) => `Zettel/literature/${slug(t)}.md`,
-		content: (t, now) =>
-			`---\ntype: literature\ntitle: ${t}\nsource: \nauthor: \ncreated: ${isoDate(now)}\ntags: []\n---\n## Key ideas\n- \n\n## Quotes\n> \n\n## My thoughts\n\n`
-	},
-	{
-		id: 'permanent',
-		group: 'zettelkasten',
-		label: 'Permanent note',
-		hint: 'One idea, stated so it stands alone, linked to related ideas.',
-		path: (t, now) => `Zettel/permanent/${zettelId(now)}-${slug(t)}.md`,
-		content: (t, now) =>
-			`---\ntype: permanent\nid: ${zettelId(now)}\ntitle: ${t}\ncreated: ${isoDate(now)}\ntags: []\n---\n## Idea\n\n\n## Why it matters\n\n\n## Related\n- [[ ]]\n`
-	},
-	{
-		id: 'project',
-		group: 'para',
-		label: 'Project note',
-		hint: 'Notes for an outcome with a deadline, in 1-Projects (PARA).',
-		path: (t) => `1-Projects/${slug(t)}/${slug(t)}.md`,
-		content: (t, now) =>
-			`---\ntype: project\ntitle: ${t}\nstatus: active\ncreated: ${isoDate(now)}\n---\n## Outcome\n\n\n## Next actions\n- [ ] \n\n## Notes\n\n`
-	},
-	{
-		id: 'area',
-		group: 'para',
-		label: 'Area note',
-		hint: 'Notes for a responsibility you keep up, in 2-Areas (PARA).',
-		path: (t) => `2-Areas/${slug(t)}.md`,
-		content: (t) =>
-			`---\ntype: area\ntitle: ${t}\n---\n## Standard to keep\n\n\n## Notes & resources\n- \n`
-	},
-	{
-		id: 'resource',
-		group: 'para',
-		label: 'Resource note',
-		hint: 'Notes on a topic you collect, in 3-Resources (PARA).',
-		path: (t) => `3-Resources/${slug(t)}.md`,
-		content: (t) =>
-			`---\ntype: resource\ntitle: ${t}\ntags: []\n---\n## Summary\n\n\n## Links\n- \n`
-	},
+	fromVault(
+		'literature',
+		'zettelkasten',
+		'Literature note',
+		'What a book, article, or course says, in your own words, with its retrieval tests.',
+		literatureMd,
+		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
+	),
+	fromVault(
+		'permanent',
+		'zettelkasten',
+		'Permanent note',
+		'One idea, stated so it stands alone, linked to related ideas and why.',
+		permanentMd,
+		(t, now) => `Zettel/permanent/${zettelId(now)}-${slug(t)}.md`
+	),
+	fromVault(
+		'project',
+		'para',
+		'Project note',
+		'An outcome with a deadline, in 1-Projects (PARA).',
+		projectMd,
+		(t) => `1-Projects/${slug(t)}/${slug(t)}.md`
+	),
+	fromVault(
+		'area',
+		'para',
+		'Area note',
+		'A responsibility with a standard to keep, in 2-Areas (PARA).',
+		areaMd,
+		(t) => `2-Areas/${slug(t)}/${slug(t)}.md`
+	),
+	fromVault(
+		'resource',
+		'para',
+		'Resource note',
+		'A topic of ongoing interest, in 3-Resources (PARA).',
+		resourceMd,
+		(t) => `3-Resources/${slug(t)}.md`
+	),
 	{
 		id: 'archive',
 		group: 'para',
@@ -105,6 +141,118 @@ export const templates: Template[] = [
 		content: (t, now) =>
 			`---\ntype: archive\ntitle: ${t}\narchived: ${isoDate(now)}\n---\n## What it was\n\n\n## Outcome\n\n\n## Lessons\n- \n`
 	},
+	fromVault(
+		'daily',
+		'periodic',
+		'Daily note',
+		'Top 3, the retrieval tests due, habits, what you learned, and the journal.',
+		dailyMd,
+		(_t, now) => dailyPath(now)
+	),
+	fromVault(
+		'weekly',
+		'periodic',
+		'Weekly note',
+		'The GTD weekly review, the week’s tasks, wins and lessons.',
+		weeklyMd,
+		(_t, now) => `Weekly/${isoWeek(now)}.md`
+	),
+	fromVault(
+		'monthly',
+		'periodic',
+		'Monthly note',
+		'Goals and milestones reviewed, the roadmap checked, what you learned.',
+		monthlyMd,
+		(_t, now) => `Monthly/${isoDate(now).slice(0, 7)}.md`
+	),
+	fromVault(
+		'roadmap',
+		'plans',
+		'Roadmap note',
+		'Why, constraints, phases with milestones and exit checks, habits, and the learning method.',
+		roadmapMd,
+		(t) => `Roadmaps/${slug(t)}.md`
+	),
+	fromVault(
+		'goal',
+		'plans',
+		'Goal note',
+		'A specific, measurable outcome, why it matters, its milestones and habits.',
+		goalMd,
+		(t) => `Tracker/goals/${slug(t)}.md`
+	),
+	fromVault(
+		'milestone',
+		'plans',
+		'Milestone note',
+		'A definition of done, the evidence, and the resources.',
+		milestoneMd,
+		(t) => `Tracker/milestones/${slug(t)}.md`
+	),
+	fromVault(
+		'habit',
+		'plans',
+		'Habit note',
+		'Cue, routine, reward, why, and a log of check-ins.',
+		habitMd,
+		(t) => `Tracker/habits/${slug(t)}.md`
+	),
+	fromVault(
+		'media',
+		'plans',
+		'Media note',
+		'A book, film, series, course, podcast, or game: want, doing, done.',
+		mediaMd,
+		(t) => `Tracker/media/${slug(t)}.md`
+	),
+	fromVault(
+		'test-5w',
+		'reviews',
+		'Five Ws test',
+		'Half an hour to an hour after writing: what, why, who, when, where, how, without the note.',
+		test_5wMd,
+		(t) => `Reviews/${slug(t)}/5w.md`
+	),
+	fromVault(
+		'test-blank',
+		'reviews',
+		'Blank page test',
+		'A day later: write everything you remember.',
+		test_blankMd,
+		(t) => `Reviews/${slug(t)}/blank.md`
+	),
+	fromVault(
+		'test-cards',
+		'reviews',
+		'Flashcards test',
+		'Three days later: fronts and backs, then to Anki.',
+		test_cardsMd,
+		(t) => `Reviews/${slug(t)}/cards.md`
+	),
+	fromVault(
+		'test-cloze',
+		'reviews',
+		'Cloze test',
+		'A week later: fill in the blanks.',
+		test_clozeMd,
+		(t) => `Reviews/${slug(t)}/cloze.md`
+	),
+	fromVault(
+		'test-monthly',
+		'reviews',
+		'Monthly test',
+		'A month later: questions mixing this note with related ones.',
+		test_monthlyMd,
+		(t) => `Reviews/${slug(t)}/monthly.md`
+	),
+	fromVault(
+		'test-feynman',
+		'reviews',
+		'Feynman test',
+		'Three months later: explain it to a twelve-year-old, then study the gaps.',
+		test_feynmanMd,
+		(t) => `Reviews/${slug(t)}/feynman.md`
+	),
 	{
 		id: 'meeting',
 		group: 'other',
@@ -265,10 +413,10 @@ export function isTemplatePath(path: string): boolean {
 /** Where a note made from a vault template goes, by the template's front-matter type. */
 const destinations: Record<string, (t: string, now: Date, folder: string) => string> = {
 	fleeting: (t, now) => `0-Inbox/${zettelId(now)}-${slug(t)}.md`,
-	literature: (t) => `Zettel/literature/${slug(t)}.md`,
+	literature: (t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`,
 	permanent: (t, now) => `Zettel/permanent/${zettelId(now)}-${slug(t)}.md`,
 	project: (t) => `1-Projects/${slug(t)}/${slug(t)}.md`,
-	area: (t) => `2-Areas/${slug(t)}.md`,
+	area: (t) => `2-Areas/${slug(t)}/${slug(t)}.md`,
 	resource: (t) => `3-Resources/${slug(t)}.md`,
 	archive: (t) => `4-Archive/${slug(t)}.md`,
 	daily: (_t, now) => dailyPath(now),
@@ -289,11 +437,21 @@ const destinations: Record<string, (t: string, now: Date, folder: string) => str
  */
 export function fill(body: string, title: string, now: Date): string {
 	const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-	return body
-		.replace(/\{\{\s*title\s*\}\}|<%\s*tp\.file\.title\s*%>|\{title\}/g, title)
-		.replace(/\{\{\s*date(:[^}]*)?\s*\}\}|<%\s*tp\.date\.now\([^)]*\)\s*%>/g, isoDate(now))
-		.replace(/\{\{\s*time(:[^}]*)?\s*\}\}/g, time)
-		.replace(/\{\{\s*zettel\s*\}\}/g, zettelId(now));
+	return (
+		body
+			.replace(/\{\{\s*title\s*\}\}|<%\s*tp\.file\.title\s*%>|\{title\}/g, title)
+			.replace(/\{\{\s*date(:[^}]*)?\s*\}\}|<%\s*tp\.date\.now\([^)]*\)\s*%>/g, isoDate(now))
+			.replace(/\{\{\s*time(:[^}]*)?\s*\}\}/g, time)
+			.replace(/\{\{\s*zettel\s*\}\}/g, zettelId(now))
+			// The owner's vault templates (EP-100): the creation time, the title's slug,
+			// a test's note, and sensible starts; anything else is left blank.
+			.replace(/\{\{\s*created\s*\}\}/g, `${isoDate(now)} ${time}`)
+			.replace(/\{\{\s*slug\s*\}\}/g, slug(title))
+			.replace(/\{\{\s*note\s*\}\}/g, title)
+			.replace(/\{\{\s*kind\s*\}\}/g, 'book')
+			.replace(/\{\{\s*status\s*\}\}/g, 'want')
+			.replace(/\{\{\s*[\w-]+\s*\}\}/g, '')
+	);
 }
 
 /** A template that is a note in the vault's templates folder. */
@@ -317,11 +475,15 @@ export const templateName = stem;
 
 /** The built-in templates as editable files for the vault's templates folder. */
 export function builtInFiles(now: Date): { path: string; content: string }[] {
-	return templates.map((t) => ({
-		path: `${templatesFolder}/${t.label}.md`,
-		content: t
-			.content('{{title}}', now)
-			.replaceAll(zettelId(now), '{{zettel}}')
-			.replaceAll(isoDate(now), '{{date}}')
-	}));
+	return templates.map((t) =>
+		t.raw
+			? { path: `${templatesFolder}/${t.id}.md`, content: t.raw }
+			: {
+					path: `${templatesFolder}/${t.label}.md`,
+					content: t
+						.content('{{title}}', now)
+						.replaceAll(zettelId(now), '{{zettel}}')
+						.replaceAll(isoDate(now), '{{date}}')
+				}
+	);
 }

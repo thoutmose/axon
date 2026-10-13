@@ -2858,5 +2858,62 @@ export const fr: Record<string, string> = {
 		'Une boîte fermée : ce qui est fini ou en pause, rangé mais jamais perdu.',
 	'A sheet of paper: anything worth writing down, in plain Markdown that stays yours.':
 		'Une feuille de papier : tout ce qui mérite d’être écrit, en Markdown simple qui reste à vous.',
-	Workout: 'Séance'
+	Workout: 'Séance',
+	'Daily, weekly, and monthly notes': 'Notes du jour, de la semaine et du mois',
+	'The day’s top three and journal, the GTD weekly review, and the monthly check of goals and the roadmap.':
+		'Les trois priorités et le journal du jour, la revue hebdomadaire GTD, et le point mensuel sur les objectifs et le parcours.',
+	'Roadmaps, goals, and habits': 'Parcours, objectifs et habitudes',
+	'Plain notes in Roadmaps/ and Tracker/, as in the SecondBrain vault: a roadmap with its phases, goals, milestones, habits, and the media you track.':
+		'Des notes simples dans Roadmaps/ et Tracker/, comme dans le coffre SecondBrain : un parcours et ses phases, des objectifs, des jalons, des habitudes et les œuvres que vous suivez.',
+	'Retrieval tests': 'Tests de rappel',
+	'Spaced tests of a note, without opening it: the five Ws after an hour, a blank page after a day, flashcards after three days, a cloze after a week, a mixed test after a month, and Feynman after three months.':
+		'Des tests espacés d’une note, sans l’ouvrir : les cinq W après une heure, une page blanche après un jour, des cartes après trois jours, un texte à trous après une semaine, un test mêlé après un mois, et Feynman après trois mois.',
+	'What a book, article, or course says, in your own words, with its retrieval tests.':
+		'Ce que dit un livre, un article ou un cours, dans vos mots, avec ses tests de rappel.',
+	'One idea, stated so it stands alone, linked to related ideas and why.':
+		'Une idée, formulée pour tenir seule, reliée à d’autres idées, avec la raison.',
+	'An outcome with a deadline, in 1-Projects (PARA).':
+		'Un résultat avec une échéance, dans 1-Projects (PARA).',
+	'A responsibility with a standard to keep, in 2-Areas (PARA).':
+		'Une responsabilité avec un niveau à tenir, dans 2-Areas (PARA).',
+	'A topic of ongoing interest, in 3-Resources (PARA).':
+		'Un sujet d’intérêt durable, dans 3-Resources (PARA).',
+	'Top 3, the retrieval tests due, habits, what you learned, and the journal.':
+		'Les trois priorités, les tests de rappel à faire, les habitudes, ce que vous avez appris et le journal.',
+	'The GTD weekly review, the week’s tasks, wins and lessons.':
+		'La revue hebdomadaire GTD, les tâches de la semaine, les réussites et les leçons.',
+	'Goals and milestones reviewed, the roadmap checked, what you learned.':
+		'Objectifs et jalons revus, le parcours vérifié, ce que vous avez appris.',
+	'Roadmap note': 'Note de parcours',
+	'Why, constraints, phases with milestones and exit checks, habits, and the learning method.':
+		'Pourquoi, contraintes, phases avec jalons et examens de sortie, habitudes et méthode d’apprentissage.',
+	'Goal note': 'Note d’objectif',
+	'A specific, measurable outcome, why it matters, its milestones and habits.':
+		'Un résultat précis et mesurable, pourquoi il compte, ses jalons et ses habitudes.',
+	'Milestone note': 'Note de jalon',
+	'A definition of done, the evidence, and the resources.':
+		'Une définition de « fini », la preuve et les ressources.',
+	'Habit note': 'Note d’habitude',
+	'Cue, routine, reward, why, and a log of check-ins.':
+		'Déclencheur, routine, récompense, pourquoi, et un journal des pointages.',
+	'Media note': 'Note d’œuvre',
+	'A book, film, series, course, podcast, or game: want, doing, done.':
+		'Un livre, film, série, cours, podcast ou jeu : à voir, en cours, fini.',
+	'Five Ws test': 'Test des cinq W',
+	'Half an hour to an hour after writing: what, why, who, when, where, how, without the note.':
+		'Une demi-heure à une heure après l’écriture : quoi, pourquoi, qui, quand, où, comment, sans la note.',
+	'Blank page test': 'Test de la page blanche',
+	'A day later: write everything you remember.':
+		'Un jour après : écrivez tout ce dont vous vous souvenez.',
+	'Flashcards test': 'Test des cartes',
+	'Three days later: fronts and backs, then to Anki.':
+		'Trois jours après : recto et verso, puis vers Anki.',
+	'Cloze test': 'Texte à trous',
+	'A week later: fill in the blanks.': 'Une semaine après : remplissez les trous.',
+	'Monthly test': 'Test mensuel',
+	'A month later: questions mixing this note with related ones.':
+		'Un mois après : des questions qui mêlent cette note à des notes voisines.',
+	'Feynman test': 'Test de Feynman',
+	'Three months later: explain it to a twelve-year-old, then study the gaps.':
+		'Trois mois après : expliquez-la à un enfant de douze ans, puis travaillez les lacunes.'
 };

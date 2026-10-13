@@ -5,3 +5,5 @@ package-lock.json
 test-results/
 playwright-report/
 static/api-docs/vendor/
+# The owner's vault templates ship byte for byte (EP-100).
+src/lib/vaultTemplates/

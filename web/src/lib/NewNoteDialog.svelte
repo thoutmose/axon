@@ -33,12 +33,21 @@
 	// A vault copy of a built-in template replaces it.
 	const templates = $derived([
 		...mine,
-		...builtIn.filter((t) => !vault.some((n) => templateName(n.path) === t.label)),
+		// Matched by name, or by file name as in the SecondBrain vault (Templates/goal.md).
+		...builtIn.filter(
+			(t) =>
+				!vault.some((n) =>
+					[t.label.toLowerCase(), t.id].includes(templateName(n.path).toLowerCase())
+				)
+		),
 		...itemTemplates(folder)
 	]);
 	const groups: { id: string; label: string }[] = $derived([
 		{ id: 'zettelkasten', label: t('Zettelkasten') },
 		{ id: 'para', label: t('PARA notes') },
+		{ id: 'periodic', label: t('Daily, weekly, and monthly notes') },
+		{ id: 'plans', label: t('Roadmaps, goals, and habits') },
+		{ id: 'reviews', label: t('Retrieval tests') },
 		{ id: 'items', label: t('Axon items (kept in step with tasks, goals, habits…)') },
 		{ id: 'other', label: t('Other') }
 	]);

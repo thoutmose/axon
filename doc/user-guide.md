@@ -21,6 +21,8 @@ Your day at a glance: overdue and today's tasks, your inbox, active goals, recen
 
 ## Think: Notes (Zettelkasten, PARA, Second Brain)
 
+**Templates** (Notes → Templates) are those of the SecondBrain vault: literature and permanent notes, PARA project, area, and resource notes, daily, weekly, and monthly notes, roadmap, goal, milestone, habit, and media notes in `Roadmaps/` and `Tracker/`, and the six retrieval tests (five Ws, blank page, flashcards, cloze, monthly, Feynman) in `Reviews/`. Their placeholders are filled when you use them: `{{title}}`, `{{created}}` (date and time), `{{date}}`, `{{slug}}`, and the note a test is about. A template of the same name in your vault's `Templates/` folder replaces the built-in one.
+
 - Notes are Markdown with `[[wikilinks]]`, backlinks, and `#tags`, in PARA folders (Projects, Areas, Resources, Archive) plus Inbox and Zettel.
 - **New note** offers templates: fleeting, literature, permanent, project, area, resource, archive, and daily. They live as files in your vault's `Templates/` folder, so edit them there.
 - Your **tasks, goals, milestones, projects, areas, resources, habits, and media are notes too**, under `Axon/` in your vault: edit a note's front matter or sections and the item follows, write a new note with `type: task` (or goal, habit, book…) to create one, delete the file to delete it, move it into `Axon/Archive/` to archive it. Turn it off, change the folder, or add your food and training logs in **Preferences → Markdown vault**.
