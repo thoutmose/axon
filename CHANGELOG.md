@@ -12,6 +12,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Everyday use**: agents on every page, navigation groups, an installable app with offline capture, reminders by push and email, quick add for anything, task reminders at a time of day, bulk actions and dragging tasks onto the calendar, and a customisable Today (EP-53 to EP-57, EP-63, EP-64, EP-68).
 - **Connections**: follow other calendars (ICS, CalDAV), imports from Todoist, TickTick, Goodreads, Letterboxd, Firefly III, OFX, and Notion, household lists shared with others, search by meaning with a chosen embedding service, and share to Axon from any app or page (EP-58, EP-60, EP-61, EP-62, EP-67).
 - **Safety nets**: a guided weekly review, and a trash: every deletion can be undone for 30 days (EP-59, EP-66).
+- **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 
 ### Fixed
 

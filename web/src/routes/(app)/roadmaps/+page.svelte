@@ -5,10 +5,12 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
 	import LearnTabs from '$lib/LearnTabs.svelte';
+	import Radar from '$lib/charts/Radar.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
 	type Roadmap = Schemas['Roadmap'];
+	type RadarKind = Schemas['RadarKind'];
 	type Source = {
 		id: string;
 		kind: 'curriculum' | 'library';
@@ -25,6 +27,8 @@
 		tutor: 'drafted by the Tutor'
 	};
 	let roadmaps = $state<Roadmap[] | null>(null);
+	let radar = $state<{ hard: RadarKind; soft: RadarKind } | null>(null);
+	const by = { roadmap: 'One spoke per roadmap.', section: 'One spoke per section.' };
 	let sources = $state<Source[]>([]);
 	let error = $state('');
 	let title = $state('');
@@ -41,12 +45,14 @@
 
 	async function load() {
 		try {
-			const [r, s] = await Promise.all([
+			const [r, s, k] = await Promise.all([
 				api<{ items: Roadmap[] }>('/v1/roadmaps'),
-				api<{ items: Source[] }>('/v1/roadmaps/sources')
+				api<{ items: Source[] }>('/v1/roadmaps/sources'),
+				api<{ hard: RadarKind; soft: RadarKind }>('/v1/roadmaps/radar')
 			]);
 			roadmaps = r.items;
 			sources = s.items;
+			radar = k;
 		} catch (err) {
 			error = message(err);
 		}
@@ -117,6 +123,26 @@
 {:else if !roadmaps}
 	<Status kind="loading" message="Loading roadmaps…" />
 {:else}
+	{#if radar && radar.hard.spokes.length + radar.soft.spokes.length}
+		<section class="card glass skills" aria-labelledby="skills-title">
+			<h2 id="skills-title">Skills acquired</h2>
+			<p class="muted small">
+				How much of each area you have learnt: the filled shape is skills done, the dashed one adds
+				those you are learning. Skipped skills are not counted.
+			</p>
+			<div class="radars">
+				{#each [{ title: 'Hard skills', kind: radar.hard }, { title: 'Soft skills', kind: radar.soft }] as r (r.title)}
+					{#if r.kind.spokes.length}
+						<div>
+							<Radar title={r.title} spokes={r.kind.spokes} />
+							<p class="muted small">{by[r.kind.by]}</p>
+						</div>
+					{/if}
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	{#if roadmaps.length}
 		<ul class="grid">
 			{#each roadmaps as r (r.id)}
@@ -266,6 +292,15 @@
 	.card p {
 		margin: var(--space-2) 0 0;
 	}
+	.skills {
+		margin-bottom: var(--space-6);
+	}
+	.radars {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+		gap: var(--space-6);
+	}
+	.skills h2,
 	.imports h2,
 	.library h2 {
 		font-size: var(--text-lg);

@@ -351,10 +351,10 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		soft, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, "soft-skills")
 	}
 	for i, sk := range soft.Skills {
-		if s.err != nil || i > 2 {
+		if s.err != nil || i > 4 {
 			break
 		}
-		status := map[int]string{0: "done", 1: "learning", 2: "learning"}[i]
+		status := map[int]string{0: "done", 1: "done", 2: "learning", 3: "done", 4: "learning"}[i]
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, sk.ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
 	}
 	if s.err == nil && len(soft.Skills) > 2 {
@@ -366,6 +366,25 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 	if s.err == nil && len(design.Skills) > 0 {
 		_, s.err = roadmaps.UpdateSkill(ctx, tx, user, design.Skills[0].ID, graph.UserActor, roadmaps.SkillFields{Status: ptr("learning")})
+	}
+	// Three years of scripting and SQL show on the skills radar (EP-82).
+	for _, d := range []struct {
+		domain   string
+		statuses []string
+	}{
+		{"linux-bash", []string{"done", "done", "learning"}},
+		{"databases", []string{"done", "done", "learning"}},
+	} {
+		var rm roadmaps.Roadmap
+		if s.err == nil {
+			rm, s.err = roadmaps.Import(ctx, tx, user, graph.UserActor, d.domain)
+		}
+		for i, status := range d.statuses {
+			if s.err != nil || i >= len(rm.Skills) {
+				break
+			}
+			_, s.err = roadmaps.UpdateSkill(ctx, tx, user, rm.Skills[i].ID, graph.UserActor, roadmaps.SkillFields{Status: &status})
+		}
 	}
 
 	// Flashcards from the learning notes, a few already reviewed; the first

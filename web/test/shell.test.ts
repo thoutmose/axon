@@ -1768,6 +1768,10 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await expect(page.getByRole('link', { name: 'Personal website' })).toBeVisible();
 	await page.goto('/roadmaps');
 	await expect(page.getByRole('link', { name: 'Python' })).toBeVisible();
+	// The skills radar: one spoke per hard-skill roadmap, soft skills by section.
+	await expect(page.getByRole('img', { name: /^Hard skills: .*Python \d+%/ })).toBeVisible();
+	await expect(page.getByRole('img', { name: /^Soft skills: Learn \d+%/ })).toBeVisible();
+	await noSeriousA11yViolations(page);
 	await page.goto('/agents');
 	await expect(page.getByText('Agents do not run in the shared demo')).toBeVisible();
 	await expect(page.getByRole('region', { name: /Waiting for your approval/ })).toBeVisible();

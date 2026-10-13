@@ -33,6 +33,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/roadmaps", h.list)
 	r.Post("/v1/roadmaps", h.create)
 	r.Get("/v1/roadmaps/sources", h.sources)
+	r.Get("/v1/roadmaps/radar", h.radar)
 	r.Post("/v1/roadmaps/import", h.importRoadmap)
 	r.Get("/v1/roadmaps/{id}", h.get)
 	r.Patch("/v1/roadmaps/{id}", h.update)
@@ -98,6 +99,16 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handlers) radar(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	out, err := GetRadar(r.Context(), h.db, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
 }
 
 func (h *Handlers) sources(w http.ResponseWriter, _ *http.Request) {

@@ -54,7 +54,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	// Sample data in every area.
 	for path, min := range map[string]int{
 		"/v1/tasks?view=next": 3, "/v1/tasks?view=inbox": 2, "/v1/projects": 1, "/v1/notes": 8, "/v1/goals": 2,
-		"/v1/habits": 4, "/v1/roadmaps": 3, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
+		"/v1/habits": 4, "/v1/roadmaps": 5, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
 	} {
 		if n := count(t, visitor, path); n < min {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
