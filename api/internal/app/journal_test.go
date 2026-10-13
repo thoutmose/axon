@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -63,4 +64,41 @@ func TestJournal(t *testing.T) {
 	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))
 	alice.mustDo(404, "GET", "/v1/journal/"+today, nil)
 	alice.mustDo(404, "DELETE", "/v1/journal/"+today, nil)
+}
+
+// What helps you (EP-92): a pattern written into 20 days is found, explained,
+// and in French when asked.
+func TestWhatHelps(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))
+	if out := alice.mustDo(200, "GET", "/v1/journal/helps", nil); !strings.Contains(string(out), `"needed":14`) {
+		t.Fatalf("empty = %s", out)
+	}
+	for i := range 20 {
+		day := time.Now().UTC().AddDate(0, 0, -i).Format(time.DateOnly)
+		sleep, mood := 6.0, 2
+		if i%2 == 0 {
+			sleep, mood = 8, 4
+		}
+		if i%7 == 3 {
+			mood = 3
+		}
+		alice.mustDo(200, "PUT", "/v1/journal/"+day, []byte(fmt.Sprintf(`{"mood":%d,"sleep_hours":%v}`, mood, sleep)))
+	}
+	var h struct {
+		Days     int `json:"days"`
+		Findings []struct {
+			Factor, Outcome, Sentence string
+		} `json:"findings"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/journal/helps", nil), &h)
+	if h.Days != 20 || len(h.Findings) == 0 || h.Findings[0].Factor != "sleep" || h.Findings[0].Outcome != "mood" ||
+		!strings.Contains(h.Findings[0].Sentence, "slept 7 h or more") {
+		t.Fatalf("helps = %+v", h)
+	}
+	if code, out := alice.do("GET", "/v1/journal/helps", nil, "Accept-Language", "fr"); code != 200 || !strings.Contains(string(out), "avez dormi 7 h ou plus") {
+		t.Fatalf("fr = %d %s", code, out)
+	}
 }

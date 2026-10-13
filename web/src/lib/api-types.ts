@@ -3027,6 +3027,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/journal/helps': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Which of your days' habits go with a better or worse mood, energy, or stress
+		 * @description Over the last 90 days: Spearman rank correlation between each factor (sleep, training, focus, habits kept, tasks finished, gratitude) and each outcome (mood, energy, stress), a permutation test per pair, and the Benjamini–Hochberg correction. Only clear links are returned, each with the averages behind it. A link is not proof of cause. Needs the health_data consent.
+		 */
+		get: operations['getWhatHelps'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/journal/{day}': {
 		parameters: {
 			query?: never;
@@ -12376,6 +12396,53 @@ export interface operations {
 				};
 			};
 			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	getWhatHelps: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The analysis. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description Days with something in the journal. */
+						days: number;
+						/** @description More days needed before anything can be said. */
+						needed: number;
+						/** @description Pairs tested. */
+						tested: number;
+						method: string;
+						findings: {
+							/** @enum {string} */
+							factor: 'sleep' | 'training' | 'focus' | 'habits' | 'tasks' | 'gratitude';
+							/** @enum {string} */
+							outcome: 'mood' | 'energy' | 'stress';
+							rho: number;
+							p: number;
+							q: number;
+							n: number;
+							mean_with: number;
+							mean_without: number;
+							days_with: number;
+							days_without: number;
+							/** @enum {string} */
+							strength: 'moderate' | 'strong';
+							sentence: string;
+						}[];
+					};
+				};
+			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 		};

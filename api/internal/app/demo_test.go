@@ -70,6 +70,17 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	if zg.Stats.Notes < 10 || zg.Stats.Communities < 2 {
 		t.Errorf("demo knowledge graph = %+v", zg.Stats)
 	}
+	// The journal shows what helps, from 60 seeded days (EP-92).
+	var helps struct {
+		Days     int `json:"days"`
+		Findings []struct {
+			Factor, Outcome string
+		} `json:"findings"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/journal/helps", nil), &helps)
+	if helps.Days != 60 || len(helps.Findings) < 2 {
+		t.Errorf("demo what helps = %+v", helps)
+	}
 	// The seeded proposals can be approved like real ones.
 	var props struct {
 		Items []struct {

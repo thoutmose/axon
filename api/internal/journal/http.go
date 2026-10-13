@@ -13,6 +13,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/privacy"
 )
 
@@ -33,6 +34,7 @@ func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
 // Routes mounts the endpoints; the caller wraps them in auth.Require.
 func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/journal", h.list)
+	r.Get("/v1/journal/helps", h.helps)
 	r.Get("/v1/journal/{day}", h.get)
 	r.Put("/v1/journal/{day}", h.put)
 	r.Delete("/v1/journal/{day}", h.delete)
@@ -165,4 +167,22 @@ func (h *Handlers) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) helps(w http.ResponseWriter, r *http.Request) {
+	user, today, ok := h.guard(w, r)
+	if !ok {
+		return
+	}
+	loc, err := clock.Zone(r.Context(), h.db, user)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	out, err := WhatHelps(r.Context(), h.db, user, today, loc.String(), l10n.Lang(r.Context()))
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
 }

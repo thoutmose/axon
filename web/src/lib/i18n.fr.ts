@@ -2718,5 +2718,19 @@ export const fr: Record<string, string> = {
 	'A call with an old friend…': 'Un appel avec un vieil ami…',
 	'The last 30 days': 'Les 30 derniers jours',
 	'Mood and energy, from 1 to 5': 'Humeur et énergie, de 1 à 5',
-	'{hours} h of sleep': '{hours} h de sommeil'
+	'{hours} h of sleep': '{hours} h de sommeil',
+	'What helps you': 'Ce qui vous aide',
+	'Nothing stands out yet in the last 90 days ({days} days written). That is an answer too: keep writing, and look again in a few weeks.':
+		'Rien ne ressort encore des 90 derniers jours ({days} jours écrits). C’est aussi une réponse : continuez d’écrire, et revenez voir dans quelques semaines.',
+	'Those days': 'Ces jours-là',
+	'Other days': 'Les autres jours',
+	'Rank correlation {rho} · q = {q} · {n} days': 'Corrélation de rang {rho} · q = {q} · {n} jours',
+	'A link is not a cause: a good night may come with a calm day for other reasons. Use it as a hint to try, not a rule.':
+		'Un lien n’est pas une cause : une bonne nuit peut aller avec une journée calme pour d’autres raisons. Prenez-le comme une piste à essayer, pas comme une règle.',
+	'Write in your journal on {n} more day to see what goes with your better days.':
+		'Écrivez dans votre journal encore {n} jour pour voir ce qui accompagne vos meilleurs jours.',
+	'Write in your journal on {n} more days to see what goes with your better days.':
+		'Écrivez dans votre journal encore {n} jours pour voir ce qui accompagne vos meilleurs jours.',
+	'Strong link': 'Lien fort',
+	'Moderate link': 'Lien modéré'
 };

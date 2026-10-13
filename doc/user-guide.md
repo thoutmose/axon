@@ -62,6 +62,8 @@ Firefly III–style personal finance: accounts and balances, income, expenses, t
 
 **Reflect → Journal** takes a minute a day: mood, energy, and stress on five faces, hours of sleep, up to three things you are grateful for, and a note. The last 30 days show as a chart and a list; open any day to change it. Mood and sleep are health data, so the journal is kept under the same consent as the health logs and deleted with it. Add "How are you today?" to Today (Customise Today) to log mood and energy in two taps.
 
+After two weeks of entries, **What helps you** on the same page shows which of your habits go with your better days: sleeping 7 hours or more, training, a focus session, habits kept, tasks finished, or writing what you are grateful for, against mood, energy, and stress over the last 90 days. A link is shown only when it is unlikely to be chance, as the two averages, with how it was worked out. It is a link, not a cause: take it as something to try. It is computed on your server; no AI is involved.
+
 ## Media and health
 
 - **Media**: films, series, and books you want, are on, have finished, or dropped, with ratings, progress, and reviews. **Up next** explains each suggestion. Searching sends only the typed title to Open Library or TMDB, after you allow lookups.

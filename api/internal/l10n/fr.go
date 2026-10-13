@@ -2,6 +2,19 @@ package l10n
 
 // catalog is the French for every string the API writes to people.
 var catalog = map[string]string{
+	"slept 7 h or more":               "avez dormi 7 h ou plus",
+	"trained":                         "avez fait du sport",
+	"had a focus session":             "avez fait une session de concentration",
+	"kept a habit":                    "avez tenu une habitude",
+	"kept more than %d habits":        "avez tenu plus de %d habitudes",
+	"finished a task":                 "avez terminé une tâche",
+	"finished more than %d tasks":     "avez terminé plus de %d tâches",
+	"wrote what you are grateful for": "avez écrit ce pour quoi vous êtes reconnaissant",
+	"mood":                            "humeur",
+	"energy":                          "énergie",
+	"stress":                          "stress",
+	"On days you %s, your %s averaged %s out of 5; on the other days, %s (%d and %d days).": "Les jours où vous %s, votre %s était en moyenne de %s sur 5 ; les autres jours, de %s (%d et %d jours).",
+	"Spearman rank correlation between each of these habits and how the day felt, over the last 90 days, with a permutation test (2,000 shuffles) for each pair and the Benjamini–Hochberg correction, since many pairs are tested. Shown only when the link is clear: q ≤ 0.1, a correlation of at least 0.3, at least 14 days, and 5 days on each side. A link is not proof of cause: something else may explain both.": "Corrélation de rang de Spearman entre chacune de ces habitudes et le ressenti de la journée, sur les 90 derniers jours, avec un test de permutation (2 000 tirages) pour chaque paire et la correction de Benjamini–Hochberg, puisque beaucoup de paires sont testées. Affiché seulement quand le lien est net : q ≤ 0,1, une corrélation d’au moins 0,3, au moins 14 jours et 5 jours de chaque côté. Un lien n’est pas la preuve d’une cause : autre chose peut expliquer les deux.",
 	"?from= comes before ?to=, at most 400 days apart.":                                                 "?from= vient avant ?to=, à 400 jours d’écart au plus.",
 	"Each thing you are grateful for is up to 300 characters.":                                          "Chaque chose pour laquelle vous êtes reconnaissant fait jusqu’à 300 caractères.",
 	"Mood, energy, and stress are 1 to 5.":                                                              "L’humeur, l’énergie et le stress vont de 1 à 5.",
