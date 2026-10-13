@@ -61,6 +61,9 @@ func DeleteAll(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM health_profiles WHERE user_id = $1`, userID); err != nil {
 		return err
 	}
+	if _, err := tx.Exec(ctx, `DELETE FROM water_entries WHERE user_id = $1`, userID); err != nil {
+		return err
+	}
 	return changed(ctx, tx, userID, "health:*")
 }
 

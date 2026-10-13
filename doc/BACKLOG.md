@@ -149,6 +149,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-99 | A year you can read | Owner report: the 12-month activity chart did not show the current month and had no legend; the demo showed one active day. | SHOULD | 2 pts | EP-30 | Done |
 | EP-98 | Every page its picture | Owner request: illustrations for each page, type of note, and section, with a short description (paintings, films, games), and a background for each Reflect page. | SHOULD | 3 pts | EP-38 | Done |
 | EP-100 | Your vault's templates | Owner request: the SecondBrain vault's templates for each type of note, implemented in Axon. | SHOULD | 3 pts | EP-11, EP-48 | Done |
+| EP-101 | Water | Owner request: a tracker of the water drunk, in health and food. | SHOULD | 3 pts | EP-18, EP-88 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1894,6 +1895,15 @@ Cross-cutting matrix:
 - [x] **EP-100/IS-100.02** · 1 pt · MUST — Found on the way: since EP-74 the proxy compressed large responses and suffixed their entity tag with the encoding (`"…-zstd"`); the browser sent it back in If-Match and the API answered 412, so a note or item over the compression threshold showed "changed somewhere else" on its first save. The API now reads the suffix and a weak `W/` through.
 
 **Tests.** Paths, contents with no placeholder left, the daily note, the round trip through the vault's templates folder (written first); `TestIfMatchAcceptsWhatTheProxyMadeOfTheTag`; e2e tests that create a note from the vault's literature template and find the retrieval tests' sections.
+
+### EP-101 — Water
+
+**Goal.** The owner asked (2026-10-14) for a tracker of the water drunk, with the food and health logs. Axon already worked out the daily water need (EP-88) but could not log a drink.
+
+- [x] **EP-101/IS-101.01** · 2 pts · SHOULD — Migration `00051` adds `water_entries` (1 to 3,000 ml a drink, never on a later day), health data kept only with `health_data`, exported, and deleted when it is withdrawn. `GET /v1/health/water` gives a day's drinks, total, and week, and its target: the drinks' share, 80 %, of the daily need (EFSA's adequate intake counts drinks and food), none without a profile, under 18, or during pregnancy (ADR 0028). `POST` logs a drink, `DELETE` removes one.
+- [x] **EP-101/IS-101.02** · 1 pt · SHOULD — A Water card on Health (for the day shown) and, if added, on Today: a glass or a bottle in one tap, any amount, the day as glasses, the drinks with their time to remove one, and the last seven days. "Health and well-being" at the first question adds it to Today. What helps you (EP-92) has a factor for the days water was logged: 1.5 L or more. The demo has a month of drinks.
+
+**Tests.** `TestWaterTracker` against PostgreSQL (consent, bounds, a later day, the target from a profile, another day, other people, export, withdrawal; written first), the water factor in What helps you, the glasses and litres helpers, and the e2e health test (two drinks against the target, one removed, with axe).
 
 ### EP-20 — Analytics & insights
 

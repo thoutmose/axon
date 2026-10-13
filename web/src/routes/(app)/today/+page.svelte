@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Welcome from '$lib/Welcome.svelte';
 	import Scenery from '$lib/ui/Scenery.svelte';
+	import WaterCard from '$lib/WaterCard.svelte';
 	import JournalToday from '$lib/JournalToday.svelte';
 	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
@@ -42,6 +43,7 @@
 		calendar: t('Calendar today'),
 		household: t('Household'),
 		journal: t('How are you today?'),
+		water: t('Water today'),
 		overview: t('Your progress')
 	});
 	const all = $derived(Object.keys(labels));
@@ -413,6 +415,8 @@
 					</section>
 				{:else if id === 'journal'}
 					<JournalToday />
+				{:else if id === 'water'}
+					<WaterCard />
 				{:else if id === 'household'}
 					<section class="card" aria-labelledby="household-title">
 						<h2 id="household-title">{t('Household')}</h2>

@@ -2915,5 +2915,26 @@ export const fr: Record<string, string> = {
 		'Un mois après : des questions qui mêlent cette note à des notes voisines.',
 	'Feynman test': 'Test de Feynman',
 	'Three months later: explain it to a twelve-year-old, then study the gaps.':
-		'Trois mois après : expliquez-la à un enfant de douze ans, puis travaillez les lacunes.'
+		'Trois mois après : expliquez-la à un enfant de douze ans, puis travaillez les lacunes.',
+	Water: 'Eau',
+	'Water is health data: turn on health logging on the':
+		'L’eau est une donnée de santé : activez le suivi santé sur la page',
+	'page to keep it.': 'pour la garder.',
+	'{drunk} of {target} L': '{drunk} sur {target} L',
+	'{drunk} L drunk': '{drunk} L bus',
+	'{filled} of {total} glasses': '{filled} verres sur {total}',
+	'+ Glass, 250 ml': '+ Verre, 250 ml',
+	'+ Bottle, 500 ml': '+ Bouteille, 500 ml',
+	Millilitres: 'Millilitres',
+	'Drinks this day': 'Boissons de la journée',
+	'Remove {ml} ml at {time}': 'Retirer {ml} ml à {time}',
+	'The last seven days': 'Les sept derniers jours',
+	'{date}: {drunk} L': '{date} : {drunk} L',
+	'Drinks give about 80 % of the water you need, food the rest (EFSA). Drink more when it is hot or when you train. A reference, not medical advice.':
+		'Les boissons apportent environ 80 % de l’eau dont vous avez besoin, l’alimentation le reste (EFSA). Buvez davantage quand il fait chaud ou quand vous vous entraînez. Une référence, pas un avis médical.',
+	'Add your profile under Daily needs to see a target: drinks give about 80 % of the water you need, food the rest (EFSA).':
+		'Renseignez votre profil dans Besoins quotidiens pour voir un objectif : les boissons apportent environ 80 % de l’eau dont vous avez besoin, l’alimentation le reste (EFSA).',
+	'Water today': 'L’eau aujourd’hui',
+	'{time} · {ml} ml': '{time} · {ml} ml',
+	ml: 'ml'
 };

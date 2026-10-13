@@ -525,4 +525,7 @@ var catalog = map[string]string{
 	"Import a roadmap listed by GET /v1/roadmaps/sources. roadmap.sh content may not be redistributed.": "Importez un parcours listé par GET /v1/roadmaps/sources. Le contenu de roadmap.sh ne peut pas être redistribué.",
 	"No assessment covers this roadmap yet. Take the skills assessment, or start it without placement.": "Aucune évaluation ne couvre encore ce parcours. Passez l’évaluation des compétences, ou démarrez-le sans placement.",
 	"You have already started this roadmap: open it from your roadmaps.":                                "Vous avez déjà démarré ce parcours : ouvrez-le depuis vos parcours.",
+	"drank 1.5 L or more":                       "avez bu 1,5 L ou plus",
+	"A drink is 1 to 3,000 ml.":                 "Une boisson fait de 1 à 3 000 ml.",
+	"Log a drink for today or a day before it.": "Notez une boisson pour aujourd’hui ou un jour d’avant.",
 }

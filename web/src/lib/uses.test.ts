@@ -17,6 +17,7 @@ describe('planFor', () => {
 			'milestones',
 			'calendar',
 			'journal',
+			'water',
 			'overview'
 		]);
 	});

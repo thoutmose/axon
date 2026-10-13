@@ -4968,6 +4968,60 @@ paths:
         "422": { $ref: "#/components/responses/Problem" }
         "502": { $ref: "#/components/responses/Problem" }
         "503": { $ref: "#/components/responses/Problem" }
+  /v1/health/water:
+    get:
+      tags: [health]
+      operationId: getWater
+      summary: Water drunk on a day, its target, and the week to it
+      description: "The target is the drinks' share (80 %) of the daily water need worked out from the health profile (EFSA adequate intake, drinks and food together); null without a profile, under 18, or during pregnancy and breastfeeding."
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date }, description: "Defaults to the person's today." }
+      responses:
+        "200":
+          description: The day.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WaterDay" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [health]
+      operationId: addWater
+      summary: Log a drink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ml]
+              additionalProperties: false
+              properties:
+                ml: { type: integer, minimum: 1, maximum: 3000, example: 250 }
+                drunk_on: { type: string, format: date, description: "Defaults to the person's today; never a later day." }
+      responses:
+        "201":
+          description: The drink.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WaterEntry" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/health/water/{id}:
+    delete:
+      tags: [health]
+      operationId: deleteWater
+      summary: Remove a drink
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/health/needs:
     get:
       tags: [wellbeing]
@@ -5060,7 +5114,7 @@ paths:
                       type: object
                       required: [factor, outcome, rho, p, q, n, mean_with, mean_without, days_with, days_without, strength, sentence]
                       properties:
-                        factor: { type: string, enum: [sleep, training, focus, habits, tasks, gratitude] }
+                        factor: { type: string, enum: [sleep, water, training, focus, habits, tasks, gratitude] }
                         outcome: { type: string, enum: [mood, energy, stress] }
                         rho: { type: number }
                         p: { type: number }
@@ -7383,6 +7437,30 @@ components:
         protein_g: { type: number }
         carbs_g: { type: number }
         fat_g: { type: number }
+    WaterEntry:
+      type: object
+      required: [id, drunk_on, ml, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        drunk_on: { type: string, format: date }
+        ml: { type: integer }
+        created_at: { type: string, format: date-time }
+    WaterDay:
+      type: object
+      required: [date, total_ml, target_ml, entries, week]
+      properties:
+        date: { type: string, format: date }
+        total_ml: { type: integer }
+        target_ml: { type: [integer, "null"] }
+        entries: { type: array, items: { $ref: "#/components/schemas/WaterEntry" } }
+        week:
+          type: array
+          items:
+            type: object
+            required: [date, total_ml]
+            properties:
+              date: { type: string, format: date }
+              total_ml: { type: integer }
     HealthProfile:
       type: object
       required: [birth_year, sex, height_cm, weight_kg, activity, pregnant_or_breastfeeding, updated_at]
@@ -7852,9 +7930,9 @@ components:
           properties:
             sections:
               type: array
-              maxItems: 11
+              maxItems: 12
               uniqueItems: true
-              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, overview] }
+              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, water, overview] }
         menu:
           type: object
           required: [hidden, chosen]

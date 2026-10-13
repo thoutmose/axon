@@ -901,6 +901,18 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(needs.getByRole('progressbar', { name: 'Energy' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// Water (EP-101): two glasses against the drinks' share of the day's need, then one removed.
+	await page.reload();
+	const water = page.getByRole('region', { name: 'Water', exact: true });
+	await water.getByRole('button', { name: '+ Glass, 250 ml' }).click();
+	await expect(water).toContainText('0.25 of 2 L');
+	await water.getByRole('button', { name: '+ Bottle, 500 ml' }).click();
+	await expect(water).toContainText('0.75 of 2 L');
+	await expect(water.getByRole('img', { name: '3 of 8 glasses' })).toBeVisible();
+	await water.getByRole('button', { name: /^Remove 500 ml at / }).click();
+	await expect(water).toContainText('0.25 of 2 L');
+	await noSeriousA11yViolations(page);
+
 	// A photo of a meal (EP-89): nothing is sent before the person allows it.
 	const sent: string[] = [];
 	page.on('request', (r) => r.url().includes('/food/estimate') && sent.push(r.url()));

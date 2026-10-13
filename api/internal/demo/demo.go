@@ -454,6 +454,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if err := seedJournal(ctx, tx, user, s.today); err != nil {
 		return err
 	}
+	if err := seedWater(ctx, tx, user, s.today); err != nil {
+		return err
+	}
 	if err := seedHistory(ctx, tx, user, now); err != nil {
 		return err
 	}
@@ -571,4 +574,26 @@ func seedHistory(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) 
 	_, err = tx.CopyFrom(ctx, pgx.Identifier{"events"}, []string{"id", "user_id", "actor", "entity_type", "entity_id", "kind", "fields", "created_at"},
 		pgx.CopyFromRows(batch))
 	return err
+}
+
+// seedWater gives the demo a month of drinks (EP-101): glasses and bottles
+// through the day, more on some days than others, and today's started.
+func seedWater(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time) error {
+	r := rand.New(rand.NewPCG(2026, 101)) //nolint:gosec // reproducible demo data, not security
+	for back := 30; back >= 0; back-- {
+		day := today.AddDate(0, 0, -back)
+		drinks := 3 + r.IntN(5)
+		if back == 0 {
+			drinks = 3
+		}
+		for k := range drinks {
+			ml := []int{250, 250, 330, 500}[r.IntN(4)]
+			at := day.Add(time.Duration(8+k*2) * time.Hour)
+			if _, err := tx.Exec(ctx, `INSERT INTO water_entries (id, user_id, drunk_on, ml, created_at) VALUES ($1, $2, $3, $4, $5)`,
+				uuid.Must(uuid.NewV7()), user, day.Format(time.DateOnly), ml, at); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
