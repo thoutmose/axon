@@ -120,6 +120,42 @@ func TestTodaySections(t *testing.T) {
 	put(`["weather"]`, 422)
 }
 
+// The menu shows the pages a person uses (EP-94): any page but Today can
+// be hidden, each once, and a new account has none hidden and has not chosen.
+func TestMenuPages(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	var doc map[string]any
+	out := alice.mustDo(200, "GET", "/v1/me/settings", nil)
+	if !bytes.Contains(out, []byte(`"menu":{"hidden":[],"chosen":false}`)) {
+		t.Fatalf("default menu: %s", out)
+	}
+	_ = json.Unmarshal(out, &doc)
+	delete(doc, "ai")
+	put := func(menu string, want int) []byte {
+		t.Helper()
+		var m map[string]any
+		_ = json.Unmarshal([]byte(menu), &m)
+		doc["menu"] = m
+		body, _ := json.Marshal(doc)
+		code, out := alice.do("PUT", "/v1/me/settings", body)
+		if code != want {
+			t.Fatalf("menu %s = %d %s", menu, code, out)
+		}
+		return out
+	}
+	if out := put(`{"hidden":["budget","media"],"chosen":true}`, 200); !bytes.Contains(out, []byte(`"menu":{"hidden":["budget","media"],"chosen":true}`)) {
+		t.Fatalf("saved = %s", out)
+	}
+	put(`{"hidden":["budget","budget"],"chosen":true}`, 422)
+	put(`{"hidden":["today"],"chosen":true}`, 422)
+	put(`{"hidden":["weather"],"chosen":true}`, 422)
+	if y := string(alice.mustDo(200, "GET", "/v1/me/settings.yaml", nil)); !strings.Contains(y, "menu:\n    hidden:\n        - budget\n        - media\n    chosen: true") && !strings.Contains(y, "menu:\n  hidden:\n    - budget") {
+		t.Fatalf("yaml = %s", y)
+	}
+}
+
 // Today's sections are never null: a document stored that way (as the
 // staging demo's was) reads back with the default sections, so Today never
 // fails on them. (The API refuses null in a request.)

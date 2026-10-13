@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Only what you use**: a new account says what it wants Axon for, and the menu and Today show just those pages; Preferences hides or brings back any page. Saving Preferences no longer resets Today's cards (EP-94).
 - **Journal days in the vault**: with health notes on, each day is a daily note with its scales in the front matter (EP-93).
 - **What helps you**: which of your habits go with your better days, from your journal and logs over 90 days, with statistics that leave chance out and say a link is not a cause; computed on your server, no AI (EP-92).
 - **Daily journal**: mood, energy, stress, sleep, gratitude, and a note, a day at a time, with the last 30 days and a Today card (EP-91).

@@ -5,6 +5,7 @@ Axon keeps your notes, tasks, goals, habits, learning, focus, money, media, heal
 ## Getting in
 
 - **Create your account** with a passkey (your device's fingerprint, face, or PIN, or a security key). Save the recovery codes: each works once if you lose your devices. The account starts in your device's time zone, which decides what "today" means; change it under **Account**. Add more passkeys and an authenticator app under **Account → Security**.
+- **Say what you want Axon for.** A new account is asked first, on Today: tasks and projects, notes, learning, goals and habits, health, money, media, or a shared home. The menu and Today then show just those pages; the others stay one link or search away. Change it under **Preferences → Pages in the menu**, or choose **Show me everything**.
 - **Try the demo** (when offered) opens a shared account with sample data that resets every night.
 
 ## Today

@@ -75,7 +75,7 @@ func (h *Handlers) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out := map[string]any{"language": d.Language, "appearance": d.Appearance, "templates": d.Templates, "keyboard": d.Keyboard,
-		"focus": d.Focus, "gamification": d.Gamification, "vault": d.Vault, "learning": d.Learning, "reminders": d.Reminders, "today": d.Today}
+		"focus": d.Focus, "gamification": d.Gamification, "vault": d.Vault, "learning": d.Learning, "reminders": d.Reminders, "today": d.Today, "menu": d.Menu}
 	if h.runner != nil {
 		ai, err := h.runner.GetAIConfig(r.Context(), h.db, who.UserID)
 		if err != nil {

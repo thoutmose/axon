@@ -7873,6 +7873,18 @@ components:
               maxItems: 11
               uniqueItems: true
               items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, overview] }
+        menu:
+          type: object
+          required: [hidden, chosen]
+          additionalProperties: false
+          description: "The pages left out of the navigation (they still open from a link or a search), and whether the person has said what they want Axon for. Default: none hidden, not chosen."
+          properties:
+            hidden:
+              type: array
+              maxItems: 19
+              uniqueItems: true
+              items: { enum: [tasks, projects, calendar, focus, notes, areas, resources, archive, learn, goals, habits, health, media, budget, household, journal, review, insights, agents] }
+            chosen: { type: boolean }
         reminders:
           type: object
           required: [enabled, morning, evening, email]

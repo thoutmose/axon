@@ -5159,6 +5159,31 @@ export interface components {
 					| 'overview'
 				)[];
 			};
+			/** @description The pages left out of the navigation (they still open from a link or a search), and whether the person has said what they want Axon for. Default: none hidden, not chosen. */
+			menu?: {
+				hidden: (
+					| 'tasks'
+					| 'projects'
+					| 'calendar'
+					| 'focus'
+					| 'notes'
+					| 'areas'
+					| 'resources'
+					| 'archive'
+					| 'learn'
+					| 'goals'
+					| 'habits'
+					| 'health'
+					| 'media'
+					| 'budget'
+					| 'household'
+					| 'journal'
+					| 'review'
+					| 'insights'
+					| 'agents'
+				)[];
+				chosen: boolean;
+			};
 			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
 			reminders?: {
 				enabled: boolean;
