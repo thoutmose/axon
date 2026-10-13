@@ -670,6 +670,12 @@
 	.markdown :global(th) {
 		background: var(--accent-soft);
 	}
+	.markdown :global(.align-center) {
+		text-align: center;
+	}
+	.markdown :global(.align-right) {
+		text-align: right;
+	}
 	.markdown :global(mark) {
 		background: rgb(255 214 10 / 0.45);
 		color: inherit;
