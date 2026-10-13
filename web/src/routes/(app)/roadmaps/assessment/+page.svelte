@@ -81,11 +81,12 @@
 		}
 	}
 
-	async function start(domain: string) {
+	// The library's one roadmap (EP-95), started where the assessment places you.
+	async function start() {
 		try {
 			const r = await api<Schemas['Roadmap']>('/v1/roadmaps/import', {
 				method: 'POST',
-				body: { source: domain, place: true }
+				body: { source: 'top5-engineer', place: true }
 			});
 			await goto(`/roadmaps/${r.id}`);
 		} catch (err) {
@@ -213,7 +214,7 @@
 					><tr
 						><th scope="col">{t('Domain')}</th><th scope="col">{t('Level')}</th><th scope="col"
 							>{t('Why')}</th
-						><th scope="col"><span class="visually-hidden">{t('Action')}</span></th></tr
+						></tr
 					></thead
 				>
 				<tbody>
@@ -226,14 +227,6 @@
 								></td
 							>
 							<td class="small">{r.reason}</td>
-							<td
-								><Button
-									variant={result.suggested[0] === r.domain ? 'primary' : 'secondary'}
-									onclick={() => start(r.domain)}
-									aria-label={t('Start {title} at my level', { title: r.title })}
-									>{t('Start here')}</Button
-								></td
-							>
 						</tr>
 					{/each}
 				</tbody>
@@ -244,6 +237,7 @@
 					{t('(lowest level first).')}
 				</p>
 			{/if}
+			<Button onclick={start}>{t('Start the roadmap at my level')}</Button>
 		{/if}
 	</form>
 

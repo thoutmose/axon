@@ -6220,7 +6220,7 @@ paths:
     post:
       tags: [roadmaps]
       operationId: importRoadmap
-      summary: Import the OSSU curriculum or a curated library domain; roadmap.sh content may not be redistributed
+      summary: Start a roadmap of the library, with its whole plan (goal, milestones, projects, habits, tasks); roadmap.sh content may not be redistributed
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
@@ -6232,8 +6232,8 @@ paths:
               required: [source]
               additionalProperties: false
               properties:
-                source: { type: string, example: ossu }
-                place: { type: boolean, default: false, description: "Library domains only: mark the first sections done as far as your latest skills assessment of the domain justifies, and explain why in the description." }
+                source: { type: string, example: top5-engineer }
+                place: { type: boolean, default: false, description: "Start the skills whose assessment domain you reached level 3 of 5 in as being learnt, and explain why in the description. Needs a skills assessment." }
       responses:
         "201":
           description: The new roadmap with its skills and prerequisites.
@@ -6393,26 +6393,6 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
-  /v1/roadmaps/{id}/regroup:
-    parameters: [{ $ref: "#/components/parameters/ID" }]
-    post:
-      tags: [roadmaps]
-      operationId: regroupRoadmap
-      summary: Group an older import (one skill per course or book) into skills with their resources
-      description: >
-        Progress is combined (done when every part is done, learning once any part is started),
-        connections move to the skill that absorbs them, and skills added by hand are kept.
-        Running it again changes nothing.
-      responses:
-        "200":
-          description: The regrouped roadmap.
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Roadmap" }
-        "401": { $ref: "#/components/responses/Problem" }
-        "403": { $ref: "#/components/responses/Problem" }
-        "404": { $ref: "#/components/responses/Problem" }
-        "422": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/{id}/skills:
     parameters: [{ $ref: "#/components/parameters/ID" }]
     post:

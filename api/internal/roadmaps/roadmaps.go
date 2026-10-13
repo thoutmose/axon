@@ -5,7 +5,6 @@ package roadmaps
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"net/url"
 	"slices"
@@ -15,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 )
@@ -399,32 +399,9 @@ func DeleteSkill(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor gra
 	return graph.DeleteEntity(ctx, tx, userID, id, actor)
 }
 
-//go:embed ossu.json
-var ossuJSON []byte
-
-type curriculum struct {
-	Title       string         `json:"title"`
-	Description string         `json:"description"`
-	Attribution string         `json:"attribution"`
-	LicenseURL  string         `json:"license_url"`
-	Skills      []LibrarySkill `json:"skills"`
-	Courses     []struct {
-		Title    string   `json:"title"`
-		URL      string   `json:"url"`
-		Section  string   `json:"section"`
-		Duration string   `json:"duration"`
-		Effort   string   `json:"effort"`
-		Requires []string `json:"requires"`
-		Skill    string   `json:"skill"`
-	} `json:"courses"`
-}
-
-// Sources lists what can be imported, with its licence or attribution.
+// Sources lists what can be imported: the library's roadmaps.
 func Sources() []Source {
-	var c curriculum
-	_ = json.Unmarshal(ossuJSON, &c)
-	out := []Source{{ID: "ossu", Kind: "curriculum", Title: c.Title, Description: c.Description, Attribution: c.Attribution,
-		LicenseURL: &c.LicenseURL, Count: len(c.Courses), Skills: len(c.Skills)}}
+	var out []Source
 	for _, d := range lib.Roadmaps {
 		out = append(out, Source{ID: d.ID, Kind: "library", Title: d.Title, Description: d.Description, Attribution: lib.Attribution,
 			Count: len(d.Resources), Skills: len(d.Skills)})
@@ -432,34 +409,24 @@ func Sources() []Source {
 	return out
 }
 
-// Import creates a roadmap from the OSSU curriculum (MIT licensed) or a
-// domain of the curated library.
-func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, source string) (Roadmap, error) {
-	if source != "ossu" {
-		for _, d := range lib.Roadmaps {
-			if d.ID == source {
-				return importLibrary(ctx, tx, userID, actor, d)
-			}
+// Import creates a roadmap from the library. A roadmap with a plan starts
+// the whole plan (EP-95), dated from the person's today.
+func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, source string, now time.Time) (Roadmap, error) {
+	for _, d := range lib.Roadmaps {
+		if d.ID != source {
+			continue
 		}
-		return Roadmap{}, ValidationError{"Import ossu or a library domain from GET /v1/roadmaps/sources. roadmap.sh content may not be redistributed."}
+		if d.Plan == nil {
+			return importLibrary(ctx, tx, userID, actor, d)
+		}
+		today, _, err := clock.Today(ctx, tx, userID, now)
+		if err != nil {
+			return Roadmap{}, err
+		}
+		s, err := StartPlan(ctx, tx, userID, actor, d, d.Plan.Shift(today), now)
+		return s.Roadmap, err
 	}
-	var c curriculum
-	if err := json.Unmarshal(ossuJSON, &c); err != nil {
-		return Roadmap{}, err
-	}
-	byskill := map[string][]SkillResource{}
-	for _, course := range c.Courses {
-		note := strings.Trim(strings.Join([]string{course.Duration, course.Effort}, " · "), " ·")
-		byskill[course.Skill] = append(byskill[course.Skill], SkillResource{Title: course.Title, Kind: "course", By: "OSSU", Free: true, URL: course.URL, Note: note})
-	}
-	id, err := create(ctx, tx, userID, actor, c.Title, c.Description, "ossu", c.Attribution, &c.LicenseURL)
-	if err != nil {
-		return Roadmap{}, err
-	}
-	if err := addSkills(ctx, tx, userID, id, actor, c.Skills, byskill, "hard"); err != nil {
-		return Roadmap{}, err
-	}
-	return Get(ctx, tx, userID, id)
+	return Roadmap{}, ValidationError{"Import a roadmap listed by GET /v1/roadmaps/sources. roadmap.sh content may not be redistributed."}
 }
 
 func export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {

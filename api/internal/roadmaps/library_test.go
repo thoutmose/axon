@@ -1,71 +1,108 @@
 package roadmaps
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 )
 
-// Every curated roadmap groups its resources under skills: competencies,
-// not course titles. A skill needs at least one resource, and prerequisites
-// point to earlier skills, so imports never drop an edge.
-func TestLibrarySkillsAreCompetenciesWithResources(t *testing.T) {
-	var c curriculum
-	if err := json.Unmarshal(ossuJSON, &c); err != nil {
-		t.Fatal(err)
+// The library is one roadmap, the Top-5% plan (EP-95): its skills are
+// competencies with resources, prerequisites point to earlier skills, and
+// every hard skill is placed by a domain of the skills assessment.
+func TestTheLibraryIsTheTop5Roadmap(t *testing.T) {
+	lib := Library()
+	if len(lib) != 1 || lib[0].ID != "top5-engineer" || lib[0].Plan == nil {
+		t.Fatalf("library = %d roadmaps", len(lib))
 	}
-	ossu := LibraryRoadmap{ID: "ossu", Skills: c.Skills}
-	for _, course := range c.Courses {
-		ossu.Resources = append(ossu.Resources, Resource{Title: course.Title, URL: course.URL, Skill: course.Skill})
+	d := lib[0]
+	seen := map[string]bool{}
+	resources := map[string]int{}
+	urls := map[string]bool{}
+	for _, r := range d.Resources {
+		resources[r.Skill]++
+		if !strings.HasPrefix(r.URL, "https://") && !strings.HasPrefix(r.URL, "http://") || urls[r.URL] {
+			t.Errorf("%q: link %q missing or repeated", r.Title, r.URL)
+		}
+		urls[r.URL] = true
 	}
-	for _, d := range append(Library(), ossu) {
-		if len(d.Skills) == 0 {
-			t.Errorf("%s has no skills", d.ID)
-		}
-		seen := map[string]bool{}
-		resources := map[string]int{}
-		for _, r := range d.Resources {
-			resources[r.Skill]++
-			if !strings.HasPrefix(r.URL, "https://") && !strings.HasPrefix(r.URL, "http://") {
-				t.Errorf("%s: %q has no link", d.ID, r.Title)
+	hard := 0
+	for _, s := range d.Skills {
+		for _, req := range s.Requires {
+			if !seen[req] {
+				t.Errorf("%q requires %q, which is not an earlier skill", s.Title, req)
 			}
 		}
-		for _, s := range d.Skills {
-			for _, req := range s.Requires {
-				if !seen[req] {
-					t.Errorf("%s: %q requires %q, which is not an earlier skill", d.ID, s.Title, req)
-				}
-			}
-			if seen[s.Title] {
-				t.Errorf("%s: skill %q appears twice", d.ID, s.Title)
-			}
-			seen[s.Title] = true
-			if resources[s.Title] == 0 {
-				t.Errorf("%s: skill %q has no resource", d.ID, s.Title)
-			}
-			if s.Section == "" {
-				t.Errorf("%s: skill %q has no section", d.ID, s.Title)
+		if seen[s.Title] || s.Section == "" {
+			t.Errorf("skill %q repeated or without a section", s.Title)
+		}
+		seen[s.Title] = true
+		if s.Kind != "soft" {
+			hard++
+			if resources[s.Title] == 0 || s.Assess == "" || domain(s.Assess) == nil {
+				t.Errorf("hard skill %q needs a resource and an assessment domain (%q)", s.Title, s.Assess)
 			}
 		}
-		for skill := range resources {
-			if !seen[skill] {
-				t.Errorf("%s: resources name unknown skill %q", d.ID, skill)
-			}
+	}
+	if hard != 26 {
+		t.Errorf("%d hard skills, want the 26 domains", hard)
+	}
+	for skill := range resources {
+		if !seen[skill] {
+			t.Errorf("resources name unknown skill %q", skill)
 		}
+	}
+	if len(Sources()) != 1 {
+		t.Errorf("sources = %+v", Sources())
 	}
 }
 
-func TestLibraryCoversTheOwnersDomains(t *testing.T) {
-	want := []string{"cs", "dsa", "os", "api-design", "system-design", "databases", "linux-bash", "data-engineering",
-		"data-analysis", "data-science", "machine-learning", "maths", "c-cpp", "java", "rust", "python", "networking",
-		"devops", "dataops", "gitops", "mlops", "web", "devsecops", "security", "containers", "cloud", "soft-skills"}
-	have := map[string]bool{}
-	for _, d := range Library() {
-		have[d.ID] = true
+// Phases follow each other day after day from the plan's start to its end,
+// each with a milestone, a project, an exit check, and known domains.
+func TestThePlansPhasesFollowEachOther(t *testing.T) {
+	p := *Library()[0].Plan
+	skills := map[string]bool{}
+	for _, s := range Library()[0].Skills {
+		skills[s.Title] = true
 	}
-	for _, id := range want {
-		if !have[id] {
-			t.Errorf("library has no %s roadmap", id)
+	if len(p.Phases) != 14 || p.Phases[0].Start != p.Start || p.Phases[13].End != p.End {
+		t.Fatalf("phases %d from %s to %s", len(p.Phases), p.Phases[0].Start, p.Phases[len(p.Phases)-1].End)
+	}
+	for i, ph := range p.Phases {
+		if ph.N != i+1 || ph.Slug == "" || ph.Project.Slug == "" || len(ph.Exit) == 0 {
+			t.Errorf("phase %d is incomplete", i+1)
+		}
+		if i > 0 && day(p.Phases[i-1].End).AddDate(0, 0, 1) != day(ph.Start) {
+			t.Errorf("phase %d starts %s, the day after %s expected", ph.N, ph.Start, p.Phases[i-1].End)
+		}
+		for _, d := range ph.Domains {
+			if !skills[d] {
+				t.Errorf("phase %d names unknown domain %q", ph.N, d)
+			}
+		}
+	}
+	if len(p.Habits) != 4 || len(p.Tasks) == 0 {
+		t.Errorf("habits %d, tasks %d", len(p.Habits), len(p.Tasks))
+	}
+}
+
+// The plan keeps its own dates while its first phase runs; after that it
+// starts again on the coming Monday.
+func TestThePlanStartsOnItsDatesOrTheComingMonday(t *testing.T) {
+	p := *Library()[0].Plan
+	at := func(s string) time.Time { return day(s) }
+	for _, c := range []struct {
+		today string
+		start string
+	}{
+		{"2026-10-01", "2026-10-05"}, // before the start
+		{"2026-10-13", "2026-10-05"}, // during phase 1
+		{"2026-12-27", "2026-10-05"}, // its last day
+		{"2027-01-06", "2027-01-11"}, // a Wednesday: the coming Monday
+		{"2027-01-11", "2027-01-11"}, // a Monday: that day
+		{"2027-01-10", "2027-01-11"}, // a Sunday: the next day
+	} {
+		if got := at(p.Start).AddDate(0, 0, p.Shift(at(c.today))).Format(time.DateOnly); got != c.start {
+			t.Errorf("started on %s: plan from %s, want %s", c.today, got, c.start)
 		}
 	}
 }

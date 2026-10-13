@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **The Top-5% roadmap**: the library is one roadmap, Top-5% in 26 engineering domains, and starting it creates the whole plan: goal, 14 milestones, a project per phase with its exit check as tasks and subtasks, the 42 cursus, four habits, the first week's tasks, areas, resources, and its note. The demo follows it, a week in. OSSU and the 27 library domains are gone, with the regrouping of old imports (EP-95).
 - **Only what you use**: a new account says what it wants Axon for, and the menu and Today show just those pages; Preferences hides or brings back any page. Saving Preferences no longer resets Today's cards (EP-94).
 - **Journal days in the vault**: with health notes on, each day is a daily note with its scales in the front matter (EP-93).
 - **What helps you**: which of your habits go with your better days, from your journal and logs over 90 days, with statistics that leave chance out and say a link is not a cause; computed on your server, no AI (EP-92).

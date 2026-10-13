@@ -39,7 +39,6 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Patch("/v1/roadmaps/{id}", h.update)
 	r.Delete("/v1/roadmaps/{id}", h.delete)
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
-	r.Post("/v1/roadmaps/{id}/regroup", h.regroup)
 	r.Patch("/v1/skills/{id}", h.updateSkill)
 	r.Delete("/v1/skills/{id}", h.deleteSkill)
 	r.Get("/v1/assessment/questions", h.questions)
@@ -142,21 +141,9 @@ func (h *Handlers) importRoadmap(w http.ResponseWriter, r *http.Request) {
 	}
 	h.tx(w, r, http.StatusCreated, func(tx pgx.Tx) (any, error) {
 		if body.Place {
-			return ImportPlaced(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
+			return ImportPlaced(r.Context(), tx, who.UserID, graph.UserActor, body.Source, time.Now())
 		}
-		return Import(r.Context(), tx, who.UserID, graph.UserActor, body.Source)
-	})
-}
-
-func (h *Handlers) regroup(w http.ResponseWriter, r *http.Request) {
-	who, _ := auth.FromContext(r.Context())
-	rid, err := id(r)
-	if err != nil {
-		h.fail(w, err)
-		return
-	}
-	h.tx(w, r, http.StatusOK, func(tx pgx.Tx) (any, error) {
-		return Regroup(r.Context(), tx, who.UserID, rid, graph.UserActor)
+		return Import(r.Context(), tx, who.UserID, graph.UserActor, body.Source, time.Now())
 	})
 }
 

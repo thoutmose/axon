@@ -143,6 +143,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-92 | What helps you | Which habits go with better days: sleep, training, focus, habits kept, tasks finished, and gratitude against mood, energy, and stress over 90 days, with rank correlation, a permutation test, and a correction for many tests; only clear links, in plain words, never as causes. Computed on the server, no AI. | SHOULD | 3 pts | EP-91 | Done |
 | EP-93 | Journal days in the vault | Each journal day becomes a daily note in the vault, with its scales in the front matter, written one way when health notes are on, and removed with the day or the consent. | SHOULD | 1 pt | EP-48, EP-91 | Done |
 | EP-94 | Only what you use | A new account is asked what it wants Axon for; the menu and Today show just those pages, and Preferences hides or brings back any page. Fixes Preferences resetting Today's cards. | SHOULD | 3 pts | EP-54, EP-63 | Done |
+| EP-95 | The Top-5% roadmap | Owner request: the owner's roadmap from their vault is the only roadmap, used by default and in the demo, with its tasks, subtasks, projects, goal, milestones, side projects, habits, and resources. | MUST | 8 pts | EP-14, EP-27, EP-41 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1830,6 +1831,17 @@ Cross-cutting matrix:
 - [x] **EP-94/IS-94.03** · 1 pt · SHOULD — Preferences → Pages in the menu. Preferences sent the settings without Today's cards, and the API fills a part left out with its default, so saving Preferences reset a customised Today; it now sends them back as they are.
 
 **Tests.** `TestMenuPages` (written first: default, saved, duplicates, Today, unknown pages, YAML); `planFor` unit tests; an e2e test that chooses two uses, finds the menu without Budget and Today with the calendar, brings every page back in Preferences, and finds Today unchanged, with axe.
+
+### EP-95 — The Top-5% roadmap
+
+**Goal.** The owner asked (2026-10-13) for the roadmap in their vault, *Top-5% in 26 engineering domains*, to be the only roadmap, used by default and in the demo, with everything related to it: tasks, subtasks, projects, goal, milestones, side projects, habits, and resources (ADR 0030).
+
+- [x] **EP-95/IS-95.01** · 3 pts · MUST — The library is that roadmap: the 26 domains as skills in seven areas, each with its top-5% proof and the resources the phases use (86), and six soft skills the plan relies on, so both radars have something to show. OSSU and the 27 library domains are removed, with the regrouping of imports made before skills were competencies; roadmaps people already imported stay theirs.
+- [x] **EP-95/IS-95.02** · 3 pts · MUST — Starting it creates the plan in one transaction: the goal with its outcome and a measure of 26 domains, 14 milestones, a project per phase (the first active, the others on hold) whose board holds the exit check as an epic, issues, and subtasks, a *42 cursus* side project with each phase's 42 projects, the four habits with their cue, routine, and reward, the first week's tasks (two on pipekit's board) and the monthly roadmap check, the areas *Engineering mastery* and *Maths* (reused if they exist), three resources (42 subjects and testers, certification exams, books platform), and the roadmap's own note, unless the vault already has it. Everything is connected to the goal or the roadmap. Started while phase 1 runs, it keeps its dates; later, it starts on the coming Monday. It starts once.
+- [x] **EP-95/IS-95.03** · 1 pt · SHOULD — Placement follows the skills assessment: a domain rated at level 3 of 5 or more starts as being learnt, never done, since each needs its proof.
+- [x] **EP-95/IS-95.04** · 1 pt · MUST — The demo follows the plan a week in: phase 1's skills being learnt, the first week's tasks done but one, the habits checked in with a rest day, a 6.042J literature note with its 15 flashcards and their diagrams, and the certification and reward funds in the budget.
+
+**Tests.** Library and phase-date checks and the plan's dates (written first); `TestStartingTheTop5RoadmapStartsThePlan` against PostgreSQL; placement in `TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor`; the demo and overview tests; e2e tests that start the roadmap at your level from the assessment and walk the plan (skill graph, goal, projects, habits). The e2e tests now run on a stack of their own, so a running local stack is left alone.
 
 ### EP-20 — Analytics & insights
 

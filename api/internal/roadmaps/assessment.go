@@ -270,39 +270,49 @@ func latestResult(ctx context.Context, q db.Querier, userID uuid.UUID, domainID 
 	return nil, time.Time{}, nil
 }
 
-// place marks the first sections of an imported library roadmap done, as
-// far as the person's level justifies, and explains it in the description.
-func place(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, r Roadmap, res DomainResult, when time.Time) (Roadmap, error) {
-	var sections []string
-	for _, s := range r.Skills {
-		if s.Section != "" && !slices.Contains(sections, s.Section) {
-			sections = append(sections, s.Section)
-		}
+// ImportPlaced starts a library roadmap and places the person on it with
+// their latest assessments: a skill whose domain they reached level 3 of 5
+// in starts as being learnt. None starts done, since each needs its proof.
+func ImportPlaced(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, source string, now time.Time) (Roadmap, error) {
+	r, err := Import(ctx, tx, userID, actor, source, now)
+	if err != nil {
+		return r, err
 	}
-	n := 0
-	switch {
-	case res.Level >= 4:
-		n = 2
-	case res.Level == 3:
-		n = 1
-	}
-	n = min(n, max(0, len(sections)-1)) // always leave something to learn
-	done := sections[:n]
-	if n > 0 {
-		status := "done"
-		for _, s := range r.Skills {
-			if slices.Contains(done, s.Section) {
-				if _, err := UpdateSkill(ctx, tx, userID, s.ID, actor, SkillFields{Status: &status}); err != nil {
-					return r, err
-				}
+	domain := map[string]string{}
+	for _, d := range lib.Roadmaps {
+		if d.ID == source {
+			for _, sk := range d.Skills {
+				domain[sk.Title] = sk.Assess
 			}
 		}
 	}
-	note := fmt.Sprintf("Placed by your skills assessment of %s: %s ", when.Format("2 January 2006"), res.Reason)
-	if n == 0 {
-		note += "Everything is left to learn."
-	} else {
-		note += fmt.Sprintf("So %s marked done; change any skill back if it is not true.", quoteList(done))
+	assessed, placed := false, []string{}
+	learning := "learning"
+	for _, sk := range r.Skills {
+		if domain[sk.Title] == "" {
+			continue
+		}
+		res, _, err := latestResult(ctx, tx, userID, domain[sk.Title])
+		if err != nil {
+			return r, err
+		}
+		if res == nil {
+			continue
+		}
+		assessed = true
+		if res.Level >= 3 {
+			if _, err := UpdateSkill(ctx, tx, userID, sk.ID, actor, SkillFields{Status: &learning}); err != nil {
+				return r, err
+			}
+			placed = append(placed, sk.Title)
+		}
+	}
+	if !assessed {
+		return Roadmap{}, ValidationError{"No assessment covers this roadmap yet. Take the skills assessment, or start it without placement."}
+	}
+	note := "Placed by your skills assessment: nothing reached level 3 of 5 yet, so every skill starts from the beginning."
+	if len(placed) > 0 {
+		note = fmt.Sprintf("Placed by your skills assessment: %s at level 3 of 5 or more, so being learnt; each is done once its proof is.", quoteList(placed))
 	}
 	desc := strings.TrimSpace(r.Description + "\n\n" + note)
 	return Update(ctx, tx, userID, r.ID, actor, Fields{Description: &desc})
@@ -317,26 +327,6 @@ func quoteList(items []string) string {
 		return q[0] + " is"
 	}
 	return strings.Join(q, " and ") + " are"
-}
-
-// ImportPlaced imports a library domain and places the person on it with
-// their latest assessment of that domain.
-func ImportPlaced(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, source string) (Roadmap, error) {
-	res, when, err := latestResult(ctx, tx, userID, source)
-	if err != nil {
-		return Roadmap{}, err
-	}
-	if res == nil {
-		return Roadmap{}, ValidationError{"No assessment covers this domain yet. Take the skills assessment, or import without placement."}
-	}
-	r, err := Import(ctx, tx, userID, actor, source)
-	if err != nil {
-		return r, err
-	}
-	if r.Source != "library" {
-		return Roadmap{}, ValidationError{"Placement works with library domains."}
-	}
-	return place(ctx, tx, userID, actor, r, *res, when)
 }
 
 func exportAssessments(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {

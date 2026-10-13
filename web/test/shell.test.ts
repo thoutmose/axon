@@ -28,6 +28,10 @@ async function noSeriousA11yViolations(p: Page) {
 // The browser runs in a time zone whose date is not UTC's right now (UTC+14
 // late in the UTC day, UTC-11 early in it), so showing a date shifted by the
 // browser's time zone is caught whenever the suite runs.
+// The stack under test: its own on E2E_BASE_URL, so a running local stack is left alone.
+declare const process: { env: Record<string, string | undefined> }; // Node's, without its types in the web check
+const origin = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
+
 const browserZone = new Date().getUTCHours() >= 10 ? 'Pacific/Kiritimati' : 'Pacific/Pago_Pago';
 
 /** Today in the browser's time zone (the test runner's is UTC), as YYYY-MM-DD. */
@@ -77,8 +81,7 @@ test('home page is accessible and offers registration', async () => {
 	// Artwork and fonts ship with Axon: nothing is fetched from another origin.
 	const foreign: string[] = [];
 	page.on('request', (r) => {
-		if (!r.url().startsWith('http://localhost:3000') && !r.url().startsWith('data:'))
-			foreign.push(r.url());
+		if (!r.url().startsWith(origin) && !r.url().startsWith('data:')) foreign.push(r.url());
 	});
 	await page.goto('/');
 	await page.waitForLoadState('networkidle');
@@ -560,64 +563,15 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 	await expect(page.getByRole('region', { name: 'Docs' })).toContainText('Shed plan');
 });
 
-test('import an open curriculum with attribution, track skills, and use the graph or the list', async () => {
+test('take the skills assessment, then start the roadmap at your level', async () => {
 	await page.goto('/roadmaps');
-	await expect(page.getByText('MIT License')).toBeVisible(); // attribution before import
-	await page.getByRole('button', { name: 'Import', exact: true }).click();
-	await expect(
-		page.getByRole('heading', { level: 1, name: 'OSSU Computer Science' })
-	).toBeVisible();
-	await expect(page.getByText('Open Source Society University (OSSU)')).toBeVisible();
-	await page.getByLabel('Status of Systematic program design').selectOption('done');
-	await expect(page.getByText('1 of 42 skills done')).toBeVisible();
-	await noSeriousA11yViolations(page);
-
-	await page.getByRole('link', { name: 'Skill graph' }).click();
-	const graph = page.getByRole('group', { name: /Skill graph: 42 skills, 1 done/ });
-	await expect(graph).toBeVisible();
-	await graph.getByRole('link', { name: 'Programming language concepts, todo' }).click();
-	const detail = page.getByRole('complementary', { name: 'Programming language concepts' });
-	await expect(detail).toContainText('Needs first: Systematic program design');
-	await expect(detail.getByRole('link', { name: /Programming Languages/ })).toBeVisible(); // the course teaching it
-	await detail.getByRole('button', { name: 'Learning' }).click();
-	await expect(
-		graph.getByRole('link', { name: 'Programming language concepts, learning' })
-	).toBeVisible();
-	await noSeriousA11yViolations(page);
-});
-
-test('import a library roadmap of the best resources, then rename and edit it', async () => {
-	await page.goto('/roadmaps');
-	await page.getByLabel('Filter domains').fill('podman');
-	await expect(page.getByRole('button', { name: /^Import / })).toHaveCount(1);
-	await page.getByRole('button', { name: 'Import Docker, Podman, and Kubernetes' }).click();
-	await expect(
-		page.getByRole('heading', { level: 1, name: 'Docker, Podman, and Kubernetes' })
-	).toBeVisible();
-	await expect(page.getByText(/belongs to its authors/)).toBeVisible();
-
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const edit = page.getByRole('dialog', { name: 'Edit roadmap' });
-	await edit.getByLabel('Title').fill('My container path');
-	await edit.getByRole('button', { name: 'Save' }).click();
-	await expect(page.getByRole('heading', { level: 1, name: 'My container path' })).toBeVisible();
-
-	await page.getByRole('link', { name: 'Containers', exact: true }).click();
-	const detail = page.getByRole('complementary', { name: 'Containers' });
-	await expect(detail.getByRole('link', { name: /Docker: Get started/ })).toBeVisible();
-	await detail.getByRole('button', { name: 'Edit' }).click();
-	const dialog = page.getByRole('dialog', { name: 'Edit skill' });
-	await dialog.getByLabel('Skill', { exact: true }).fill('Docker basics');
-	await dialog.getByRole('button', { name: 'Save' }).click();
-	await expect(page.getByRole('link', { name: 'Docker basics' })).toBeVisible();
-	await noSeriousA11yViolations(page);
-});
-
-test('take the skills assessment, then start a roadmap at your level', async () => {
-	await page.goto('/roadmaps');
+	// The library is one roadmap, with its plan (EP-95).
+	const library = page.getByRole('region', { name: 'Top-5% in 26 engineering domains' });
+	await expect(library).toContainText('14 phases');
+	await expect(library.getByRole('button', { name: 'Start this roadmap' })).toBeVisible();
 	await page.getByRole('link', { name: 'Take the assessment' }).click();
-	await page.getByLabel('Your role or situation').fill('Support engineer');
-	await page.getByLabel('What do you want to achieve?').fill('Become a backend engineer');
+	await page.getByLabel('Your role or situation').fill('Data engineer');
+	await page.getByLabel('What do you want to achieve?').fill('Top 5% in 26 engineering domains');
 	await page.getByLabel('Practice and projects').check();
 	await page.getByRole('button', { name: 'Next' }).click();
 	await page.getByLabel('Python', { exact: true }).check();
@@ -632,10 +586,38 @@ test('take the skills assessment, then start a roadmap at your level', async () 
 		page.getByRole('cell', { name: /You rated it 5\/5 and answered 2 of 3/ })
 	).toBeVisible();
 	await noSeriousA11yViolations(page);
-	await page.getByRole('button', { name: 'Start Python at my level' }).click();
-	await expect(page.getByRole('heading', { level: 1, name: 'Python' })).toBeVisible();
-	await expect(page.getByText(/Placed by your skills assessment/)).toBeVisible();
-	await expect(page.getByText(/^\d+ of \d+ skills done/)).not.toHaveText(/^0 of/);
+	await page.getByRole('button', { name: 'Start the roadmap at my level' }).click();
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Top-5% in 26 engineering domains' })
+	).toBeVisible();
+	await expect(page.getByText(/Placed by your skills assessment: “Python”/)).toBeVisible();
+	await expect(page.getByLabel('Status of Python')).toHaveValue('learning');
+});
+
+test('the roadmap is a whole plan: skills with resources, a goal, milestones, projects, and habits', async () => {
+	await page.goto('/roadmaps');
+	await page.getByRole('link', { name: 'Open the roadmap' }).click();
+	await page.getByRole('link', { name: 'Skill graph' }).click();
+	const graph = page.getByRole('group', { name: /Skill graph: 32 skills/ });
+	await graph.getByRole('link', { name: 'Operating systems, todo' }).click();
+	const detail = page.getByRole('complementary', { name: 'Operating systems' });
+	await expect(detail).toContainText('Needs first: C and C++');
+	await expect(
+		detail.getByRole('link', { name: /Operating Systems: Three Easy Pieces/ })
+	).toBeVisible();
+	await detail.getByRole('button', { name: 'Learning' }).click();
+	await expect(graph.getByRole('link', { name: 'Operating systems, learning' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/goals');
+	await expect(page.getByText('Top-5% in 26 engineering domains').first()).toBeVisible();
+	await page.goto('/projects');
+	await expect(
+		page.getByRole('link', { name: 'pipekit: mini orchestrator in Python' })
+	).toBeVisible();
+	await expect(page.getByRole('link', { name: '42 cursus (self-taught)' })).toBeVisible();
+	await page.goto('/habits');
+	await expect(page.getByText('Daily study block').first()).toBeVisible();
 });
 
 test('tasks open on a GTD board, and a Kanban board moves work along', async () => {
@@ -1594,7 +1576,7 @@ test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async (
 	await page.getByRole('button', { name: 'Save preferences' }).click();
 	await expect(page.getByText('Preferences saved.')).toBeVisible();
 	const res = await page.request.post('/api/v1/notes', {
-		headers: { Origin: 'http://localhost:3000' },
+		headers: { Origin: origin },
 		data: { path: '0-Inbox/vim-test.md', content: '# Vim test\n\nfirst line' }
 	});
 	const note = await res.json();
@@ -1879,10 +1861,12 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await page.goto('/projects');
 	await expect(page.getByRole('link', { name: 'Personal website' })).toBeVisible();
 	await page.goto('/roadmaps');
-	await expect(page.getByRole('link', { name: 'Python' })).toBeVisible();
-	// The skills radar: one spoke per hard-skill roadmap, soft skills by section.
-	await expect(page.getByRole('img', { name: /^Hard skills: .*Python \d+%/ })).toBeVisible();
-	await expect(page.getByRole('img', { name: /^Soft skills: Learn \d+%/ })).toBeVisible();
+	await expect(
+		page.getByRole('link', { name: 'Top-5% in 26 engineering domains', exact: true })
+	).toBeVisible();
+	// The skills radar: one roadmap, so a spoke per section.
+	await expect(page.getByRole('img', { name: /^Hard skills: .*Foundations \d+%/ })).toBeVisible();
+	await expect(page.getByRole('img', { name: /^Soft skills: .*Communication \d+%/ })).toBeVisible();
 	await noSeriousA11yViolations(page);
 	await page.goto('/agents');
 	await expect(page.getByText('Agents do not run in the shared demo')).toBeVisible();
