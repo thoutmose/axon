@@ -8,6 +8,7 @@
 	import Radar from '$lib/charts/Radar.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
+	import { t } from '$lib/i18n.svelte';
 
 	type Roadmap = Schemas['Roadmap'];
 	type RadarKind = Schemas['RadarKind'];
@@ -85,57 +86,59 @@
 	}
 </script>
 
-<svelte:head><title>Roadmaps · Axon</title></svelte:head>
+<svelte:head><title>{t('Roadmaps')} · Axon</title></svelte:head>
 
-<h1>Roadmaps</h1>
+<h1>{t('Roadmaps')}</h1>
 <LearnTabs />
 <AgentDock {...pageAgents.roadmaps} onapplied={() => load()} />
 <p class="muted hint">
-	Plan what to learn as skills with prerequisites, and watch the graph fill in.
+	{t('Plan what to learn as skills with prerequisites, and watch the graph fill in.')}
 </p>
 
 <aside class="assess glass" aria-labelledby="assess-title">
 	<div>
-		<h2 id="assess-title">New here? Start with the skills assessment</h2>
+		<h2 id="assess-title">{t('New here? Start with the skills assessment')}</h2>
 		<p class="muted small">
-			Your situation, goals, and a few quick checks per domain. Roadmaps then start at your level,
-			and the Tutor agent knows where you are.
+			{t(
+				'Your situation, goals, and a few quick checks per domain. Roadmaps then start at your level, and the Tutor agent knows where you are.'
+			)}
 		</p>
 	</div>
-	<Button href="/roadmaps/assessment" variant="secondary">Take the assessment</Button>
+	<Button href="/roadmaps/assessment" variant="secondary">{t('Take the assessment')}</Button>
 </aside>
 
 <form class="quick" onsubmit={create}>
-	<label for="new-roadmap" class="visually-hidden">New roadmap</label>
+	<label for="new-roadmap" class="visually-hidden">{t('New roadmap')}</label>
 	<input
 		id="new-roadmap"
-		placeholder="New roadmap, e.g. Japanese N4…"
+		placeholder={t('New roadmap, e.g. Japanese N4…')}
 		bind:value={title}
 		maxlength="500"
 		required
 		autocomplete="off"
 	/>
-	<Button type="submit" variant="secondary">Create</Button>
+	<Button type="submit" variant="secondary">{t('Create')}</Button>
 </form>
 
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !roadmaps}
-	<Status kind="loading" message="Loading roadmaps…" />
+	<Status kind="loading" message={t('Loading roadmaps…')} />
 {:else}
 	{#if radar && radar.hard.spokes.length + radar.soft.spokes.length}
 		<section class="card glass skills" aria-labelledby="skills-title">
-			<h2 id="skills-title">Skills acquired</h2>
+			<h2 id="skills-title">{t('Skills acquired')}</h2>
 			<p class="muted small">
-				How much of each area you have learnt: the filled shape is skills done, the dashed one adds
-				those you are learning. Skipped skills are not counted.
+				{t(
+					'How much of each area you have learnt: the filled shape is skills done, the dashed one adds those you are learning. Skipped skills are not counted.'
+				)}
 			</p>
 			<div class="radars">
 				{#each [{ title: 'Hard skills', kind: radar.hard }, { title: 'Soft skills', kind: radar.soft }] as r (r.title)}
 					{#if r.kind.spokes.length}
 						<div>
-							<Radar title={r.title} spokes={r.kind.spokes} />
-							<p class="muted small">{by[r.kind.by]}</p>
+							<Radar title={t(r.title)} spokes={r.kind.spokes} />
+							<p class="muted small">{t(by[r.kind.by])}</p>
 						</div>
 					{/if}
 				{/each}
@@ -151,7 +154,7 @@
 					<div
 						class="bar"
 						role="progressbar"
-						aria-label="Progress of {r.title}"
+						aria-label={t('Progress of {title}', { title: r.title })}
 						aria-valuemin="0"
 						aria-valuemax={r.total || 1}
 						aria-valuenow={r.done}
@@ -159,7 +162,9 @@
 						<span style:width="{r.total ? (r.done / r.total) * 100 : 0}%"></span>
 					</div>
 					<p class="muted small">
-						{r.done} of {r.total} skills{sourceNames[r.source] ? ` · ${sourceNames[r.source]}` : ''}
+						{t('{done} of {total} skills', { done: r.done, total: r.total })}{sourceNames[r.source]
+							? ` · ${t(sourceNames[r.source])}`
+							: ''}
 					</p>
 				</li>
 			{/each}
@@ -167,24 +172,25 @@
 	{:else}
 		<Status
 			kind="empty"
-			message="No roadmaps yet. Create one above, or start from an open curriculum below."
+			message={t('No roadmaps yet. Create one above, or start from an open curriculum below.')}
 		/>
 	{/if}
 
 	<section class="card glass library" aria-labelledby="library-title">
-		<h2 id="library-title">The library</h2>
+		<h2 id="library-title">{t('The library')}</h2>
 		<p class="muted small">
-			Roadmaps built from the world's most recommended books, papers, university lectures, courses,
-			and channels, one per domain. Import one, then make it yours: rename, reorder, add, or remove
-			anything. Or ask the Tutor agent on the <a href="/agents">Agents</a> page to draft one for your
-			goal.
+			{t(
+				"Roadmaps built from the world's most recommended books, papers, university lectures, courses, and channels, one per domain. Import one, then make it yours: rename, reorder, add, or remove anything. Or ask the Tutor agent on the"
+			)}
+			<a href="/agents">{t('Agents')}</a>
+			{t('page to draft one for your goal.')}
 		</p>
-		<label for="library-filter" class="visually-hidden">Filter domains</label>
+		<label for="library-filter" class="visually-hidden">{t('Filter domains')}</label>
 		<input
 			id="library-filter"
 			class="filter"
 			type="search"
-			placeholder="Filter domains, e.g. kubernetes, data, rust…"
+			placeholder={t('Filter domains, e.g. kubernetes, data, rust…')}
 			bind:value={filter}
 		/>
 		<ul class="domains">
@@ -193,17 +199,22 @@
 					<strong>{s.title}</strong>
 					<p class="muted small">{s.description}</p>
 					<div class="row">
-						<span class="muted small">{s.skills} skills · {s.count} resources</span>
+						<span class="muted small"
+							>{t('{skills} skills · {count} resources', {
+								skills: s.skills,
+								count: s.count
+							})}</span
+						>
 						<Button
 							variant="secondary"
 							busy={importing}
 							onclick={() => importSource(s)}
-							aria-label="Import {s.title}">Import</Button
+							aria-label={t('Import {title}', { title: s.title })}>{t('Import')}</Button
 						>
 					</div>
 				</li>
 			{:else}
-				<li class="muted">No domain matches “{filter}”.</li>
+				<li class="muted">{t('No domain matches “{filter}”.', { filter })}</li>
 			{/each}
 		</ul>
 		{#if sources.find((s) => s.kind === 'library')}
@@ -212,7 +223,7 @@
 	</section>
 
 	<section class="card glass imports" aria-labelledby="import-title">
-		<h2 id="import-title">Start from an open curriculum</h2>
+		<h2 id="import-title">{t('Start from an open curriculum')}</h2>
 		{#each curricula as s (s.id)}
 			<div class="source">
 				<div>
@@ -221,18 +232,21 @@
 					<p class="small attribution">
 						{s.attribution}
 						{#if s.license_url}<a href={s.license_url} rel="noopener noreferrer" target="_blank"
-								>Licence</a
+								>{t('Licence')}</a
 							>{/if}
 					</p>
 				</div>
-				<Button variant="secondary" busy={importing} onclick={() => importSource(s)}>Import</Button>
+				<Button variant="secondary" busy={importing} onclick={() => importSource(s)}
+					>{t('Import')}</Button
+				>
 			</div>
 		{/each}
 		<p class="muted small">
-			roadmap.sh roadmaps are not imported: their licence allows personal viewing but not copying
-			into other apps. Open them at
-			<a href="https://roadmap.sh" rel="noopener noreferrer" target="_blank">roadmap.sh</a> and add the
-			skills you choose here.
+			{t(
+				'roadmap.sh roadmaps are not imported: their licence allows personal viewing but not copying into other apps. Open them at'
+			)}
+			<a href="https://roadmap.sh" rel="noopener noreferrer" target="_blank">roadmap.sh</a>
+			{t('and add the skills you choose here.')}
 		</p>
 	</section>
 {/if}

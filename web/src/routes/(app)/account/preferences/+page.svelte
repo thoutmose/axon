@@ -416,11 +416,11 @@
 				<div class="field">
 					<label for="focus-sound-pref">{t('Focus sound')}</label>
 					<select id="focus-sound-pref" bind:value={s.focus.sound}>
-						<option value="none">None</option>
+						<option value="none">{t('No sound')}</option>
 						{#each soundOptions as g (g.group)}
-							<optgroup label={g.group}>
-								{#each g.items as [value, name] (value)}
-									<option {value}>{name}</option>
+							<optgroup label={t(g.group)}>
+								{#each g.items as [value, label] (value)}
+									<option {value}>{t(label)}</option>
 								{/each}
 							</optgroup>
 						{/each}
