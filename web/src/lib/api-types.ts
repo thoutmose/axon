@@ -2950,6 +2950,43 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/health/needs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Your health profile and the daily needs worked out from it
+		 * @description Reference intakes for a healthy adult who keeps their weight, with how each was worked out and the sources. No numbers before 18 or during pregnancy or breastfeeding. Estimates, not medical advice: check with a dietitian. Needs the health_data consent.
+		 */
+		get: operations['getDailyNeeds'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/profile': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Save the profile the daily needs are worked out from */
+		put: operations['putHealthProfile'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/health/workouts': {
 		parameters: {
 			query?: never;
@@ -4546,6 +4583,41 @@ export interface components {
 			carbs_g: number;
 			fat_g: number;
 		};
+		HealthProfile: {
+			birth_year: number;
+			/** @enum {string} */
+			sex: 'female' | 'male' | 'unspecified';
+			height_cm: number;
+			weight_kg: number;
+			/** @enum {string} */
+			activity: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+			pregnant_or_breastfeeding: boolean;
+			/** Format: date-time */
+			updated_at: string;
+		};
+		DailyNeeds: {
+			/** @description False when a professional should set the numbers. */
+			available: boolean;
+			/** @enum {string|null} */
+			reason: 'under_18' | 'pregnant' | null;
+			age: number;
+			/** @description Basal metabolic rate (Mifflin–St Jeor). */
+			bmr_kcal: number;
+			kcal: number;
+			protein_g: number;
+			fat_g: number;
+			carbs_g: number;
+			fiber_g: number;
+			water_l: number;
+			protein_g_per_kg: number;
+			/** @description How each figure is worked out, in your language. */
+			explanation: string[];
+			sources: {
+				title: string;
+				/** Format: uri */
+				url: string;
+			}[];
+		};
 		FoodEntry: {
 			/** Format: uuid */
 			id: string;
@@ -5408,6 +5480,18 @@ export interface components {
 		};
 	};
 	responses: {
+		/** @description The profile (null until saved) and the needs (null without a profile). */
+		DailyNeeds: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/json': {
+					profile: components['schemas']['HealthProfile'] | null;
+					needs: components['schemas']['DailyNeeds'] | null;
+				};
+			};
+		};
 		/** @description RFC 9457 problem document. */
 		Problem: {
 			headers: {
@@ -12096,6 +12180,54 @@ export interface operations {
 			422: components['responses']['Problem'];
 			429: components['responses']['Problem'];
 			503: components['responses']['Problem'];
+		};
+	};
+	getDailyNeeds: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			200: components['responses']['DailyNeeds'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putHealthProfile: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example 1990 */
+					birth_year: number;
+					/** @enum {string} */
+					sex: 'female' | 'male' | 'unspecified';
+					height_cm: number;
+					weight_kg: number;
+					/** @enum {string} */
+					activity: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+					pregnant_or_breastfeeding?: boolean;
+					/**
+					 * Format: date-time
+					 * @description Ignored.
+					 */
+					updated_at?: string;
+				};
+			};
+		};
+		responses: {
+			200: components['responses']['DailyNeeds'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listWorkouts: {

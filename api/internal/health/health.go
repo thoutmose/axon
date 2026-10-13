@@ -50,12 +50,15 @@ func changed(ctx context.Context, q db.Querier, userID uuid.UUID, key string) er
 	return OnChange(ctx, q, userID, key)
 }
 
-// DeleteAll removes every food entry and workout of the person.
+// DeleteAll removes every food entry, workout, and the profile of the person.
 func DeleteAll(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM food_entries WHERE user_id = $1`, userID); err != nil {
 		return err
 	}
 	if _, err := tx.Exec(ctx, `DELETE FROM workouts WHERE user_id = $1`, userID); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM health_profiles WHERE user_id = $1`, userID); err != nil {
 		return err
 	}
 	return changed(ctx, tx, userID, "health:*")

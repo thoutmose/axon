@@ -2,6 +2,21 @@ package l10n
 
 // catalog is the French for every string the API writes to people.
 var catalog = map[string]string{
+	"− 78, the middle of the female and male constants": "− 78, le milieu des constantes féminine et masculine",
+	"− 161 for women": "− 161 pour les femmes",
+	"+ 5 for men":     "+ 5 pour les hommes",
+	"Basal metabolic rate: %d kcal (Mifflin–St Jeor: 10 × weight + 6.25 × height − 5 × age %s).": "Métabolisme de base : %d kcal (Mifflin–St Jeor : 10 × poids + 6,25 × taille − 5 × âge %s).",
+	"Energy: %d kcal, the basal rate × %s for your activity.":                                    "Énergie : %d kcal, le métabolisme de base × %s pour votre activité.",
+	"Protein: %d g, %s g per kg of body weight.":                                                 "Protéines : %d g, %s g par kg de poids corporel.",
+	"Fat: %d g, 30 %% of energy (reference intake 20–35 %%).":                                    "Lipides : %d g, 30 %% de l’énergie (apport de référence 20–35 %%).",
+	"Carbohydrates: %d g, the rest of the energy (%d %%; reference intake 45–60 %%).":            "Glucides : %d g, le reste de l’énergie (%d %% ; apport de référence 45–60 %%).",
+	"Fibre: 25 g (adequate intake for adults).":                                                  "Fibres : 25 g (apport satisfaisant pour les adultes).",
+	"Water: %s L a day from drinks and food (adequate intake).":                                  "Eau : %s L par jour, boissons et aliments compris (apport satisfaisant).",
+	"Give a birth year that makes you 1 to 120 years old.":                                       "Donnez une année de naissance qui vous donne de 1 à 120 ans.",
+	"Sex is female, male, or unspecified.":                                                       "Le sexe vaut female, male ou unspecified.",
+	"Height is 100 to 250 cm.":                                                                   "La taille va de 100 à 250 cm.",
+	"Weight is 25 to 350 kg.":                                                                    "Le poids va de 25 à 350 kg.",
+	"Activity is sedentary, light, moderate, active, or very_active.":                            "L’activité vaut sedentary, light, moderate, active ou very_active.",
 	"%d days":         "%d jours",
 	"Active projects": "Projets actifs",
 	"Cards to review": "Cartes à revoir",

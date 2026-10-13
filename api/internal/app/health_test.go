@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -199,5 +200,42 @@ func TestHealthNeedsConsentAndLogsFoodAndTraining(t *testing.T) {
 	bob.mustDo(204, "DELETE", "/v1/health/data", nil)
 	if out := bob.mustDo(200, "GET", "/v1/health/food?date=2026-10-12", nil); bytes.Contains(out, []byte("Pear")) {
 		t.Fatal("delete all kept data")
+	}
+}
+
+// Daily needs (EP-88): worked out from a profile kept under the health
+// consent, explained, never given to a minor, and deleted with the consent.
+func TestDailyNeedsFromAProfile(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	alice.mustDo(403, "GET", "/v1/health/needs", nil)
+	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))
+	if out := alice.mustDo(200, "GET", "/v1/health/needs", nil); string(out) != `{"needs":null,"profile":null}`+"\n" {
+		t.Fatalf("empty = %s", out)
+	}
+	year := time.Now().Year()
+	body := fmt.Sprintf(`{"birth_year":%d,"sex":"male","height_cm":180,"weight_kg":80,"activity":"moderate"}`, year-30)
+	var got struct {
+		Needs struct {
+			Available   bool     `json:"available"`
+			Kcal        int      `json:"kcal"`
+			ProteinG    int      `json:"protein_g"`
+			Explanation []string `json:"explanation"`
+		} `json:"needs"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "PUT", "/v1/health/profile", []byte(body)), &got)
+	if !got.Needs.Available || got.Needs.Kcal != 2760 || got.Needs.ProteinG != 96 || len(got.Needs.Explanation) != 7 {
+		t.Fatalf("needs = %+v", got.Needs)
+	}
+	alice.mustDo(422, "PUT", "/v1/health/profile", []byte(`{"birth_year":1990,"sex":"male","height_cm":180,"weight_kg":900,"activity":"moderate"}`))
+	teen := fmt.Sprintf(`{"birth_year":%d,"sex":"female","height_cm":160,"weight_kg":50,"activity":"light"}`, year-15)
+	if out := alice.mustDo(200, "PUT", "/v1/health/profile", []byte(teen)); !strings.Contains(string(out), `"reason":"under_18"`) || !strings.Contains(string(out), `"kcal":0`) {
+		t.Fatalf("teen = %s", out)
+	}
+	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":false}`))
+	alice.mustDo(204, "PUT", "/v1/me/consents/health_data", []byte(`{"granted":true}`))
+	if out := alice.mustDo(200, "GET", "/v1/health/needs", nil); !strings.Contains(string(out), `"profile":null`) {
+		t.Fatalf("profile survived withdrawal: %s", out)
 	}
 }

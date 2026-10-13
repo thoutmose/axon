@@ -136,6 +136,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-85 | Focus and Roadmaps in French | IS-31.06 says a page is translated when next touched: Focus, Roadmaps, the skills radar, and the focus sounds in Preferences now follow the language setting. | SHOULD | 1 pt | EP-31, EP-82, EP-83 | Done |
 | EP-86 | French everywhere in the web app | The rest of IS-31.06: all 86 remaining components in French (about 1,800 strings), dates in the interface's language, and two tests that keep it so. | SHOULD | 8 pts | EP-85 | Done |
 | EP-87 | The API speaks French | Everything the API writes for people follows `Accept-Language`: 480 French messages (errors, explanations, insights, badges, consents, media reasons) and the agents' introductions, with a test that parses the code and fails on any message without French. | SHOULD | 5 pts | EP-86 | Done |
+| EP-88 | Daily needs | Owner request: the macronutrients needed to be healthy, from activity, age, sex, and size, with a warning to check with a nutritionist. Reference intakes for keeping one's weight, worked out and explained from published references; none before 18 or in pregnancy; no weight-loss targets (ADR 0028). | SHOULD | 3 pts | EP-18 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1759,6 +1760,15 @@ Cross-cutting matrix:
 - [x] **EP-87/IS-87.03** · 1 pt · SHOULD — `catalog_test.go` parses every Go file and fails on a message given to `httpx.Problem`, `ValidationError`, or `l10n.T`/`Tr`/`Mark` without French, on a catalog entry nothing uses, and on a French format whose verbs differ from the English. The French catalog is excluded from the English spell-checker and from gosec's credential guess (a message about tokens).
 
 **Tests.** `l10n` unit tests (negotiation, middleware, catalog, numbers, dates); `TestProblemSpeaksTheResponseLanguage`; trend sentences in French; `TestTheAPISpeaksFrenchWhenAsked` against PostgreSQL (a problem, insights, and consents in French, and in English for `en-GB`); `TestEverySkillSpeaksFrench`; the full Go suite and the 66 e2e tests. A Firefox walk through 42 pages in French leaves only the demo's sample data and the tool descriptions in English.
+
+### EP-88 — Daily needs
+
+**Goal.** Owner request: "following science and nutrition, define the amount of macronutrients needed to be healthy following activities, age, gender, size", with a warning to check with a nutritionist. Until now Axon set no numbers at all (EP-44's coaches must never set calorie targets).
+
+- [x] **EP-88/IS-88.01** · 2 pts · SHOULD — `health.Calc`: Mifflin–St Jeor basal rate × activity factor (1.2 to 1.9); protein from EFSA's 0.83 g/kg to 1.6 g/kg with hard training (ISSN), at least 1.0 g/kg from 65 (ESPEN); fat 30 % of energy, carbohydrates the rest; fibre 25 g and water 2.0–2.5 L (EFSA). Each figure comes with how it was worked out, in the person's language, and the sources. No numbers before 18 or during pregnancy or breastfeeding; no weight-loss or gain target (ADR 0028). Migration `00048` keeps the profile under the `health_data` consent: exported with the health data and deleted when the consent is withdrawn. `GET /v1/health/needs`, `PUT /v1/health/profile`.
+- [x] **EP-88/IS-88.02** · 1 pt · SHOULD — Health shows "Your daily needs": the warning first, always; a short profile form ("Prefer not to say" for sex takes the middle of the two equations); the needs, the day's log against energy, protein, carbohydrates, and fat (over a reference is said in words, not in red), and "How is this worked out?" with the references.
+
+**Tests.** `needs_test.go`, written first: two worked examples computed by hand, no sex given, older adults' protein, no numbers for a minor or in pregnancy, French explanations, profile validation. `TestDailyNeedsFromAProfile` against PostgreSQL (consent required, a minor gets no numbers, the profile is deleted with the consent). The e2e health test fills the profile and finds the warning, 2,760 kcal, and the energy bar.
 
 ### EP-20 — Analytics & insights
 
