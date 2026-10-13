@@ -1,3 +1,4 @@
+import { t } from './i18n.svelte';
 import { api, type Schemas } from './api';
 import { daysBetween, formatDate } from './dates';
 
@@ -21,9 +22,9 @@ export function capture(title: string, extra: TaskFields = {}): Promise<Task> {
 /** Human date relative to today ("Today", "Tomorrow", "Mon 12 Oct"). */
 export function relativeDay(iso: string, today: string): string {
 	const diff = daysBetween(today, iso);
-	if (diff === 0) return 'Today';
-	if (diff === 1) return 'Tomorrow';
-	if (diff === -1) return 'Yesterday';
+	if (diff === 0) return t('Today');
+	if (diff === 1) return t('Tomorrow');
+	if (diff === -1) return t('Yesterday');
 	return formatDate(iso, {
 		weekday: 'short',
 		day: 'numeric',

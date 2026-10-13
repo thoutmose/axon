@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -50,7 +51,7 @@
 						.filter(Boolean)
 				}
 			});
-			toast('Saved.');
+			toast(t('Saved.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		}
@@ -60,7 +61,7 @@
 		try {
 			await api(`/v1/palaces/${id}`, { method: 'DELETE' });
 			const gone = id;
-			deleted('Palace deleted.', gone, () => goto(`/learn/palaces/${gone}`));
+			deleted(t('Palace deleted.'), gone, () => goto(`/learn/palaces/${gone}`));
 			await goto('/learn/palaces');
 		} catch (err) {
 			toast(message(err), 'error');
@@ -73,24 +74,26 @@
 	}
 </script>
 
-<svelte:head><title>{palace?.title ?? 'Memory palace'} · Axon</title></svelte:head>
+<svelte:head><title>{palace?.title ?? t('Memory palace')} · Axon</title></svelte:head>
 
-<p class="crumbs"><a href="/learn/palaces">← Memory palaces</a></p>
-<h1>{palace?.title ?? 'Memory palace'}</h1>
+<p class="crumbs"><a href="/learn/palaces">{t('← Memory palaces')}</a></p>
+<h1>{palace?.title ?? t('Memory palace')}</h1>
 <LearnTabs />
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !palace}
-	<Status kind="loading" message="Loading the palace…" />
+	<Status kind="loading" message={t('Loading the palace…')} />
 {:else if walking && stops.length}
 	{@const i = stops[step]}
 	<section class="card glass walk" aria-live="polite">
-		<p class="muted small">Place {step + 1} of {stops.length}</p>
+		<p class="muted small">
+			{t('Place {value} of {length}', { value: step + 1, length: stops.length })}
+		</p>
 		<h2>{palace.loci[i]}</h2>
 		{#if !shown}
-			<p>What did you leave here? Picture it, say it, then look.</p>
-			<Button onclick={() => (shown = true)}>Show</Button>
+			<p>{t('What did you leave here? Picture it, say it, then look.')}</p>
+			<Button onclick={() => (shown = true)}>{t('Show')}</Button>
 		{:else}
 			<ul class="placed">
 				{#each at(i) as c (c.id)}
@@ -99,21 +102,23 @@
 						<p>{c.back}</p>
 						{#if c.has_image}<img
 								src="/api/v1/flashcards/{c.id}/image"
-								alt="Illustration for: {c.front}"
+								alt={t('Illustration for: {front}', { front: c.front })}
 							/>{/if}
-						{#if c.mnemonic}<p class="muted">Picture it: {c.mnemonic}</p>{/if}
+						{#if c.mnemonic}<p class="muted">
+								{t('Picture it: {mnemonic}', { mnemonic: c.mnemonic })}
+							</p>{/if}
 					</li>
 				{/each}
 			</ul>
 		{/if}
 		<div class="row">
 			<Button variant="secondary" disabled={step === 0} onclick={() => go(-1)}
-				>Previous place</Button
+				>{t('Previous place')}</Button
 			>
 			{#if step < stops.length - 1}
-				<Button onclick={() => go(1)}>Next place</Button>
+				<Button onclick={() => go(1)}>{t('Next place')}</Button>
 			{:else}
-				<Button onclick={() => (walking = false)}>End the walk</Button>
+				<Button onclick={() => (walking = false)}>{t('End the walk')}</Button>
 			{/if}
 		</div>
 	</section>
@@ -126,14 +131,14 @@
 				walking = true;
 				step = 0;
 				shown = false;
-			}}>Walk the palace</Button
+			}}>{t('Walk the palace')}</Button
 		>
-		<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+		<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 	</div>
 	{#if !stops.length}
 		<p class="muted">
-			No card is placed here yet. Open a card on the <a href="/cards">Flashcards</a> page, choose this
-			palace and a place, and give it a vivid memory image.
+			{t('No card is placed here yet. Open a card on the')} <a href="/cards">{t('Flashcards')}</a>
+			{t('page, choose this palace and a place, and give it a vivid memory image.')}
 		</p>
 	{/if}
 
@@ -149,21 +154,21 @@
 	</ol>
 
 	<section class="card glass" aria-labelledby="edit-title">
-		<h2 id="edit-title">Places</h2>
+		<h2 id="edit-title">{t('Places')}</h2>
 		<form onsubmit={saveLoci}>
-			<label for="loci">One per line, in walking order</label>
+			<label for="loci">{t('One per line, in walking order')}</label>
 			<textarea id="loci" rows="8" bind:value={loci}></textarea>
-			<p class="muted small">Removing a place takes the cards there out of the palace.</p>
-			<Button type="submit" variant="secondary">Save places</Button>
+			<p class="muted small">{t('Removing a place takes the cards there out of the palace.')}</p>
+			<Button type="submit" variant="secondary">{t('Save places')}</Button>
 		</form>
 	</section>
 {/if}
 
-<Dialog bind:open={confirmDelete} title="Delete this palace?">
-	<p>Its cards are kept; they just leave the palace.</p>
+<Dialog bind:open={confirmDelete} title={t('Delete this palace?')}>
+	<p>{t('Its cards are kept; they just leave the palace.')}</p>
 	<div class="row">
-		<Button variant="danger" onclick={remove}>Delete</Button>
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
+		<Button variant="danger" onclick={remove}>{t('Delete')}</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
 	</div>
 </Dialog>
 

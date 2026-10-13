@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { monthLabel } from '$lib/calendar';
 	import { formatCents } from '$lib/money';
@@ -25,17 +26,17 @@
 	});
 </script>
 
-<svelte:head><title>Reports · Budget · Axon</title></svelte:head>
+<svelte:head><title>{t('Reports · Budget · Axon')}</title></svelte:head>
 
 <div class="row">
-	<h1>Reports</h1>
+	<h1>{t('Reports')}</h1>
 	<label class="row small"
-		>Period
+		>{t('Period')}
 		<select bind:value={months}>
-			<option value={3}>3 months</option>
-			<option value={6}>6 months</option>
-			<option value={12}>12 months</option>
-			<option value={24}>24 months</option>
+			<option value={3}>{t('3 months')}</option>
+			<option value={6}>{t('6 months')}</option>
+			<option value={12}>{t('12 months')}</option>
+			<option value={24}>{t('24 months')}</option>
 		</select></label
 	>
 </div>
@@ -43,27 +44,32 @@
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !report}
-	<Status kind="loading" message="Working it out…" />
+	<Status kind="loading" message={t('Working it out…')} />
 {:else}
 	<section class="card" aria-labelledby="totals">
 		<h2 id="totals">
-			{report.from} to {report.to}: in {money(income)}, out {money(outgo)}, saved
+			{t('{from} to {to}: in {value}, out {value2}, saved', {
+				from: report.from,
+				to: report.to,
+				value: money(income),
+				value2: money(outgo)
+			})}
 			<span class:bad={income - outgo < 0} class:ok={income - outgo > 0}
 				>{money(income - outgo)}</span
 			>{income ? ` (${Math.round(((income - outgo) / income) * 100)} %)` : ''}
 		</h2>
-		<p class="small">Net worth today: <strong>{money(report.net_worth_cents)}</strong></p>
+		<p class="small">{t('Net worth today:')} <strong>{money(report.net_worth_cents)}</strong></p>
 	</section>
 
 	<section class="card" aria-labelledby="by-month">
-		<h2 id="by-month">Income and spending by month</h2>
+		<h2 id="by-month">{t('Income and spending by month')}</h2>
 		<table>
 			<thead
 				><tr
-					><th scope="col">Month</th><th scope="col">Income and spending</th><th
+					><th scope="col">{t('Month')}</th><th scope="col">{t('Income and spending')}</th><th
 						scope="col"
-						class="num">In</th
-					><th scope="col" class="num">Out</th></tr
+						class="num">{t('In')}</th
+					><th scope="col" class="num">{t('Out')}</th></tr
 				></thead
 			>
 			<tbody>
@@ -83,9 +89,9 @@
 	</section>
 
 	<section class="card" aria-labelledby="by-category">
-		<h2 id="by-category">Where the money went</h2>
+		<h2 id="by-category">{t('Where the money went')}</h2>
 		{#if expenses.length === 0}
-			<p class="muted">No spending in this period.</p>
+			<p class="muted">{t('No spending in this period.')}</p>
 		{:else}
 			<table>
 				<tbody>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
@@ -12,15 +13,15 @@
 	let error = $state('');
 	let editing = $state<string | null>(null);
 
-	const statusNames: Record<string, string> = {
-		inbox: 'Inbox',
-		next: 'Next action',
-		doing: 'In progress',
-		waiting: 'Waiting for',
-		someday: 'Someday / maybe',
-		done: 'Done',
-		cancelled: 'Cancelled'
-	};
+	const statusNames: Record<string, string> = $derived({
+		inbox: t('Inbox'),
+		next: t('Next action'),
+		doing: t('In progress'),
+		waiting: t('Waiting for'),
+		someday: t('Someday / maybe'),
+		done: t('Done'),
+		cancelled: t('Cancelled')
+	});
 
 	async function load() {
 		error = '';
@@ -38,29 +39,29 @@
 	});
 </script>
 
-<svelte:head><title>{task?.title ?? 'Task'} · Axon</title></svelte:head>
+<svelte:head><title>{task?.title ?? t('Task')} · Axon</title></svelte:head>
 
-<p class="crumbs"><a href="/tasks">← Tasks</a></p>
+<p class="crumbs"><a href="/tasks">{t('← Tasks')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !task}
-	<Status kind="loading" message="Loading task…" />
+	<Status kind="loading" message={t('Loading task…')} />
 {:else}
 	<div class="head">
 		<h1>{task.title}</h1>
-		<Button variant="secondary" onclick={() => (editing = task?.id ?? null)}>Edit</Button>
+		<Button variant="secondary" onclick={() => (editing = task?.id ?? null)}>{t('Edit')}</Button>
 	</div>
 	<dl class="facts">
-		<dt>Status</dt>
+		<dt>{t('Status')}</dt>
 		<dd>{statusNames[task.status]}</dd>
-		{#if task.context}<dt>Context</dt>
+		{#if task.context}<dt>{t('Context')}</dt>
 			<dd>{task.context}</dd>{/if}
-		{#if task.scheduled_on}<dt>Do on</dt>
+		{#if task.scheduled_on}<dt>{t('Do on')}</dt>
 			<dd>{task.scheduled_on}</dd>{/if}
-		{#if task.due_on}<dt>Due</dt>
+		{#if task.due_on}<dt>{t('Due')}</dt>
 			<dd>{task.due_on}</dd>{/if}
-		{#if task.recurrence}<dt>Repeats</dt>
+		{#if task.recurrence}<dt>{t('Repeats')}</dt>
 			<dd>{task.recurrence}</dd>{/if}
 	</dl>
 	{#if task.notes}<p class="notes">{task.notes}</p>{/if}

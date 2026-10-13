@@ -22,20 +22,20 @@
 	};
 
 	const meals = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
-	const mealName: Record<string, string> = {
-		breakfast: 'Breakfast',
-		lunch: 'Lunch',
-		dinner: 'Dinner',
-		snack: 'Snack'
-	};
+	const mealName: Record<string, string> = $derived({
+		breakfast: t('Breakfast'),
+		lunch: t('Lunch'),
+		dinner: t('Dinner'),
+		snack: t('Snack')
+	});
 	const kinds = ['strength', 'cardio', 'mobility', 'sport', 'other'] as const;
-	const kindName: Record<string, string> = {
-		strength: 'Strength',
-		cardio: 'Cardio',
-		mobility: 'Mobility',
-		sport: 'Sport',
-		other: 'Other'
-	};
+	const kindName: Record<string, string> = $derived({
+		strength: t('Strength'),
+		cardio: t('Cardio'),
+		mobility: t('Mobility'),
+		sport: t('Sport'),
+		other: t('Other')
+	});
 
 	const tab = $derived(page.url.searchParams.get('tab') === 'training' ? 'training' : 'food');
 	let status = $state<{ consented: boolean; lookups_consented: boolean; usda: boolean } | null>(
@@ -278,7 +278,7 @@
 			<section class="card" aria-labelledby="totals">
 				<h2 id="totals">{t('This day')}</h2>
 				<p class="kpis">
-					<span><strong>{day.totals.kcal}</strong> kcal</span>
+					<span><strong>{day.totals.kcal}</strong> {t('kcal')}</span>
 					<span><strong>{day.totals.protein_g}</strong> g {t('protein')}</span>
 					<span><strong>{day.totals.carbs_g}</strong> g {t('carbohydrates')}</span>
 					<span><strong>{day.totals.fat_g}</strong> g {t('fat')}</span>
@@ -291,7 +291,9 @@
 								<span class="bar" style:height="{(d.kcal / weekMax) * 100}%" aria-hidden="true"
 								></span>
 								<span class="small">{d.date.slice(5)}</span>
-								<span class="visually-hidden">{d.date}: {d.kcal} kcal</span>
+								<span class="visually-hidden"
+									>{t('{date}: {kcal} kcal', { date: d.date, kcal: d.kcal })}</span
+								>
 							</li>
 						{/each}
 					</ol>
@@ -307,9 +309,7 @@
 							{#each list as e (e.id)}
 								<li>
 									<span
-										>{e.name}{e.grams ? ` · ${e.grams} g` : ''}{e.kcal != null
-											? ` · ${e.kcal} kcal`
-											: ''}</span
+										>{`${e.name}${e.grams ? ` · ${e.grams} g` : ''}${e.kcal != null ? ` · ${e.kcal} kcal` : ''}`}</span
 									>
 									<button
 										class="link"
@@ -351,7 +351,7 @@
 					<ul class="entries" aria-label={t('Foods found')}>
 						{#each foods as f (f.id)}
 							<li>
-								<span>{f.name}{f.brand ? ` (${f.brand})` : ''} · {f.kcal} kcal / 100 g</span>
+								<span>{`${f.name}${f.brand ? ` (${f.brand})` : ''} · ${f.kcal} kcal / 100 g`}</span>
 								<Button
 									variant="secondary"
 									onclick={() => pick(f)}
@@ -385,7 +385,7 @@
 				<label class="wide"
 					>{t('What you ate')} <input bind:value={entry.name} maxlength="300" required /></label
 				>
-				<label>kcal <input inputmode="decimal" bind:value={entry.kcal} /></label>
+				<label>{t('kcal')} <input inputmode="decimal" bind:value={entry.kcal} /></label>
 				<label>{t('Protein')} (g) <input inputmode="decimal" bind:value={entry.protein_g} /></label>
 				<label
 					>{t('Carbohydrates')} (g) <input inputmode="decimal" bind:value={entry.carbs_g} /></label
@@ -476,9 +476,9 @@
 
 	<footer class="attribution small muted">
 		<p>
-			{t('Food data from')} <a href="https://world.openfoodfacts.org/">Open Food Facts</a>
-			(ODbL){#if status.usda}
-				{' '}{t('and')} <a href="https://fdc.nal.usda.gov/">USDA FoodData Central</a>{/if}.
+			{t('Food data from')} <a href="https://world.openfoodfacts.org/">{t('Open Food Facts')}</a>
+			{t('(ODbL)')}{#if status.usda}
+				{' '}{t('and')} <a href="https://fdc.nal.usda.gov/">{t('USDA FoodData Central')}</a>{/if}.
 			{t('Axon gives no medical or dietary advice.')}
 		</p>
 		<Button variant="danger" onclick={deleteAll}>{t('Delete all my health data')}</Button>

@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { t } from './i18n.svelte';
+	import { t } from '$lib/i18n.svelte';
 	import { actions, goTo, vimKeys, type Shortcut } from './shortcuts';
 	import Dialog from './ui/Dialog.svelte';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
-	const groups: [string, Shortcut[]][] = [
-		['Go to', goTo],
-		['Actions', actions],
-		['Vim mode in the note editor', vimKeys]
-	];
+	const groups: [string, Shortcut[]][] = $derived([
+		[t('Go to'), goTo],
+		[t('Actions'), actions],
+		[t('Vim mode in the note editor'), vimKeys]
+	]);
 </script>
 
 <Dialog bind:open title={t('Keyboard shortcuts')}>

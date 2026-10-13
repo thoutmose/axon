@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { localDate } from '$lib/dates';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -23,7 +24,7 @@
 	let busy = $state('');
 
 	const body = () => [text, url].filter(Boolean).join('\n\n');
-	const heading = () => title || text.split('\n')[0].slice(0, 120) || url || 'Shared';
+	const heading = () => title || text.split('\n')[0].slice(0, 120) || url || t('Shared');
 
 	async function asNote() {
 		busy = 'note';
@@ -32,12 +33,12 @@
 		try {
 			const made = await api<Note>('/v1/notes', { method: 'POST', body: n });
 			refreshNotes().catch(() => {});
-			toast('Saved as a fleeting note.');
+			toast(t('Saved as a fleeting note.'));
 			await goto(`/notes/${made.id}`);
 		} catch (err) {
 			if (unreachable(err)) {
 				keep({ kind: 'note', title: heading(), ...n });
-				toast('No connection: kept on this device, sent when you are back online.');
+				toast(t('No connection: kept on this device, sent when you are back online.'));
 				await goto('/today');
 			} else toast(message(err), 'error');
 		} finally {
@@ -49,12 +50,12 @@
 		busy = 'task';
 		try {
 			await capture(heading(), { notes: body() });
-			toast('Captured to your inbox.');
+			toast(t('Captured to your inbox.'));
 			await goto('/tasks?view=inbox');
 		} catch (err) {
 			if (unreachable(err)) {
 				keep({ kind: 'task', title: heading() });
-				toast('No connection: kept on this device, sent when you are back online.');
+				toast(t('No connection: kept on this device, sent when you are back online.'));
 				await goto('/today');
 			} else toast(message(err), 'error');
 		} finally {
@@ -88,7 +89,7 @@
 				body: { path: `Zettel/literature/${slug}-${Date.now().toString(36)}.md`, content }
 			});
 			refreshNotes().catch(() => {});
-			toast('Saved the page as a literature note.');
+			toast(t('Saved the page as a literature note.'));
 			await goto(`/notes/${made.id}?edit=1`);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -102,46 +103,52 @@
 	);
 </script>
 
-<svelte:head><title>Save to Axon</title></svelte:head>
+<svelte:head><title>{t('Save to Axon')}</title></svelte:head>
 
-<h1>Save to Axon</h1>
+<h1>{t('Save to Axon')}</h1>
 
 <form class="card" onsubmit={(e) => e.preventDefault()}>
-	<TextField id="share-title" label="Title" bind:value={title} maxlength={300} />
+	<TextField id="share-title" label={t('Title')} bind:value={title} maxlength={300} />
 	<div class="field">
-		<label for="share-text">Text</label>
+		<label for="share-text">{t('Text')}</label>
 		<textarea id="share-text" rows="4" bind:value={text}></textarea>
 	</div>
-	<TextField id="share-url" label="Link" bind:value={url} maxlength={2000} />
+	<TextField id="share-url" label={t('Link')} bind:value={url} maxlength={2000} />
 	<div class="row">
 		<Button onclick={asNote} busy={busy === 'note'} disabled={!title && !text && !url}
-			>Save as a note</Button
+			>{t('Save as a note')}</Button
 		>
 		<Button
 			variant="secondary"
 			onclick={asTask}
 			busy={busy === 'task'}
-			disabled={!title && !text && !url}>Save as a task</Button
+			disabled={!title && !text && !url}>{t('Save as a task')}</Button
 		>
 		{#if url}
 			<Button variant="secondary" onclick={asLiterature} busy={busy === 'page'}
-				>Save the page's text as a literature note</Button
+				>{t("Save the page's text as a literature note")}</Button
 			>
 		{/if}
 	</div>
 </form>
 
 <section class="card" aria-labelledby="how-title">
-	<h2 id="how-title">Save from anywhere</h2>
+	<h2 id="how-title">{t('Save from anywhere')}</h2>
 	<p>
-		<strong>On a phone:</strong> install Axon (Account → Preferences → App), then use your browser's
-		or any app's <em>Share</em> button and choose Axon.
+		<strong>{t('On a phone:')}</strong>
+		{t("install Axon (Account → Preferences → App), then use your browser's or any app's")}
+		<em>{t('Share')}</em>
+		{t('button and choose Axon.')}
 	</p>
 	<p>
-		<strong>On a computer:</strong> drag this button to your bookmarks bar, then click it on any
-		page (select some text first to save it too):
+		<strong>{t('On a computer:')}</strong>
+		{t(
+			'drag this button to your bookmarks bar, then click it on any page (select some text first to save it too):'
+		)}
 		<!-- A bookmarklet runs on the page you are reading, not here. -->
-		<a class="bookmarklet" href={bookmarklet} onclick={(e) => e.preventDefault()}>Save to Axon</a>
+		<a class="bookmarklet" href={bookmarklet} onclick={(e) => e.preventDefault()}
+			>{t('Save to Axon')}</a
+		>
 	</p>
 </section>
 

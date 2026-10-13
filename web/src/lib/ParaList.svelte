@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
@@ -52,17 +53,19 @@
 	);
 </script>
 
-<h1>{kind.title}</h1>
-<p class="muted hint">{kind.intro}</p>
+<h1>{t(kind.title)}</h1>
+<p class="muted hint">{t(kind.intro)}</p>
 
-<nav aria-label="{kind.title} status" class="tabs">
-	<a href="?status=active" aria-current={status === 'active' ? 'page' : undefined}>Active</a>
-	<a href="?status=archived" aria-current={status === 'archived' ? 'page' : undefined}>Archived</a>
+<nav aria-label={t('{title} status', { title: t(kind.title) })} class="tabs">
+	<a href="?status=active" aria-current={status === 'active' ? 'page' : undefined}>{t('Active')}</a>
+	<a href="?status=archived" aria-current={status === 'archived' ? 'page' : undefined}
+		>{t('Archived')}</a
+	>
 </nav>
 
 {#if status === 'active'}
 	<form class="quick" onsubmit={submit}>
-		<label for="new-{kind.type}" class="visually-hidden">New {kind.one}</label>
+		<label for="new-{kind.type}" class="visually-hidden">{t('New {one}', { one: kind.one })}</label>
 		<input
 			id="new-{kind.type}"
 			placeholder={kind.placeholder}
@@ -71,13 +74,13 @@
 			required
 			autocomplete="off"
 		/>
-		<Button type="submit" variant="secondary">Create</Button>
+		<Button type="submit" variant="secondary">{t('Create')}</Button>
 	</form>
 	{#if items && unused.length}
-		<div class="templates" role="group" aria-label="Start from a template">
-			<span class="muted small">Templates:</span>
-			{#each unused as t (t.title)}
-				<button onclick={() => create(t)} title={t.description}>＋ {t.title}</button>
+		<div class="templates" role="group" aria-label={t('Start from a template')}>
+			<span class="muted small">{t('Templates:')}</span>
+			{#each unused as tpl (tpl.title)}
+				<button onclick={() => create(tpl)} title={tpl.description}>＋ {tpl.title}</button>
 			{/each}
 		</div>
 	{/if}
@@ -86,9 +89,12 @@
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !items}
-	<Status kind="loading" message="Loading {kind.path}…" />
+	<Status kind="loading" message={t('Loading {path}…', { path: t(kind.path) })} />
 {:else if items.length === 0}
-	<Status kind="empty" message={status === 'active' ? kind.empty : `No archived ${kind.path}.`} />
+	<Status
+		kind="empty"
+		message={status === 'active' ? t(kind.empty) : t('No archived {path}.', { path: t(kind.path) })}
+	/>
 {:else}
 	<ul class="grid">
 		{#each items as it (it.id)}

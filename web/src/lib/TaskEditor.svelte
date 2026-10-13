@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from './undo';
 	import { api, apiResponse, message } from './api';
 	import { recurrencePresets, type Task } from './tasks';
@@ -80,7 +81,7 @@
 					recurrence
 				}
 			});
-			toast('Saved.');
+			toast(t('Saved.'));
 			open = false;
 			onchange();
 		} catch (err) {
@@ -95,7 +96,7 @@
 		try {
 			await api(`/v1/tasks/${id}`, { method: 'DELETE' });
 			const gone = id!;
-			deleted('Task deleted.', gone, () => onchange());
+			deleted(t('Task deleted.'), gone, () => onchange());
 			open = false;
 			onchange();
 		} catch (err) {
@@ -106,60 +107,76 @@
 	}
 </script>
 
-<Dialog bind:open title="Edit task">
+<Dialog bind:open title={t('Edit task')}>
 	<form onsubmit={save}>
-		<TextField id="task-title" label="Title" bind:value={form.title} maxlength={500} required />
+		<TextField
+			id="task-title"
+			label={t('Title')}
+			bind:value={form.title}
+			maxlength={500}
+			required
+		/>
 		<div class="field">
-			<label for="task-notes">Notes</label>
+			<label for="task-notes">{t('Notes')}</label>
 			<textarea id="task-notes" rows="3" bind:value={form.notes}></textarea>
 		</div>
 		<div class="grid">
 			<div class="field">
-				<label for="task-status">Status</label>
+				<label for="task-status">{t('Status')}</label>
 				<select id="task-status" bind:value={form.status}>
-					<option value="inbox">Inbox</option>
-					<option value="next">Next action</option>
-					<option value="doing">In progress</option>
-					<option value="waiting">Waiting for</option>
-					<option value="someday">Someday / maybe</option>
-					<option value="done">Done</option>
-					<option value="cancelled">Cancelled</option>
+					<option value="inbox">{t('Inbox')}</option>
+					<option value="next">{t('Next action')}</option>
+					<option value="doing">{t('In progress')}</option>
+					<option value="waiting">{t('Waiting for')}</option>
+					<option value="someday">{t('Someday / maybe')}</option>
+					<option value="done">{t('Done')}</option>
+					<option value="cancelled">{t('Cancelled')}</option>
 				</select>
 			</div>
-			<TextField id="task-context" label="Context" placeholder="@home" bind:value={form.context} />
-			<TextField id="task-scheduled" label="Do on" type="date" bind:value={form.scheduled_on} />
-			<TextField id="task-due" label="Due" type="date" bind:value={form.due_on} />
+			<TextField
+				id="task-context"
+				label={t('Context')}
+				placeholder={t('@home')}
+				bind:value={form.context}
+			/>
+			<TextField
+				id="task-scheduled"
+				label={t('Do on')}
+				type="date"
+				bind:value={form.scheduled_on}
+			/>
+			<TextField id="task-due" label={t('Due')} type="date" bind:value={form.due_on} />
 			<TextField
 				id="task-remind"
-				label="Remind me at"
+				label={t('Remind me at')}
 				type="datetime-local"
-				hint="A notification on your devices, and an email if set up, at that time."
+				hint={t('A notification on your devices, and an email if set up, at that time.')}
 				bind:value={form.remind_at}
 			/>
 		</div>
 		<div class="field">
-			<label for="task-repeat">Repeat</label>
+			<label for="task-repeat">{t('Repeat')}</label>
 			<select id="task-repeat" bind:value={form.repeat}>
-				{#each recurrencePresets as p (p.label)}<option value={p.rule ?? ''}>{p.label}</option
+				{#each recurrencePresets as p (p.label)}<option value={p.rule ?? ''}>{t(p.label)}</option
 					>{/each}
-				<option value="custom">Custom rule…</option>
+				<option value="custom">{t('Custom rule…')}</option>
 			</select>
 		</div>
 		{#if form.repeat === 'custom'}
 			<TextField
 				id="task-rule"
-				label="RRULE"
-				hint="For example FREQ=WEEKLY;BYDAY=MO,TH or FREQ=MONTHLY;BYMONTHDAY=-1"
+				label={t('RRULE')}
+				hint={t('For example FREQ=WEEKLY;BYDAY=MO,TH or FREQ=MONTHLY;BYMONTHDAY=-1')}
 				bind:value={customRule}
 				required
 			/>
 		{/if}
 		<div class="actions">
-			<Button variant="danger" onclick={remove} {busy}>Delete</Button>
-			<a class="open" href="/tasks/{id}">Open page and connections</a>
+			<Button variant="danger" onclick={remove} {busy}>{t('Delete')}</Button>
+			<a class="open" href="/tasks/{id}">{t('Open page and connections')}</a>
 			<span class="spacer"></span>
-			<Button variant="secondary" onclick={() => (open = false)}>Cancel</Button>
-			<Button type="submit" {busy}>Save</Button>
+			<Button variant="secondary" onclick={() => (open = false)}>{t('Cancel')}</Button>
+			<Button type="submit" {busy}>{t('Save')}</Button>
 		</div>
 	</form>
 </Dialog>

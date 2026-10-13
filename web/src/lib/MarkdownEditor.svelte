@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { tick } from 'svelte';
 	import * as edit from './markdownEdit';
 	import type { Edit } from './markdownEdit';
@@ -10,7 +11,7 @@
 	let {
 		value = $bindable(''),
 		id,
-		label = 'Markdown',
+		label = t('Markdown'),
 		rows = 20,
 		vim = false,
 		pictures = false,
@@ -35,7 +36,7 @@
 		const usable = files.filter(canUpload);
 		if (!usable.length) {
 			if (files.length)
-				uploadError = 'Only PNG, JPEG, GIF, WebP, SVG pictures and PDFs can go in a note.';
+				uploadError = t('Only PNG, JPEG, GIF, WebP, SVG pictures and PDFs can go in a note.');
 			return;
 		}
 		uploadError = '';
@@ -122,24 +123,29 @@
 	const prefixLines = (prefix: string) => apply((t) => edit.prefixLines(t, prefix));
 	const insert = (text: string) => apply((t) => edit.insert(t, text));
 
-	const tools: { label: string; keys?: string; icon: string; run: () => void }[] = [
-		{ label: 'Bold', keys: 'Ctrl+B', icon: 'B', run: () => wrap('**') },
-		{ label: 'Italic', keys: 'Ctrl+I', icon: 'I', run: () => wrap('*') },
-		{ label: 'Strikethrough', keys: 'Ctrl+Shift+X', icon: 'S', run: () => wrap('~~') },
-		{ label: 'Highlight', keys: 'Ctrl+Shift+H', icon: 'H̲', run: () => wrap('==') },
-		{ label: 'Heading', icon: '#', run: () => prefixLines('## ') },
-		{ label: 'Bulleted list', icon: '•', run: () => prefixLines('- ') },
-		{ label: 'Checklist', icon: '☐', run: () => prefixLines('- [ ] ') },
-		{ label: 'Quote', icon: '❝', run: () => prefixLines('> ') },
-		{ label: 'Code', keys: 'Ctrl+E', icon: '</>', run: () => wrap('`') },
-		{ label: 'Link to a note', keys: 'Ctrl+L', icon: '[[ ]]', run: () => wrap('[[', ']]', 'note') },
+	const tools: { label: string; keys?: string; icon: string; run: () => void }[] = $derived([
+		{ label: t('Bold'), keys: 'Ctrl+B', icon: 'B', run: () => wrap('**') },
+		{ label: t('Italic'), keys: 'Ctrl+I', icon: 'I', run: () => wrap('*') },
+		{ label: t('Strikethrough'), keys: 'Ctrl+Shift+X', icon: 'S', run: () => wrap('~~') },
+		{ label: t('Highlight'), keys: 'Ctrl+Shift+H', icon: 'H̲', run: () => wrap('==') },
+		{ label: t('Heading'), icon: '#', run: () => prefixLines('## ') },
+		{ label: t('Bulleted list'), icon: '•', run: () => prefixLines('- ') },
+		{ label: t('Checklist'), icon: '☐', run: () => prefixLines('- [ ] ') },
+		{ label: t('Quote'), icon: '❝', run: () => prefixLines('> ') },
+		{ label: t('Code'), keys: 'Ctrl+E', icon: '</>', run: () => wrap('`') },
 		{
-			label: 'Table',
+			label: t('Link to a note'),
+			keys: 'Ctrl+L',
+			icon: '[[ ]]',
+			run: () => wrap('[[', ']]', 'note')
+		},
+		{
+			label: t('Table'),
 			icon: '▦',
 			run: () => insert('\n| Column | Column |\n| --- | --- |\n| | |\n')
 		},
-		{ label: 'Callout', icon: 'ⓘ', run: () => insert('\n> [!NOTE] Title\n> Text\n') }
-	];
+		{ label: t('Callout'), icon: 'ⓘ', run: () => insert('\n> [!NOTE] Title\n> Text\n') }
+	]);
 
 	function detect() {
 		const before = value.slice(0, area.selectionStart);
@@ -185,17 +191,17 @@
 		const k = e.key.toLowerCase();
 		const shortcut =
 			mod && !e.shiftKey && k === 'b'
-				? 'Bold'
+				? t('Bold')
 				: mod && !e.shiftKey && k === 'i'
-					? 'Italic'
+					? t('Italic')
 					: mod && e.shiftKey && k === 'x'
-						? 'Strikethrough'
+						? t('Strikethrough')
 						: mod && e.shiftKey && k === 'h'
-							? 'Highlight'
+							? t('Highlight')
 							: mod && !e.shiftKey && k === 'e'
-								? 'Code'
+								? t('Code')
 								: mod && !e.shiftKey && k === 'l'
-									? 'Link to a note'
+									? t('Link to a note')
 									: null;
 		if (shortcut) {
 			e.preventDefault();
@@ -215,21 +221,21 @@
 </script>
 
 <div class="editor">
-	<div class="toolbar" role="toolbar" aria-label="Formatting" aria-controls={id}>
-		{#each tools as t (t.label)}
+	<div class="toolbar" role="toolbar" aria-label={t('Formatting')} aria-controls={id}>
+		{#each tools as tool (tool.label)}
 			<button
 				type="button"
-				onclick={t.run}
-				aria-label={t.label}
-				title={t.keys ? `${t.label} (${t.keys})` : t.label}>{t.icon}</button
+				onclick={tool.run}
+				aria-label={tool.label}
+				title={tool.keys ? `${tool.label} (${tool.keys})` : tool.label}>{tool.icon}</button
 			>
 		{/each}
 		{#if pictures}
 			<button
 				type="button"
 				onclick={() => picker?.click()}
-				aria-label="Insert a picture or PDF"
-				title="Insert a picture or PDF (or paste, or drop it here)">🖼</button
+				aria-label={t('Insert a picture or PDF')}
+				title={t('Insert a picture or PDF (or paste, or drop it here)')}>🖼</button
 			>
 			<input
 				bind:this={picker}
@@ -267,17 +273,19 @@
 	></textarea>
 	{#if uploading || uploadError}
 		<p class="upload-status" role={uploadError ? 'alert' : 'status'}>
-			{uploading ? `Uploading ${uploading} file${uploading > 1 ? 's' : ''}…` : uploadError}
+			{uploading
+				? t(uploading > 1 ? 'Uploading {n} files…' : 'Uploading {n} file…', { n: uploading })
+				: uploadError}
 		</p>
 	{/if}
 	{#if vim}
 		<p class="vim-status" id="{id}-vim" aria-live="polite">
 			{command || `-- ${mode === 'visual-line' ? 'VISUAL LINE' : mode.toUpperCase()} --`}
-			<span class="muted">Vim mode · Esc for normal, i to type, :w to save</span>
+			<span class="muted">{t('Vim mode · Esc for normal, i to type, :w to save')}</span>
 		</p>
 	{/if}
 	{#if suggestions.length}
-		<ul class="suggestions" id="{id}-suggestions" role="listbox" aria-label="Notes to link">
+		<ul class="suggestions" id="{id}-suggestions" role="listbox" aria-label={t('Notes to link')}>
 			{#each suggestions as n, i (n.id)}
 				<li
 					id="{id}-s-{i}"

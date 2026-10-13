@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	let {
-		label = 'Templates',
+		label = t('Templates'),
 		items,
 		onpick,
 		busy = false

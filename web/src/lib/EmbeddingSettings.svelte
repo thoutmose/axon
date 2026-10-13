@@ -71,8 +71,8 @@
 	<select id="emb-provider" bind:value={provider}>
 		<option value="off">{t('Off')}</option>
 		<option value="local">{t('A local model server (Ollama, LM Studio)')}</option>
-		<option value="openai">OpenAI</option>
-		<option value="voyage">Voyage AI</option>
+		<option value="openai">{t('OpenAI')}</option>
+		<option value="voyage">{t('Voyage AI')}</option>
 	</select>
 </div>
 {#if provider === 'local'}

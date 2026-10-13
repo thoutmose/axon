@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { href } from '$lib/links';
@@ -46,27 +48,30 @@
 	};
 </script>
 
-<svelte:head><title>Insights · Axon</title></svelte:head>
+<svelte:head><title>{t('Insights · Axon')}</title></svelte:head>
 
-<h1>Insights</h1>
+<h1>{t('Insights')}</h1>
 <p class="muted">
-	Weekly numbers from what you actually did, computed on this server. Each one says how it is
-	counted and opens the items behind it.
+	{t(
+		'Weekly numbers from what you actually did, computed on this server. Each one says how it is counted and opens the items behind it.'
+	)}
 </p>
 
-<nav class="tabs" aria-label="Period">
+<nav class="tabs" aria-label={t('Period')}>
 	{#each [8, 12, 26, 52] as n (n)}
 		<a href={query({ weeks: String(n) })} aria-current={weeks === n ? 'page' : undefined}
-			>{n} weeks</a
+			>{t('{n} weeks', { n })}</a
 		>
 	{/each}
-	<a class="csv" href="/api/v1/insights/export.csv?weeks=52" download>Download CSV (52 weeks)</a>
+	<a class="csv" href="/api/v1/insights/export.csv?weeks=52" download
+		>{t('Download CSV (52 weeks)')}</a
+	>
 </nav>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !metrics || !review}
-	<Status kind="loading" message="Counting…" />
+	<Status kind="loading" message={t('Counting…')} />
 {:else}
 	<ul class="metrics">
 		{#each metrics as s (s.id)}
@@ -88,11 +93,13 @@
 					{s.trend.sentence}
 				</p>
 				<details class="small">
-					<summary>How it is counted</summary>
+					<summary>{t('How it is counted')}</summary>
 					<p>{s.formula}</p>
-					<p class="muted">Source: <code>{s.source}</code></p>
+					<p class="muted">{t('Source:')} <code>{s.source}</code></p>
 					<p class="visually-hidden">
-						Week by week: {s.points.map((p) => `${p.week} ${p.value}`).join(', ')}
+						{t('Week by week: {weeks}', {
+							weeks: s.points.map((p) => `${p.week} ${p.value}`).join(', ')
+						})}
 					</p>
 				</details>
 			</li>
@@ -101,18 +108,19 @@
 
 	<section class="card" aria-labelledby="review-title">
 		<div class="head">
-			<h2 id="review-title">Weekly review · {review.week}</h2>
+			<h2 id="review-title">{t('Weekly review · {week}', { week: review.week })}</h2>
 			<p class="small">
-				{review.from} to {review.to} ·
+				{t('{from} to {to} ·', { from: review.from, to: review.to })}
 				<a href={query({ week: review.previous })}>← {review.previous}</a>
 				{#if review.next}· <a href={query({ week: review.next })}>{review.next} →</a>{/if}
 			</p>
 		</div>
 		<table>
-			<caption class="visually-hidden">This week against the week before</caption>
+			<caption class="visually-hidden">{t('This week against the week before')}</caption>
 			<thead
 				><tr
-					><th scope="col">Metric</th><th scope="col">This week</th><th scope="col">Week before</th
+					><th scope="col">{t('Metric')}</th><th scope="col">{t('This week')}</th><th scope="col"
+						>{t('Week before')}</th
 					></tr
 				></thead
 			>
@@ -127,7 +135,7 @@
 			</tbody>
 		</table>
 		{#if review.highlights.length}
-			<h3>What changed</h3>
+			<h3>{t('What changed')}</h3>
 			<ul>
 				{#each review.highlights as h (h)}<li>{h}</li>{/each}
 			</ul>
@@ -139,25 +147,29 @@
 					{#each sec.items as i, n (i.id + n)}
 						<li>
 							{#if link(i)}<a href={link(i)}>{i.title}</a>{:else}{i.title}{/if}
-							<span class="muted">· {new Date(i.when).toLocaleDateString()}</span>
+							<span class="muted">· {new Date(i.when).toLocaleDateString(appLocale())}</span>
 						</li>
 					{/each}
-					{#if sec.more}<li class="muted">and {sec.more} more</li>{/if}
+					{#if sec.more}<li class="muted">{t('and {more} more', { more: sec.more })}</li>{/if}
 				</ul>
 			</details>
 		{/each}
-		<h3>To carry over</h3>
+		<h3>{t('To carry over')}</h3>
 		{#if review.carry_over.length}
 			<ul>
 				{#each review.carry_over as i (i.id)}
 					<li>
 						<a href="/tasks/{i.id}">{i.title}</a>
-						<span class="muted small">· due {new Date(i.when).toLocaleDateString()}</span>
+						<span class="muted small"
+							>{t('· due {value}', {
+								value: new Date(i.when).toLocaleDateString(appLocale())
+							})}</span
+						>
 					</li>
 				{/each}
 			</ul>
 		{:else}
-			<p class="muted">No open task was due by the end of this week.</p>
+			<p class="muted">{t('No open task was due by the end of this week.')}</p>
 		{/if}
 	</section>
 {/if}

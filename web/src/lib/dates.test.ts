@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { addDays, daysBetween, formatDate, isoWeekday, localDate, mondayOf } from './dates';
+import {
+	addDays,
+	appLocale,
+	daysBetween,
+	formatDate,
+	isoWeekday,
+	localDate,
+	mondayOf
+} from './dates';
+import { i18n } from './i18n.svelte';
 
 // The browser's time zone, for the tests that change it.
 afterEach(() => {
@@ -46,5 +55,13 @@ describe('dates', () => {
 			);
 		}
 		expect(formatDate('2026-10-12', undefined, 'en-GB')).toBe('12/10/2026');
+	});
+
+	it('writes dates in the language of the interface', () => {
+		i18n.locale = 'fr';
+		expect(appLocale()).toMatch(/^fr/);
+		expect(formatDate('2026-10-12', { day: 'numeric', month: 'long' })).toBe('12 octobre');
+		i18n.locale = 'en';
+		expect(appLocale() ?? 'en').toMatch(/^en/);
 	});
 });

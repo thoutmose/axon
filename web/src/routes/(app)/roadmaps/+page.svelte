@@ -22,14 +22,17 @@
 		count: number;
 		skills: number;
 	};
-	const sourceNames: Record<string, string> = {
+	const sourceNames: Record<string, string> = $derived({
 		ossu: 'OSSU',
-		library: 'from the library',
-		tutor: 'drafted by the Tutor'
-	};
+		library: t('from the library'),
+		tutor: t('drafted by the Tutor')
+	});
 	let roadmaps = $state<Roadmap[] | null>(null);
 	let radar = $state<{ hard: RadarKind; soft: RadarKind } | null>(null);
-	const by = { roadmap: 'One spoke per roadmap.', section: 'One spoke per section.' };
+	const by = $derived({
+		roadmap: t('One spoke per roadmap.'),
+		section: t('One spoke per section.')
+	});
 	let sources = $state<Source[]>([]);
 	let error = $state('');
 	let title = $state('');
@@ -134,7 +137,7 @@
 				)}
 			</p>
 			<div class="radars">
-				{#each [{ title: 'Hard skills', kind: radar.hard }, { title: 'Soft skills', kind: radar.soft }] as r (r.title)}
+				{#each [{ title: t('Hard skills'), kind: radar.hard }, { title: t('Soft skills'), kind: radar.soft }] as r (r.title)}
 					{#if r.kind.spokes.length}
 						<div>
 							<Radar title={t(r.title)} spokes={r.kind.spokes} />

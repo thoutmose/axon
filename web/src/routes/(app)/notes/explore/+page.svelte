@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
@@ -44,21 +46,21 @@
 		goto(u, { keepFocus: true, noScroll: true, replaceState: true });
 	}
 
-	const paraNames: Record<string, string> = {
-		inbox: 'Inbox',
-		projects: 'Projects',
-		areas: 'Areas',
-		resources: 'Resources',
-		archive: 'Archive',
-		other: 'Zettelkasten & more'
-	};
-	const edgeNames: Record<EdgeKind, string> = {
-		link: 'Links',
-		entity: 'Shared names',
-		keyword: 'Shared keywords',
-		synonym: 'Synonyms',
-		similar: 'Similar wording'
-	};
+	const paraNames: Record<string, string> = $derived({
+		inbox: t('Inbox'),
+		projects: t('Projects'),
+		areas: t('Areas'),
+		resources: t('Resources'),
+		archive: t('Archive'),
+		other: t('Zettelkasten & more')
+	});
+	const edgeNames: Record<EdgeKind, string> = $derived({
+		link: t('Links'),
+		entity: t('Shared names'),
+		keyword: t('Shared keywords'),
+		synonym: t('Synonyms'),
+		similar: t('Similar wording')
+	});
 	let shown = $state<Record<EdgeKind, boolean>>({
 		link: true,
 		entity: true,
@@ -86,51 +88,51 @@
 	const peak = (list: { count: number }[]) => Math.max(1, ...list.map((c) => c.count));
 </script>
 
-<svelte:head><title>Explore notes · Axon</title></svelte:head>
+<svelte:head><title>{t('Explore notes · Axon')}</title></svelte:head>
 
-<h1>Explore your knowledge</h1>
+<h1>{t('Explore your knowledge')}</h1>
 <p class="muted small">
-	Filter by PARA, Zettelkasten type, tag, text, and date; see what you write about; and follow the
-	knowledge graph. Connections come from your links and from local language analysis (keywords,
-	names, synonyms, similar wording). Each one says why, and nothing leaves your Axon.
+	{t(
+		'Filter by PARA, Zettelkasten type, tag, text, and date; see what you write about; and follow the knowledge graph. Connections come from your links and from local language analysis (keywords, names, synonyms, similar wording). Each one says why, and nothing leaves your Axon.'
+	)}
 </p>
 
 <form class="filters" role="search" onsubmit={(e) => (e.preventDefault(), set('q', text))}>
 	<div class="f">
-		<label for="ex-para">PARA</label>
+		<label for="ex-para">{t('PARA')}</label>
 		<select
 			id="ex-para"
 			value={page.url.searchParams.get('para') ?? ''}
 			onchange={(e) => set('para', e.currentTarget.value)}
 		>
-			<option value="">All</option>
+			<option value="">{t('All')}</option>
 			{#each Object.entries(paraNames) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 		</select>
 	</div>
 	<div class="f">
-		<label for="ex-kind">Type</label>
+		<label for="ex-kind">{t('Type')}</label>
 		<select
 			id="ex-kind"
 			value={page.url.searchParams.get('kind') ?? ''}
 			onchange={(e) => set('kind', e.currentTarget.value)}
 		>
-			<option value="">All</option>
+			<option value="">{t('All')}</option>
 			{#each ['fleeting', 'literature', 'permanent', 'project', 'area', 'resource', 'meeting', 'daily', 'note'] as k (k)}<option
 					value={k}>{k}</option
 				>{/each}
 		</select>
 	</div>
 	<div class="f">
-		<label for="ex-tag">Tag</label>
+		<label for="ex-tag">{t('Tag')}</label>
 		<input
 			id="ex-tag"
 			value={page.url.searchParams.get('tag') ?? ''}
 			onchange={(e) => set('tag', e.currentTarget.value.replace(/^#/, ''))}
-			placeholder="memory"
+			placeholder={t('memory')}
 		/>
 	</div>
 	<div class="f">
-		<label for="ex-from">From</label>
+		<label for="ex-from">{t('From')}</label>
 		<input
 			id="ex-from"
 			type="date"
@@ -139,7 +141,7 @@
 		/>
 	</div>
 	<div class="f">
-		<label for="ex-to">To</label>
+		<label for="ex-to">{t('To')}</label>
 		<input
 			id="ex-to"
 			type="date"
@@ -152,14 +154,15 @@
 			type="checkbox"
 			checked={page.url.searchParams.get('orphans') === 'true'}
 			onchange={(e) => set('orphans', e.currentTarget.checked ? 'true' : null)}
-		/> Only unconnected notes</label
+		/>
+		{t('Only unconnected notes')}</label
 	>
 	<div class="f grow">
-		<label for="ex-text">Text</label>
+		<label for="ex-text">{t('Text')}</label>
 		<input
 			id="ex-text"
 			bind:value={text}
-			placeholder="Words in the title or body"
+			placeholder={t('Words in the title or body')}
 			maxlength="200"
 		/>
 	</div>
@@ -168,31 +171,37 @@
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !ex || !graph}
-	<Status kind="loading" message="Reading your notes…" />
+	<Status kind="loading" message={t('Reading your notes…')} />
 {:else if ex.stats.total === 0}
-	<Status kind="empty" message="No note matches these filters." />
+	<Status kind="empty" message={t('No note matches these filters.')} />
 {:else}
-	<section class="kpis" aria-label="Summary">
-		<div><strong>{ex.stats.total}</strong><span class="muted small">notes</span></div>
+	<section class="kpis" aria-label={t('Summary')}>
+		<div><strong>{ex.stats.total}</strong><span class="muted small">{t('notes')}</span></div>
 		<div>
-			<strong>{ex.stats.words.toLocaleString()}</strong><span class="muted small">words</span>
+			<strong>{ex.stats.words.toLocaleString(appLocale())}</strong><span class="muted small"
+				>{t('words')}</span
+			>
 		</div>
 		<div>
-			<strong>{ex.stats.orphans}</strong><span class="muted small">unconnected</span>
+			<strong>{ex.stats.orphans}</strong><span class="muted small">{t('unconnected')}</span>
 			{#if ex.stats.orphans}<button class="link small" onclick={() => set('orphans', 'true')}
-					>Show them</button
+					>{t('Show them')}</button
 				>{/if}
 		</div>
-		<div><strong>{graph.edges.length}</strong><span class="muted small">connections</span></div>
+		<div>
+			<strong>{graph.edges.length}</strong><span class="muted small">{t('connections')}</span>
+		</div>
 	</section>
 	{#if ex.truncated}<p class="muted small">
-			Showing the newest {ex.notes.length} notes; narrow the filters to see older ones.
+			{t('Showing the newest {length} notes; narrow the filters to see older ones.', {
+				length: ex.notes.length
+			})}
 		</p>{/if}
 
 	<section class="card" aria-labelledby="graph-title">
 		<div class="row">
-			<h2 id="graph-title">Knowledge graph</h2>
-			<div class="toggles" role="group" aria-label="Kinds of connection">
+			<h2 id="graph-title">{t('Knowledge graph')}</h2>
+			<div class="toggles" role="group" aria-label={t('Kinds of connection')}>
 				{#each Object.entries(edgeNames) as [k, v] (k)}
 					<label class="edge-{k}"
 						><input type="checkbox" bind:checked={shown[k as EdgeKind]} />
@@ -206,7 +215,10 @@
 		<svg
 			viewBox="0 0 {W} {H}"
 			role="group"
-			aria-label="Knowledge graph: {graph.nodes.length} notes, {edges.length} connections"
+			aria-label={t('Knowledge graph: {length} notes, {length2} connections', {
+				length: graph.nodes.length,
+				length2: edges.length
+			})}
 		>
 			{#each edges as e, i (i)}
 				{@const a = at.get(e.from)}
@@ -226,7 +238,11 @@
 			{#each placed as n (n.id)}
 				<a
 					href="/notes/{n.id}"
-					aria-label="{n.title}, {paraNames[n.para]}, {degree.get(n.id) ?? 0} connections"
+					aria-label={t('{title}, {value}, {value2} connections', {
+						title: n.title,
+						value: paraNames[n.para],
+						value2: degree.get(n.id) ?? 0
+					})}
 					onfocus={() => (focus = n.id)}
 					onmouseenter={() => (focus = n.id)}
 					onmouseleave={() => (focus = null)}
@@ -261,16 +277,19 @@
 							{title(e.from === focus ? e.to : e.from)} — {e.why}
 						</li>
 					{:else}
-						<li class="muted">No connection with these filters.</li>
+						<li class="muted">{t('No connection with these filters.')}</li>
 					{/each}
 				</ul>
 			</div>
 		{/if}
 		<details>
-			<summary>Show the connections as a table</summary>
+			<summary>{t('Show the connections as a table')}</summary>
 			<table>
 				<thead
-					><tr><th scope="col">Note</th><th scope="col">Note</th><th scope="col">Why</th></tr
+					><tr
+						><th scope="col">{t('Note')}</th><th scope="col">{t('Note')}</th><th scope="col"
+							>{t('Why')}</th
+						></tr
 					></thead
 				>
 				<tbody>
@@ -288,7 +307,7 @@
 
 	<div class="charts">
 		<section class="card" aria-labelledby="time-title">
-			<h2 id="time-title">Notes over time</h2>
+			<h2 id="time-title">{t('Notes over time')}</h2>
 			<ul class="bars">
 				{#each ex.stats.by_month.slice(-18) as m (m.label)}
 					<li>
@@ -300,7 +319,7 @@
 			</ul>
 		</section>
 		<section class="card" aria-labelledby="para-title">
-			<h2 id="para-title">By PARA and type</h2>
+			<h2 id="para-title">{t('By PARA and type')}</h2>
 			<ul class="bars">
 				{#each ex.stats.by_para as c (c.label)}
 					<li>
@@ -323,7 +342,7 @@
 			</ul>
 		</section>
 		<section class="card" aria-labelledby="words-title">
-			<h2 id="words-title">What you write about</h2>
+			<h2 id="words-title">{t('What you write about')}</h2>
 			<p class="cloud">
 				{#each ex.stats.keywords as k (k.label)}
 					<button
@@ -334,7 +353,7 @@
 				{/each}
 			</p>
 			{#if ex.stats.tags.length}
-				<h3 class="small">Tags</h3>
+				<h3 class="small">{t('Tags')}</h3>
 				<p class="cloud">
 					{#each ex.stats.tags as tg (tg.label)}
 						<button class="tag" onclick={() => set('tag', tg.label)}>#{tg.label} {tg.count}</button>

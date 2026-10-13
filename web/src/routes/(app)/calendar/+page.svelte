@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
-	import { formatDate, localDate } from '$lib/dates';
+	import { formatDate, localDate, appLocale } from '$lib/dates';
 	import {
 		byDay,
 		monthGrid,
@@ -24,17 +25,17 @@
 	type Feed = Schemas['CalendarFeed'];
 	type Kind = 'task' | 'goal' | 'milestone';
 
-	const kinds: { id: Kind; label: string }[] = [
-		{ id: 'task', label: 'Tasks' },
-		{ id: 'goal', label: 'Goal target dates' },
-		{ id: 'milestone', label: 'Milestones' }
-	];
-	const prefix: Record<string, string> = {
+	const kinds: { id: Kind; label: string }[] = $derived([
+		{ id: 'task', label: t('Tasks') },
+		{ id: 'goal', label: t('Goal target dates') },
+		{ id: 'milestone', label: t('Milestones') }
+	]);
+	const prefix: Record<string, string> = $derived({
 		scheduled: '',
-		due: 'Due',
-		target: 'Goal target',
-		milestone: 'Milestone'
-	};
+		due: t('Due'),
+		target: t('Goal target'),
+		milestone: t('Milestone')
+	});
 
 	const todayISO = localDate(new Date());
 	const thisMonth = todayISO.slice(0, 7);
@@ -62,7 +63,7 @@
 	const external = $derived(
 		showFollowed
 			? spreadEvents(occurrences, sources, (iso) =>
-					new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+					new Date(iso).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })
 				)
 			: []
 	);
@@ -177,7 +178,7 @@
 				method: 'POST',
 				body: { name: sourceName, url: sourceUrl, color: sourceColor }
 			});
-			toast(`Following “${src.name}”: ${src.events} events.`);
+			toast(t('Following “{name}”: {events} events.', { name: src.name, events: src.events }));
 			sourceName = '';
 			sourceUrl = '';
 			await Promise.all([loadSources(), load()]);
@@ -191,7 +192,10 @@
 	async function refreshSource(src: Source) {
 		try {
 			const after = await api<Source>(`/v1/calendar/sources/${src.id}/refresh`, { method: 'POST' });
-			toast(after.error ? after.error : `Updated “${after.name}”.`, after.error ? 'error' : 'ok');
+			toast(
+				after.error ? after.error : t('Updated “{name}”.', { name: after.name }),
+				after.error ? 'error' : 'ok'
+			);
 			await Promise.all([loadSources(), load()]);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -201,7 +205,7 @@
 	async function unfollow(src: Source) {
 		try {
 			await api(`/v1/calendar/sources/${src.id}`, { method: 'DELETE' });
-			toast(`No longer following “${src.name}”.`);
+			toast(t('No longer following “{name}”.', { name: src.name }));
 			await Promise.all([loadSources(), load()]);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -251,7 +255,7 @@
 	async function revoke(f: Feed) {
 		try {
 			await api(`/v1/me/calendar-feeds/${f.id}`, { method: 'DELETE' });
-			toast(`Revoked “${f.name}”. Its URL no longer works.`);
+			toast(t('Revoked “{name}”. Its URL no longer works.', { name: f.name }));
 			await loadFeeds();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -260,31 +264,32 @@
 
 	async function copy() {
 		await navigator.clipboard.writeText(newFeedUrl);
-		toast('Copied.');
+		toast(t('Copied.'));
 	}
 </script>
 
-<svelte:head><title>Calendar · Axon</title></svelte:head>
+<svelte:head><title>{t('Calendar · Axon')}</title></svelte:head>
 
-<h1>Calendar</h1>
+<h1>{t('Calendar')}</h1>
 
 <div class="toolbar">
-	<nav aria-label="Month" class="months">
-		<a href={query({ month: shiftMonth(month, -1) })} aria-label="Previous month">←</a>
+	<nav aria-label={t('Month')} class="months">
+		<a href={query({ month: shiftMonth(month, -1) })} aria-label={t('Previous month')}>←</a>
 		<h2 aria-live="polite">{monthLabel(month)}</h2>
-		<a href={query({ month: shiftMonth(month, 1) })} aria-label="Next month">→</a>
-		{#if month !== thisMonth}<a href={query({ month: null })} class="small">This month</a>{/if}
+		<a href={query({ month: shiftMonth(month, 1) })} aria-label={t('Next month')}>→</a>
+		{#if month !== thisMonth}<a href={query({ month: null })} class="small">{t('This month')}</a
+			>{/if}
 	</nav>
-	<nav aria-label="Calendar view" class="layouts">
+	<nav aria-label={t('Calendar view')} class="layouts">
 		<a href={query({ layout: null })} aria-current={layout === 'month' ? 'page' : undefined}
-			>Month</a
+			>{t('Month')}</a
 		>
 		<a href={query({ layout: 'agenda' })} aria-current={layout === 'agenda' ? 'page' : undefined}
-			>Agenda</a
+			>{t('Agenda')}</a
 		>
 	</nav>
 	<fieldset class="filters">
-		<legend class="visually-hidden">Show</legend>
+		<legend class="visually-hidden">{t('Show')}</legend>
 		{#each kinds as k (k.id)}
 			<label>
 				<input
@@ -296,7 +301,9 @@
 			</label>
 		{/each}
 		{#if sources.length}
-			<label><input type="checkbox" bind:checked={showFollowed} /> Calendars you follow</label>
+			<label
+				><input type="checkbox" bind:checked={showFollowed} /> {t('Calendars you follow')}</label
+			>
 		{/if}
 	</fieldset>
 </div>
@@ -304,7 +311,7 @@
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !events}
-	<Status kind="loading" message="Loading the calendar…" />
+	<Status kind="loading" message={t('Loading the calendar…')} />
 {:else if layout === 'month'}
 	<table class="grid">
 		<caption class="visually-hidden">{monthLabel(month)}</caption>
@@ -346,7 +353,7 @@
 											{#if href(e)}<a href={href(e)} title={e.title}>{e.title}</a>{:else}<span
 													title={e.title}>{e.title}</span
 												>{/if}
-											{#if e.done}<span class="visually-hidden">(done)</span>{/if}
+											{#if e.done}<span class="visually-hidden">{t('(done)')}</span>{/if}
 										</li>
 									{/each}
 								</ul>
@@ -358,15 +365,17 @@
 		</tbody>
 	</table>
 	<p class="legend">
-		<span class="ev task">Task</span><span class="ev goal">Goal target</span><span
-			class="ev milestone">Milestone</span
+		<span class="ev task">{t('Task')}</span><span class="ev goal">{t('Goal target')}</span><span
+			class="ev milestone">{t('Milestone')}</span
 		>{#each sources as src (src.id)}<span class="ev external" style:--c={src.color}>{src.name}</span
 			>{/each}
 	</p>
 {:else if events.length === 0}
 	<Status
 		kind="empty"
-		message="Nothing dated this month. Give tasks a date, or goals and milestones a target date."
+		message={t(
+			'Nothing dated this month. Give tasks a date, or goals and milestones a target date.'
+		)}
 	/>
 {:else}
 	<ol class="days">
@@ -380,10 +389,10 @@
 								<span class="chip external" style:--c={e.color}>{e.calendar}</span>
 								{#if e.time}<span class="time">{e.time}</span>{/if}
 							{:else}
-								<span class="chip {e.type}">{prefix[e.kind] || 'Task'}</span>
+								<span class="chip {e.type}">{prefix[e.kind] || t('Task')}</span>
 							{/if}
 							{#if href(e)}<a href={href(e)}>{e.title}</a>{:else}<span>{e.title}</span>{/if}
-							{#if e.done}<span class="visually-hidden">(done)</span>{/if}
+							{#if e.done}<span class="visually-hidden">{t('(done)')}</span>{/if}
 						</li>
 					{/each}
 				</ul>
@@ -394,18 +403,20 @@
 
 {#if undated.length}
 	<section class="card" aria-labelledby="undated-title">
-		<h2 id="undated-title">Next actions without a date</h2>
-		<p class="muted small">Drag one onto a day to schedule it, or pick a date.</p>
+		<h2 id="undated-title">{t('Next actions without a date')}</h2>
+		<p class="muted small">{t('Drag one onto a day to schedule it, or pick a date.')}</p>
 		<ul class="undated">
-			{#each undated as t (t.id)}
-				<li draggable="true" ondragstart={(e) => drag(e, t.id, 'scheduled_on')}>
-					<span class="grow">{t.title}</span>
-					<label class="visually-hidden" for="when-{t.id}">Schedule {t.title} on</label>
+			{#each undated as item (item.id)}
+				<li draggable="true" ondragstart={(e) => drag(e, item.id, 'scheduled_on')}>
+					<span class="grow">{item.title}</span>
+					<label class="visually-hidden" for="when-{item.id}"
+						>{t('Schedule {title} on', { title: item.title })}</label
+					>
 					<input
-						id="when-{t.id}"
+						id="when-{item.id}"
 						type="date"
 						onchange={(e) =>
-							e.currentTarget.value && setDate(t.id, 'scheduled_on', e.currentTarget.value)}
+							e.currentTarget.value && setDate(item.id, 'scheduled_on', e.currentTarget.value)}
 					/>
 				</li>
 			{/each}
@@ -414,12 +425,11 @@
 {/if}
 
 <section class="card" aria-labelledby="follow-title">
-	<h2 id="follow-title">Calendars you follow</h2>
+	<h2 id="follow-title">{t('Calendars you follow')}</h2>
 	<p class="muted">
-		See your other calendars here, read only: Google Calendar (Settings → your calendar → “Secret
-		address in iCal format”), Nextcloud or any CalDAV server (“Copy subscription link”), Outlook
-		(“Publish calendar” → ICS), or any webcal:// or .ics address. Axon checks them every 30 minutes
-		and never changes them.
+		{t(
+			'See your other calendars here, read only: Google Calendar (Settings → your calendar → “Secret address in iCal format”), Nextcloud or any CalDAV server (“Copy subscription link”), Outlook (“Publish calendar” → ICS), or any webcal:// or .ics address. Axon checks them every 30 minutes and never changes them.'
+		)}
 	</p>
 	{#if sources.length}
 		<ul class="feeds">
@@ -429,20 +439,25 @@
 					<span class="grow"
 						><strong>{src.name}</strong>
 						<span class="muted small"
-							>{src.host} · {src.events} events{#if src.fetched_at}
-								· checked {new Date(src.fetched_at).toLocaleString()}{/if}</span
+							>{t('{host} · {events} events', {
+								host: src.host,
+								events: src.events
+							})}{#if src.fetched_at}
+								{t('· checked {value}', {
+									value: new Date(src.fetched_at).toLocaleString(appLocale())
+								})}{/if}</span
 						>
 						{#if src.error}<span class="small bad" role="status">{src.error}</span>{/if}</span
 					>
 					<Button
 						variant="ghost"
 						onclick={() => refreshSource(src)}
-						aria-label="Check {src.name} now">Check now</Button
+						aria-label={t('Check {name} now', { name: src.name })}>{t('Check now')}</Button
 					>
 					<Button
 						variant="danger"
 						onclick={() => unfollow(src)}
-						aria-label="Stop following {src.name}">Remove</Button
+						aria-label={t('Stop following {name}', { name: src.name })}>{t('Remove')}</Button
 					>
 				</li>
 			{/each}
@@ -452,45 +467,46 @@
 		<div class="row">
 			<TextField
 				id="source-name"
-				label="Name"
-				placeholder="Work"
+				label={t('Name')}
+				placeholder={t('Work')}
 				bind:value={sourceName}
 				maxlength={100}
 				required
 			/>
 			<div class="field">
-				<label for="source-color">Colour</label>
+				<label for="source-color">{t('Colour')}</label>
 				<input id="source-color" type="color" bind:value={sourceColor} />
 			</div>
 		</div>
 		<TextField
 			id="source-url"
-			label="Calendar address (iCal / ICS)"
+			label={t('Calendar address (iCal / ICS)')}
 			placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
 			bind:value={sourceUrl}
 			maxlength={2000}
 			required
 		/>
 		<p class="muted small">
-			The address is a secret link: Axon keeps it encrypted and shows only its host.
+			{t('The address is a secret link: Axon keeps it encrypted and shows only its host.')}
 		</p>
-		<Button type="submit" variant="secondary" busy={adding}>Follow</Button>
+		<Button type="submit" variant="secondary" busy={adding}>{t('Follow')}</Button>
 	</form>
 </section>
 
 <section class="card" aria-labelledby="feeds-title">
-	<h2 id="feeds-title">Subscribe in your calendar app</h2>
+	<h2 id="feeds-title">{t('Subscribe in your calendar app')}</h2>
 	<p class="muted">
-		A read-only iCal feed with titles only, for the types you choose. Anyone with its URL can read
-		it, so revoke a feed you no longer use.
+		{t(
+			'A read-only iCal feed with titles only, for the types you choose. Anyone with its URL can read it, so revoke a feed you no longer use.'
+		)}
 	</p>
 	{#if newFeedUrl}
 		<div class="new-feed" role="status">
-			<p><strong>Copy this URL now. It will not be shown again.</strong></p>
+			<p><strong>{t('Copy this URL now. It will not be shown again.')}</strong></p>
 			<code>{newFeedUrl}</code>
 			<div class="row">
-				<Button variant="secondary" onclick={copy}>Copy URL</Button>
-				<Button variant="ghost" onclick={() => (newFeedUrl = '')}>Done</Button>
+				<Button variant="secondary" onclick={copy}>{t('Copy URL')}</Button>
+				<Button variant="ghost" onclick={() => (newFeedUrl = '')}>{t('Done')}</Button>
 			</div>
 		</div>
 	{/if}
@@ -501,13 +517,19 @@
 					<span class="grow"
 						><strong>{f.name}</strong>
 						<span class="muted small"
-							>{f.types.join(', ')} · {f.last_used_at
-								? `last read ${new Date(f.last_used_at).toLocaleString()}`
-								: 'not used yet'}</span
+							>{f.types.join(', ') +
+								' · ' +
+								(f.last_used_at
+									? t('last read {when}', {
+											when: new Date(f.last_used_at).toLocaleString(appLocale())
+										})
+									: t('not used yet'))}</span
 						></span
 					>
-					<Button variant="danger" onclick={() => revoke(f)} aria-label="Revoke {f.name}"
-						>Revoke</Button
+					<Button
+						variant="danger"
+						onclick={() => revoke(f)}
+						aria-label={t('Revoke {name}', { name: f.name })}>{t('Revoke')}</Button
 					>
 				</li>
 			{/each}
@@ -516,19 +538,21 @@
 	<form onsubmit={createFeed}>
 		<TextField
 			id="feed-name"
-			label="Feed name"
-			placeholder="Phone calendar"
+			label={t('Feed name')}
+			placeholder={t('Phone calendar')}
 			bind:value={feedName}
 			maxlength={100}
 			required
 		/>
 		<fieldset class="filters">
-			<legend>Include</legend>
+			<legend>{t('Include')}</legend>
 			{#each kinds as k (k.id)}
 				<label><input type="checkbox" value={k.id} bind:group={feedTypes} /> {k.label}</label>
 			{/each}
 		</fieldset>
-		<Button type="submit" variant="secondary" disabled={feedTypes.length === 0}>Create feed</Button>
+		<Button type="submit" variant="secondary" disabled={feedTypes.length === 0}
+			>{t('Create feed')}</Button
+		>
 	</form>
 </section>
 

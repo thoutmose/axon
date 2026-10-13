@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
@@ -47,53 +48,59 @@
 	const q = $derived(questions?.[i] ?? null);
 </script>
 
-<svelte:head><title>Practice test · Axon</title></svelte:head>
+<svelte:head><title>{t('Practice test · Axon')}</title></svelte:head>
 
-<p class="crumbs"><a href="/cards?deck={encodeURIComponent(deck)}">← {deck || 'Flashcards'}</a></p>
-<h1>Practice test{deck ? `: ${deck}` : ''}</h1>
+<p class="crumbs">
+	<a href="/cards?deck={encodeURIComponent(deck)}">← {deck || t('Flashcards')}</a>
+</p>
+<h1>{deck ? t('Practice test: {deck}', { deck }) : t('Practice test')}</h1>
 <LearnTabs />
 <p class="muted hint">
-	Up to ten random cards{deck ? '' : ', from every deck, mixed'}. Write your answer before you look:
-	testing yourself is one of the most effective ways to learn, and getting some wrong is part of it.
-	A test does not change when cards are due.
+	{t(
+		deck
+			? 'Up to ten random cards. Write your answer before you look: testing yourself is one of the most effective ways to learn, and getting some wrong is part of it. A test does not change when cards are due.'
+			: 'Up to ten random cards, from every deck, mixed. Write your answer before you look: testing yourself is one of the most effective ways to learn, and getting some wrong is part of it. A test does not change when cards are due.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !questions}
-	<Status kind="loading" message="Preparing the test…" />
+	<Status kind="loading" message={t('Preparing the test…')} />
 {:else if questions.length === 0}
-	<Status kind="empty" message="This deck has no cards to test yet." />
+	<Status kind="empty" message={t('This deck has no cards to test yet.')} />
 {:else if q}
-	<p class="muted small">Question {i + 1} of {questions.length}</p>
+	<p class="muted small">
+		{t('Question {value} of {length}', { value: i + 1, length: questions.length })}
+	</p>
 	<section class="card glass" aria-labelledby="test-question">
 		<h2 id="test-question">{q.front}</h2>
-		<label for="test-answer">Your answer</label>
+		<label for="test-answer">{t('Your answer')}</label>
 		<textarea id="test-answer" rows="3" bind:value={answer} disabled={revealed}></textarea>
 		{#if !revealed}
-			<Button onclick={() => (revealed = true)}>Check</Button>
+			<Button onclick={() => (revealed = true)}>{t('Check')}</Button>
 		{:else}
 			<div class="expected">
-				<p class="muted small">Expected</p>
+				<p class="muted small">{t('Expected')}</p>
 				{#if q.has_image}<img
 						src="/api/v1/flashcards/{q.id}/image"
-						alt="Illustration for: {q.front}"
+						alt={t('Illustration for: {front}', { front: q.front })}
 					/>{/if}
 				<p>{q.back}</p>
 			</div>
-			<div class="row" role="group" aria-label="Did you get it right?">
-				<Button onclick={() => mark(true)}>I got it right</Button>
-				<Button variant="secondary" onclick={() => mark(false)}>Not yet</Button>
+			<div class="row" role="group" aria-label={t('Did you get it right?')}>
+				<Button onclick={() => mark(true)}>{t('I got it right')}</Button>
+				<Button variant="secondary" onclick={() => mark(false)}>{t('Not yet')}</Button>
 			</div>
 		{/if}
 	</section>
 {:else}
 	<section class="card glass" aria-live="polite">
-		<h2>Score: {right} of {questions.length}</h2>
+		<h2>{t('Score: {right} of {length}', { right, length: questions.length })}</h2>
 		<p>
 			{right === questions.length
-				? 'Every answer recalled.'
-				: 'The ones you missed are the ones worth reviewing next.'}
+				? t('Every answer recalled.')
+				: t('The ones you missed are the ones worth reviewing next.')}
 		</p>
 		{#if missed.length}
 			<ul class="missed">
@@ -102,9 +109,9 @@
 		{/if}
 		<div class="row">
 			<Button href={deck ? `/cards/review?deck=${encodeURIComponent(deck)}` : '/learn'}
-				>{deck ? 'Review the deck' : 'Today’s plan'}</Button
+				>{deck ? t('Review the deck') : t('Today’s plan')}</Button
 			>
-			<Button variant="secondary" onclick={() => location.reload()}>Another test</Button>
+			<Button variant="secondary" onclick={() => location.reload()}>{t('Another test')}</Button>
 		</div>
 	</section>
 {/if}

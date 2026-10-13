@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
 	import LearnTabs from '$lib/LearnTabs.svelte';
@@ -36,7 +37,7 @@
 						.filter(Boolean)
 				}
 			});
-			toast('Palace built.');
+			toast(t('Palace built.'));
 			await goto(`/learn/palaces/${p.id}`);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -44,20 +45,20 @@
 	}
 </script>
 
-<svelte:head><title>Memory palaces · Axon</title></svelte:head>
+<svelte:head><title>{t('Memory palaces · Axon')}</title></svelte:head>
 
-<h1>Memory palaces</h1>
+<h1>{t('Memory palaces')}</h1>
 <LearnTabs />
 <p class="muted hint">
-	The method of loci, as memory champions use it: choose a place you know well, list the spots you
-	pass in order, then picture each thing to remember as a vivid, strange image at one spot. To
-	recall, walk through the place in your mind. Put a flashcard in a palace from its Edit dialog.
+	{t(
+		'The method of loci, as memory champions use it: choose a place you know well, list the spots you pass in order, then picture each thing to remember as a vivid, strange image at one spot. To recall, walk through the place in your mind. Put a flashcard in a palace from its Edit dialog.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !palaces}
-	<Status kind="loading" message="Loading palaces…" />
+	<Status kind="loading" message={t('Loading palaces…')} />
 {:else}
 	{#if palaces.length}
 		<ul class="palaces">
@@ -65,32 +66,35 @@
 				<li class="card glass">
 					<a class="name" href="/learn/palaces/{p.id}">{p.title}</a>
 					<p class="muted small">
-						{p.loci.length}
-						{p.loci.length === 1 ? 'place' : 'places'}{p.loci.length
-							? `: ${p.loci.slice(0, 3).join(' → ')}${p.loci.length > 3 ? ' → …' : ''}`
-							: ''}
+						{t(p.loci.length === 1 ? '{n} place' : '{n} places', { n: p.loci.length }) +
+							(p.loci.length
+								? `: ${p.loci.slice(0, 3).join(' → ')}${p.loci.length > 3 ? ' → …' : ''}`
+								: '')}
 					</p>
 				</li>
 			{/each}
 		</ul>
 	{:else}
-		<Status kind="empty" message="No palace yet. Start with your home: the route from the door." />
+		<Status
+			kind="empty"
+			message={t('No palace yet. Start with your home: the route from the door.')}
+		/>
 	{/if}
 
 	<section class="card glass" aria-labelledby="new-title">
-		<h2 id="new-title">Build a palace</h2>
+		<h2 id="new-title">{t('Build a palace')}</h2>
 		<form onsubmit={create}>
-			<TextField id="palace-title" label="Place" bind:value={title} required maxlength={200} />
+			<TextField id="palace-title" label={t('Place')} bind:value={title} required maxlength={200} />
 			<div class="field">
-				<label for="palace-loci">Spots, in walking order, one per line</label>
+				<label for="palace-loci">{t('Spots, in walking order, one per line')}</label>
 				<textarea
 					id="palace-loci"
 					rows="6"
 					bind:value={loci}
-					placeholder={'Front door\nCoat hook\nKitchen sink\nSofa\nBookshelf'}
+					placeholder={t('Front door\nCoat hook\nKitchen sink\nSofa\nBookshelf')}
 				></textarea>
 			</div>
-			<Button type="submit" variant="secondary">Build</Button>
+			<Button type="submit" variant="secondary">{t('Build')}</Button>
 		</form>
 	</section>
 {/if}

@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
-	import { addDays, formatDate, localDate, mondayOf } from '$lib/dates';
+	import { addDays, formatDate, localDate, mondayOf, appLocale } from '$lib/dates';
 	import { describe, parse } from '$lib/quickAdd';
 	import { addParsed } from '$lib/quickAddApi';
 	import type { Task } from '$lib/tasks';
@@ -27,18 +28,18 @@
 	type Own = Schemas['CalendarEvent'];
 	type Occurrence = { title: string; date: string; all_day: boolean; start: string };
 
-	const steps = [
-		{ id: 'head', group: 'Get clear', title: 'Empty your head' },
-		{ id: 'inbox', group: 'Get clear', title: 'Process your inbox' },
-		{ id: 'notes', group: 'Get clear', title: 'Process your fleeting notes' },
-		{ id: 'back', group: 'Get current', title: 'Look back at the week' },
-		{ id: 'ahead', group: 'Get current', title: 'Look at the next two weeks' },
-		{ id: 'waiting', group: 'Get current', title: 'Waiting for' },
-		{ id: 'projects', group: 'Get current', title: 'Projects' },
-		{ id: 'goals', group: 'Get current', title: 'Goals, habits, and learning' },
-		{ id: 'someday', group: 'Get creative', title: 'Someday, maybe' },
-		{ id: 'done', group: 'Wrap up', title: 'Into next week' }
-	] as const;
+	const steps = $derived([
+		{ id: 'head', group: t('Get clear'), title: t('Empty your head') },
+		{ id: 'inbox', group: t('Get clear'), title: t('Process your inbox') },
+		{ id: 'notes', group: t('Get clear'), title: t('Process your fleeting notes') },
+		{ id: 'back', group: t('Get current'), title: t('Look back at the week') },
+		{ id: 'ahead', group: t('Get current'), title: t('Look at the next two weeks') },
+		{ id: 'waiting', group: t('Get current'), title: t('Waiting for') },
+		{ id: 'projects', group: t('Get current'), title: t('Projects') },
+		{ id: 'goals', group: t('Get current'), title: t('Goals, habits, and learning') },
+		{ id: 'someday', group: t('Get creative'), title: t('Someday, maybe') },
+		{ id: 'done', group: t('Wrap up'), title: t('Into next week') }
+	] as const);
 	const step = $derived(
 		Math.min(Math.max(Number(page.url.searchParams.get('step') ?? 0), 0), steps.length - 1)
 	);
@@ -102,7 +103,7 @@
 							title: o.title,
 							what: o.all_day
 								? 'event'
-								: new Date(o.start).toLocaleTimeString(undefined, {
+								: new Date(o.start).toLocaleTimeString(appLocale(), {
 										hour: '2-digit',
 										minute: '2-digit'
 									})
@@ -167,16 +168,16 @@
 	async function finish(e: SubmitEvent) {
 		e.preventDefault();
 		const note = [
-			reflection.well && `Went well: ${reflection.well}`,
-			reflection.improve && `To improve: ${reflection.improve}`,
-			reflection.focus && `Focus next week: ${reflection.focus}`
+			reflection.well && t('Went well: {well}', { well: reflection.well }),
+			reflection.improve && t('To improve: {improve}', { improve: reflection.improve }),
+			reflection.focus && t('Focus next week: {focus}', { focus: reflection.focus })
 		]
 			.filter(Boolean)
 			.join('\n')
 			.slice(0, 2000);
 		try {
 			await api(`/v1/checkins/weekly/${monday}`, { method: 'PUT', body: { note } });
-			toast('Weekly review done. Enjoy the week.');
+			toast(t('Weekly review done. Enjoy the week.'));
 			await goto('/today');
 		} catch (err) {
 			toast(message(err), 'error');
@@ -184,15 +185,16 @@
 	}
 </script>
 
-<svelte:head><title>Weekly review · Axon</title></svelte:head>
+<svelte:head><title>{t('Weekly review · Axon')}</title></svelte:head>
 
-<h1>Weekly review</h1>
+<h1>{t('Weekly review')}</h1>
 <p class="muted">
-	About twenty minutes, once a week: clear your head and your inboxes, see where things stand, and
-	choose what matters next week (Getting Things Done).
+	{t(
+		'About twenty minutes, once a week: clear your head and your inboxes, see where things stand, and choose what matters next week (Getting Things Done).'
+	)}
 </p>
 
-<nav aria-label="Review steps">
+<nav aria-label={t('Review steps')}>
 	<ol class="steps">
 		{#each steps as s, i (s.id)}
 			<li class:done={i < step}>
@@ -203,87 +205,98 @@
 </nav>
 
 <section class="card" aria-labelledby="step-title">
-	<p class="group">{current.group} · {step + 1} of {steps.length}</p>
+	<p class="group">
+		{t('{group} · {value} of {length}', {
+			group: current.group,
+			value: step + 1,
+			length: steps.length
+		})}
+	</p>
 	<h2 id="step-title">{current.title}</h2>
 
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if loading}
-		<Status kind="loading" message="Loading…" />
+		<Status kind="loading" message={t('Loading…')} />
 	{:else if current.id === 'head'}
 		<p>
-			Write down everything on your mind, one line at a time: tasks, ideas, books, anything. Sort it
-			out in the next step.
+			{t(
+				'Write down everything on your mind, one line at a time: tasks, ideas, books, anything. Sort it out in the next step.'
+			)}
 		</p>
 		<form onsubmit={capture} class="capture">
-			<label for="review-line" class="visually-hidden">One thing on your mind</label>
+			<label for="review-line" class="visually-hidden">{t('One thing on your mind')}</label>
 			<input
 				id="review-line"
 				bind:value={line}
-				placeholder="Call the bank @phone friday"
+				placeholder={t('Call the bank @phone friday')}
 				autocomplete="off"
 			/>
-			<Button type="submit" variant="secondary">Add</Button>
+			<Button type="submit" variant="secondary">{t('Add')}</Button>
 		</form>
 		{#if captured.length}<ul class="small">
 				{#each captured as c, i (i)}<li>{c}</li>{/each}
 			</ul>{/if}
 	{:else if current.id === 'inbox' || current.id === 'waiting' || current.id === 'someday'}
 		{#if current.id === 'inbox'}
-			<p>For each: what is the next action? Do it now if it takes two minutes.</p>
+			<p>{t('For each: what is the next action? Do it now if it takes two minutes.')}</p>
 		{:else if current.id === 'waiting'}
-			<p>Still waiting? Nudge, or take it back.</p>
+			<p>{t('Still waiting? Nudge, or take it back.')}</p>
 		{:else}
-			<p>Anything to start now? Anything no longer worth keeping?</p>
+			<p>{t('Anything to start now? Anything no longer worth keeping?')}</p>
 		{/if}
 		{#if tasks.length}
 			<ul class="rows">
-				{#each tasks as t (t.id)}
+				{#each tasks as item (item.id)}
 					<li>
-						<a href="/tasks/{t.id}" class="grow">{t.title}</a>
+						<a href="/tasks/{item.id}" class="grow">{item.title}</a>
 						{#if current.id !== 'someday'}
 							<Button
 								variant="ghost"
-								onclick={() => move(t, { status: 'done' }, 'Done.')}
-								aria-label="Done: {t.title}">Done</Button
+								onclick={() => move(item, { status: 'done' }, 'Done.')}
+								aria-label={t('Done: {title}', { title: item.title })}>{t('Done')}</Button
 							>
 						{/if}
 						<Button
 							variant="secondary"
-							onclick={() => move(t, { status: 'next' }, 'A next action.')}
-							aria-label="Next action: {t.title}">Next</Button
+							onclick={() => move(item, { status: 'next' }, 'A next action.')}
+							aria-label={t('Next action: {title}', { title: item.title })}>{t('Next')}</Button
 						>
 						{#if current.id === 'inbox'}
 							<Button
 								variant="ghost"
-								onclick={() => move(t, { status: 'waiting' }, 'Waiting for.')}
-								aria-label="Waiting for: {t.title}">Waiting</Button
+								onclick={() => move(item, { status: 'waiting' }, 'Waiting for.')}
+								aria-label={t('Waiting for: {title}', { title: item.title })}>{t('Waiting')}</Button
 							>
 							<Button
 								variant="ghost"
-								onclick={() => move(t, { status: 'someday' }, 'Someday, maybe.')}
-								aria-label="Someday: {t.title}">Someday</Button
+								onclick={() => move(item, { status: 'someday' }, 'Someday, maybe.')}
+								aria-label={t('Someday: {title}', { title: item.title })}>{t('Someday')}</Button
 							>
 						{/if}
 						<Button
 							variant="ghost"
-							onclick={() => move(t, { delete: true }, 'Deleted.')}
-							aria-label="Delete: {t.title}">Delete</Button
+							onclick={() => move(item, { delete: true }, 'Deleted.')}
+							aria-label={t('Delete: {title}', { title: item.title })}>{t('Delete')}</Button
 						>
 					</li>
 				{/each}
 			</ul>
 		{:else}
-			<p class="empty">{current.id === 'inbox' ? 'Inbox zero.' : 'Nothing here.'}</p>
+			<p class="empty">{current.id === 'inbox' ? t('Inbox zero.') : t('Nothing here.')}</p>
 		{/if}
 	{:else if current.id === 'notes'}
-		<p>Rewrite each in your own words as a literature or permanent note, link it, or let it go.</p>
+		<p>
+			{t(
+				'Rewrite each in your own words as a literature or permanent note, link it, or let it go.'
+			)}
+		</p>
 		{#if notes.length}
 			<ul class="rows">
 				{#each notes as n (n.id)}<li><a href="/notes/{n.id}">{n.title}</a></li>{/each}
 			</ul>
 		{:else}
-			<p class="empty">No fleeting notes waiting.</p>
+			<p class="empty">{t('No fleeting notes waiting.')}</p>
 		{/if}
 	{:else if current.id === 'back' && review}
 		{#if review.highlights.length}
@@ -291,9 +304,9 @@
 				{#each review.highlights as h (h)}<li>{h}</li>{/each}
 			</ul>
 		{:else}
-			<p class="empty">A steady week: nothing changed much.</p>
+			<p class="empty">{t('A steady week: nothing changed much.')}</p>
 		{/if}
-		<p class="small"><a href="/insights">All metrics and what is behind them</a></p>
+		<p class="small"><a href="/insights">{t('All metrics and what is behind them')}</a></p>
 	{:else if current.id === 'ahead'}
 		{#if ahead.length}
 			<ul class="rows">
@@ -307,30 +320,31 @@
 				{/each}
 			</ul>
 		{:else}
-			<p class="empty">Nothing dated in the next two weeks.</p>
+			<p class="empty">{t('Nothing dated in the next two weeks.')}</p>
 		{/if}
 		<p class="small">
-			Anything to prepare? Add it in the first step, or on the <a href="/calendar">Calendar</a>.
+			{t('Anything to prepare? Add it in the first step, or on the')}
+			<a href="/calendar">{t('Calendar')}</a>.
 		</p>
 	{:else if current.id === 'projects'}
-		<p>Every active project needs at least one next action.</p>
+		<p>{t('Every active project needs at least one next action.')}</p>
 		{#if projects.length}
 			<ul class="rows">
 				{#each projects as p (p.id)}
 					<li>
 						<a href="/projects/{p.id}" class="grow">{p.title}</a>
-						{#if p.total - p.done === 0}<span class="stuck">No next action</span>{:else}<span
-								class="muted small">{p.total - p.done} open</span
+						{#if p.total - p.done === 0}<span class="stuck">{t('No next action')}</span>{:else}<span
+								class="muted small">{t('{value} open', { value: p.total - p.done })}</span
 							>{/if}
 					</li>
 				{/each}
 			</ul>
 		{:else}
-			<p class="empty">No active project.</p>
+			<p class="empty">{t('No active project.')}</p>
 		{/if}
 	{:else if current.id === 'goals'}
 		{#if goals.length}
-			<h3>Goals</h3>
+			<h3>{t('Goals')}</h3>
 			<ul class="rows">
 				{#each goals as g (g.id)}
 					<li>
@@ -343,31 +357,36 @@
 			</ul>
 		{/if}
 		{#if plan}
-			<h3>Learning</h3>
+			<h3>{t('Learning')}</h3>
 			<p class="small">
-				{plan.cards.due} cards to review{plan.cards.reviewed >= 10
-					? `, ${Math.round(plan.cards.retention * 100)}% remembered over 30 days`
-					: ''}{plan.cards.leeches ? `, ${plan.cards.leeches} that keep slipping` : ''}.
-				{plan.recall.due.length ? `${plan.recall.due.length} notes to recall.` : ''}
-				<a href="/learn">Learn → Today</a>
+				{t('{due} cards to review.', { due: plan.cards.due }) +
+					(plan.cards.reviewed >= 10
+						? ' ' +
+							t('{pct}% remembered over 30 days.', { pct: Math.round(plan.cards.retention * 100) })
+						: '') +
+					(plan.cards.leeches ? ' ' + t('{n} keep slipping.', { n: plan.cards.leeches }) : '') +
+					(plan.recall.due.length
+						? ' ' + t('{n} notes to recall.', { n: plan.recall.due.length })
+						: '')}
+				<a href="/learn">{t('Learn → Today')}</a>
 			</p>
 		{/if}
-		<p class="small"><a href="/habits">Habits</a> · <a href="/goals">All goals</a></p>
+		<p class="small"><a href="/habits">{t('Habits')}</a> · <a href="/goals">{t('All goals')}</a></p>
 	{:else if current.id === 'done'}
 		<form onsubmit={finish} class="reflect">
-			<label for="well">What went well?</label>
+			<label for="well">{t('What went well?')}</label>
 			<textarea id="well" rows="2" bind:value={reflection.well}></textarea>
-			<label for="improve">What would you do differently?</label>
+			<label for="improve">{t('What would you do differently?')}</label>
 			<textarea id="improve" rows="2" bind:value={reflection.improve}></textarea>
-			<label for="focus">What matters most next week?</label>
+			<label for="focus">{t('What matters most next week?')}</label>
 			<textarea id="focus" rows="2" bind:value={reflection.focus}></textarea>
-			<Button type="submit">Finish the review</Button>
+			<Button type="submit">{t('Finish the review')}</Button>
 		</form>
 	{/if}
 
 	<div class="nav">
-		{#if step > 0}<Button variant="ghost" onclick={() => go(step - 1)}>Back</Button>{/if}
-		{#if step < steps.length - 1}<Button onclick={() => go(step + 1)}>Next step</Button>{/if}
+		{#if step > 0}<Button variant="ghost" onclick={() => go(step - 1)}>{t('Back')}</Button>{/if}
+		{#if step < steps.length - 1}<Button onclick={() => go(step + 1)}>{t('Next step')}</Button>{/if}
 	</div>
 </section>
 

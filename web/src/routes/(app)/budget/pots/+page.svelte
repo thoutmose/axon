@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { formatCents, toCents } from '$lib/money';
 	import Button from '$lib/ui/Button.svelte';
@@ -33,7 +34,7 @@
 		e.preventDefault();
 		const cents = toCents(form.target);
 		if (!cents) {
-			toast('Type a target like 1200 or 1200.50.', 'error');
+			toast(t('Type a target like 1200 or 1200.50.'), 'error');
 			return;
 		}
 		try {
@@ -51,7 +52,7 @@
 	async function move(p: Pot, sign: 1 | -1) {
 		const cents = toCents(amounts[p.id] ?? '');
 		if (!cents) {
-			toast('Type an amount like 50 or 49.90.', 'error');
+			toast(t('Type an amount like 50 or 49.90.'), 'error');
 			return;
 		}
 		try {
@@ -76,7 +77,7 @@
 	}
 
 	async function remove(p: Pot) {
-		if (!confirm(`Delete “${p.name}” and its history?`)) return;
+		if (!confirm(t('Delete “{name}” and its history?', { name: p.name }))) return;
 		try {
 			await api(`/v1/budget/pots/${p.id}`, { method: 'DELETE' });
 			await load();
@@ -86,70 +87,77 @@
 	}
 </script>
 
-<svelte:head><title>Savings pots · Budget · Axon</title></svelte:head>
+<svelte:head><title>{t('Savings pots · Budget · Axon')}</title></svelte:head>
 
-<h1>Savings pots</h1>
+<h1>{t('Savings pots')}</h1>
 <p class="muted">
-	A pot (a <i lang="fr">tirelire</i>) is money you put aside for something to buy later. Give it a
-	target and, if you like, a date: Axon says how much to put in each month.
+	{t('A pot (a')} <i lang="fr">{t('tirelire')}</i>{t(
+		') is money you put aside for something to buy later. Give it a target and, if you like, a date: Axon says how much to put in each month.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !pots}
-	<Status kind="loading" message="Loading your pots…" />
+	<Status kind="loading" message={t('Loading your pots…')} />
 {:else}
 	{#if pots.length === 0}
-		<p class="muted">No pots yet. Start one below.</p>
+		<p class="muted">{t('No pots yet. Start one below.')}</p>
 	{/if}
 	<ul class="pots">
 		{#each pots as p (p.id)}
 			<li class="card" class:muted={p.archived} aria-labelledby="pot-{p.id}">
 				<h2 id="pot-{p.id}">{p.name}{p.archived ? ' (archived)' : ''}</h2>
 				<p>
-					<strong>{money(p.saved_cents)}</strong> of {money(p.target_cents)}{p.target_date
-						? ` by ${p.target_date}`
-						: ''}
+					<strong>{money(p.saved_cents)}</strong>
+					{p.target_date
+						? t('of {target} by {date}', { target: money(p.target_cents), date: p.target_date })
+						: t('of {target}', { target: money(p.target_cents) })}
 				</p>
 				<span
 					class="bar"
 					role="progressbar"
-					aria-label="{p.name}: {share(p)} % saved"
+					aria-label={t('{name}: {value} % saved', { name: p.name, value: share(p) })}
 					aria-valuemin="0"
 					aria-valuemax="100"
 					aria-valuenow={share(p)}><span style:width="{share(p)}%"></span></span
 				>
 				{#if p.saved_cents >= p.target_cents}
-					<p class="ok">Target reached.</p>
+					<p class="ok">{t('Target reached.')}</p>
 				{:else if p.monthly_cents}
-					<p class="small">Put in {money(p.monthly_cents)} a month to get there on time.</p>
+					<p class="small">
+						{t('Put in {value} a month to get there on time.', { value: money(p.monthly_cents) })}
+					</p>
 				{/if}
 				{#if !p.archived}
 					<div class="row">
-						<label class="visually-hidden" for="amount-{p.id}">Amount for {p.name}</label>
+						<label class="visually-hidden" for="amount-{p.id}"
+							>{t('Amount for {name}', { name: p.name })}</label
+						>
 						<input
 							id="amount-{p.id}"
 							inputmode="decimal"
 							placeholder="0.00"
 							bind:value={amounts[p.id]}
 						/>
-						<Button onclick={() => move(p, 1)} aria-label="Put money in {p.name}">Put in</Button>
+						<Button
+							onclick={() => move(p, 1)}
+							aria-label={t('Put money in {name}', { name: p.name })}>{t('Put in')}</Button
+						>
 						<Button
 							variant="secondary"
 							onclick={() => move(p, -1)}
-							aria-label="Take money out of {p.name}">Take out</Button
+							aria-label={t('Take money out of {name}', { name: p.name })}>{t('Take out')}</Button
 						>
 					</div>
 				{/if}
 				{#if p.moves.length}
 					<details>
-						<summary>History ({p.moves.length})</summary>
+						<summary>{t('History ({length})', { length: p.moves.length })}</summary>
 						<ul class="small">
 							{#each p.moves as m (m.id)}
 								<li>
-									{m.occurred_on} · {m.amount_cents > 0 ? '+' : '−'}{money(
-										Math.abs(m.amount_cents)
-									)}{m.note ? ` · ${m.note}` : ''}
+									{`${m.occurred_on} · ${m.amount_cents > 0 ? '+' : '−'}${money(Math.abs(m.amount_cents))}${m.note ? ` · ${m.note}` : ''}`}
 								</li>
 							{/each}
 						</ul>
@@ -157,9 +165,12 @@
 				{/if}
 				<div class="row small">
 					<button class="link" onclick={() => patch(p, { archived: !p.archived })}
-						>{p.archived ? 'Restore' : 'Archive'}</button
+						>{p.archived ? t('Restore') : t('Archive')}</button
 					>
-					<button class="link" onclick={() => remove(p)} aria-label="Delete {p.name}">Delete</button
+					<button
+						class="link"
+						onclick={() => remove(p)}
+						aria-label={t('Delete {name}', { name: p.name })}>{t('Delete')}</button
 					>
 				</div>
 			</li>
@@ -167,14 +178,14 @@
 	</ul>
 
 	<section class="card" aria-labelledby="new-pot">
-		<h2 id="new-pot">Start a pot</h2>
+		<h2 id="new-pot">{t('Start a pot')}</h2>
 		<form class="grid" onsubmit={create}>
 			<div class="field">
-				<label for="pot-name">What it is for</label>
+				<label for="pot-name">{t('What it is for')}</label>
 				<input id="pot-name" bind:value={form.name} maxlength="100" required />
 			</div>
 			<div class="field">
-				<label for="pot-target">Target</label>
+				<label for="pot-target">{t('Target')}</label>
 				<input
 					id="pot-target"
 					inputmode="decimal"
@@ -184,10 +195,10 @@
 				/>
 			</div>
 			<div class="field">
-				<label for="pot-date">By (optional)</label>
+				<label for="pot-date">{t('By (optional)')}</label>
 				<input id="pot-date" type="date" bind:value={form.date} />
 			</div>
-			<div><Button type="submit">Start the pot</Button></div>
+			<div><Button type="submit">{t('Start the pot')}</Button></div>
 		</form>
 	</section>
 {/if}

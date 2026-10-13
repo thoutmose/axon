@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { forceLayout, nodeHref, type NetEdge, type NetNode } from '$lib/overview';
 
 	let { nodes, edges }: { nodes: NetNode[]; edges: NetEdge[] } = $props();
@@ -19,15 +20,17 @@
 	const cls = (n: NetNode) => (n.type === 'skill' ? `${n.kind} ${n.status}` : n.type);
 	const radius = (n: NetNode) => (n.type === 'skill' ? (n.status === 'done' ? 9 : 7) : 11);
 	const label = (n: NetNode) =>
-		n.type === 'skill' ? `${n.title}, ${n.kind} skill, ${n.status}` : `${n.title}, ${n.type}`;
+		n.type === 'skill'
+			? t('{title}, {kind} skill, {status}', { title: n.title, kind: n.kind, status: n.status })
+			: `${n.title}, ${n.type}`;
 	let hover = $state<string | null>(null);
 </script>
 
 <figure class="network">
 	<figcaption>
-		<span>Skills network</span>
-		<span class="filters" role="group" aria-label="Show skills">
-			{#each [['all', 'All'], ['hard', `Hard (${counts.hard})`], ['soft', `Soft (${counts.soft})`]] as [v, l] (v)}
+		<span>{t('Skills network')}</span>
+		<span class="filters" role="group" aria-label={t('Show skills')}>
+			{#each [['all', t('All')], ['hard', t( 'Hard ({n})', { n: counts.hard } )], ['soft', t( 'Soft ({n})', { n: counts.soft } )]] as [v, l] (v)}
 				<button
 					type="button"
 					aria-pressed={filter === v}
@@ -38,14 +41,17 @@
 	</figcaption>
 	{#if nodes.length === 0}
 		<p class="muted">
-			No skills yet. Import a roadmap from the <a href="/roadmaps">library</a> to see your skills grow
-			here.
+			{t('No skills yet. Import a roadmap from the')} <a href="/roadmaps">{t('library')}</a>
+			{t('to see your skills grow here.')}
 		</p>
 	{:else}
 		<svg
 			viewBox="0 0 {W} {H}"
 			role="group"
-			aria-label="Skills network: {counts.hard} hard skills and {counts.soft} soft skills"
+			aria-label={t('Skills network: {hard} hard skills and {soft} soft skills', {
+				hard: counts.hard,
+				soft: counts.soft
+			})}
 		>
 			{#each visibleEdges as e, i (i)}
 				{@const a = at.get(e.from)}
@@ -78,14 +84,16 @@
 			{/each}
 		</svg>
 		<p class="legend small">
-			<span><i class="hard"></i>Hard skill</span>
-			<span><i class="soft"></i>Soft skill</span>
+			<span><i class="hard"></i>{t('Hard skill')}</span>
+			<span><i class="soft"></i>{t('Soft skill')}</span>
 			<span
-				>Larger dots are learned; faded dots are still to learn; dashed lines are prerequisites.</span
+				>{t(
+					'Larger dots are learned; faded dots are still to learn; dashed lines are prerequisites.'
+				)}</span
 			>
 		</p>
 		<details>
-			<summary>Show as a list</summary>
+			<summary>{t('Show as a list')}</summary>
 			<ul class="list">
 				{#each shown as n (n.id)}
 					<li><a href={nodeHref(n)}>{label(n)}</a></li>

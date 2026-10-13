@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import Button from './Button.svelte';
 
 	/** Loading, error, and empty states share one calm shape. */
@@ -12,7 +13,9 @@
 <div class="status {kind}" role={kind === 'error' ? 'alert' : 'status'}>
 	{#if kind === 'loading'}<span class="dot" aria-hidden="true"></span>{/if}
 	<p>{message}</p>
-	{#if kind === 'error' && retry}<Button variant="secondary" onclick={retry}>Try again</Button>{/if}
+	{#if kind === 'error' && retry}<Button variant="secondary" onclick={retry}
+			>{t('Try again')}</Button
+		>{/if}
 </div>
 
 <style>

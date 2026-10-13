@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import type { Project } from './projects';
 	import Button from './ui/Button.svelte';
@@ -42,7 +43,7 @@
 				}
 			});
 			form = { name: '', token: '', project: '', comments: false };
-			toast('Repository connected.');
+			toast(t('Repository connected.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -61,7 +62,7 @@
 	async function remove(r: Repo) {
 		try {
 			await api(`/v1/repos/${r.id}`, { method: 'DELETE' });
-			toast('Disconnected.');
+			toast(t('Disconnected.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -70,11 +71,11 @@
 </script>
 
 <section class="card" aria-labelledby="repos-title">
-	<h2 id="repos-title">Repositories</h2>
+	<h2 id="repos-title">{t('Repositories')}</h2>
 	<p class="muted">
-		The Side-Projects and Code Review agents can read these. They never push, approve, or merge.
-		Drafted issues and comments wait for your approval, and comments are posted only where you allow
-		them.
+		{t(
+			'The Side-Projects and Code Review agents can read these. They never push, approve, or merge. Drafted issues and comments wait for your approval, and comments are posted only where you allow them.'
+		)}
 	</p>
 	{#if repos.length}
 		<ul class="rows">
@@ -83,9 +84,11 @@
 					<div class="grow">
 						<strong>{r.owner}/{r.repo}</strong>
 						<span class="muted small"
-							>{r.has_token ? 'token stored' : 'public, no token'} · issues to {projectName(
-								r.project_id
-							) ?? 'no project yet'}</span
+							>{t(r.has_token ? 'token stored' : 'public, no token') +
+								' · ' +
+								t('issues to {project}', {
+									project: projectName(r.project_id) ?? t('no project yet')
+								})}</span
 						>
 					</div>
 					<label class="check">
@@ -94,23 +97,24 @@
 							checked={r.allow_comments}
 							onchange={(e) => update(r, { allow_comments: e.currentTarget.checked })}
 						/>
-						Allow approved comments
+						{t('Allow approved comments')}
 					</label>
 					<label class="visually-hidden" for="repo-project-{r.id}"
-						>Project for issues from {r.repo}</label
+						>{t('Project for issues from {repo}', { repo: r.repo })}</label
 					>
 					<select
 						id="repo-project-{r.id}"
 						value={r.project_id ?? ''}
 						onchange={(e) => update(r, { project_id: e.currentTarget.value || null })}
 					>
-						<option value="">No project</option>
+						<option value="">{t('No project')}</option>
 						{#each projects as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
 					</select>
 					<Button
 						variant="ghost"
 						onclick={() => remove(r)}
-						aria-label="Disconnect {r.owner}/{r.repo}">Disconnect</Button
+						aria-label={t('Disconnect {owner}/{repo}', { owner: r.owner, repo: r.repo })}
+						>{t('Disconnect')}</Button
 					>
 				</li>
 			{/each}
@@ -119,33 +123,38 @@
 	<form onsubmit={connect}>
 		<TextField
 			id="repo-name"
-			label="Repository"
-			placeholder="owner/name"
+			label={t('Repository')}
+			placeholder={t('owner/name')}
 			bind:value={form.name}
 			required
 		/>
 		<TextField
 			id="repo-token"
-			label="Token (optional)"
+			label={t('Token (optional)')}
 			type="password"
 			autocomplete="off"
 			hint={canStore
-				? 'A fine-grained GitHub token with read access to Contents and Pull requests. Add Pull requests write only if you want approved comments posted. Stored encrypted.'
-				: 'This server cannot store tokens until AXON_ENCRYPTION_KEY is set; public repositories still work.'}
+				? t(
+						'A fine-grained GitHub token with read access to Contents and Pull requests. Add Pull requests write only if you want approved comments posted. Stored encrypted.'
+					)
+				: t(
+						'This server cannot store tokens until AXON_ENCRYPTION_KEY is set; public repositories still work.'
+					)}
 			bind:value={form.token}
 			disabled={!canStore}
 		/>
 		<div class="field">
-			<label for="repo-project">Project for drafted issues</label>
+			<label for="repo-project">{t('Project for drafted issues')}</label>
 			<select id="repo-project" bind:value={form.project}>
-				<option value="">Choose later</option>
+				<option value="">{t('Choose later')}</option>
 				{#each projects as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
 			</select>
 		</div>
 		<label class="check"
-			><input type="checkbox" bind:checked={form.comments} /> Allow approved comments on pull requests</label
+			><input type="checkbox" bind:checked={form.comments} />
+			{t('Allow approved comments on pull requests')}</label
 		>
-		<Button type="submit" variant="secondary">Connect repository</Button>
+		<Button type="submit" variant="secondary">{t('Connect repository')}</Button>
 	</form>
 </section>
 

@@ -105,7 +105,7 @@
 				keyboard: loaded.keyboard ?? { shortcuts: true, vim: false },
 				focus: (loaded.focus as Focus | undefined) ?? focusDefaults,
 				gamification: loaded.gamification ?? { enabled: false },
-				vault: loaded.vault ?? { mirror: true, folder: 'Axon', health: false },
+				vault: loaded.vault ?? { mirror: true, folder: t('Axon'), health: false },
 				learning: loaded.learning ?? learningDefaults,
 				reminders: loaded.reminders ?? remindersDefaults
 			};
@@ -123,7 +123,7 @@
 			keyboard: saved.keyboard ?? { shortcuts: true, vim: false },
 			focus: (saved.focus as Focus | undefined) ?? focusDefaults,
 			gamification: saved.gamification ?? { enabled: false },
-			vault: saved.vault ?? { mirror: true, folder: 'Axon', health: false },
+			vault: saved.vault ?? { mirror: true, folder: t('Axon'), health: false },
 			learning: saved.learning ?? learningDefaults,
 			reminders: saved.reminders ?? remindersDefaults
 		};
@@ -219,7 +219,7 @@
 
 		<Section id="appearance" title={t('Appearance')}>
 			<div class="grid">
-				{#each [['theme', 'Theme', choice( [['system', 'Follow the system'], ['light', 'Light'], ['dark', 'Dark']] )], ['font', 'Font', choice( [['system', 'System sans-serif'], ['serif', 'Serif'], ['rounded', 'Rounded'], ['mono', 'Monospace']] )], ['font_size', 'Text size', choice( [['small', 'Small'], ['normal', 'Normal'], ['large', 'Large']] )], ['icons', 'Icons', choice( [['emoji', 'Emoji'], ['symbols', 'Symbols'], ['none', 'None']] )], ['motion', 'Motion', choice( [['system', 'Follow the system'], ['reduced', 'Reduced'], ['full', 'Full']] )], ['spaces', 'Themed spaces', choice( [['on', 'On: a notebook for notes, a library for learning…'], ['off', 'Off']] )]] as const as [key, label, options] (key)}
+				{#each [['theme', t('Theme'), choice( [['system', t('Follow the system')], ['light', t('Light')], ['dark', t('Dark')]] )], ['font', t('Font'), choice( [['system', t('System sans-serif')], ['serif', t('Serif')], ['rounded', t('Rounded')], ['mono', t('Monospace')]] )], ['font_size', t('Text size'), choice( [['small', t('Small')], ['normal', t('Normal')], ['large', t('Large')]] )], ['icons', t('Icons'), choice( [['emoji', t('Emoji')], ['symbols', t('Symbols')], ['none', t('None')]] )], ['motion', t('Motion'), choice( [['system', t('Follow the system')], ['reduced', t('Reduced')], ['full', t('Full')]] )], ['spaces', t('Themed spaces'), choice( [['on', t('On: a notebook for notes, a library for learning…')], ['off', t('Off')]] )]] as const as [key, label, options] (key)}
 					<div class="field">
 						<label for="pref-{key}">{t(label)}</label>
 						<select id="pref-{key}" bind:value={s.appearance[key]}>
@@ -407,7 +407,7 @@
 
 		<Section id="focus" title={t('Focus')}>
 			<div class="grid">
-				{#each [['work_minutes', 'Focus minutes', 180], ['short_break_minutes', 'Short break minutes', 60], ['long_break_minutes', 'Long break minutes', 120], ['rounds', 'Rounds before the long break', 12], ['sessions', 'Sessions in a row', 12]] as const as [key, label, max] (key)}
+				{#each [['work_minutes', t('Focus minutes'), 180], ['short_break_minutes', t('Short break minutes'), 60], ['long_break_minutes', t('Long break minutes'), 120], ['rounds', t('Rounds before the long break'), 12], ['sessions', t('Sessions in a row'), 12]] as const as [key, label, max] (key)}
 					<div class="field">
 						<label for="focus-{key}">{t(label)}</label>
 						<input id="focus-{key}" type="number" min="1" {max} bind:value={s.focus[key]} />
@@ -440,16 +440,16 @@
 			{#each s.focus.music as m, i (i)}
 				<div class="music">
 					<input
-						aria-label="Activity"
-						placeholder="coding"
+						aria-label={t('Activity')}
+						placeholder={t('coding')}
 						bind:value={m.activity}
 						maxlength="100"
 					/>
-					<input aria-label="Link" type="url" placeholder="https://…" bind:value={m.url} />
+					<input aria-label={t('Link')} type="url" placeholder="https://…" bind:value={m.url} />
 					<Button
 						variant="ghost"
 						onclick={() => s && (s.focus.music = s.focus.music.filter((_, j) => j !== i))}
-						aria-label="Remove {m.activity || 'link'}">✕</Button
+						aria-label={t('Remove {value}', { value: m.activity || 'link' })}>✕</Button
 					>
 				</div>
 			{/each}
@@ -513,7 +513,7 @@
 
 		<Section id="ai" title={t('AI provider and budget')}>
 			<div class="field">
-				<label for="pref-budget">Monthly budget (US$)</label>
+				<label for="pref-budget">{t('Monthly budget (US$)')}</label>
 				<input id="pref-budget" type="number" min="0" max="1000" step="0.5" bind:value={budget} />
 			</div>
 			<ProviderSettings onchange={load} />

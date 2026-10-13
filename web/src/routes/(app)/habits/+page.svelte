@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { goto } from '$app/navigation';
@@ -87,10 +88,10 @@
 			});
 			toast(
 				status === 'skipped'
-					? 'Rest day noted.'
+					? t('Rest day noted.')
 					: status === 'two_minute'
-						? 'Small start, counted.'
-						: 'Done.'
+						? t('Small start, counted.')
+						: t('Done.')
 			);
 			await load();
 		} catch (err) {
@@ -107,31 +108,34 @@
 		}
 	}
 
-	const labels: Record<string, string> = {
-		done: 'Done today',
-		two_minute: 'Two-minute version today',
-		skipped: 'Resting today'
-	};
+	const labels: Record<string, string> = $derived({
+		done: t('Done today'),
+		two_minute: t('Two-minute version today'),
+		skipped: t('Resting today')
+	});
 </script>
 
-<svelte:head><title>Habits · Axon</title></svelte:head>
+<svelte:head><title>{t('Habits · Axon')}</title></svelte:head>
 
-<h1>Habits</h1>
+<h1>{t('Habits')}</h1>
 <AgentDock {...pageAgents.habits} onapplied={() => load()} />
 <p class="muted hint">
-	Make it obvious, easy, and satisfying. Missing a day is normal; the next small step is what
-	counts.
+	{t(
+		'Make it obvious, easy, and satisfying. Missing a day is normal; the next small step is what counts.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !habits}
-	<Status kind="loading" message="Loading habits…" />
+	<Status kind="loading" message={t('Loading habits…')} />
 {:else}
 	{#if habits.length === 0}
 		<Status
 			kind="empty"
-			message="No habits yet. Start with something that takes two minutes, right after something you already do."
+			message={t(
+				'No habits yet. Start with something that takes two minutes, right after something you already do.'
+			)}
 		/>
 	{:else}
 		<ul class="habits">
@@ -141,12 +145,17 @@
 						<a href="/habits/{h.id}" class="title">{h.title}</a>
 						<span class="muted small">{scheduleLabel(h.days)}</span>
 					</div>
-					{#if h.kind === 'break'}<span class="badge">Breaking</span>{/if}
+					{#if h.kind === 'break'}<span class="badge">{t('Breaking')}</span>{/if}
 					{#each plan(h) as line (line)}<p class="plan small">{line}</p>{/each}
 					{#if h.identity}
 						<p class="muted small">
-							{h.votes}
-							{h.votes === 1 ? 'vote' : 'votes'} for “{h.identity}”
+							{t(
+								h.votes === 1 ? '{votes} vote for “{identity}”' : '{votes} votes for “{identity}”',
+								{
+									votes: h.votes,
+									identity: h.identity
+								}
+							)}
 						</p>
 					{/if}
 					{#if h.state.recovery}
@@ -158,31 +167,38 @@
 							<Button
 								variant="ghost"
 								onclick={() => undo(h)}
-								aria-label="Undo today's check-in for {h.title}">Undo</Button
+								aria-label={t("Undo today's check-in for {title}", { title: h.title })}
+								>{t('Undo')}</Button
 							>
 						</div>
 					{:else if h.state.scheduled_today}
 						<div class="row">
-							<Button onclick={() => check(h, 'done')} aria-label="Done: {h.title}">Done</Button>
+							<Button
+								onclick={() => check(h, 'done')}
+								aria-label={t('Done: {title}', { title: h.title })}>{t('Done')}</Button
+							>
 							{#if h.two_minute}
 								<Button
 									variant="secondary"
 									onclick={() => check(h, 'two_minute')}
-									aria-label="Did the two-minute version: {h.two_minute}"
-									>Two minutes: {h.two_minute}</Button
+									aria-label={t('Did the two-minute version: {two_minute}', {
+										two_minute: h.two_minute
+									})}>{t('Two minutes: {two_minute}', { two_minute: h.two_minute })}</Button
 								>
 							{/if}
 							<Button
 								variant="ghost"
 								onclick={() => check(h, 'skipped')}
-								aria-label="Rest today: {h.title}">Rest today</Button
+								aria-label={t('Rest today: {title}', { title: h.title })}>{t('Rest today')}</Button
 							>
 						</div>
 					{:else}
-						<p class="muted small">Not scheduled today.</p>
+						<p class="muted small">{t('Not scheduled today.')}</p>
 					{/if}
 					{#if h.state.streak > 1}
-						<p class="muted small">Kept {h.state.streak} scheduled days in a row.</p>
+						<p class="muted small">
+							{t('Kept {streak} scheduled days in a row.', { streak: h.state.streak })}
+						</p>
 					{/if}
 				</li>
 			{/each}
@@ -191,7 +207,7 @@
 
 	{#if stacks.length}
 		<section class="card" aria-labelledby="stacks-title">
-			<h2 id="stacks-title">Your habit stacks</h2>
+			<h2 id="stacks-title">{t('Your habit stacks')}</h2>
 			{#each stacks as chain (chain[0].id)}
 				<ol class="chain">
 					{#each chain as link (link.id)}<li>
@@ -203,17 +219,17 @@
 	{/if}
 
 	<section class="card" aria-labelledby="new-title">
-		<h2 id="new-title">Design a habit</h2>
+		<h2 id="new-title">{t('Design a habit')}</h2>
 		<p class="muted small">
-			James Clear's four laws: make good habits obvious, attractive, easy, and satisfying; make bad
-			ones invisible, unattractive, difficult, and unsatisfying. Start small, and build the
-			identity, not only the result.
+			{t(
+				"James Clear's four laws: make good habits obvious, attractive, easy, and satisfying; make bad ones invisible, unattractive, difficult, and unsatisfying. Start small, and build the identity, not only the result."
+			)}
 		</p>
 		<TemplateChips
-			label="Start from a template"
-			items={habitTemplates.map((t) => ({
-				title: t.kind === 'break' ? `Stop: ${t.title}` : t.title,
-				hint: t.identity
+			label={t('Start from a template')}
+			items={habitTemplates.map((tpl) => ({
+				title: tpl.kind === 'break' ? t('Stop: {title}', { title: t(tpl.title) }) : t(tpl.title),
+				hint: t(tpl.identity)
 			}))}
 			onpick={(i) => {
 				form = { ...blank(), ...habitTemplates[i] };
@@ -222,46 +238,51 @@
 		/>
 		<form onsubmit={create}>
 			<fieldset class="kind">
-				<legend>I want to</legend>
-				<label><input type="radio" value="build" bind:group={form.kind} /> build a good habit</label
+				<legend>{t('I want to')}</legend>
+				<label
+					><input type="radio" value="build" bind:group={form.kind} />
+					{t('build a good habit')}</label
 				>
-				<label><input type="radio" value="break" bind:group={form.kind} /> break a bad habit</label>
+				<label
+					><input type="radio" value="break" bind:group={form.kind} />
+					{t('break a bad habit')}</label
+				>
 			</fieldset>
 			<TextField
 				id="habit-title"
-				label="Habit"
-				placeholder={form.kind === 'build' ? 'Read one page' : 'Scroll my phone in bed'}
+				label={t('Habit')}
+				placeholder={form.kind === 'build' ? t('Read one page') : t('Scroll my phone in bed')}
 				bind:value={form.title}
 				maxlength={500}
 				required
 			/>
 			<TextField
 				id="habit-identity"
-				label="Who do you want to become?"
-				hint="Every check-in is a vote for this identity."
-				placeholder="I am a person who reads every day"
+				label={t('Who do you want to become?')}
+				hint={t('Every check-in is a vote for this identity.')}
+				placeholder={t('I am a person who reads every day')}
 				bind:value={form.identity}
 				maxlength={500}
 			/>
-			<h3>1. {laws[form.kind][0].law}</h3>
+			<h3>1. {t(laws[form.kind][0].law)}</h3>
 			{#if form.kind === 'build'}
 				<TextField
 					id="habit-stack"
-					label="After…"
-					hint="Habit stacking: “After I [current habit], I will [new habit].”"
-					placeholder="After I pour my coffee"
+					label={t('After…')}
+					hint={t('Habit stacking: “After I [current habit], I will [new habit].”')}
+					placeholder={t('After I pour my coffee')}
 					bind:value={form.stack_after}
 					maxlength={500}
 				/>
 				<div class="pair">
 					<div class="field">
-						<label for="habit-time">I will do it at</label>
+						<label for="habit-time">{t('I will do it at')}</label>
 						<input id="habit-time" type="time" bind:value={form.intention_time} />
 					</div>
 					<TextField
 						id="habit-place"
-						label="In or at"
-						placeholder="in the kitchen"
+						label={t('In or at')}
+						placeholder={t('in the kitchen')}
 						bind:value={form.intention_place}
 						maxlength={500}
 					/>
@@ -269,88 +290,94 @@
 			{/if}
 			<TextField
 				id="habit-cue"
-				label={laws[form.kind][0].prompt}
+				label={t(laws[form.kind][0].prompt)}
 				bind:value={form.cue}
 				maxlength={500}
 			/>
-			<h3>2. {laws[form.kind][1].law}</h3>
+			<h3>2. {t(laws[form.kind][1].law)}</h3>
 			<TextField
 				id="habit-craving"
-				label={laws[form.kind][1].prompt}
+				label={t(laws[form.kind][1].prompt)}
 				bind:value={form.craving}
 				maxlength={500}
 			/>
-			<h3>3. {laws[form.kind][2].law}</h3>
+			<h3>3. {t(laws[form.kind][2].law)}</h3>
 			<TextField
 				id="habit-two-minute"
-				label={form.kind === 'build' ? 'Two-minute version' : laws.break[2].prompt}
+				label={form.kind === 'build' ? t('Two-minute version') : t(laws.break[2].prompt)}
 				hint={form.kind === 'build'
-					? 'The smallest step that still counts on a hard day.'
-					: 'Make the bad habit take more steps.'}
+					? t('The smallest step that still counts on a hard day.')
+					: t('Make the bad habit take more steps.')}
 				placeholder={form.kind === 'build'
-					? 'Open the book'
-					: 'Leave the phone charging in the kitchen'}
+					? t('Open the book')
+					: t('Leave the phone charging in the kitchen')}
 				bind:value={form.two_minute}
 				maxlength={500}
 			/>
-			<h3>4. {laws[form.kind][3].law}</h3>
+			<h3>4. {t(laws[form.kind][3].law)}</h3>
 			<TextField
 				id="habit-reward"
-				label={laws[form.kind][3].prompt}
+				label={t(laws[form.kind][3].prompt)}
 				bind:value={form.reward}
 				maxlength={500}
 			/>
 			<details>
-				<summary>Habit contract (optional)</summary>
+				<summary>{t('Habit contract (optional)')}</summary>
 				<TextField
 					id="habit-partner"
-					label="Accountability partner"
-					hint="Axon sends nothing to them; share it yourself."
+					label={t('Accountability partner')}
+					hint={t('Axon sends nothing to them; share it yourself.')}
 					bind:value={form.contract_partner}
 					maxlength={200}
 				/>
 				<TextField
 					id="habit-pledge"
-					label="Pledge"
-					placeholder="If I skip a week, I buy Sam lunch."
+					label={t('Pledge')}
+					placeholder={t('If I skip a week, I buy Sam lunch.')}
 					bind:value={form.contract_pledge}
 					maxlength={2000}
 				/>
 			</details>
 			{#if preview.length}
 				<div class="preview" aria-live="polite">
-					<strong>Your plan</strong>
+					<strong>{t('Your plan')}</strong>
 					{#each preview as line (line)}<p>{line}</p>{/each}
 				</div>
 			{/if}
 			<fieldset class="days">
-				<legend>Days</legend>
+				<legend>{t('Days')}</legend>
 				{#each weekdays as d (d.id)}
 					<label
 						><input type="checkbox" value={d.id} bind:group={form.days} />
-						<span aria-hidden="true">{d.short}</span><span class="visually-hidden">{d.long}</span
+						<span aria-hidden="true">{t(d.short)}</span><span class="visually-hidden"
+							>{t(d.long)}</span
 						></label
 					>
 				{/each}
 			</fieldset>
 			<Button type="submit" variant="secondary" disabled={form.days.length === 0}
-				>Create habit</Button
+				>{t('Create habit')}</Button
 			>
 		</form>
 	</section>
 
 	<section class="card" aria-labelledby="scorecard-title">
-		<h2 id="scorecard-title">Habits scorecard</h2>
+		<h2 id="scorecard-title">{t('Habits scorecard')}</h2>
 		<p class="muted small">
-			List what you do in a day, in order, and mark each behaviour good, neutral, or bad. Seeing it
-			is the first step; nothing here is scored.
+			{t(
+				'List what you do in a day, in order, and mark each behaviour good, neutral, or bad. Seeing it is the first step; nothing here is scored.'
+			)}
 		</p>
 		{#if scorecard.length}
 			<ol class="scorecard">
 				{#each scorecard as item, i (i)}
 					<li>
 						<span class="grow">{item.behavior}</span>
-						<span class="ratings" role="group" aria-label="Rating for {item.behavior}">
+						<span
+							class="ratings"
+							role="group"
+							aria-label={t('Rating for {behavior}', { behavior: item.behavior })}
+						>
 							{#each ['+', '=', '-'] as const as r (r)}
 								<button
 									type="button"
@@ -366,7 +393,7 @@
 						<Button
 							variant="ghost"
 							onclick={() => saveScorecard(scorecard.filter((_, j) => j !== i))}
-							aria-label="Remove {item.behavior}">✕</Button
+							aria-label={t('Remove {behavior}', { behavior: item.behavior })}>✕</Button
 						>
 					</li>
 				{/each}
@@ -375,12 +402,12 @@
 		<form class="add-behavior" onsubmit={addBehavior}>
 			<TextField
 				id="scorecard-behavior"
-				label="Add a behaviour"
-				placeholder="Wake up, check my phone, make coffee…"
+				label={t('Add a behaviour')}
+				placeholder={t('Wake up, check my phone, make coffee…')}
 				bind:value={behavior}
 				maxlength={200}
 			/>
-			<Button type="submit" variant="secondary">Add</Button>
+			<Button type="submit" variant="secondary">{t('Add')}</Button>
 		</form>
 	</section>
 {/if}

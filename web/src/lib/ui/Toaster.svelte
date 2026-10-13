@@ -1,21 +1,22 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { dismiss, toasts } from './toast.svelte';
 </script>
 
 <div class="toaster" role="status" aria-live="polite">
-	{#each toasts as t (t.id)}
-		<div class="toast {t.kind}">
-			<span>{t.text}</span>
-			{#if t.action}
+	{#each toasts as item (item.id)}
+		<div class="toast {item.kind}">
+			<span>{item.text}</span>
+			{#if item.action}
 				<button
 					class="action"
 					onclick={() => {
-						dismiss(t.id);
-						t.action?.run();
-					}}>{t.action.label}</button
+						dismiss(item.id);
+						item.action?.run();
+					}}>{item.action.label}</button
 				>
 			{/if}
-			<button onclick={() => dismiss(t.id)} aria-label="Dismiss">×</button>
+			<button onclick={() => dismiss(item.id)} aria-label={t('Dismiss')}>×</button>
 		</div>
 	{/each}
 </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
@@ -50,19 +51,19 @@
 </script>
 
 <div class="workspace">
-	<aside class="sidebar glass" aria-label="Notes">
+	<aside class="sidebar glass" aria-label={t('Notes')}>
 		<div class="actions">
-			<button class="primary" onclick={() => (creating = true)}>＋ New note</button>
-			<button onclick={daily}>Today's note</button>
+			<button class="primary" onclick={() => (creating = true)}>{t('＋ New note')}</button>
+			<button onclick={daily}>{t("Today's note")}</button>
 		</div>
 		<form role="search" onsubmit={search}>
-			<label for="note-search" class="visually-hidden">Search notes</label>
-			<input id="note-search" type="search" placeholder="Search notes…" bind:value={query} />
+			<label for="note-search" class="visually-hidden">{t('Search notes')}</label>
+			<input id="note-search" type="search" placeholder={t('Search notes…')} bind:value={query} />
 		</form>
-		<a class="explore" href="/notes/explore">🕸 Explore and knowledge graph</a>
-		<a class="explore" href="/notes/analysis">🔬 Analysis: topics and concepts</a>
-		<a class="explore" href="/notes/templates">🧩 Templates</a>
-		<nav aria-label="Folders">
+		<a class="explore" href="/notes/explore">{t('🕸 Explore and knowledge graph')}</a>
+		<a class="explore" href="/notes/analysis">{t('🔬 Analysis: topics and concepts')}</a>
+		<a class="explore" href="/notes/templates">{t('🧩 Templates')}</a>
+		<nav aria-label={t('Folders')}>
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}
 					<details open>
@@ -72,17 +73,17 @@
 				{/if}
 			{/each}
 			{#if noteIndex.loaded && noteIndex.notes.length === 0}
-				<p class="muted small">No notes yet.</p>
+				<p class="muted small">{t('No notes yet.')}</p>
 			{/if}
 		</nav>
 		{#if tags.length}
 			<details class="tags" open>
-				<summary>Tags</summary>
+				<summary>{t('Tags')}</summary>
 				<ul>
-					{#each tags.slice(0, 40) as t (t.tag)}
+					{#each tags.slice(0, 40) as entry (entry.tag)}
 						<li>
-							<a href="/notes?tag={encodeURIComponent(t.tag)}"
-								>#{t.tag} <span class="count">{t.count}</span></a
+							<a href="/notes?tag={encodeURIComponent(entry.tag)}"
+								>#{entry.tag} <span class="count">{entry.count}</span></a
 							>
 						</li>
 					{/each}

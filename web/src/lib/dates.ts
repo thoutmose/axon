@@ -9,6 +9,7 @@ const utc = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
 const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 /** The browser's own calendar date at d (not UTC's). */
+import { i18n } from './i18n.svelte';
 export function localDate(d: Date): string {
 	const p = (n: number) => String(n).padStart(2, '0');
 	return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
@@ -34,11 +35,21 @@ export function mondayOf(day: string): string {
 	return addDays(day, 1 - isoWeekday(day));
 }
 
-/** A date shown as that day, in the browser's language unless one is given. */
+/**
+ * The locale dates and numbers are written in: the interface's language, in
+ * the browser's own variant of it when it has one (fr-CA, en-GB…).
+ */
+export function appLocale(): string | undefined {
+	const browser = typeof navigator === 'undefined' ? '' : navigator.language;
+	if (i18n.locale === 'fr') return browser.startsWith('fr') ? browser : 'fr-FR';
+	return browser.startsWith('fr') ? 'en' : undefined;
+}
+
+/** A date shown as that day, in the interface's language unless one is given. */
 export function formatDate(
 	day: string,
 	options: Intl.DateTimeFormatOptions = {},
-	locale?: string
+	locale = appLocale()
 ): string {
 	return new Date(utc(day)).toLocaleDateString(locale, { ...options, timeZone: 'UTC' });
 }

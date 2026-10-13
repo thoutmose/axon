@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { t as tr } from '$lib/i18n.svelte';
+	import { t } from '$lib/i18n.svelte';
 
 	let { children } = $props();
-	const tabs = [
-		{ href: '/account', label: 'Overview' },
-		{ href: '/account/security', label: 'Sign-in & security' },
-		{ href: '/account/tokens', label: 'Access tokens' },
-		{ href: '/account/privacy', label: 'Privacy & data' },
-		{ href: '/account/import', label: 'Import' },
-		{ href: '/account/trash', label: 'Trash' },
-		{ href: '/account/preferences', label: 'Preferences' },
-		{ href: '/account/activity', label: 'Activity' }
-	];
+	const tabs = $derived([
+		{ href: '/account', label: t('Overview') },
+		{ href: '/account/security', label: t('Sign-in & security') },
+		{ href: '/account/tokens', label: t('Access tokens') },
+		{ href: '/account/privacy', label: t('Privacy & data') },
+		{ href: '/account/import', label: t('Import') },
+		{ href: '/account/trash', label: t('Trash') },
+		{ href: '/account/preferences', label: t('Preferences') },
+		{ href: '/account/activity', label: t('Activity') }
+	]);
 </script>
 
-<h1>{tr('Account')}</h1>
-<nav aria-label={tr('Account sections')} class="tabs">
-	{#each tabs as t (t.href)}
-		<a href={t.href} aria-current={page.url.pathname === t.href ? 'page' : undefined}
-			>{tr(t.label)}</a
+<h1>{t('Account')}</h1>
+<nav aria-label={t('Account sections')} class="tabs">
+	{#each tabs as tab (tab.href)}
+		<a href={tab.href} aria-current={page.url.pathname === tab.href ? 'page' : undefined}
+			>{t(tab.label)}</a
 		>
 	{/each}
 </nav>

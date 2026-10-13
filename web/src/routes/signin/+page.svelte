@@ -45,7 +45,7 @@
 	};
 </script>
 
-<svelte:head><title>Sign in · Axon</title></svelte:head>
+<svelte:head><title>{t('Sign in · Axon')}</title></svelte:head>
 
 <h1>{t('Sign in')}</h1>
 <p class="muted">{t('Use the passkey on this device or your phone.')}</p>
@@ -54,22 +54,22 @@
 
 <Section
 	id="recovery"
-	title="Lost your passkey?"
-	description="Use one of the recovery codes you saved when you created your account."
+	title={t('Lost your passkey?')}
+	description={t('Use one of the recovery codes you saved when you created your account.')}
 >
 	<form onsubmit={withRecoveryCode}>
 		<TextField
 			id="code"
-			label="Recovery code"
-			placeholder="xxxx-xxxx-xxxx-xxxx"
+			label={t('Recovery code')}
+			placeholder={t('xxxx-xxxx-xxxx-xxxx')}
 			autocomplete="off"
 			bind:value={code}
 			required
 		/>
 		<TextField
 			id="totp"
-			label="Authenticator code"
-			hint="Only if you turned on the authenticator app."
+			label={t('Authenticator code')}
+			hint={t('Only if you turned on the authenticator app.')}
 			inputmode="numeric"
 			autocomplete="one-time-code"
 			bind:value={totp}

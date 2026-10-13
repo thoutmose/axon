@@ -1,14 +1,14 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
-	import { t } from './i18n.svelte';
 
-	const tabs = [
-		{ href: '/learn', label: 'Today' },
-		{ href: '/cards', label: 'Flashcards' },
-		{ href: '/learn/palaces', label: 'Memory palaces' },
-		{ href: '/roadmaps', label: 'Roadmaps' },
-		{ href: '/roadmaps/assessment', label: 'Skills assessment' }
-	];
+	const tabs = $derived([
+		{ href: '/learn', label: t('Today') },
+		{ href: '/cards', label: t('Flashcards') },
+		{ href: '/learn/palaces', label: t('Memory palaces') },
+		{ href: '/roadmaps', label: t('Roadmaps') },
+		{ href: '/roadmaps/assessment', label: t('Skills assessment') }
+	]);
 	const current = (href: string) =>
 		href === '/roadmaps' || href === '/learn'
 			? page.url.pathname === href

@@ -18,19 +18,23 @@
 	type Kind = Item['kind'];
 	type Rec = { item: Item; score: number; reasons: string[] };
 
-	const kinds: { value: Kind | ''; label: string }[] = [
-		{ value: '', label: 'All' },
-		{ value: 'film', label: 'Films' },
-		{ value: 'series', label: 'Series' },
-		{ value: 'book', label: 'Books' }
-	];
-	const kindName: Record<Kind, string> = { film: 'Film', series: 'Series', book: 'Book' };
-	const columns: { status: Item['status']; label: string }[] = [
-		{ status: 'doing', label: 'In progress' },
-		{ status: 'want', label: 'Want to' },
-		{ status: 'done', label: 'Finished' },
-		{ status: 'dropped', label: 'Dropped' }
-	];
+	const kinds: { value: Kind | ''; label: string }[] = $derived([
+		{ value: '', label: t('All') },
+		{ value: 'film', label: t('Films') },
+		{ value: 'series', label: t('Series') },
+		{ value: 'book', label: t('Books') }
+	]);
+	const kindName: Record<Kind, string> = $derived({
+		film: t('Film'),
+		series: t('Series'),
+		book: t('Book')
+	});
+	const columns: { status: Item['status']; label: string }[] = $derived([
+		{ status: 'doing', label: t('In progress') },
+		{ status: 'want', label: t('Want to') },
+		{ status: 'done', label: t('Finished') },
+		{ status: 'dropped', label: t('Dropped') }
+	]);
 	const unit: Record<Kind, string> = { film: 'minutes', series: 'episodes', book: 'pages' };
 
 	const kind = $derived((page.url.searchParams.get('kind') ?? '') as Kind | '');
@@ -201,7 +205,7 @@
 		try {
 			const gone = editing.id;
 			await api(`/v1/media/${gone}`, { method: 'DELETE' });
-			deleted('Removed.', gone, () => load());
+			deleted(t('Removed.'), gone, () => load());
 			editOpen = false;
 			await load();
 		} catch (err) {
@@ -479,13 +483,14 @@
 
 <footer class="attribution small muted">
 	<p>
-		{t('Book data and covers from')} <a href="https://openlibrary.org/">Open Library</a>.
+		{t('Book data and covers from')} <a href="https://openlibrary.org/">{t('Open Library')}</a>.
 	</p>
 	{#if catalogs.films_and_series}
 		<p class="tmdb">
-			<img src="/attribution/tmdb.svg" alt="TMDB" width="90" height="12" />
-			This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by
-			TMDB.
+			<img src="/attribution/tmdb.svg" alt={t('TMDB')} width="90" height="12" />
+			{t(
+				'This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.'
+			)}
 		</p>
 	{/if}
 </footer>

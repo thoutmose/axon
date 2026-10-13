@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { localDate } from '$lib/dates';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
@@ -28,7 +29,7 @@
 
 	const money = (c: number) => formatCents(c, summary?.currency ?? 'EUR');
 	const nameOf = (id: string | null) =>
-		categories.find((c) => c.id === id)?.name ?? 'Uncategorised';
+		categories.find((c) => c.id === id)?.name ?? t('Uncategorised');
 	const expenses = $derived(summary?.lines.filter((l) => l.kind === 'expense') ?? []);
 	const incomes = $derived(summary?.lines.filter((l) => l.kind === 'income') ?? []);
 	const net = $derived(summary ? summary.income_cents - summary.expense_cents : 0);
@@ -74,7 +75,7 @@
 		e.preventDefault();
 		const cents = toCents(form.amount);
 		if (!cents) {
-			toast('Type an amount like 12.50.', 'error');
+			toast(t('Type an amount like 12.50.'), 'error');
 			return;
 		}
 		busy = true;
@@ -94,7 +95,7 @@
 				}
 			});
 			form = { ...form, amount: '', payee: '', note: '', tags: '' };
-			toast('Recorded.');
+			toast(t('Recorded.'));
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -122,7 +123,7 @@
 		e.preventDefault();
 		const cents = newCategory.budget ? toCents(newCategory.budget) : null;
 		if (newCategory.budget && cents === null) {
-			toast('Type a budget like 400 or 400.00.', 'error');
+			toast(t('Type a budget like 400 or 400.00.'), 'error');
 			return;
 		}
 		try {
@@ -138,18 +139,18 @@
 	}
 
 	// Common categories to start from; existing names are skipped.
-	const starters: [string, Kind, number | null][] = [
-		['Salary', 'income', null],
-		['Other income', 'income', null],
-		['Rent or mortgage', 'expense', null],
-		['Groceries', 'expense', null],
-		['Utilities', 'expense', null],
-		['Transport', 'expense', null],
-		['Eating out', 'expense', null],
-		['Health', 'expense', null],
-		['Leisure', 'expense', null],
-		['Savings', 'expense', null]
-	];
+	const starters: [string, Kind, number | null][] = $derived([
+		[t('Salary'), 'income', null],
+		[t('Other income'), 'income', null],
+		[t('Rent or mortgage'), 'expense', null],
+		[t('Groceries'), 'expense', null],
+		[t('Utilities'), 'expense', null],
+		[t('Transport'), 'expense', null],
+		[t('Eating out'), 'expense', null],
+		[t('Health'), 'expense', null],
+		[t('Leisure'), 'expense', null],
+		[t('Savings'), 'expense', null]
+	]);
 	async function addStarters() {
 		busy = true;
 		try {
@@ -158,7 +159,7 @@
 				await api('/v1/budget/categories', { method: 'POST', body: { name, kind, monthly_cents } });
 			}
 			await load();
-			toast('Added. Set a monthly budget on each expense category.');
+			toast(t('Added. Set a monthly budget on each expense category.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
@@ -187,7 +188,7 @@
 		e.preventDefault();
 		const cents = edit.budget ? toCents(edit.budget) : null;
 		if (edit.budget && cents === null) {
-			toast('Type a budget like 400 or 400.00.', 'error');
+			toast(t('Type a budget like 400 or 400.00.'), 'error');
 			return;
 		}
 		saveCategory({ name: edit.name, monthly_cents: cents });
@@ -235,19 +236,19 @@
 		budget ? Math.min(100, Math.round((actual / budget) * 100)) : 0;
 </script>
 
-<svelte:head><title>Budget · Axon</title></svelte:head>
+<svelte:head><title>{t('Budget · Axon')}</title></svelte:head>
 
 <div class="head">
-	<h1>Budget</h1>
-	<nav aria-label="Month" class="months">
-		<a href="?month={shiftMonth(month, -1)}" aria-label="Previous month">←</a>
+	<h1>{t('Budget')}</h1>
+	<nav aria-label={t('Month')} class="months">
+		<a href="?month={shiftMonth(month, -1)}" aria-label={t('Previous month')}>←</a>
 		<h2 aria-live="polite">{monthLabel(month)}</h2>
-		<a href="?month={shiftMonth(month, 1)}" aria-label="Next month">→</a>
-		{#if month !== today.slice(0, 7)}<a href="?" class="small">This month</a>{/if}
+		<a href="?month={shiftMonth(month, 1)}" aria-label={t('Next month')}>→</a>
+		{#if month !== today.slice(0, 7)}<a href="?" class="small">{t('This month')}</a>{/if}
 	</nav>
 	{#if summary}
 		<label class="currency"
-			><span class="muted small">Currency</span>
+			><span class="muted small">{t('Currency')}</span>
 			<select value={summary.currency} onchange={setCurrency}>
 				{#each currencies.includes(summary.currency) ? currencies : [summary.currency, ...currencies] as c (c)}<option
 						value={c}>{c}</option
@@ -257,27 +258,37 @@
 	{/if}
 </div>
 <p class="muted hint">
-	Private to you: never searched, never shown to agents, included in your export, erased with your
-	account. Amounts are exact to the cent.
+	{t(
+		'Private to you: never searched, never shown to agents, included in your export, erased with your account. Amounts are exact to the cent.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !summary}
-	<Status kind="loading" message="Loading the budget…" />
+	<Status kind="loading" message={t('Loading the budget…')} />
 {:else}
-	<section class="kpis" aria-label="This month">
-		<div><span class="muted small">Income</span><strong>{money(summary.income_cents)}</strong></div>
-		<div><span class="muted small">Spent</span><strong>{money(summary.expense_cents)}</strong></div>
+	<section class="kpis" aria-label={t('This month')}>
 		<div>
-			<span class="muted small">Left over</span><strong class:bad={net < 0} class:ok={net > 0}
-				>{money(net)}</strong
+			<span class="muted small">{t('Income')}</span><strong>{money(summary.income_cents)}</strong>
+		</div>
+		<div>
+			<span class="muted small">{t('Spent')}</span><strong>{money(summary.expense_cents)}</strong>
+		</div>
+		<div>
+			<span class="muted small">{t('Left over')}</span><strong
+				class:bad={net < 0}
+				class:ok={net > 0}>{money(net)}</strong
 			>
 		</div>
 		<div>
-			<span class="muted small">Budgeted</span><strong>{money(summary.budgeted_cents)}</strong>
+			<span class="muted small">{t('Budgeted')}</span><strong
+				>{money(summary.budgeted_cents)}</strong
+			>
 			{#if summary.budgeted_cents}<span class="muted small"
-					>{share(summary.expense_cents, summary.budgeted_cents)} % used</span
+					>{t('{value} % used', {
+						value: share(summary.expense_cents, summary.budgeted_cents)
+					})}</span
 				>{/if}
 		</div>
 	</section>
@@ -285,22 +296,20 @@
 	<div class="layout">
 		<div class="col">
 			<section class="card" aria-labelledby="spending">
-				<h2 id="spending">Spending by category</h2>
+				<h2 id="spending">{t('Spending by category')}</h2>
 				{#if categories.length === 0}
-					<p class="muted">No categories yet.</p>
+					<p class="muted">{t('No categories yet.')}</p>
 					<Button variant="secondary" {busy} onclick={addStarters}
-						>Start with common categories</Button
+						>{t('Start with common categories')}</Button
 					>
 				{:else}
 					<table>
 						<thead
 							><tr
-								><th scope="col">Category</th><th scope="col" class="num">Spent</th><th
-									scope="col"
-									class="num">Budget</th
-								><th scope="col" class="num">Left</th><th scope="col"
-									><span class="visually-hidden">Edit</span></th
-								></tr
+								><th scope="col">{t('Category')}</th><th scope="col" class="num">{t('Spent')}</th
+								><th scope="col" class="num">{t('Budget')}</th><th scope="col" class="num"
+									>{t('Left')}</th
+								><th scope="col"><span class="visually-hidden">{t('Edit')}</span></th></tr
 							></thead
 						>
 						<tbody>
@@ -313,7 +322,10 @@
 												class="bar"
 												class:over={l.actual_cents > l.monthly_cents}
 												role="progressbar"
-												aria-label="{l.name}: {share(l.actual_cents, l.monthly_cents)} % of budget"
+												aria-label={t('{name}: {value} % of budget', {
+													name: l.name,
+													value: share(l.actual_cents, l.monthly_cents)
+												})}
 												aria-valuemin="0"
 												aria-valuemax="100"
 												aria-valuenow={share(l.actual_cents, l.monthly_cents)}
@@ -329,15 +341,17 @@
 										>{l.monthly_cents === null ? '—' : money(l.monthly_cents - l.actual_cents)}</td
 									>
 									<td
-										><button class="link" onclick={() => openEdit(l)} aria-label="Edit {l.name}"
-											>Edit</button
+										><button
+											class="link"
+											onclick={() => openEdit(l)}
+											aria-label={t('Edit {name}', { name: l.name })}>{t('Edit')}</button
 										></td
 									>
 								</tr>
 							{/each}
 							{#if summary.uncategorised_expense_cents}
 								<tr
-									><td>Uncategorised</td><td class="num"
+									><td>{t('Uncategorised')}</td><td class="num"
 										>{money(summary.uncategorised_expense_cents)}</td
 									><td class="num">—</td><td class="num">—</td><td></td></tr
 								>
@@ -345,20 +359,22 @@
 						</tbody>
 					</table>
 					{#if incomes.length || summary.uncategorised_income_cents}
-						<h3>Income</h3>
+						<h3>{t('Income')}</h3>
 						<table>
 							<tbody>
 								{#each incomes as l (l.id)}
 									<tr
 										><td>{l.name}</td><td class="num">{money(l.actual_cents)}</td><td
-											><button class="link" onclick={() => openEdit(l)} aria-label="Edit {l.name}"
-												>Edit</button
+											><button
+												class="link"
+												onclick={() => openEdit(l)}
+												aria-label={t('Edit {name}', { name: l.name })}>{t('Edit')}</button
 											></td
 										></tr
 									>
 								{/each}
 								{#if summary.uncategorised_income_cents}<tr
-										><td>Uncategorised</td><td class="num"
+										><td>{t('Uncategorised')}</td><td class="num"
 											>{money(summary.uncategorised_income_cents)}</td
 										><td></td></tr
 									>{/if}
@@ -367,45 +383,50 @@
 					{/if}
 				{/if}
 				<form class="inline" onsubmit={addCategory}>
-					<label for="cat-name" class="visually-hidden">New category</label>
+					<label for="cat-name" class="visually-hidden">{t('New category')}</label>
 					<input
 						id="cat-name"
-						placeholder="New category…"
+						placeholder={t('New category…')}
 						bind:value={newCategory.name}
 						maxlength="100"
 						required
 					/>
-					<label for="cat-kind" class="visually-hidden">Kind</label>
+					<label for="cat-kind" class="visually-hidden">{t('Kind')}</label>
 					<select id="cat-kind" bind:value={newCategory.kind}>
-						<option value="expense">Expense</option>
-						<option value="income">Income</option>
+						<option value="expense">{t('Expense')}</option>
+						<option value="income">{t('Income')}</option>
 					</select>
 					{#if newCategory.kind === 'expense'}
-						<label for="cat-budget" class="visually-hidden">Monthly budget (optional)</label>
+						<label for="cat-budget" class="visually-hidden">{t('Monthly budget (optional)')}</label>
 						<input
 							id="cat-budget"
-							placeholder="Monthly budget"
+							placeholder={t('Monthly budget')}
 							inputmode="decimal"
 							bind:value={newCategory.budget}
 						/>
 					{/if}
-					<Button type="submit" variant="secondary">Add</Button>
+					<Button type="submit" variant="secondary">{t('Add')}</Button>
 				</form>
 			</section>
 		</div>
 
 		<div class="col">
 			<section class="card" aria-labelledby="record">
-				<h2 id="record">Record money in or out</h2>
+				<h2 id="record">{t('Record money in or out')}</h2>
 				<form class="grid" onsubmit={addTransaction}>
 					<fieldset class="kind">
-						<legend class="visually-hidden">Kind</legend>
-						<label><input type="radio" value="expense" bind:group={form.kind} /> Expense</label>
-						<label><input type="radio" value="income" bind:group={form.kind} /> Income</label>
-						<label><input type="radio" value="transfer" bind:group={form.kind} /> Transfer</label>
+						<legend class="visually-hidden">{t('Kind')}</legend>
+						<label
+							><input type="radio" value="expense" bind:group={form.kind} /> {t('Expense')}</label
+						>
+						<label><input type="radio" value="income" bind:group={form.kind} /> {t('Income')}</label
+						>
+						<label
+							><input type="radio" value="transfer" bind:group={form.kind} /> {t('Transfer')}</label
+						>
 					</fieldset>
 					<div class="field">
-						<label for="tx-amount">Amount</label>
+						<label for="tx-amount">{t('Amount')}</label>
 						<input
 							id="tx-amount"
 							inputmode="decimal"
@@ -415,29 +436,30 @@
 						/>
 					</div>
 					<div class="field">
-						<label for="tx-date">Date</label>
+						<label for="tx-date">{t('Date')}</label>
 						<input id="tx-date" type="date" bind:value={form.occurred_on} required />
 					</div>
 					{#if openAccounts.length || form.kind === 'transfer'}
 						<div class="field">
 							<label for="tx-account"
-								>{form.kind === 'income' ? 'Into account' : 'From account'}</label
+								>{form.kind === 'income' ? t('Into account') : t('From account')}</label
 							>
 							<select
 								id="tx-account"
 								bind:value={form.account_id}
 								required={form.kind === 'transfer'}
 							>
-								<option value="">{form.kind === 'transfer' ? 'Choose…' : 'No account'}</option>
+								<option value="">{form.kind === 'transfer' ? t('Choose…') : t('No account')}</option
+								>
 								{#each openAccounts as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
 							</select>
 						</div>
 					{/if}
 					{#if form.kind === 'transfer'}
 						<div class="field">
-							<label for="tx-to-account">To account</label>
+							<label for="tx-to-account">{t('To account')}</label>
 							<select id="tx-to-account" bind:value={form.to_account_id} required>
-								<option value="">Choose…</option>
+								<option value="">{t('Choose…')}</option>
 								{#each openAccounts.filter((a) => a.id !== form.account_id) as a (a.id)}<option
 										value={a.id}>{a.name}</option
 									>{/each}
@@ -445,70 +467,73 @@
 						</div>
 					{:else}
 						<div class="field">
-							<label for="tx-category">Category</label>
+							<label for="tx-category">{t('Category')}</label>
 							<select id="tx-category" bind:value={form.category_id}>
-								<option value="">Uncategorised (or by your rules)</option>
+								<option value="">{t('Uncategorised (or by your rules)')}</option>
 								{#each formCategories as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
 							</select>
 						</div>
 					{/if}
 					<div class="field">
-						<label for="tx-tags">Tags</label>
-						<input id="tx-tags" bind:value={form.tags} placeholder="#holiday #work" />
+						<label for="tx-tags">{t('Tags')}</label>
+						<input id="tx-tags" bind:value={form.tags} placeholder={t('#holiday #work')} />
 					</div>
 					<div class="field">
-						<label for="tx-payee">Payee</label>
+						<label for="tx-payee">{t('Payee')}</label>
 						<input id="tx-payee" bind:value={form.payee} maxlength="200" />
 					</div>
 					<div class="field wide">
-						<label for="tx-note">Note</label>
+						<label for="tx-note">{t('Note')}</label>
 						<input id="tx-note" bind:value={form.note} maxlength="2000" />
 					</div>
-					<div class="wide"><Button type="submit" {busy}>Record</Button></div>
+					<div class="wide"><Button type="submit" {busy}>{t('Record')}</Button></div>
 				</form>
 			</section>
 
 			<section class="card" aria-labelledby="transactions">
-				<h2 id="transactions">Transactions</h2>
+				<h2 id="transactions">{t('Transactions')}</h2>
 				{#if transactions.length === 0}
-					<p class="muted">Nothing recorded in {monthLabel(month)}.</p>
+					<p class="muted">{t('Nothing recorded in {value}.', { value: monthLabel(month) })}</p>
 				{:else}
 					<table>
 						<thead
 							><tr
-								><th scope="col">Date</th><th scope="col">Payee</th><th scope="col">Category</th><th
-									scope="col"
-									class="num">Amount</th
-								><th scope="col"><span class="visually-hidden">Delete</span></th></tr
+								><th scope="col">{t('Date')}</th><th scope="col">{t('Payee')}</th><th scope="col"
+									>{t('Category')}</th
+								><th scope="col" class="num">{t('Amount')}</th><th scope="col"
+									><span class="visually-hidden">{t('Delete')}</span></th
+								></tr
 							></thead
 						>
 						<tbody>
-							{#each transactions as t (t.id)}
+							{#each transactions as txn (txn.id)}
 								<tr>
-									<td>{t.occurred_on.slice(5)}</td>
+									<td>{txn.occurred_on.slice(5)}</td>
 									<td
-										>{t.payee || '—'}{#if t.note}<span class="muted small">
-												· {t.note}</span
+										>{txn.payee || '—'}{#if txn.note}<span class="muted small">
+												· {txn.note}</span
 											>{/if}</td
 									>
 									<td
-										>{t.kind === 'transfer'
-											? `${accountName(t.account_id)} → ${accountName(t.to_account_id)}`
-											: nameOf(t.category_id)}{#if t.tags.length}<span class="muted small">
-												{t.tags.map((x) => `#${x}`).join(' ')}</span
+										>{txn.kind === 'transfer'
+											? `${accountName(txn.account_id)} → ${accountName(txn.to_account_id)}`
+											: nameOf(txn.category_id)}{#if txn.tags.length}<span class="muted small">
+												{txn.tags.map((x) => `#${x}`).join(' ')}</span
 											>{/if}</td
 									>
-									<td class="num" class:ok={t.kind === 'income'}
-										>{t.kind === 'income' ? '+' : t.kind === 'transfer' ? '⇄' : '−'}{money(
-											t.amount_cents
+									<td class="num" class:ok={txn.kind === 'income'}
+										>{txn.kind === 'income' ? '+' : txn.kind === 'transfer' ? '⇄' : '−'}{money(
+											txn.amount_cents
 										)}</td
 									>
 									<td
 										><button
 											class="link"
-											onclick={() => removeTransaction(t)}
-											aria-label="Delete {t.payee || 'transaction'} of {t.occurred_on}"
-											>Delete</button
+											onclick={() => removeTransaction(txn)}
+											aria-label={txn.payee
+												? t('Delete {payee} of {date}', { payee: txn.payee, date: txn.occurred_on })
+												: t('Delete the transaction of {date}', { date: txn.occurred_on })}
+											>{t('Delete')}</button
 										></td
 									>
 								</tr>
@@ -521,28 +546,29 @@
 	</div>
 {/if}
 
-<Dialog bind:open={editOpen} title="Edit category">
+<Dialog bind:open={editOpen} title={t('Edit category')}>
 	<form class="grid" onsubmit={submitEdit}>
 		<div class="field wide">
-			<label for="edit-cat-name">Name</label>
+			<label for="edit-cat-name">{t('Name')}</label>
 			<input id="edit-cat-name" bind:value={edit.name} maxlength="100" required />
 		</div>
 		{#if editing?.kind === 'expense'}
 			<div class="field wide">
-				<label for="edit-cat-budget">Monthly budget (empty for none)</label>
+				<label for="edit-cat-budget">{t('Monthly budget (empty for none)')}</label>
 				<input id="edit-cat-budget" inputmode="decimal" bind:value={edit.budget} />
 			</div>
 		{/if}
 		<div class="wide row">
-			<Button type="submit">Save</Button>
+			<Button type="submit">{t('Save')}</Button>
 			<Button variant="secondary" onclick={() => saveCategory({ archived: !editing?.archived })}
-				>{editing?.archived ? 'Restore' : 'Archive'}</Button
+				>{editing?.archived ? t('Restore') : t('Archive')}</Button
 			>
-			<Button variant="danger" onclick={deleteCategory}>Delete</Button>
+			<Button variant="danger" onclick={deleteCategory}>{t('Delete')}</Button>
 		</div>
 		<p class="muted small wide">
-			Deleting a category keeps its transactions, uncategorised. Archiving hides it from new
-			transactions.
+			{t(
+				'Deleting a category keeps its transactions, uncategorised. Archiving hides it from new transactions.'
+			)}
 		</p>
 	</form>
 </Dialog>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import NoteAnalysis from '$lib/NoteAnalysis.svelte';
@@ -91,7 +92,7 @@
 	onDestroy(() => clearTimeout(timer));
 
 	beforeNavigate((nav) => {
-		if ((unsaved || moved) && !confirm('Leave without saving your changes?')) nav.cancel();
+		if ((unsaved || moved) && !confirm(t('Leave without saving your changes?'))) nav.cancel();
 	});
 
 	function setEditing(on: boolean) {
@@ -127,7 +128,7 @@
 			note = res.data;
 			etag = res.etag;
 			if (withPath) {
-				toast('Moved.');
+				toast(t('Moved.'));
 				await refreshNotes();
 			} else if (note.title !== noteIndex.notes.find((n) => n.id === id)?.title) {
 				await refreshNotes();
@@ -155,7 +156,7 @@
 	/** After a conflict: take the saved version; this edit is copied first. */
 	async function takeTheirs() {
 		await navigator.clipboard?.writeText(content).catch(() => {});
-		toast('Your version was copied to the clipboard.');
+		toast(t('Your version was copied to the clipboard.'));
 		await load();
 	}
 
@@ -170,7 +171,7 @@
 	async function create(target: string) {
 		try {
 			await createNote(`# ${target}\n\n`);
-			toast(`Created “${target}”.`);
+			toast(t('Created “{target}”.', { target }));
 			await refreshNotes();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -191,7 +192,7 @@
 				headers: { 'If-Match': res.etag },
 				body: { path: res.data.path, content: text.replace(re, '[[$1]]') }
 			});
-			toast(`Linked from “${m.title}”.`);
+			toast(t('Linked from “{title}”.', { title: m.title }));
 			mentions = mentions.filter((x) => x.id !== m.id);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -247,7 +248,7 @@
 			note = res.data;
 			etag = res.etag;
 			content = note.content ?? '';
-			toast(`Now a ${kind} note. Rewrite it in your own words.`);
+			toast(t('Now a {kind} note. Rewrite it in your own words.', { kind }));
 			await refreshNotes();
 			setEditing(true);
 		} catch (err) {
@@ -261,7 +262,7 @@
 			await api(`/v1/notes/${id}`, { method: 'DELETE' });
 			note = null; // nothing left to lose
 			const gone = id;
-			deleted('Note deleted.', gone, () => refreshNotes().then(() => goto(`/notes/${gone}`)));
+			deleted(t('Note deleted.'), gone, () => refreshNotes().then(() => goto(`/notes/${gone}`)));
 			await refreshNotes();
 			await goto('/notes');
 		} catch (err) {
@@ -270,13 +271,13 @@
 	}
 </script>
 
-<svelte:head><title>{note?.title ?? 'Note'} · Axon</title></svelte:head>
+<svelte:head><title>{note?.title ?? t('Note')} · Axon</title></svelte:head>
 <svelte:window {onkeydown} />
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !note}
-	<Status kind="loading" message="Loading note…" />
+	<Status kind="loading" message={t('Loading note…')} />
 {:else}
 	<div class="head">
 		<div>
@@ -287,25 +288,30 @@
 			<h1>{note.title}</h1>
 			{#if note.tags.length}
 				<p class="tags">
-					{#each note.tags as t (t)}<a href="/notes?tag={encodeURIComponent(t)}">#{t}</a>{/each}
+					{#each note.tags as noteTag (noteTag)}<a href="/notes?tag={encodeURIComponent(noteTag)}"
+							>#{noteTag}</a
+						>{/each}
 				</p>
 			{/if}
 		</div>
 		<div class="actions">
 			{#if study}
-				<Button variant="secondary" href="/notes/{note.id}/recall">Recall</Button>
-				<Button variant="secondary" onclick={openDrafts}>Make cards</Button>
+				<Button variant="secondary" href="/notes/{note.id}/recall">{t('Recall')}</Button>
+				<Button variant="secondary" onclick={openDrafts}>{t('Make cards')}</Button>
 			{:else if note.kind === 'fleeting'}
-				<Button variant="secondary" onclick={() => promote('literature')}>To literature note</Button
+				<Button variant="secondary" onclick={() => promote('literature')}
+					>{t('To literature note')}</Button
 				>
-				<Button variant="secondary" onclick={() => promote('permanent')}>To permanent note</Button>
+				<Button variant="secondary" onclick={() => promote('permanent')}
+					>{t('To permanent note')}</Button
+				>
 			{/if}
 			{#if editing}
-				<Button variant="secondary" onclick={() => setEditing(false)}>Read</Button>
+				<Button variant="secondary" onclick={() => setEditing(false)}>{t('Read')}</Button>
 			{:else}
-				<Button variant="secondary" onclick={() => setEditing(true)}>Edit</Button>
+				<Button variant="secondary" onclick={() => setEditing(true)}>{t('Edit')}</Button>
 			{/if}
-			<Button variant="danger" onclick={() => (confirmDelete = true)}>Delete</Button>
+			<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 		</div>
 	</div>
 
@@ -314,21 +320,23 @@
 		context="the note “{note.title}” (id {note.id}, type {note.kind}, path {note.path})"
 		suggestions={{
 			teacher: [
-				'Write illustrated flashcards from this note, with the why, an example, and a vivid memory image.'
+				t(
+					'Write illustrated flashcards from this note, with the why, an example, and a vivid memory image.'
+				)
 			],
-			resource: ['Find good free resources to go deeper on this note.']
+			resource: [t('Find good free resources to go deeper on this note.')]
 		}}
 	/>
 
 	{#if conflict}
 		<div class="conflict" role="alert">
 			<p>
-				<strong>This note was changed somewhere else</strong> (another tab, device, or your vault sync).
-				Nothing has been overwritten.
+				<strong>{t('This note was changed somewhere else')}</strong>
+				{t('(another tab, device, or your vault sync). Nothing has been overwritten.')}
 			</p>
 			<div class="actions">
-				<Button onclick={keepMine}>Keep my version</Button>
-				<Button variant="secondary" onclick={takeTheirs}>Use the saved version</Button>
+				<Button onclick={keepMine}>{t('Keep my version')}</Button>
+				<Button variant="secondary" onclick={takeTheirs}>{t('Use the saved version')}</Button>
 			</div>
 		</div>
 	{/if}
@@ -344,18 +352,23 @@
 					onsave={() => save(false)}
 				/>
 				<p class="status muted small" aria-live="polite">
-					{saving
-						? 'Saving…'
-						: conflict
-							? 'Not saved: see above'
-							: unsaved
-								? 'Unsaved changes'
-								: 'All changes saved'}
-					· {words} words · Ctrl+S saves · type [[ to link a note · paste or drop a picture
+					{t(
+						saving
+							? 'Saving…'
+							: conflict
+								? 'Not saved: see above'
+								: unsaved
+									? 'Unsaved changes'
+									: 'All changes saved'
+					) +
+						' · ' +
+						t('{words} words · Ctrl+S saves · type [[ to link a note · paste or drop a picture', {
+							words
+						})}
 				</p>
 				<details class="move">
-					<summary>Rename or move the file</summary>
-					<label for="note-path">File path</label>
+					<summary>{t('Rename or move the file')}</summary>
+					<label for="note-path">{t('File path')}</label>
 					<div class="row">
 						<input
 							id="note-path"
@@ -365,13 +378,15 @@
 							autocomplete="off"
 							spellcheck="false"
 						/>
-						<Button variant="secondary" disabled={!moved} onclick={() => save(true)}>Move</Button>
+						<Button variant="secondary" disabled={!moved} onclick={() => save(true)}
+							>{t('Move')}</Button
+						>
 					</div>
-					<p class="muted small">Links to this note in your other notes are updated.</p>
+					<p class="muted small">{t('Links to this note in your other notes are updated.')}</p>
 				</details>
 			</div>
 			<div class="pane">
-				<h2 class="visually-hidden">Preview</h2>
+				<h2 class="visually-hidden">{t('Preview')}</h2>
 				<!-- render() escapes the note, so it cannot inject markup. -->
 				<article class="markdown glass">{@html html}</article>
 			</div>
@@ -383,12 +398,12 @@
 
 	{#if missing.length}
 		<section class="card" aria-labelledby="missing-title">
-			<h2 id="missing-title">Linked, but not written yet</h2>
+			<h2 id="missing-title">{t('Linked, but not written yet')}</h2>
 			<ul class="rows">
-				{#each missing as t (t)}
+				{#each missing as missingName (missingName)}
 					<li>
-						<span>{t}</span>
-						<Button variant="ghost" onclick={() => create(t)}>Create note</Button>
+						<span>{missingName}</span>
+						<Button variant="ghost" onclick={() => create(missingName)}>{t('Create note')}</Button>
 					</li>
 				{/each}
 			</ul>
@@ -397,14 +412,18 @@
 
 	{#if mentions.length}
 		<section class="card" aria-labelledby="mentions-title">
-			<h2 id="mentions-title">Unlinked mentions</h2>
-			<p class="muted small">These notes name “{note.title}” without linking to it.</p>
+			<h2 id="mentions-title">{t('Unlinked mentions')}</h2>
+			<p class="muted small">
+				{t('These notes name “{title}” without linking to it.', { title: note.title })}
+			</p>
 			<ul class="rows">
 				{#each mentions as m (m.id)}
 					<li>
 						<a href="/notes/{m.id}">{m.title}</a>
-						<Button variant="ghost" onclick={() => linkMention(m)} aria-label="Link from {m.title}"
-							>Link</Button
+						<Button
+							variant="ghost"
+							onclick={() => linkMention(m)}
+							aria-label={t('Link from {title}', { title: m.title })}>{t('Link')}</Button
 						>
 					</li>
 				{/each}
@@ -417,19 +436,22 @@
 	<Connections id={note.id} type="note" />
 {/if}
 
-<Dialog bind:open={draftsOpen} title="Make cards from this note">
+<Dialog bind:open={draftsOpen} title={t('Make cards from this note')}>
 	{#if !drafts}
-		<Status kind="loading" message="Reading the note…" />
+		<Status kind="loading" message={t('Reading the note…')} />
 	{:else if drafts.length === 0}
 		<p>
-			Nothing marked yet. In the note, write <code>question :: answer</code>, a
-			<code>Q:</code> line followed by an <code>A:</code> line, a <code>==key term==</code> in a
-			sentence, or <code>**Term**: definition</code>. Or ask the
+			{t('Nothing marked yet. In the note, write')} <code>question :: answer</code>, a
+			<code>Q:</code>
+			{t('line followed by an')} <code>A:</code>
+			{t('line, a')} <code>==key term==</code>
+			{t('in a sentence, or')} <code>**Term**: definition</code>{t('. Or ask the')}
 			<a
 				href="/agents?agent=teacher&ask={encodeURIComponent(
-					`Write illustrated flashcards from my note “${note?.title ?? ''}”.`
-				)}">Teacher</a
-			> to write cards from it.
+					t('Write illustrated flashcards from my note “{title}”.', { title: note?.title ?? '' })
+				)}">{t('Teacher')}</a
+			>
+			{t('to write cards from it.')}
 		</p>
 	{:else}
 		<ul class="drafts">
@@ -438,29 +460,31 @@
 					<label>
 						<input type="checkbox" bind:checked={d.pick} />
 						<span><strong>{d.front}</strong> → {d.back}</span>
-						{#if d.exists}<span class="muted small">(already a card)</span>{/if}
+						{#if d.exists}<span class="muted small">{t('(already a card)')}</span>{/if}
 					</label>
 				</li>
 			{/each}
 		</ul>
-		<label for="draft-deck">Deck</label>
+		<label for="draft-deck">{t('Deck')}</label>
 		<input id="draft-deck" bind:value={draftDeck} maxlength="200" />
 		<div class="actions">
 			<Button onclick={addCards} disabled={!drafts.some((d) => d.pick)}
-				>Add {drafts.filter((d) => d.pick).length} cards</Button
+				>{t('Add {value} cards', { value: drafts.filter((d) => d.pick).length })}</Button
 			>
 		</div>
 	{/if}
 </Dialog>
 
-<Dialog bind:open={confirmDelete} title="Delete this note?">
+<Dialog bind:open={confirmDelete} title={t('Delete this note?')}>
 	<p>
-		“{note?.title}” and its links are removed. A synced vault deletes the file on its next two-way
-		sync.
+		{t(
+			'“{title}” and its links are removed. A synced vault deletes the file on its next two-way sync.',
+			{ title: note?.title }
+		)}
 	</p>
 	<div class="dialog-actions">
-		<Button variant="secondary" onclick={() => (confirmDelete = false)}>Cancel</Button>
-		<Button variant="danger" onclick={remove}>Delete</Button>
+		<Button variant="secondary" onclick={() => (confirmDelete = false)}>{t('Cancel')}</Button>
+		<Button variant="danger" onclick={remove}>{t('Delete')}</Button>
 	</div>
 </Dialog>
 

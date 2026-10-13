@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import { forceLayout } from './overview';
 	import Status from './ui/Status.svelte';
@@ -76,54 +77,65 @@
 	);
 	const other = (e: G['edges'][number]) => byId.get(e.from === focused ? e.to : e.from);
 	const radius = (n: ZNode) => 5 + n.pagerank * 13;
-	const label = (c: number) => data?.communities.find((x) => x.id === c)?.label ?? 'Unconnected';
+	const label = (c: number) => data?.communities.find((x) => x.id === c)?.label ?? t('Unconnected');
 </script>
 
 <section class="card zettel" aria-labelledby="zettel-title">
 	<div class="head">
-		<h2 id="zettel-title">Knowledge graph</h2>
+		<h2 id="zettel-title">{t('Knowledge graph')}</h2>
 		<div class="controls">
 			<label
-				>Notes
+				>{t('Notes')}
 				<select bind:value={kind}>
-					<option value="">Literature and permanent</option>
-					<option value="literature">Literature</option>
-					<option value="permanent">Permanent</option>
+					<option value="">{t('Literature and permanent')}</option>
+					<option value="literature">{t('Literature')}</option>
+					<option value="permanent">{t('Permanent')}</option>
 				</select></label
 			>
 			<label
-				>Strength at least {min.toFixed(2)}
+				>{t('Strength at least {value}', { value: min.toFixed(2) })}
 				<input type="range" min="0.08" max="0.6" step="0.02" bind:value={min} /></label
 			>
 		</div>
 	</div>
 	<p class="small muted">
-		Your literature and permanent notes, connected by what they say: shared key phrases weighted by
-		rarity, synonyms (Open English WordNet), shared names, similar wording, and your own links.
-		Colours are communities found by modularity (Louvain); larger notes are more central (PageRank);
-		◆ marks bridges between communities. Select a note to see why it connects.
+		{t(
+			'Your literature and permanent notes, connected by what they say: shared key phrases weighted by rarity, synonyms (Open English WordNet), shared names, similar wording, and your own links. Colours are communities found by modularity (Louvain); larger notes are more central (PageRank); ◆ marks bridges between communities. Select a note to see why it connects.'
+		)}
 	</p>
 
 	{#if error}
 		<Status kind="error" message={error} retry={load} />
 	{:else if !data}
-		<Status kind="loading" message="Reading your notes…" />
+		<Status kind="loading" message={t('Reading your notes…')} />
 	{:else if data.stats.notes === 0}
 		<Status
 			kind="empty"
-			message="No literature or permanent notes yet. Give a note type: literature or type: permanent in its front matter, or start from those templates."
+			message={t(
+				'No literature or permanent notes yet. Give a note type: literature or type: permanent in its front matter, or start from those templates.'
+			)}
 		/>
 	{:else}
-		<p class="stats small" aria-label="Graph summary">
-			{data.stats.notes} notes · {data.stats.edges} connections · {data.stats.communities} communities
-			· modularity {data.stats.modularity} · {data.stats.isolated} unconnected
+		<p class="stats small" aria-label={t('Graph summary')}>
+			{t(
+				'{notes} notes · {edges} connections · {communities} communities · modularity {modularity} · {isolated} unconnected',
+				{
+					notes: data.stats.notes,
+					edges: data.stats.edges,
+					communities: data.stats.communities,
+					modularity: data.stats.modularity,
+					isolated: data.stats.isolated
+				}
+			)}
 		</p>
 		<div class="layout">
 			<svg
 				viewBox="0 0 {W} {H}"
 				role="group"
-				aria-label="Knowledge graph: {data.stats.notes} notes in {data.stats
-					.communities} communities. The table below lists the connections."
+				aria-label={t(
+					'Knowledge graph: {notes} notes in {value} communities. The table below lists the connections.',
+					{ notes: data.stats.notes, value: data.stats.communities }
+				)}
 			>
 				{#each data.edges as e (e.from + e.to)}
 					{@const a = at.get(e.from)}
@@ -148,9 +160,12 @@
 						transform="translate({n.x},{n.y})"
 						role="button"
 						tabindex="0"
-						aria-label="{n.title}, {n.kind}, community {label(n.community)}{n.bridge
-							? ', bridge'
-							: ''}, {n.degree} connections"
+						aria-label={t(
+							n.bridge
+								? '{title}, {kind}, community {community}, bridge, {degree} connections'
+								: '{title}, {kind}, community {community}, {degree} connections',
+							{ title: n.title, kind: n.kind, community: label(n.community), degree: n.degree }
+						)}
 						onclick={() => (focused = focused === n.id ? null : n.id)}
 						onkeydown={(ev) => {
 							if (ev.key === 'Enter' || ev.key === ' ') {
@@ -182,28 +197,38 @@
 				{#if node}
 					<h3><a href="/notes/{node.id}">{node.title}</a></h3>
 					<p class="small muted">
-						{node.kind} · {label(node.community)} · centrality {node.pagerank}{node.bridge
-							? ` · bridge (participation ${node.participation})`
-							: ''}
+						{t(
+							node.bridge
+								? '{kind} · {community} · centrality {pagerank} · bridge (participation {participation})'
+								: '{kind} · {community} · centrality {pagerank}',
+							{
+								kind: node.kind,
+								community: label(node.community),
+								pagerank: node.pagerank,
+								participation: node.participation
+							}
+						)}
 					</p>
-					{#if node.phrases.length}<p class="small">Key phrases: {node.phrases.join(', ')}</p>{/if}
-					<h4>Why it connects</h4>
+					{#if node.phrases.length}<p class="small">
+							{t('Key phrases: {value}', { value: node.phrases.join(', ') })}
+						</p>{/if}
+					<h4>{t('Why it connects')}</h4>
 					<ul class="why">
 						{#each nodeEdges as e (e.from + e.to)}
 							{@const o = other(e)}
 							<li>
 								<a href="/notes/{o?.id}">{o?.title}</a>
-								<span class="muted small">strength {e.score}</span>
+								<span class="muted small">{t('strength {score}', { score: e.score })}</span>
 								<ul class="small">
 									{#each e.reasons as r (r)}<li>{r}</li>{/each}
 								</ul>
 							</li>
 						{:else}
-							<li class="muted">No connection above this strength.</li>
+							<li class="muted">{t('No connection above this strength.')}</li>
 						{/each}
 					</ul>
 				{:else}
-					<h3>Communities</h3>
+					<h3>{t('Communities')}</h3>
 					<ul class="communities">
 						{#each data.communities as c (c.id)}
 							<li>
@@ -215,24 +240,27 @@
 									<i style:background={colour(c.id)} aria-hidden="true"></i>{c.label}
 								</button>
 								<span class="muted small"
-									>{c.size} notes · {c.core.map((n) => n.title).join(', ')}</span
+									>{t('{size} notes · {value}', {
+										size: c.size,
+										value: c.core.map((n) => n.title).join(', ')
+									})}</span
 								>
 							</li>
 						{:else}
-							<li class="muted">No two notes are close enough to form a community yet.</li>
+							<li class="muted">{t('No two notes are close enough to form a community yet.')}</li>
 						{/each}
 					</ul>
 				{/if}
 			</aside>
 		</div>
 		<details>
-			<summary>Show the connections as a table</summary>
+			<summary>{t('Show the connections as a table')}</summary>
 			<table>
 				<thead
 					><tr
-						><th scope="col">Note</th><th scope="col">Note</th><th scope="col">Strength</th><th
-							scope="col">Why</th
-						></tr
+						><th scope="col">{t('Note')}</th><th scope="col">{t('Note')}</th><th scope="col"
+							>{t('Strength')}</th
+						><th scope="col">{t('Why')}</th></tr
 					></thead
 				>
 				<tbody>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { startRegistration } from '@simplewebauthn/browser';
@@ -23,7 +25,8 @@
 	let totpSetup = $state<{ secret: string; otpauth_url: string } | null>(null);
 	let totpCode = $state('');
 
-	const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : 'never');
+	const when = (iso: string | null) =>
+		iso ? new Date(iso).toLocaleString(appLocale()) : t('never');
 
 	async function load() {
 		error = '';
@@ -61,17 +64,20 @@
 			const response = await startRegistration({ optionsJSON: options.publicKey });
 			await api('/v1/me/passkeys/finish', { method: 'POST', body: response });
 			passkeyName = '';
-		}, 'Passkey added.');
+		}, t('Passkey added.'));
 	};
 
 	const removePasskey = (p: Schemas['Passkey']) =>
-		run(() => api(`/v1/me/passkeys/${p.id}`, { method: 'DELETE' }), `Removed “${p.name}”.`);
+		run(
+			() => api(`/v1/me/passkeys/${p.id}`, { method: 'DELETE' }),
+			t('Removed “{name}”.', { name: p.name })
+		);
 
 	const newCodes = () =>
 		run(async () => {
 			codes = (await api<{ recovery_codes: string[] }>('/v1/me/recovery-codes', { method: 'POST' }))
 				.recovery_codes;
-		}, 'New recovery codes issued. The old ones no longer work.');
+		}, t('New recovery codes issued. The old ones no longer work.'));
 
 	const totpBegin = () =>
 		run(async () => {
@@ -89,7 +95,7 @@
 				totpSetup = null;
 				totpCode = '';
 			},
-			on ? 'Authenticator codes are on.' : 'Authenticator codes are off.'
+			on ? t('Authenticator codes are on.') : t('Authenticator codes are off.')
 		);
 	};
 
@@ -97,7 +103,7 @@
 		run(async () => {
 			await api(`/v1/me/sessions/${s.id}`, { method: 'DELETE' });
 			if (s.current) await goto('/signin');
-		}, 'Device signed out.');
+		}, t('Device signed out.'));
 
 	const signOutEverywhere = () =>
 		run(async () => {
@@ -108,101 +114,118 @@
 	onMount(load);
 </script>
 
-<svelte:head><title>Sign-in & security · Axon</title></svelte:head>
+<svelte:head><title>{t('Sign-in & security · Axon')}</title></svelte:head>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !me}
-	<Status kind="loading" message="Loading…" />
+	<Status kind="loading" message={t('Loading…')} />
 {:else}
 	<Section
 		id="passkeys"
-		title="Passkeys"
-		description="Sign in with your fingerprint, face, or device PIN. Add one on each device you use."
+		title={t('Passkeys')}
+		description={t(
+			'Sign in with your fingerprint, face, or device PIN. Add one on each device you use.'
+		)}
 	>
-		<List items={passkeys} key={(p) => p.id} empty="No passkeys.">
+		<List items={passkeys} key={(p) => p.id} empty={t('No passkeys.')}>
 			{#snippet row(p)}
-				<span>{p.name} <span class="muted">· last used {when(p.last_used_at)}</span></span>
+				<span
+					>{p.name}
+					<span class="muted">{t('· last used {value}', { value: when(p.last_used_at) })}</span
+					></span
+				>
 				<Button
 					variant="danger"
 					onclick={() => removePasskey(p)}
 					disabled={busy || passkeys.length < 2}
-					aria-label={`Remove passkey ${p.name}`}>Remove</Button
+					aria-label={t('Remove passkey {name}', { name: p.name })}>{t('Remove')}</Button
 				>
 			{/snippet}
 		</List>
 		<form onsubmit={addPasskey}>
 			<TextField
 				id="pk-name"
-				label="Add a passkey"
-				placeholder="e.g. Phone"
+				label={t('Add a passkey')}
+				placeholder={t('e.g. Phone')}
 				bind:value={passkeyName}
 				maxlength={100}
 				required
 			/>
-			<Button type="submit" {busy}>Add passkey</Button>
+			<Button type="submit" {busy}>{t('Add passkey')}</Button>
 		</form>
 	</Section>
 
 	<Section
 		id="recovery"
-		title="Recovery codes"
-		description="Each code signs you in once if you lose your passkeys."
+		title={t('Recovery codes')}
+		description={t('Each code signs you in once if you lose your passkeys.')}
 	>
-		<p>{me.recovery_codes_remaining} of 10 unused.</p>
+		<p>
+			{t('{recovery_codes_remaining} of 10 unused.', {
+				recovery_codes_remaining: me.recovery_codes_remaining
+			})}
+		</p>
 		{#if codes.length}<RecoveryCodes {codes} />{/if}
-		<Button variant="secondary" onclick={newCodes} {busy}>Issue new codes</Button>
+		<Button variant="secondary" onclick={newCodes} {busy}>{t('Issue new codes')}</Button>
 	</Section>
 
 	{#if data.status.totp_available}
 		<Section
 			id="totp"
-			title="Authenticator app"
-			description="When on, signing in with a recovery code also needs a code from your authenticator app."
+			title={t('Authenticator app')}
+			description={t(
+				'When on, signing in with a recovery code also needs a code from your authenticator app.'
+			)}
 		>
 			{#if me.totp_enabled}
 				<form onsubmit={(e) => totpSubmit(e, false)}>
 					<TextField
 						id="totp-off"
-						label="Current code, to turn it off"
+						label={t('Current code, to turn it off')}
 						inputmode="numeric"
 						autocomplete="one-time-code"
 						bind:value={totpCode}
 						required
 					/>
-					<Button type="submit" variant="danger" {busy}>Turn off</Button>
+					<Button type="submit" variant="danger" {busy}>{t('Turn off')}</Button>
 				</form>
 			{:else if totpSetup}
-				<p>Add this key to your authenticator app, then enter the code it shows.</p>
-				<p><code>{totpSetup.secret}</code> · <a href={totpSetup.otpauth_url}>open in app</a></p>
+				<p>{t('Add this key to your authenticator app, then enter the code it shows.')}</p>
+				<p>
+					<code>{totpSetup.secret}</code> · <a href={totpSetup.otpauth_url}>{t('open in app')}</a>
+				</p>
 				<form onsubmit={(e) => totpSubmit(e, true)}>
 					<TextField
 						id="totp-on"
-						label="Code from the app"
+						label={t('Code from the app')}
 						inputmode="numeric"
 						autocomplete="one-time-code"
 						bind:value={totpCode}
 						required
 					/>
-					<Button type="submit" {busy}>Turn on</Button>
+					<Button type="submit" {busy}>{t('Turn on')}</Button>
 				</form>
 			{:else}
-				<Button variant="secondary" onclick={totpBegin} {busy}>Set up</Button>
+				<Button variant="secondary" onclick={totpBegin} {busy}>{t('Set up')}</Button>
 			{/if}
 		</Section>
 	{/if}
 
-	<Section id="devices" title="Signed-in devices">
-		<List items={sessions} key={(s) => s.id} empty="No other devices.">
+	<Section id="devices" title={t('Signed-in devices')}>
+		<List items={sessions} key={(s) => s.id} empty={t('No other devices.')}>
 			{#snippet row(s)}
 				<span
-					>{s.user_agent || 'Unknown device'}
-					<span class="muted">· {s.current ? 'this device' : `active ${when(s.last_seen_at)}`}</span
+					>{s.user_agent || t('Unknown device')}
+					<span class="muted"
+						>{s.current
+							? t('· this device')
+							: t('· active {when}', { when: when(s.last_seen_at) })}</span
 					></span
 				>
-				<Button variant="secondary" onclick={() => revoke(s)} {busy}>Sign out</Button>
+				<Button variant="secondary" onclick={() => revoke(s)} {busy}>{t('Sign out')}</Button>
 			{/snippet}
 		</List>
-		<Button variant="danger" onclick={signOutEverywhere} {busy}>Sign out everywhere</Button>
+		<Button variant="danger" onclick={signOutEverywhere} {busy}>{t('Sign out everywhere')}</Button>
 	</Section>
 {/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { highlight } from '$lib/notes';
@@ -23,17 +24,19 @@
 	});
 </script>
 
-<svelte:head><title>Search “{q}” · Axon</title></svelte:head>
+<svelte:head><title>{t('Search “{q}” · Axon', { q })}</title></svelte:head>
 
-<h1>Search</h1>
-<p class="muted">Notes matching “{q}”. Use quotes for a phrase and -word to exclude.</p>
+<h1>{t('Search')}</h1>
+<p class="muted">
+	{t('Notes matching “{q}”. Use quotes for a phrase and -word to exclude.', { q })}
+</p>
 
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !hits}
-	<Status kind="loading" message="Searching…" />
+	<Status kind="loading" message={t('Searching…')} />
 {:else if hits.length === 0}
-	<Status kind="empty" message="No note matches. Try fewer or different words." />
+	<Status kind="empty" message={t('No note matches. Try fewer or different words.')} />
 {:else}
 	<ol class="hits">
 		{#each hits as h (h.id)}

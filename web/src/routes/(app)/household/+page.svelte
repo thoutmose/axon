@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { onDestroy } from 'svelte';
 	import { ApiError, api, message, type Schemas } from '$lib/api';
 	import Button from '$lib/ui/Button.svelte';
@@ -83,12 +85,13 @@
 	}
 </script>
 
-<svelte:head><title>Household · Axon</title></svelte:head>
+<svelte:head><title>{t('Household · Axon')}</title></svelte:head>
 
-<h1>Household</h1>
+<h1>{t('Household')}</h1>
 <p class="muted">
-	Lists you share with the people you live with: shopping, chores, anything. Only what you put on a
-	household list is shared; your tasks, notes, money, and everything else stay yours.
+	{t(
+		'Lists you share with the people you live with: shopping, chores, anything. Only what you put on a household list is shared; your tasks, notes, money, and everything else stay yours.'
+	)}
 </p>
 
 {#if error}
@@ -96,7 +99,7 @@
 {:else if none}
 	<div class="start">
 		<section class="card" aria-labelledby="new-title">
-			<h2 id="new-title">Start a household</h2>
+			<h2 id="new-title">{t('Start a household')}</h2>
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -110,17 +113,17 @@
 			>
 				<TextField
 					id="household-name"
-					label="Name"
-					placeholder="Home"
+					label={t('Name')}
+					placeholder={t('Home')}
 					bind:value={name}
 					maxlength={100}
 					required
 				/>
-				<Button type="submit">Start</Button>
+				<Button type="submit">{t('Start')}</Button>
 			</form>
 		</section>
 		<section class="card" aria-labelledby="join-title">
-			<h2 id="join-title">Join one</h2>
+			<h2 id="join-title">{t('Join one')}</h2>
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -129,20 +132,20 @@
 			>
 				<TextField
 					id="household-code"
-					label="Invite code"
-					placeholder="ABCD-EFGH-JKLM-NPQR"
+					label={t('Invite code')}
+					placeholder={t('ABCD-EFGH-JKLM-NPQR')}
 					bind:value={code}
 					maxlength={40}
 					required
 					autocomplete="off"
 				/>
-				<Button type="submit" variant="secondary">Join</Button>
+				<Button type="submit" variant="secondary">{t('Join')}</Button>
 			</form>
-			<p class="muted small">Members will see your display name.</p>
+			<p class="muted small">{t('Members will see your display name.')}</p>
 		</section>
 	</div>
 {:else if !h}
-	<Status kind="loading" message="Loading the household…" />
+	<Status kind="loading" message={t('Loading the household…')} />
 {:else}
 	<section class="card" aria-labelledby="members-title">
 		<h2 id="members-title">{h.name}</h2>
@@ -150,8 +153,8 @@
 			{#each h.members as m (m.user_id)}
 				<li>
 					{m.name}{#if m.owner}<span class="muted small">
-							· owner</span
-						>{/if}{#if m.user_id === me}<span class="muted small"> · you</span>{/if}
+							{t('· owner')}</span
+						>{/if}{#if m.user_id === me}<span class="muted small"> {t('· you')}</span>{/if}
 					{#if amOwner && m.user_id !== me}
 						<Button
 							variant="ghost"
@@ -162,7 +165,7 @@
 									undefined,
 									`${m.name} is no longer in the household.`
 								)}
-							aria-label="Remove {m.name}">Remove</Button
+							aria-label={t('Remove {name}', { name: m.name })}>{t('Remove')}</Button
 						>
 					{/if}
 				</li>
@@ -171,16 +174,19 @@
 		{#if invite}
 			<div class="invite" role="status">
 				<p>
-					Give this code to who you want to invite. It works once, until {new Date(
-						invite.expires_at
-					).toLocaleDateString()}, and is not shown again.
+					{t(
+						'Give this code to who you want to invite. It works once, until {value}, and is not shown again.',
+						{ value: new Date(invite.expires_at).toLocaleDateString(appLocale()) }
+					)}
 				</p>
 				<code>{invite.code}</code>
 			</div>
 		{/if}
 		<div class="row">
-			<Button variant="secondary" onclick={newInvite}>Invite someone</Button>
-			<Button variant="ghost" onclick={() => (confirmLeave = true)}>Leave the household</Button>
+			<Button variant="secondary" onclick={newInvite}>{t('Invite someone')}</Button>
+			<Button variant="ghost" onclick={() => (confirmLeave = true)}
+				>{t('Leave the household')}</Button
+			>
 		</div>
 	</section>
 
@@ -189,7 +195,7 @@
 			<section class="card" aria-labelledby="list-{l.id}">
 				<div class="head">
 					<h2 id="list-{l.id}">{l.title}</h2>
-					<span class="muted small">{l.open} to do</span>
+					<span class="muted small">{t('{open} to do', { open: l.open })}</span>
 				</div>
 				<ul class="items">
 					{#each l.items as it (it.id)}
@@ -202,14 +208,14 @@
 								<span class="muted small">{memberName(it.done_by) || 'done'}</span>
 							{:else}
 								<select
-									aria-label="Who does “{it.title}”"
+									aria-label={t('Who does “{title}”', { title: it.title })}
 									value={it.assignee ?? ''}
 									onchange={(e) =>
 										call('PATCH', `/v1/household/items/${it.id}`, {
 											assignee: e.currentTarget.value
 										})}
 								>
-									<option value="">Anyone</option>
+									<option value="">{t('Anyone')}</option>
 									{#each h.members as m (m.user_id)}<option value={m.user_id}>{m.name}</option
 										>{/each}
 								</select>
@@ -217,32 +223,34 @@
 							<Button
 								variant="ghost"
 								onclick={() => call('DELETE', `/v1/household/items/${it.id}`)}
-								aria-label="Delete {it.title}">×</Button
+								aria-label={t('Delete {title}', { title: it.title })}>×</Button
 							>
 						</li>
 					{/each}
 				</ul>
 				<form class="add" onsubmit={(e) => addItem(l.id, e)}>
-					<label for="add-{l.id}" class="visually-hidden">Add to {l.title}</label>
+					<label for="add-{l.id}" class="visually-hidden"
+						>{t('Add to {title}', { title: l.title })}</label
+					>
 					<input
 						id="add-{l.id}"
-						placeholder="Add an item"
+						placeholder={t('Add an item')}
 						bind:value={drafts[l.id]}
 						maxlength="300"
 						autocomplete="off"
 					/>
-					<Button type="submit" variant="secondary">Add</Button>
+					<Button type="submit" variant="secondary">{t('Add')}</Button>
 				</form>
 				<Button
 					variant="ghost"
 					onclick={() =>
 						call('DELETE', `/v1/household/lists/${l.id}`, undefined, `“${l.title}” deleted.`)}
-					aria-label="Delete the list {l.title}">Delete list</Button
+					aria-label={t('Delete the list {title}', { title: l.title })}>{t('Delete list')}</Button
 				>
 			</section>
 		{/each}
 		<section class="card" aria-labelledby="newlist-title">
-			<h2 id="newlist-title">New list</h2>
+			<h2 id="newlist-title">{t('New list')}</h2>
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -252,35 +260,35 @@
 			>
 				<TextField
 					id="list-title"
-					label="List"
-					placeholder="Groceries"
+					label={t('List')}
+					placeholder={t('Groceries')}
 					bind:value={listTitle}
 					maxlength={100}
 					required
 				/>
-				<label for="list-kind">For</label>
+				<label for="list-kind">{t('For')}</label>
 				<select id="list-kind" bind:value={listKind}>
-					<option value="shopping">Shopping</option>
-					<option value="chores">Chores</option>
-					<option value="other">Anything</option>
+					<option value="shopping">{t('Shopping')}</option>
+					<option value="chores">{t('Chores')}</option>
+					<option value="other">{t('Anything')}</option>
 				</select>
-				<Button type="submit" variant="secondary">Create</Button>
+				<Button type="submit" variant="secondary">{t('Create')}</Button>
 			</form>
 		</section>
 	</div>
 {/if}
 
-<Dialog bind:open={confirmLeave} title="Leave the household?">
-	<p>You will no longer see its lists. What you were given to do goes back to anyone.</p>
+<Dialog bind:open={confirmLeave} title={t('Leave the household?')}>
+	<p>{t('You will no longer see its lists. What you were given to do goes back to anyone.')}</p>
 	<div class="row">
 		<Button
 			variant="danger"
 			onclick={() => {
 				confirmLeave = false;
 				call('DELETE', '/v1/household/me', undefined, 'You left the household.');
-			}}>Leave</Button
+			}}>{t('Leave')}</Button
 		>
-		<Button variant="secondary" onclick={() => (confirmLeave = false)}>Stay</Button>
+		<Button variant="secondary" onclick={() => (confirmLeave = false)}>{t('Stay')}</Button>
 	</div>
 </Dialog>
 

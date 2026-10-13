@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import Status from './ui/Status.svelte';
 
@@ -20,28 +21,31 @@
 		}
 	}
 	const ease = (n: number) =>
-		n >= 70 ? 'easy to read' : n >= 50 ? 'plain' : n >= 30 ? 'fairly difficult' : 'difficult';
+		n >= 70 ? t('easy to read') : n >= 50 ? 'plain' : n >= 30 ? t('fairly difficult') : 'difficult';
 </script>
 
 <details
 	class="card analysis"
 	ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && load()}
 >
-	<summary><h2>Analysis</h2></summary>
+	<summary><h2>{t('Analysis')}</h2></summary>
 	{#if error}
 		<Status kind="error" message={error} />
 	{:else if !data}
-		<Status kind="loading" message="Reading the note…" />
+		<Status kind="loading" message={t('Reading the note…')} />
 	{:else}
 		<p class="small">
-			{data.readability.words} words · {data.readability.reading_minutes} min read · {data
-				.readability.language === 'fr'
-				? 'French'
-				: 'English'} · readability {data.readability.ease}/100 ({ease(data.readability.ease)})
+			{t('{words} words · {minutes} min read · {language} · readability {ease}/100 ({level})', {
+				words: data.readability.words,
+				minutes: data.readability.reading_minutes,
+				language: t(data.readability.language === 'fr' ? 'French' : 'English'),
+				ease: data.readability.ease,
+				level: t(ease(data.readability.ease))
+			})}
 		</p>
 		{#if data.phrases.length}
-			<h3>Key phrases</h3>
-			<ul class="chips" aria-label="Key phrases">
+			<h3>{t('Key phrases')}</h3>
+			<ul class="chips" aria-label={t('Key phrases')}>
 				{#each data.phrases as p (p.text)}
 					<li style:opacity={0.55 + p.score * 0.45}>{p.text}</li>
 				{/each}
@@ -49,12 +53,14 @@
 		{/if}
 		{#if data.topic}
 			<p class="small">
-				Topic: <a href="/notes/analysis#topic-{data.topic.id}">{data.topic.label}</a>, with {data
-					.topic.notes.length - 1} other notes
+				{t('Topic:')} <a href="/notes/analysis#topic-{data.topic.id}">{data.topic.label}</a>{t(
+					', with {value} other notes',
+					{ value: data.topic.notes.length - 1 }
+				)}
 			</p>
 		{/if}
 		{#if data.related.length}
-			<h3>Related ideas</h3>
+			<h3>{t('Related ideas')}</h3>
 			<ul class="related">
 				{#each data.related as r (r.id)}
 					<li>

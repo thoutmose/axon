@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message } from '$lib/api';
 	import { roleNames, type Account } from '$lib/finance';
 	import { formatCents, toCents } from '$lib/money';
@@ -31,7 +32,7 @@
 		e.preventDefault();
 		const cents = form.opening ? toCents(form.opening) : 0;
 		if (cents === null) {
-			toast('Type an opening balance like 1200.50.', 'error');
+			toast(t('Type an opening balance like 1200.50.'), 'error');
 			return;
 		}
 		try {
@@ -70,44 +71,48 @@
 	}
 </script>
 
-<svelte:head><title>Accounts · Budget · Axon</title></svelte:head>
+<svelte:head><title>{t('Accounts · Budget · Axon')}</title></svelte:head>
 
-<h1>Accounts</h1>
+<h1>{t('Accounts')}</h1>
 <p class="muted small">
-	Where your money is, and what you owe. A balance is the opening balance plus income, minus
-	expenses, plus or minus transfers; transfers between your accounts never count as spending.
+	{t(
+		'Where your money is, and what you owe. A balance is the opening balance plus income, minus expenses, plus or minus transfers; transfers between your accounts never count as spending.'
+	)}
 </p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />
 {:else if !accounts}
-	<Status kind="loading" message="Loading accounts…" />
+	<Status kind="loading" message={t('Loading accounts…')} />
 {:else}
 	<section class="card" aria-labelledby="list">
-		<h2 id="list">Net worth: <span class:bad={total < 0}>{money(total)}</span></h2>
+		<h2 id="list">{t('Net worth:')} <span class:bad={total < 0}>{money(total)}</span></h2>
 		{#if accounts.length === 0}
-			<p class="muted">No accounts yet. Add your bank account, cash, and cards below.</p>
+			<p class="muted">{t('No accounts yet. Add your bank account, cash, and cards below.')}</p>
 		{:else}
 			<table>
 				<thead
 					><tr
-						><th scope="col">Account</th><th scope="col">Kind</th><th scope="col" class="num"
-							>Balance</th
-						><th scope="col"><span class="visually-hidden">Actions</span></th></tr
+						><th scope="col">{t('Account')}</th><th scope="col">{t('Kind')}</th><th
+							scope="col"
+							class="num">{t('Balance')}</th
+						><th scope="col"><span class="visually-hidden">{t('Actions')}</span></th></tr
 					></thead
 				>
 				<tbody>
 					{#each accounts as a (a.id)}
 						<tr class:muted={a.archived}>
 							<td>{a.name}{a.archived ? ' (archived)' : ''}</td>
-							<td>{a.type === 'liability' ? 'Owed · ' : ''}{roleNames[a.role]}</td>
+							<td>{a.type === 'liability' ? t('Owed · ') : ''}{t(roleNames[a.role])}</td>
 							<td class="num" class:bad={a.balance_cents < 0}>{money(a.balance_cents)}</td>
 							<td class="row">
 								<button class="link" onclick={() => patch(a, { archived: !a.archived })}
-									>{a.archived ? 'Restore' : 'Archive'}</button
+									>{a.archived ? t('Restore') : t('Archive')}</button
 								>
-								<button class="link" onclick={() => remove(a)} aria-label="Delete {a.name}"
-									>Delete</button
+								<button
+									class="link"
+									onclick={() => remove(a)}
+									aria-label={t('Delete {name}', { name: a.name })}>{t('Delete')}</button
 								>
 							</td>
 						</tr>
@@ -118,36 +123,36 @@
 	</section>
 
 	<section class="card" aria-labelledby="new">
-		<h2 id="new">Add an account</h2>
+		<h2 id="new">{t('Add an account')}</h2>
 		<form class="grid" onsubmit={create}>
 			<div class="field">
-				<label for="acc-name">Name</label>
+				<label for="acc-name">{t('Name')}</label>
 				<input id="acc-name" bind:value={form.name} maxlength="100" required />
 			</div>
 			<div class="field">
-				<label for="acc-type">It is</label>
+				<label for="acc-type">{t('It is')}</label>
 				<select
 					id="acc-type"
 					bind:value={form.type}
 					onchange={() => (form.role = form.type === 'liability' ? 'credit_card' : 'checking')}
 				>
-					<option value="asset">Money I have</option>
-					<option value="liability">Money I owe</option>
+					<option value="asset">{t('Money I have')}</option>
+					<option value="liability">{t('Money I owe')}</option>
 				</select>
 			</div>
 			<div class="field">
-				<label for="acc-role">Type</label>
+				<label for="acc-role">{t('Type')}</label>
 				<select id="acc-role" bind:value={form.role}>
-					{#each Object.entries(roleNames) as [k, v] (k)}<option value={k}>{v}</option>{/each}
+					{#each Object.entries(roleNames) as [k, v] (k)}<option value={k}>{t(v)}</option>{/each}
 				</select>
 			</div>
 			<div class="field">
 				<label for="acc-opening"
-					>{form.type === 'liability' ? 'Amount owed today' : 'Balance today'}</label
+					>{form.type === 'liability' ? t('Amount owed today') : t('Balance today')}</label
 				>
 				<input id="acc-opening" inputmode="decimal" placeholder="0.00" bind:value={form.opening} />
 			</div>
-			<div><Button type="submit">Add account</Button></div>
+			<div><Button type="submit">{t('Add account')}</Button></div>
 		</form>
 	</section>
 {/if}

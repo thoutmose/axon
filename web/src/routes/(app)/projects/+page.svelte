@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { slug } from '$lib/noteTemplates';
@@ -12,12 +13,12 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
-	const tabs = [
-		{ id: 'active', label: 'Active' },
-		{ id: 'on_hold', label: 'On hold' },
-		{ id: 'done', label: 'Done' },
-		{ id: 'archived', label: 'Archived' }
-	];
+	const tabs = $derived([
+		{ id: 'active', label: t('Active') },
+		{ id: 'on_hold', label: t('On hold') },
+		{ id: 'done', label: t('Done') },
+		{ id: 'archived', label: t('Archived') }
+	]);
 	const status = $derived(page.url.searchParams.get('status') ?? 'active');
 	let projects = $state<Project[] | null>(null);
 	let error = $state('');
@@ -83,35 +84,35 @@
 	}
 </script>
 
-<svelte:head><title>Projects · Axon</title></svelte:head>
+<svelte:head><title>{t('Projects · Axon')}</title></svelte:head>
 
-<h1>Projects</h1>
+<h1>{t('Projects')}</h1>
 <AgentDock {...pageAgents.projects} />
 <p class="muted hint">
-	Outcomes with a finish line: a board of epics, issues, and sub-tasks, with their docs.
+	{t('Outcomes with a finish line: a board of epics, issues, and sub-tasks, with their docs.')}
 </p>
 
-<nav aria-label="Project status" class="tabs">
-	{#each tabs as t (t.id)}
-		<a href="?status={t.id}" aria-current={status === t.id ? 'page' : undefined}>{t.label}</a>
+<nav aria-label={t('Project status')} class="tabs">
+	{#each tabs as tab (tab.id)}
+		<a href="?status={tab.id}" aria-current={status === tab.id ? 'page' : undefined}>{tab.label}</a>
 	{/each}
 </nav>
 
 {#if status === 'active'}
 	<form class="quick" onsubmit={create}>
-		<label for="new-project" class="visually-hidden">New project</label>
+		<label for="new-project" class="visually-hidden">{t('New project')}</label>
 		<input
 			id="new-project"
-			placeholder="New project, e.g. Launch the newsletter…"
+			placeholder={t('New project, e.g. Launch the newsletter…')}
 			bind:value={title}
 			maxlength="500"
 			required
 			autocomplete="off"
 		/>
-		<Button type="submit" variant="secondary">Create</Button>
+		<Button type="submit" variant="secondary">{t('Create')}</Button>
 	</form>
 	<TemplateChips
-		items={projectTemplates.map((t) => ({ title: t.title, hint: t.description }))}
+		items={projectTemplates.map((tpl) => ({ title: t(tpl.title), hint: t(tpl.description) }))}
 		onpick={(i) => start(title.trim() || projectTemplates[i].title, projectTemplates[i])}
 		{busy}
 	/>
@@ -120,11 +121,11 @@
 {#if error}
 	<Status kind="error" message={error} />
 {:else if !projects}
-	<Status kind="loading" message="Loading projects…" />
+	<Status kind="loading" message={t('Loading projects…')} />
 {:else if projects.length === 0}
 	<Status
 		kind="empty"
-		message={status === 'active' ? 'No active projects. Start one above.' : 'Nothing here.'}
+		message={status === 'active' ? t('No active projects. Start one above.') : t('Nothing here.')}
 	/>
 {:else}
 	<ul class="grid">
@@ -135,7 +136,7 @@
 				<div
 					class="bar"
 					role="progressbar"
-					aria-label="Progress of {p.title}"
+					aria-label={t('Progress of {title}', { title: p.title })}
 					aria-valuemin="0"
 					aria-valuemax={p.total || 1}
 					aria-valuenow={p.done}
@@ -143,7 +144,16 @@
 					<span style:width="{p.total ? (p.done / p.total) * 100 : 0}%"></span>
 				</div>
 				<p class="muted small">
-					{p.done} of {p.total} cards done{p.wip_limit ? ` · WIP limit ${p.wip_limit}` : ''}
+					{t(
+						p.wip_limit
+							? '{done} of {total} cards done · WIP limit {limit}'
+							: '{done} of {total} cards done',
+						{
+							done: p.done,
+							total: p.total,
+							limit: p.wip_limit
+						}
+					)}
 				</p>
 			</li>
 		{/each}

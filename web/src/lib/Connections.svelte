@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import { href, label, options, typeNames, type Link, type Option, type Relation } from './links';
 	import { iconFor, iconTheme } from './preferences';
@@ -80,7 +81,7 @@
 					? { source_id: id, relation: o.relation, target_id: picked.id }
 					: { source_id: picked.id, relation: o.relation, target_id: id }
 			});
-			toast(`Connected to “${picked.title}”.`);
+			toast(t('Connected to “{title}”.', { title: picked.title }));
 			picked = null;
 			query = '';
 			await load();
@@ -102,9 +103,9 @@
 </script>
 
 <section class="card connections" aria-labelledby="connections-{id}">
-	<h2 id="connections-{id}">Connections</h2>
+	<h2 id="connections-{id}">{t('Connections')}</h2>
 	{#if rows.length === 0}
-		<p class="muted">Not connected to anything yet.</p>
+		<p class="muted">{t('Not connected to anything yet.')}</p>
 	{:else}
 		<ul class="rows">
 			{#each rows as { link, out } (link.id + (out ? 'o' : 'i'))}
@@ -117,13 +118,14 @@
 					{/if}
 					<span class="chip"
 						>{iconFor(link.entity.type, iconTheme())}
-						{typeNames[link.entity.type] ?? link.entity.type}</span
+						{t(typeNames[link.entity.type] ?? link.entity.type)}</span
 					>
 					{#if link.relation !== 'references'}
 						<Button
 							variant="ghost"
 							onclick={() => remove(link)}
-							aria-label="Remove connection to {link.entity.title}">Remove</Button
+							aria-label={t('Remove connection to {title}', { title: link.entity.title })}
+							>{t('Remove')}</Button
 						>
 					{/if}
 				</li>
@@ -132,22 +134,22 @@
 	{/if}
 
 	<form class="add" onsubmit={connect}>
-		<label for="connect-{id}">Connect to</label>
+		<label for="connect-{id}">{t('Connect to')}</label>
 		<input
 			id="connect-{id}"
 			type="search"
-			placeholder="Search tasks, notes, goals, habits…"
+			placeholder={t('Search tasks, notes, goals, habits…')}
 			autocomplete="off"
 			bind:value={query}
 			oninput={search}
 			aria-controls={hits.length ? `connect-results-${id}` : undefined}
 		/>
 		{#if hits.length}
-			<ul class="results" id="connect-results-{id}" aria-label="Matches">
+			<ul class="results" id="connect-results-{id}" aria-label={t('Matches')}>
 				{#each hits as h (h.id)}
 					<li>
 						<button type="button" onclick={() => pick(h)}>
-							<span class="chip">{iconFor(h.type, iconTheme())} {typeNames[h.type]}</span>
+							<span class="chip">{iconFor(h.type, iconTheme())} {t(typeNames[h.type])}</span>
 							{h.title}
 						</button>
 					</li>
@@ -156,16 +158,21 @@
 		{/if}
 		{#if picked}
 			{#if choices.length === 0}
-				<p class="muted small">These two cannot be connected.</p>
+				<p class="muted small">{t('These two cannot be connected.')}</p>
 			{:else}
 				<div class="row">
-					<label for="relation-{id}" class="visually-hidden">How they connect</label>
+					<label for="relation-{id}" class="visually-hidden">{t('How they connect')}</label>
 					<select id="relation-{id}" bind:value={choice}>
 						{#each choices as c, i (c.relation + c.outgoing)}
-							<option value={i}>This {c.label.toLowerCase()} “{picked.title}”</option>
+							<option value={i}
+								>{t('This {value} “{title}”', {
+									value: c.label.toLowerCase(),
+									title: picked.title
+								})}</option
+							>
 						{/each}
 					</select>
-					<Button type="submit" variant="secondary">Connect</Button>
+					<Button type="submit" variant="secondary">{t('Connect')}</Button>
 				</div>
 			{/if}
 		{/if}

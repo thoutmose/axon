@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { appLocale } from '\$lib/dates';
+	import { t } from '$lib/i18n.svelte';
 	import { api, message } from './api';
 	import type { paths } from './api-types';
 	import Button from './ui/Button.svelte';
@@ -32,7 +34,7 @@
 		try {
 			const { password, ...rest } = form;
 			await api('/v1/me/anki', { method: 'PUT', body: password ? { ...rest, password } : rest });
-			toast('Anki account saved.');
+			toast(t('Anki account saved.'));
 			editing = false;
 			await load();
 		} catch (err) {
@@ -46,7 +48,9 @@
 			const r = await api<{ added: number; updated: number }>('/v1/me/anki/sync', {
 				method: 'POST'
 			});
-			toast(`Sent to Anki: ${r.added} added, ${r.updated} updated.`);
+			toast(
+				t('Sent to Anki: {added} added, {updated} updated.', { added: r.added, updated: r.updated })
+			);
 		} catch (err) {
 			toast(message(err), 'error');
 		} finally {
@@ -70,31 +74,35 @@
 		<h2 id="anki-title">Anki</h2>
 		{#if s.account && !editing}
 			<p>
-				Connected to <strong>{s.account.endpoint}</strong> as <strong>{s.account.username}</strong>.
+				{t('Connected to')} <strong>{s.account.endpoint}</strong>
+				{t('as')} <strong>{s.account.username}</strong>.
 				{s.account.auto_sync
-					? 'Cards you approve from the Teacher are sent automatically.'
-					: 'Send cards with the button.'}
+					? t('Cards you approve from the Teacher are sent automatically.')
+					: t('Send cards with the button.')}
 			</p>
 			{#if s.account.last_sync_at}
 				<p class="small" class:error={s.account.last_status === 'error'} role="status">
-					Last sync {new Date(s.account.last_sync_at).toLocaleString()}: {s.account.last_message}
+					{t('Last sync {value}: {last_message}', {
+						value: new Date(s.account.last_sync_at).toLocaleString(appLocale()),
+						last_message: s.account.last_message
+					})}
 				</p>
 			{/if}
 			<div class="row">
-				<Button onclick={sync} busy={syncing}>Sync to Anki now</Button>
-				<Button variant="secondary" onclick={() => (editing = true)}>Change account</Button>
-				<Button variant="ghost" onclick={disconnect}>Disconnect</Button>
+				<Button onclick={sync} busy={syncing}>{t('Sync to Anki now')}</Button>
+				<Button variant="secondary" onclick={() => (editing = true)}>{t('Change account')}</Button>
+				<Button variant="ghost" onclick={disconnect}>{t('Disconnect')}</Button>
 			</div>
 		{:else}
 			<p class="muted small">
-				Send your cards to your own anki-sync-server (for example the one on srv-services), then
-				sync Anki on your computer or phone. Notes are updated in place; cards that exist only in
-				Anki are never deleted.
+				{t(
+					'Send your cards to your own anki-sync-server (for example the one on srv-services), then sync Anki on your computer or phone. Notes are updated in place; cards that exist only in Anki are never deleted.'
+				)}
 			</p>
 			<form onsubmit={save}>
 				<TextField
 					id="anki-endpoint"
-					label="Sync server"
+					label={t('Sync server')}
 					type="url"
 					placeholder="https://anki.example/"
 					bind:value={form.endpoint}
@@ -102,28 +110,29 @@
 				/>
 				<TextField
 					id="anki-username"
-					label="Anki user name"
+					label={t('Anki user name')}
 					bind:value={form.username}
 					maxlength={200}
 					required
 				/>
 				<TextField
 					id="anki-password"
-					label="Anki password"
+					label={t('Anki password')}
 					type="password"
 					hint={s.account
-						? 'Leave empty to keep the saved password.'
-						: 'Stored encrypted; never shown again.'}
+						? t('Leave empty to keep the saved password.')
+						: t('Stored encrypted; never shown again.')}
 					bind:value={form.password}
 					maxlength={500}
 				/>
 				<label class="check"
-					><input type="checkbox" bind:checked={form.auto_sync} /> Send cards automatically after I approve
-					the Teacher's proposals</label
+					><input type="checkbox" bind:checked={form.auto_sync} />
+					{t("Send cards automatically after I approve the Teacher's proposals")}</label
 				>
 				<div class="row">
-					<Button type="submit" variant="secondary">Save</Button>
-					{#if editing}<Button variant="ghost" onclick={() => (editing = false)}>Cancel</Button
+					<Button type="submit" variant="secondary">{t('Save')}</Button>
+					{#if editing}<Button variant="ghost" onclick={() => (editing = false)}
+							>{t('Cancel')}</Button
 						>{/if}
 				</div>
 			</form>

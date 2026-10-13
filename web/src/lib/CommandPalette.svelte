@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from './api';
 	import { capturing } from './capture.svelte';
@@ -19,29 +20,34 @@
 	let active = $state(0);
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
-	const commands: Item[] = [
-		{ id: 'c-note', label: 'New note…', detail: 'Command', run: () => goto('/notes?new=1') },
-		{ id: 'c-daily', label: "Open today's note", detail: 'Command', run: openDaily },
+	const commands: Item[] = $derived([
+		{ id: 'c-note', label: t('New note…'), detail: t('Command'), run: () => goto('/notes?new=1') },
+		{ id: 'c-daily', label: t("Open today's note"), detail: t('Command'), run: openDaily },
 		{
 			id: 'c-task',
-			label: 'Capture a task or note',
-			detail: 'Command · n',
+			label: t('Capture a task or note'),
+			detail: t('Command · n'),
 			run: () => (capturing.open = true)
 		},
 		...[
-			['Today', '/today'],
-			['Tasks', '/tasks'],
-			['Notes', '/notes'],
-			['Goals', '/goals'],
-			['Projects', '/projects'],
-			['Learn', '/learn'],
-			['Roadmaps', '/roadmaps'],
-			['Habits', '/habits'],
-			['Calendar', '/calendar'],
-			['Agents', '/agents'],
-			['Account', '/account']
-		].map(([l, h]) => ({ id: `g-${h}`, label: `Go to ${l}`, detail: 'Page', run: () => goto(h) }))
-	];
+			[t('Today'), '/today'],
+			[t('Tasks'), '/tasks'],
+			[t('Notes'), '/notes'],
+			[t('Goals'), '/goals'],
+			[t('Projects'), '/projects'],
+			[t('Learn'), '/learn'],
+			[t('Roadmaps'), '/roadmaps'],
+			[t('Habits'), '/habits'],
+			[t('Calendar'), '/calendar'],
+			[t('Agents'), '/agents'],
+			[t('Account'), '/account']
+		].map(([l, h]) => ({
+			id: `g-${h}`,
+			label: t('Go to {l}', { l }),
+			detail: t('Page'),
+			run: () => goto(h)
+		}))
+	]);
 
 	const items = $derived.by<Item[]>(() => {
 		const q = query.trim().toLowerCase();
@@ -51,7 +57,7 @@
 			.map((h) => ({
 				id: h.id,
 				label: h.title,
-				detail: `${iconFor(h.type, iconTheme())} ${typeNames[h.type] ?? h.type}`.trim(),
+				detail: `${iconFor(h.type, iconTheme())} ${t(typeNames[h.type] ?? h.type)}`.trim(),
 				snippet: h.snippet,
 				run: () => goto(href(h)!)
 			}));
@@ -64,7 +70,7 @@
 			.map((m) => ({
 				id: `meaning-${m.id}`,
 				label: m.title,
-				detail: 'Close in meaning',
+				detail: t('Close in meaning'),
 				snippet: '',
 				run: () => goto(`/notes/${m.id}`)
 			}));
@@ -139,24 +145,24 @@
 <dialog
 	bind:this={dialog}
 	class="palette"
-	aria-label="Command center"
+	aria-label={t('Command center')}
 	onclose={() => (open = false)}
 >
-	<label for="palette-input" class="visually-hidden">Search or type a command</label>
+	<label for="palette-input" class="visually-hidden">{t('Search or type a command')}</label>
 	<input
 		id="palette-input"
 		bind:this={input}
 		bind:value={query}
 		oninput={search}
 		{onkeydown}
-		placeholder="Search everything or type a command…"
+		placeholder={t('Search everything or type a command…')}
 		autocomplete="off"
 		role="combobox"
 		aria-expanded={items.length > 0}
 		aria-controls="palette-list"
 		aria-activedescendant={items.length ? `palette-${active}` : undefined}
 	/>
-	<ul id="palette-list" role="listbox" aria-label="Results">
+	<ul id="palette-list" role="listbox" aria-label={t('Results')}>
 		{#each items as item, i (item.id)}
 			<li
 				id="palette-{i}"
@@ -175,7 +181,7 @@
 			</li>
 		{/each}
 	</ul>
-	<p class="hint">↑↓ to choose · Enter to open · Esc to close</p>
+	<p class="hint">{t('↑↓ to choose · Enter to open · Esc to close')}</p>
 </dialog>
 
 <style>
