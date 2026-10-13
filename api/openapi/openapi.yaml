@@ -4923,6 +4923,51 @@ paths:
         "422": { $ref: "#/components/responses/Problem" }
         "429": { $ref: "#/components/responses/Problem" }
         "503": { $ref: "#/components/responses/Problem" }
+  /v1/health/food/estimate:
+    post:
+      tags: [wellbeing]
+      operationId: estimateMealPhoto
+      summary: Estimate the foods and nutrients in a photo of a meal
+      description: >-
+        The photo (JPEG or PNG, up to 10 MB) is re-encoded without its camera and location details, sent once to
+        the person's AI provider, and never stored. Needs the ai_agents, health_data, and food_photos consents;
+        counts against the monthly agent budget. Every line is an estimate for the person to check before
+        logging it. Not in the shared demo.
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          image/png: { schema: { type: string, format: binary } }
+      responses:
+        "200":
+          description: The estimate; items is empty when the photo shows no food.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, note]
+                properties:
+                  items:
+                    type: array
+                    maxItems: 12
+                    items:
+                      type: object
+                      required: [name, grams, kcal, protein_g, carbs_g, fat_g]
+                      properties:
+                        name: { type: string }
+                        grams: { type: number }
+                        kcal: { type: number }
+                        protein_g: { type: number }
+                        carbs_g: { type: number }
+                        fat_g: { type: number }
+                  note: { type: string, description: "What the model was unsure of, in your language." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "402": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "413": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
   /v1/health/needs:
     get:
       tags: [wellbeing]

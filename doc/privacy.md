@@ -58,6 +58,7 @@ All off by default, revocable at any time in **Account → Privacy choices**, an
 | `ai_agents` | Sending selected data to the configured AI provider (Anthropic) so agents can draft suggestions |
 | `external_metadata` | Looking up films, series, and books with TMDB and Open Library |
 | `health_data` | Storing health data at all |
+| `food_photos` | Sending a photo of a meal to the person's AI provider to estimate it (EP-89); the photo is re-encoded without camera or location details and never stored |
 
 Features must call `privacy.Granted` before acting on a purpose.
 

@@ -2,6 +2,7 @@
 	import { localDate } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import DailyNeeds from '$lib/DailyNeeds.svelte';
+	import MealPhoto from '$lib/MealPhoto.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -334,6 +335,7 @@
 					{#each meals as m (m)}<option value={m}>{t(mealName[m])}</option>{/each}
 				</select></label
 			>
+			<MealPhoto {date} meal={entry.meal} onlogged={loadDay} onfood={pick} />
 			{#if status.lookups_consented}
 				<form class="row" onsubmit={search}>
 					<label class="visually-hidden" for="food-q">{t('Find a food')}</label>

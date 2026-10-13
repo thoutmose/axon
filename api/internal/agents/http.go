@@ -33,6 +33,12 @@ func (r *Runner) Routes(m chi.Router) {
 	m.Get("/v1/agent-memories", r.memories)
 }
 
+// UploadRoutes mounts the meal photo estimate, which needs a larger body
+// limit than JSON (EP-89).
+func (r *Runner) UploadRoutes(m chi.Router) {
+	m.Post("/v1/health/food/estimate", r.estimate)
+}
+
 // SessionRoutes mount decisions only a person at a browser may take:
 // approving changes, budgets, and forgetting. The caller wraps them in
 // auth.RequireSession, so no token (or agent) can approve a proposal.

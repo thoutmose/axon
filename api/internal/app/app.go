@@ -128,6 +128,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			r.Use(limitBody(12<<20), authn.SameOrigin)
 			r.With(authn.RequireSession).Group(avatarsAPI.UploadRoutes)
 			r.With(authn.Require).Group(cardsAPI.UploadRoutes)
+			r.With(authn.Require).Group(agentsAPI.UploadRoutes)
 		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))

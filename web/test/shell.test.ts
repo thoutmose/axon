@@ -867,6 +867,25 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(needs.getByRole('progressbar', { name: 'Energy' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// A photo of a meal (EP-89): nothing is sent before the person allows it.
+	const sent: string[] = [];
+	page.on('request', (r) => r.url().includes('/food/estimate') && sent.push(r.url()));
+	const onePixel = (
+		globalThis as unknown as { Buffer: { from(s: string, encoding: string): never } }
+	).Buffer.from(
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+		'base64'
+	);
+	await page
+		.locator('label', { hasText: 'Photo of a meal' })
+		.locator('input[type=file]')
+		.setInputFiles({ name: 'meal.png', mimeType: 'image/png', buffer: onePixel });
+	const ask = page.getByRole('group', { name: 'Before the photo is sent' });
+	await expect(ask).toContainText('The photo is not kept');
+	expect(sent).toEqual([]);
+	await noSeriousA11yViolations(page);
+	await ask.getByRole('button', { name: 'Cancel' }).click();
+
 	await page.getByRole('link', { name: 'Training' }).click();
 	await page.getByLabel('Title').fill('Full body');
 	await page.getByLabel('Minutes').fill('40');
