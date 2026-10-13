@@ -144,6 +144,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-93 | Journal days in the vault | Each journal day becomes a daily note in the vault, with its scales in the front matter, written one way when health notes are on, and removed with the day or the consent. | SHOULD | 1 pt | EP-48, EP-91 | Done |
 | EP-94 | Only what you use | A new account is asked what it wants Axon for; the menu and Today show just those pages, and Preferences hides or brings back any page. Fixes Preferences resetting Today's cards. | SHOULD | 3 pts | EP-54, EP-63 | Done |
 | EP-95 | The Top-5% roadmap | Owner request: the owner's roadmap from their vault is the only roadmap, used by default and in the demo, with its tasks, subtasks, projects, goal, milestones, side projects, habits, and resources. | MUST | 8 pts | EP-14, EP-27, EP-41 | Done |
+| EP-96 | A sky that follows the sun | Owner request: a colour theme that follows the sunlight and the moonlight in the person's time zone, and the home picture following the sun over a landscape of their choice (forest, ocean, earth view, monuments of each continent, desert, mountains). | SHOULD | 5 pts | EP-07, EP-38 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1842,6 +1843,16 @@ Cross-cutting matrix:
 - [x] **EP-95/IS-95.04** · 1 pt · MUST — The demo follows the plan a week in: phase 1's skills being learnt, the first week's tasks done but one, the habits checked in with a rest day, a 6.042J literature note with its 15 flashcards and their diagrams, and the certification and reward funds in the budget.
 
 **Tests.** Library and phase-date checks and the plan's dates (written first); `TestStartingTheTop5RoadmapStartsThePlan` against PostgreSQL; placement in `TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor`; the demo and overview tests; e2e tests that start the roadmap at your level from the assessment and walk the plan (skill graph, goal, projects, habits). The e2e tests now run on a stack of their own, so a running local stack is left alone.
+
+### EP-96 — A sky that follows the sun
+
+**Goal.** The owner asked (2026-10-13) for a colour theme that follows the sun and the moon, set by the time zone, and for the home page's picture to follow the sunlight over a landscape they choose.
+
+- [x] **EP-96/IS-96.01** · 2 pts · SHOULD — The sun's and the moon's positions in the browser, from the Astronomical Almanac's low-precision formulas (about 0.01° for the sun), and the moon's phase from a known new moon. The place comes from the account's time zone (its main city, or a longitude from its offset), never from the device's location. The sky's colours are blended from the sun's altitude across night, the three twilights, the golden hour, and day.
+- [x] **EP-96/IS-96.02** · 2 pts · SHOULD — The scenery on the home page and in a strip above Today: the sun and the moon (its lit part for its phase) where they stand, stars fading in after dusk, and eleven landscapes drawn in SVG and shipped with Axon (mountains, forest, ocean with the light on the water, desert, the Earth from orbit, the Eiffel Tower, the Pyramids of Giza, the Taj Mahal, the Statue of Liberty, Christ the Redeemer, the Sydney Opera House). It moves every minute.
+- [x] **EP-96/IS-96.03** · 1 pt · SHOULD — The theme "Follow the sun and the moon": light from civil dawn to civil dusk, dark otherwise, checked every minute, in the settings and on the header's theme button. Preferences choose the landscape and preview the sky later in the day.
+
+**Tests.** Sun and moon against known positions and phases (Paris solstice noon and sunrise, Sydney winter noon, the equator at the equinox, the October 2026 full and new moons) and the palette and theme rules, written first; `TestTheThemeFollowsTheSunOverAChosenLandscape`; an e2e test that chooses the theme and a landscape and finds both on Today. Every landscape was looked at, at noon, sunset, night, and dawn, in Firefox.
 
 ### EP-20 — Analytics & insights
 

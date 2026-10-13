@@ -29,6 +29,9 @@ type Appearance struct {
 	Motion   string `json:"motion" yaml:"motion"`       // system, reduced, full
 	// Spaces turns the themed scenery of each area (EP-38) on or off; empty means on.
 	Spaces string `json:"spaces,omitempty" yaml:"spaces,omitempty"`
+	// Scenery is the landscape under the sky that follows the sun (EP-96);
+	// empty means mountains.
+	Scenery string `json:"scenery,omitempty" yaml:"scenery,omitempty"`
 }
 
 // ProjectTemplate are defaults for new projects.
@@ -95,6 +98,11 @@ type Doc struct {
 	Today        Today        `json:"today" yaml:"today"`
 	Menu         Menu         `json:"menu" yaml:"menu"`
 }
+
+// Sceneries are the landscapes under the sky: nature, the earth from
+// orbit, and a famous monument on each inhabited continent.
+var Sceneries = []string{"mountains", "forest", "ocean", "desert", "earth",
+	"eiffel-tower", "pyramids", "taj-mahal", "statue-of-liberty", "christ-the-redeemer", "opera-house"}
 
 // Menu (EP-94) lists the pages left out of the navigation, so a person
 // sees what they use; hidden pages still open from a link or a search.
@@ -189,12 +197,13 @@ func oneOf(path, v string, allowed ...string) error {
 func (d Doc) Validate() error {
 	checks := []error{
 		oneOf("language", d.Language, "en", "fr"),
-		oneOf("appearance.theme", d.Appearance.Theme, "system", "light", "dark"),
+		oneOf("appearance.theme", d.Appearance.Theme, "system", "light", "dark", "sun"),
 		oneOf("appearance.font", d.Appearance.Font, "system", "serif", "rounded", "mono"),
 		oneOf("appearance.font_size", d.Appearance.FontSize, "small", "normal", "large"),
 		oneOf("appearance.icons", d.Appearance.Icons, "emoji", "symbols", "none"),
 		oneOf("appearance.motion", d.Appearance.Motion, "system", "reduced", "full"),
 		oneOf("appearance.spaces", d.Appearance.Spaces, "", "on", "off"),
+		oneOf("appearance.scenery", d.Appearance.Scenery, append([]string{""}, Sceneries...)...),
 		oneOf("templates.resource.kind", d.Templates.Resource.Kind, "hard", "soft"),
 	}
 	for _, err := range checks {

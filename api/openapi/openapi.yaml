@@ -7762,12 +7762,13 @@ components:
           required: [theme, font, font_size, icons, motion]
           additionalProperties: false
           properties:
-            theme: { enum: [system, light, dark] }
+            theme: { enum: [system, light, dark, sun], description: "sun follows the sun and the moon in the person's time zone: light from dawn to dusk." }
             font: { enum: [system, serif, rounded, mono] }
             font_size: { enum: [small, normal, large] }
             icons: { enum: [emoji, symbols, none] }
             motion: { enum: [system, reduced, full] }
             spaces: { enum: ["on", "off"], description: "Themed scenery for each area: a notebook for notes, a library for learning, a workshop for projects. On when absent." }
+            scenery: { enum: [mountains, forest, ocean, desert, earth, eiffel-tower, pyramids, taj-mahal, statue-of-liberty, christ-the-redeemer, opera-house], description: "The landscape under the sky that follows the sun. Mountains when absent." }
         templates:
           type: object
           required: [note, project, resource]

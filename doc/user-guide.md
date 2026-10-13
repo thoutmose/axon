@@ -87,5 +87,5 @@ Agents draft changes; **nothing changes until you approve**. Each person picks a
 ## Your data
 
 - **Account → Privacy**: consents (all off until you turn them on), the full export (JSON plus your notes as Markdown), and erasure.
-- **Preferences**: language (English or French), theme, font, icons, motion, templates, Pomodoro, keyboard, and progress, in the app or as YAML.
+- **Preferences**: language (English or French), theme (including **Follow the sun and the moon**: light from dawn to dusk in your time zone), the landscape under the sky on the home page and Today (with a slider to preview it later in the day), font, icons, motion, templates, Pomodoro, keyboard, and progress, in the app or as YAML.
 - Personal access tokens (**Account → Tokens**) let your own scripts use the API (`/api-docs`).

@@ -1526,6 +1526,38 @@ test('without an AI provider agents say so, and a local model can be chosen', as
 	await noSeriousA11yViolations(page);
 });
 
+test('the theme follows the sun, over a landscape of your choice', async () => {
+	await page.goto('/account/preferences');
+	await page.waitForLoadState('networkidle');
+	await page.getByLabel('Theme', { exact: true }).selectOption('sun');
+	await page.getByLabel('Landscape under the sky').selectOption('taj-mahal');
+	// The preview shows the chosen landscape, later in the day too.
+	const preview = page.locator('.sky-preview svg');
+	await expect(preview).toHaveAttribute('data-landscape', 'taj-mahal');
+	await page.getByLabel(/Preview the sky in/).fill('12');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
+	// Light from dawn to dusk in the account's time zone, dark otherwise.
+	await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
+	const light = await page.locator('.sky-preview svg').getAttribute('data-light');
+	await page.goto('/today');
+	await expect(page.locator('.sky-strip svg')).toHaveAttribute('data-landscape', 'taj-mahal');
+	const now = await page.locator('.sky-strip svg').getAttribute('data-light');
+	await expect(page.locator('html')).toHaveAttribute(
+		'data-theme',
+		now === 'true' ? 'light' : 'dark'
+	);
+	expect(light).toMatch(/^(true|false)$/);
+	await noSeriousA11yViolations(page);
+
+	await page.goto('/account/preferences');
+	await page.waitForLoadState('networkidle');
+	await page.getByLabel('Theme', { exact: true }).selectOption('system');
+	await page.getByLabel('Landscape under the sky').selectOption('mountains');
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await expect(page.getByText('Preferences saved.')).toBeVisible();
+});
+
 test('preferences switch the language, theme, and text size, and export as YAML', async () => {
 	await page.goto('/account/preferences');
 	await page.getByLabel('Interface language').selectOption('fr');

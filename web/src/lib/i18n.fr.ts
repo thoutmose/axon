@@ -2741,5 +2741,23 @@ export const fr: Record<string, string> = {
 	'Open the roadmap': 'Ouvrir le parcours',
 	'Start this roadmap': 'Démarrer ce parcours',
 	'Start at my level': 'Démarrer à mon niveau',
-	'Start the roadmap at my level': 'Démarrer le parcours à mon niveau'
+	'Start the roadmap at my level': 'Démarrer le parcours à mon niveau',
+	'Follow the sun and the moon': 'Suivre le soleil et la lune',
+	'Landscape under the sky': 'Paysage sous le ciel',
+	Mountains: 'Montagnes',
+	Forest: 'Forêt',
+	Ocean: 'Océan',
+	Desert: 'Désert',
+	'The Earth from orbit': 'La Terre vue de l’orbite',
+	'Eiffel Tower, Paris (Europe)': 'Tour Eiffel, Paris (Europe)',
+	'Pyramids of Giza (Africa)': 'Pyramides de Gizeh (Afrique)',
+	'Taj Mahal, Agra (Asia)': 'Taj Mahal, Agra (Asie)',
+	'Statue of Liberty, New York (North America)':
+		'Statue de la Liberté, New York (Amérique du Nord)',
+	'Christ the Redeemer, Rio (South America)': 'Christ Rédempteur, Rio (Amérique du Sud)',
+	'Sydney Opera House (Oceania)': 'Opéra de Sydney (Océanie)',
+	'Preview the sky in {hours} h': 'Aperçu du ciel dans {hours} h',
+	'The sun and the moon where they are in your time zone ({zone}).':
+		'Le soleil et la lune là où ils sont dans votre fuseau horaire ({zone}).',
+	'follows the sun': 'suit le soleil'
 };
