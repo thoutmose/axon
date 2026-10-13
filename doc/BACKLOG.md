@@ -139,6 +139,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-88 | Daily needs | Owner request: the macronutrients needed to be healthy, from activity, age, sex, and size, with a warning to check with a nutritionist. Reference intakes for keeping one's weight, worked out and explained from published references; none before 18 or in pregnancy; no weight-loss targets (ADR 0028). | SHOULD | 3 pts | EP-18 | Done |
 | EP-89 | A photo of a meal | Owner request: take a picture of the food and get its macronutrients. The person's AI provider estimates each food and portion, which they correct before logging, behind a new `food_photos` consent; the photo is stripped of metadata and never kept. A photo of a barcode is read on the device. | SHOULD | 5 pts | EP-18, EP-44 | Done |
 | EP-90 | Chef & Nutritionist | Owner request: meals by budget, dietary restrictions, constraints, and time, by an AI agent that is a nutritionist and a cook. A planning form on Health, an agent that reads the daily needs and proposes a plan with recipes, a shopping list, and a cost, saved as a note once approved. | SHOULD | 5 pts | EP-44, EP-88 | Done |
+| EP-91 | Daily journal | Mood, energy, and stress on five faces, sleep, three things to be grateful for, and a note, a day at a time, under the health data consent; a Journal page, a Today card, and the last 30 days. | SHOULD | 3 pts | EP-88 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1790,6 +1791,15 @@ Cross-cutting matrix:
 - [x] **EP-90/IS-90.03** · 1 pt · SHOULD — Health: "Plan my meals with the chef" asks for days, people, meals, a budget and currency, restrictions and allergies (twelve to tick), the cooking time, and other constraints, then hands the request, written in the interface's language, to the page's agent dock, where the run and its proposal appear for approval.
 
 **Tests.** `TestMealPlansAreNotDailyTargets` (written first, with the existing safety suite unchanged); `TestChefPlansMealsAsANote` with the scripted provider (the agent gets 1,520 kcal from the needs, the plan with kcal per meal is proposed and becomes a note in "Meal plans/", a second one the same day too, a 900 kcal a day plan is refused); `mealRequest` unit tests; the e2e health test sends the form to the Chef & Nutritionist.
+
+### EP-91 — Daily journal
+
+**Goal.** A life OS for well-being had a daily check-in that was only a line of text: no mood, energy, stress, or sleep to look back on, and nothing for EP-92 to learn from.
+
+- [x] **EP-91/IS-91.01** · 2 pts · SHOULD — Migration `00049` adds `journal_entries`, one per person and day: mood, energy, and stress from 1 to 5, hours of sleep, up to three things the person is grateful for, and a note. Mood and sleep are health data (GDPR art. 9), so the journal is kept only with `health_data`, exported, and deleted when it is withdrawn. Consent withdrawal could hold only one listener per purpose, so a second package would have silently replaced Health's deletion; `privacy.OnWithdraw` now keeps a list. `GET /v1/journal` (the last 30 days by default, and today in the person's time zone), `GET`, `PUT` (replaces the day), and `DELETE /v1/journal/{day}`; never a future day, and never an empty one.
+- [x] **EP-91/IS-91.02** · 1 pt · SHOULD — Reflect → Journal: three scales of five faces (native radio buttons under the faces, so the keyboard and screen readers work; choosing again clears), sleep, three gratitude lines, a note, and the last 30 days as a mood and energy chart and a list to reopen any day. "How are you today?" can be added to Today; it merges into the day so nothing written is lost.
+
+**Tests.** Field checks (written first); `TestJournal` against PostgreSQL (consent, replace, future day, empty day, other people, export, deletion with the consent); `TestEveryListenerHearsAWithdrawal`; `hasContent`; an e2e test that clicks the faces, saves, and finds the day in the last 30 days, with axe.
 
 ### EP-20 — Analytics & insights
 

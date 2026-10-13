@@ -58,6 +58,10 @@ Pomodoro sessions (25 minutes of focus and 5-minute breaks, four rounds, then a 
 
 Firefly III–style personal finance: accounts and balances, income, expenses, transfers, categories with monthly budgets, tags, recurring transactions, rules, CSV import from your bank, reports, and **savings pots** (*tirelire*) for something to buy later. Amounts are exact; finance data stays out of search and agents.
 
+## Journal
+
+**Reflect → Journal** takes a minute a day: mood, energy, and stress on five faces, hours of sleep, up to three things you are grateful for, and a note. The last 30 days show as a chart and a list; open any day to change it. Mood and sleep are health data, so the journal is kept under the same consent as the health logs and deleted with it. Add "How are you today?" to Today (Customise Today) to log mood and energy in two taps.
+
 ## Media and health
 
 - **Media**: films, series, and books you want, are on, have finished, or dropped, with ratings, progress, and reviews. **Up next** explains each suggestion. Searching sends only the typed title to Open Library or TMDB, after you allow lookups.

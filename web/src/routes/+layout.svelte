@@ -69,6 +69,7 @@
 			id: 'reflect',
 			label: t('Reflect'),
 			links: [
+				{ href: '/journal', label: t('Journal') },
 				{ href: '/review', label: t('Weekly review') },
 				{ href: '/insights', label: t('Insights') },
 				{ href: '/agents', label: t('Agents') }

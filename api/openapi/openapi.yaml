@@ -5007,6 +5007,76 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/journal:
+    get:
+      tags: [wellbeing]
+      operationId: listJournal
+      summary: Journal entries from one day to another, newest first
+      description: The last 30 days by default. Needs the health_data consent (mood and sleep are health data).
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: The entries, and today in your time zone.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/JournalEntry" } }
+                  today: { type: string, format: date }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/journal/{day}:
+    parameters:
+      - { name: day, in: path, required: true, schema: { type: string, format: date } }
+    get:
+      tags: [wellbeing]
+      operationId: getJournalEntry
+      summary: One day of the journal
+      responses:
+        "200": { description: The entry., content: { application/json: { schema: { $ref: "#/components/schemas/JournalEntry" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [wellbeing]
+      operationId: putJournalEntry
+      summary: Write the day's entry, replacing what was there
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                mood: { type: [integer, "null"], minimum: 1, maximum: 5 }
+                energy: { type: [integer, "null"], minimum: 1, maximum: 5 }
+                stress: { type: [integer, "null"], minimum: 1, maximum: 5 }
+                sleep_hours: { type: [number, "null"], minimum: 0, maximum: 24 }
+                gratitude: { type: array, maxItems: 3, items: { type: string, maxLength: 300 } }
+                note: { type: string, maxLength: 10000 }
+      responses:
+        "200": { description: The entry., content: { application/json: { schema: { $ref: "#/components/schemas/JournalEntry" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [wellbeing]
+      operationId: deleteJournalEntry
+      summary: Delete the day's entry
+      responses:
+        "204": { description: Deleted. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/health/workouts:
     get:
       tags: [wellbeing]
@@ -7323,6 +7393,18 @@ components:
             properties:
               title: { type: string }
               url: { type: string, format: uri }
+    JournalEntry:
+      type: object
+      required: [day, mood, energy, stress, sleep_hours, gratitude, note, updated_at]
+      properties:
+        day: { type: string, format: date }
+        mood: { type: [integer, "null"], description: "1 (low) to 5 (great)." }
+        energy: { type: [integer, "null"], description: "1 (drained) to 5 (full of energy)." }
+        stress: { type: [integer, "null"], description: "1 (calm) to 5 (very stressed)." }
+        sleep_hours: { type: [number, "null"] }
+        gratitude: { type: array, items: { type: string } }
+        note: { type: string }
+        updated_at: { type: string, format: date-time }
     FoodEntry:
       type: object
       required: [id, eaten_on, meal, name, grams, kcal, protein_g, carbs_g, fat_g, food_id]
@@ -7744,9 +7826,9 @@ components:
           properties:
             sections:
               type: array
-              maxItems: 10
+              maxItems: 11
               uniqueItems: true
-              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, overview] }
+              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, overview] }
         reminders:
           type: object
           required: [enabled, morning, evening, email]
