@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { api, message, type Schemas } from '$lib/api';
-	import { t } from '$lib/i18n.svelte';
+	import { i18n, t } from '$lib/i18n.svelte';
 	import { typeNames } from '$lib/links';
 	import {
 		advance,
@@ -58,12 +58,19 @@
 	let searchTimer: ReturnType<typeof setTimeout> | undefined;
 	const key = 'axon-focus';
 
-	const names: Record<string, string> = { work: 'Focus', short: 'Short break', long: 'Long break' };
+	const phaseNames: Record<string, string> = {
+		work: 'Focus',
+		short: 'Short break',
+		long: 'Long break'
+	};
+	const name = (kind: string) => t(phaseNames[kind]);
 	const plan = $derived(phases(config));
 	const phase = $derived(timer && !finished(timer) ? timer.phases[timer.index] : null);
 	const left = $derived(timer ? remaining(timer, now) : 0);
 	const progress = $derived(phase ? 1 - left / (phase.minutes * 60_000) : 0);
-	const soundNames = Object.fromEntries(soundOptions.flatMap((g) => g.items));
+	const soundNames: Record<string, string> = Object.fromEntries(
+		soundOptions.flatMap((g) => g.items)
+	);
 	// What "matched" music plays: the style for the type of what the session is about.
 	const playing = $derived(
 		sound === 'music' ? soundNames[styleFor(session?.target?.type)] : soundNames[sound]
@@ -101,7 +108,7 @@
 	onDestroy(() => {
 		clearInterval(interval);
 		stopSound();
-		if (typeof document !== 'undefined') document.title = 'Focus · Axon';
+		if (typeof document !== 'undefined') document.title = `${t('Focus')} · Axon`;
 	});
 
 	function save() {
@@ -121,12 +128,16 @@
 			chime(config.volume);
 			const next = !finished(timer) ? timer.phases[timer.index] : null;
 			announce = next
-				? `${names[ended[ended.length - 1].kind]} over. ${names[next.kind]} for ${next.minutes} minutes.`
-				: 'All rounds done. Well worked.';
+				? t('{phase} over. {next} for {minutes} minutes.', {
+						phase: name(ended[ended.length - 1].kind),
+						next: name(next.kind),
+						minutes: next.minutes
+					})
+				: t('All rounds done. Well worked.');
 			syncSound();
 			save();
 		}
-		document.title = `${clock(remaining(timer, now))} · ${phase ? names[phase.kind] : 'Focus'} · Axon`;
+		document.title = `${clock(remaining(timer, now))} · ${name(phase?.kind ?? 'work')} · Axon`;
 		if (finished(timer)) finish('completed');
 	}
 
@@ -166,7 +177,7 @@
 				}
 			});
 			timer = newTimer(plan, Date.now());
-			announce = `Focus for ${plan[0].minutes} minutes.`;
+			announce = t('Focus for {minutes} minutes.', { minutes: plan[0].minutes });
 			interval = setInterval(tick, 500);
 			syncSound();
 			save();
@@ -203,13 +214,13 @@
 		timer = null;
 		session = null;
 		save();
-		document.title = 'Focus · Axon';
+		document.title = `${t('Focus')} · Axon`;
 		try {
 			await api(`/v1/focus-sessions/${s0.id}/finish`, {
 				method: 'POST',
 				body: { worked_minutes: workedMinutes(t0, Date.now()), rounds: rounds(t0), status }
 			});
-			toast(status === 'completed' ? 'Session complete.' : 'Session saved.');
+			toast(t(status === 'completed' ? 'Session complete.' : 'Session saved.'));
 		} catch (err) {
 			toast(message(err), 'error');
 		}
@@ -221,11 +232,11 @@
 </script>
 
 {#snippet soundChoices()}
-	<option value="none">None</option>
+	<option value="none">{t('No sound')}</option>
 	{#each soundOptions as g (g.group)}
-		<optgroup label={g.group}>
-			{#each g.items as [value, name] (value)}
-				<option {value}>{name}</option>
+		<optgroup label={t(g.group)}>
+			{#each g.items as [value, label] (value)}
+				<option {value}>{t(label)}</option>
 			{/each}
 		</optgroup>
 	{/each}
@@ -235,26 +246,37 @@
 
 <h1>{t('Focus')}</h1>
 <p class="muted hint">
-	Pomodoro sessions: {config.work_minutes} min of focus and {config.short_break_minutes} min breaks, a
-	{config.long_break_minutes} min break after {config.rounds} rounds{config.sessions > 1
-		? `, ${config.sessions} times`
-		: ''}. Change it in <a href="/account/preferences">Preferences</a>.
+	{t(
+		config.sessions > 1
+			? 'Pomodoro sessions: {work} min of focus and {short} min breaks, a {long} min break after {rounds} rounds, {sessions} times.'
+			: 'Pomodoro sessions: {work} min of focus and {short} min breaks, a {long} min break after {rounds} rounds.',
+		{
+			work: config.work_minutes,
+			short: config.short_break_minutes,
+			long: config.long_break_minutes,
+			rounds: config.rounds,
+			sessions: config.sessions
+		}
+	)}
+	{t('Change it in')} <a href="/account/preferences">{t('Preferences')}</a>.
 </p>
 
 <p class="visually-hidden" aria-live="assertive">{announce}</p>
 
 {#if timer && session}
 	<section class="timer glass" aria-labelledby="phase-title" class:break={phase?.kind !== 'work'}>
-		<h2 id="phase-title">{phase ? names[phase.kind] : 'Done'}</h2>
+		<h2 id="phase-title">{phase ? name(phase.kind) : t('Done')}</h2>
 		<p class="for">
 			{session.target
-				? `${typeNames[session.target.type] ?? ''}: ${session.target.title}`
+				? `${t(typeNames[session.target.type] ?? '')}: ${session.target.title}`
 				: session.title}
 		</p>
 		<svg
 			viewBox="0 0 220 220"
 			role="img"
-			aria-label="{clock(left)} left in {phase ? names[phase.kind] : 'the session'}"
+			aria-label={phase
+				? t('{time} left in {phase}', { time: clock(left), phase: name(phase.kind) })
+				: t('{time} left in the session', { time: clock(left) })}
 		>
 			<circle cx="110" cy="110" r={R} class="track" />
 			<circle
@@ -268,7 +290,7 @@
 			/>
 			<text x="110" y="118" text-anchor="middle" class="time">{clock(left)}</text>
 		</svg>
-		<ol class="phases" aria-label="Plan">
+		<ol class="phases" aria-label={t('Plan')}>
 			{#each timer.phases as p, i (i)}
 				<li
 					class={p.kind}
@@ -276,48 +298,50 @@
 					class:now={i === timer.index}
 					aria-current={i === timer.index ? 'step' : undefined}
 				>
-					<span class="visually-hidden">{names[p.kind]}, </span>{p.minutes}′
+					<span class="visually-hidden">{name(p.kind)}, </span>{p.minutes}′
 				</li>
 			{/each}
 		</ol>
 		<div class="row">
-			<Button onclick={togglePause}>{timer.paused ? 'Resume' : 'Pause'}</Button>
-			<Button variant="secondary" onclick={next}>Skip to next</Button>
-			<Button variant="ghost" onclick={() => finish('stopped')}>Stop and save</Button>
+			<Button onclick={togglePause}>{t(timer.paused ? 'Resume' : 'Pause')}</Button>
+			<Button variant="secondary" onclick={next}>{t('Skip to next')}</Button>
+			<Button variant="ghost" onclick={() => finish('stopped')}>{t('Stop and save')}</Button>
 		</div>
 		<div class="field sound">
-			<label for="focus-sound-now">Sound</label>
+			<label for="focus-sound-now">{t('Sound')}</label>
 			<select id="focus-sound-now" bind:value={sound} onchange={syncSound}>
 				{@render soundChoices()}
 			</select>
 			{#if playing && phase?.kind !== 'work'}<span class="muted small"
-					>Resumes with the next focus.</span
+					>{t('Resumes with the next focus.')}</span
 				>{/if}
 		</div>
 		<p class="muted small">
-			{workedMinutes(timer, now)} min worked · round {Math.min(
-				rounds(timer) + 1,
-				timer.phases.filter((p) => p.kind === 'work').length
-			)}
+			{t('{minutes} min worked · round {round}', {
+				minutes: workedMinutes(timer, now),
+				round: Math.min(rounds(timer) + 1, timer.phases.filter((p) => p.kind === 'work').length)
+			})}
 		</p>
 	</section>
 {:else}
 	<section class="card glass" aria-labelledby="start-title">
-		<h2 id="start-title">What will you focus on?</h2>
+		<h2 id="start-title">{t('What will you focus on?')}</h2>
 		{#if target}
 			<p class="picked">
-				<span class="chip">{typeNames[target.type]}</span>
+				<span class="chip">{t(typeNames[target.type])}</span>
 				<strong>{target.title}</strong>
-				<Button variant="ghost" onclick={() => (target = null)} aria-label="Choose something else"
-					>✕</Button
+				<Button
+					variant="ghost"
+					onclick={() => (target = null)}
+					aria-label={t('Choose something else')}>✕</Button
 				>
 			</p>
 		{:else}
-			<label for="focus-search">A task, project, skill, note, or anything else</label>
+			<label for="focus-search">{t('A task, project, skill, note, or anything else')}</label>
 			<input
 				id="focus-search"
 				type="search"
-				placeholder="Search…"
+				placeholder={t('Search…')}
 				bind:value={query}
 				oninput={search}
 				autocomplete="off"
@@ -327,41 +351,50 @@
 					{#each hits as h (h.id)}
 						<li>
 							<button type="button" onclick={() => ((target = h), (hits = []), (query = ''))}
-								><span class="chip">{typeNames[h.type]}</span> {h.title}</button
+								><span class="chip">{t(typeNames[h.type])}</span> {h.title}</button
 							>
 						</li>
 					{/each}
 				</ul>
 			{/if}
-			<label for="focus-title">…or just name it</label>
-			<input id="focus-title" placeholder="Deep work" bind:value={title} maxlength="500" />
+			<label for="focus-title">{t('…or just name it')}</label>
+			<input id="focus-title" placeholder={t('Deep work')} bind:value={title} maxlength="500" />
 		{/if}
 		<div class="field">
-			<label for="focus-sound">Focus sound</label>
+			<label for="focus-sound">{t('Focus sound')}</label>
 			<select id="focus-sound" bind:value={sound}>
 				{@render soundChoices()}
 			</select>
 			{#if sound === 'music'}
 				<span class="muted small"
 					>{target
-						? `${soundNames[styleFor(target.type)]} for this ${typeNames[target.type]?.toLowerCase() ?? 'item'}.`
-						: 'Lo-fi beats for tasks and projects, ambient for notes, calm piano for skills and cards.'}</span
+						? t('{style} for “{title}”.', {
+								style: t(soundNames[styleFor(target.type)]),
+								title: target.title
+							})
+						: t(
+								'Lo-fi beats for tasks and projects, ambient for notes, calm piano for skills and cards.'
+							)}</span
 				>
 			{/if}
 		</div>
 		{#if config.music.length}
 			<p class="small">
-				Your music:
+				{t('Your music:')}
 				{#each config.music as m (m.url)}
 					<a href={m.url} target="_blank" rel="noopener noreferrer">{m.activity} ↗</a>{' '}
 				{/each}
 			</p>
 		{:else}
 			<p class="muted small">
-				Add playlists you like for coding, reading, or writing in Preferences; they open here.
+				{t(
+					'Add playlists you like for coding, reading, or writing in Preferences; they open here.'
+				)}
 			</p>
 		{/if}
-		<Button onclick={start}>Start {totalWorkMinutes(plan)} min of focus</Button>
+		<Button onclick={start}
+			>{t('Start {minutes} min of focus', { minutes: totalWorkMinutes(plan) })}</Button
+		>
 	</section>
 {/if}
 
@@ -369,16 +402,26 @@
 	<Status kind="error" message={error} retry={loadHistory} />
 {:else if history}
 	<section class="card glass" aria-labelledby="history-title">
-		<h2 id="history-title">This week</h2>
+		<h2 id="history-title">{t('This week')}</h2>
 		<ul class="stats">
-			<li><strong>{history.today_minutes}</strong> min today</li>
-			<li><strong>{history.week_minutes}</strong> min in 7 days</li>
-			<li><strong>{history.streak}</strong> {history.streak === 1 ? 'day' : 'days'} in a row</li>
+			<li><strong>{history.today_minutes}</strong> {t('min today')}</li>
+			<li><strong>{history.week_minutes}</strong> {t('min in 7 days')}</li>
+			<li>
+				<strong>{history.streak}</strong>
+				{t(
+					new Intl.PluralRules(i18n.locale).select(history.streak) === 'one'
+						? 'day in a row'
+						: 'days in a row'
+				)}
+			</li>
 		</ul>
 		{#if history.items.length}
 			<table>
 				<thead
-					><tr><th scope="col">When</th><th scope="col">For</th><th scope="col">Worked</th></tr
+					><tr
+						><th scope="col">{t('When')}</th><th scope="col">{t('For')}</th><th scope="col"
+							>{t('Worked')}</th
+						></tr
 					></thead
 				>
 				<tbody>
@@ -392,13 +435,17 @@
 								})}</td
 							>
 							<td>{s.target ? s.target.title : s.title}</td>
-							<td>{s.worked_minutes} min{s.status === 'running' ? ' (running)' : ''}</td>
+							<td
+								>{t(s.status === 'running' ? '{minutes} min (running)' : '{minutes} min', {
+									minutes: s.worked_minutes
+								})}</td
+							>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 		{:else}
-			<p class="muted">No sessions yet this week.</p>
+			<p class="muted">{t('No sessions yet this week.')}</p>
 		{/if}
 	</section>
 {/if}

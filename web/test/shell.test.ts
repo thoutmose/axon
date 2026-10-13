@@ -90,7 +90,9 @@ test('home page is accessible and offers registration', async () => {
 	await expect(teaser.locator('video source')).toHaveCount(2);
 	await expect(teaser.locator('video track')).toHaveCount(2);
 	for (const src of ['/teaser/axon.webm', '/teaser/axon.mp4', '/teaser/axon.en.vtt'])
-		expect((await page.request.get(src, { headers: { Range: 'bytes=0-99' } })).status(), src).toBe(206);
+		expect((await page.request.get(src, { headers: { Range: 'bytes=0-99' } })).status(), src).toBe(
+			206
+		);
 	await noSeriousA11yViolations(page);
 	await page.getByRole('link', { name: 'Create your account' }).click();
 });
@@ -1560,7 +1562,7 @@ test('a Pomodoro session for a task: start, pause, skip to the break, and save',
 	await page.getByRole('button', { name: /Buy timber/ }).click();
 	// Music matched to the work: beats for a task (EP-83).
 	await page.getByLabel('Focus sound').selectOption('music');
-	await expect(page.getByText('Lo-fi beats for this task.')).toBeVisible();
+	await expect(page.getByText('Lo-fi beats for “Buy timber”.')).toBeVisible();
 	await page.getByRole('button', { name: 'Start 100 min of focus' }).click();
 	const timer = page.getByRole('region', { name: 'Focus' });
 	await expect(timer).toContainText('Buy timber');

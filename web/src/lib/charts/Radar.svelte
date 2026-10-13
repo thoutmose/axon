@@ -11,6 +11,7 @@
 		short,
 		type Spoke
 	} from '$lib/radar';
+	import { t } from '$lib/i18n.svelte';
 
 	let { title, spokes }: { title: string; spokes: Spoke[] } = $props();
 	const W = 440;
@@ -21,7 +22,7 @@
 	const done = $derived(spokes.reduce((a, s) => a + s.done, 0));
 	const total = $derived(spokes.reduce((a, s) => a + s.total, 0));
 	const summary = $derived(
-		spokes.map((s) => `${s.label} ${percent(acquired(s))}`).join(', ') || 'no skills yet'
+		spokes.map((s) => `${label(s)} ${percent(acquired(s))}`).join(', ') || t('no skills yet')
 	);
 	const ring = (v: number) =>
 		polygon(
@@ -31,6 +32,8 @@
 		);
 	const withRoadmap = $derived(namesRoadmaps(spokes));
 	let active = $state<number | null>(null);
+	// The API names the folded spokes "Other"; roadmap and section names are the person's own.
+	const label = (s: Spoke) => (s.label === 'Other' && !s.roadmap ? t('Other') : s.label);
 	// Labels above the centre grow upwards, below it downwards, and those at
 	// the sides are centred on their spoke.
 	const firstLine = (y: number, count: number) =>
@@ -39,10 +42,10 @@
 
 <figure class="radar">
 	<figcaption>
-		<span>{title}: {done} of {total} skills acquired</span>
+		<span>{t('{title}: {done} of {total} skills acquired', { title, done, total })}</span>
 		<span class="legend">
-			<span><i class="acquired"></i>Acquired</span>
-			<span><i class="reached"></i>With those being learnt</span>
+			<span><i class="acquired"></i>{t('Acquired')}</span>
+			<span><i class="reached"></i>{t('With those being learnt')}</span>
 		</span>
 	</figcaption>
 	{#if n >= 3}
@@ -55,7 +58,7 @@
 				{#each spokes as s, i (i)}
 					{@const end = point(i, n, 1, R, C)}
 					{@const at = point(i, n, 1, R + 14, C)}
-					{@const ls = withRoadmap ? [short(s.label), short(s.roadmap)] : lines(s.label)}
+					{@const ls = withRoadmap ? [short(label(s)), short(s.roadmap)] : lines(label(s))}
 					<line class="grid" class:on={active === i} x1={C} y1={C} x2={end.x} y2={end.y} />
 					<text class="label" x={at.x} y={at.y + 4} text-anchor={anchor(i, n)}>
 						{#each ls as l, j (j)}
@@ -80,9 +83,16 @@
 						onpointerenter={() => (active = i)}
 						onpointerleave={() => (active = null)}
 						><title
-							>{withRoadmap ? `${s.roadmap}: ` : ''}{s.label}: {s.done} of {s.total} acquired ({percent(
-								acquired(s)
-							)}), {s.learning} being learnt</title
+							>{withRoadmap ? `${s.roadmap}: ` : ''}{t(
+								'{label}: {done} of {total} acquired ({percent}), {learning} being learnt',
+								{
+									label: label(s),
+									done: s.done,
+									total: s.total,
+									percent: percent(acquired(s)),
+									learning: s.learning
+								}
+							)}</title
 						></circle
 					>
 				{/each}
@@ -90,26 +100,29 @@
 		</svg>
 	{:else}
 		<p class="muted small">
-			A radar needs three areas. Add skills to more roadmaps, or sections to this one, to see its
-			shape.
+			{t(
+				'A radar needs three areas. Add skills to more roadmaps, or sections to this one, to see its shape.'
+			)}
 		</p>
 	{/if}
 	{#if n}
 		<details open={n < 3}>
-			<summary>Show as a table</summary>
+			<summary>{t('Show as a table')}</summary>
 			<table>
 				<thead>
 					<tr
-						>{#if withRoadmap}<th scope="col">Roadmap</th>{/if}<th scope="col">Area</th><th
-							scope="col">Acquired</th
-						><th scope="col">Being learnt</th><th scope="col">Skills</th></tr
+						>{#if withRoadmap}<th scope="col">{t('Roadmap')}</th>{/if}<th scope="col"
+							>{t('Area')}</th
+						><th scope="col">{t('Acquired')}</th><th scope="col">{t('Being learnt')}</th><th
+							scope="col">{t('Skills')}</th
+						></tr
 					>
 				</thead>
 				<tbody>
 					{#each spokes as s, i (i)}
 						<tr>
 							{#if withRoadmap}<td>{s.roadmap}</td>{/if}
-							<th scope="row">{s.label}</th>
+							<th scope="row">{label(s)}</th>
 							<td>{s.done} ({percent(acquired(s))})</td>
 							<td>{s.learning}</td>
 							<td>{s.total}</td>

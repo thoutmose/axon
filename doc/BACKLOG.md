@@ -133,6 +133,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-82 | Skills radar | Owner request ("graphe en toile d'araignée"): Roadmaps shows the hard and the soft skills acquired as two radar charts, one spoke per roadmap (or per section under three), done and being learnt, with a table view. | SHOULD | 2 pts | EP-14 | Done |
 | EP-83 | Focus music | Owner request ("listen to the best music for productivity related to what I do during the Pomodoro session"): music composed in the browser, without words, matched to what the session is about (lo-fi beats, ambient, calm piano), chosen before or during a session. | SHOULD | 3 pts | EP-35 | Done |
 | EP-84 | Teaser on the home page | Owner request: with the demo on, the home page shows "Axon in under a minute", a tour of the demo with Axon's own music, captions in English and French, served by Axon itself; recorded by a script anyone can run again. | SHOULD | 2 pts | EP-82, EP-83 | Done |
+| EP-85 | Focus and Roadmaps in French | IS-31.06 says a page is translated when next touched: Focus, Roadmaps, the skills radar, and the focus sounds in Preferences now follow the language setting. | SHOULD | 1 pt | EP-31, EP-82, EP-83 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -844,7 +845,7 @@ Cross-cutting matrix:
   - [x] "My template" for new notes, project defaults (description, WIP limit, docs folder with `{slug}`), and resource defaults (section, hard or soft kind, now editable on skills).
 - [ ] **EP-31/IS-31.06 — French for every page** · 8 pts · SHOULD
   - [x] Shell, landing, sign-in, demo banner, Today and the command dashboard, account tabs, and Preferences are in French.
-  - [ ] Tasks, notes, goals, projects, roadmaps, habits, calendar, agents, and the remaining account pages still show English. They are translated as each page is next touched, and fully before 1.0 (EP-21).
+  - [ ] Tasks, notes, goals, projects, habits, calendar, agents, and the remaining account pages still show English (Focus and Roadmaps are done: EP-85). They are translated as each page is next touched, and fully before 1.0 (EP-21).
 
 **Exit evidence.** The integration test covers:
 - defaults, a JSON update, and per-field rejection;
@@ -1727,6 +1728,14 @@ Cross-cutting matrix:
 - [x] **EP-84/IS-84.02** · 1 pt · SHOULD — When the demo is on, the home page shows "Axon in under a minute" under the hero: the video with controls, played only on request (`preload="none"`: nothing downloads, nothing moves on its own), WebM first and MP4 as the fallback, both caption tracks. It comes from Axon's own server, like everything else on the page; the service worker leaves it out of the offline install.
 
 **Tests.** `offlineShell` leaves `/teaser/` out (written first). The home page e2e test finds two sources and two tracks and gets partial content (206) for each file, as Safari asks for it. Played on the home page in Chromium, Firefox, and WebKit: each picks the WebM and plays; caption tracks load. ShellCheck passes on the script.
+
+### EP-85 — Focus and Roadmaps in French
+
+**Goal.** IS-31.06 translates a page when it is next touched; EP-82 and EP-83 touched Focus and Roadmaps, which were English only.
+
+- [x] **EP-85/IS-85.01** · 1 pt · SHOULD — Every string on Focus and Roadmaps, the radar's captions, table, and hover text, the sound choices (Focus and Preferences), and the item types shown on Focus go through `t()`, with 104 French strings. Sentences around a link are split where the French reads well split. "0 jour d'affilée": the day count picks its form with `Intl.PluralRules`, since French counts zero as singular. Roadmap titles and library content are the person's own data and stay as they are.
+
+**Tests.** `i18n.test.ts` checks every French string keeps its placeholders; the English e2e suite is unchanged but for the matched-music line ("Lo-fi beats for “Buy timber”."). Both pages seen in French in Firefox.
 
 ### EP-20 — Analytics & insights
 
