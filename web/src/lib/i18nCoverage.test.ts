@@ -4,6 +4,7 @@ import * as entityTemplates from './entityTemplates';
 import * as finance from './finance';
 import * as flashcards from './flashcards';
 import * as habits from './habits';
+import { mealNames, restrictionNames } from './mealPlan';
 import * as links from './links';
 import * as notes from './notes';
 import { templates as noteTemplates } from './noteTemplates';
@@ -282,6 +283,8 @@ function keysInTables(): Set<string> {
 	};
 	walk({
 		noteTemplates,
+		restrictionNames,
+		mealNames,
 		entityTemplates,
 		finance,
 		flashcards,

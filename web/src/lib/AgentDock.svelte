@@ -71,6 +71,13 @@
 		}
 	}
 
+	/** Opens the dock on an agent and sends a request composed by a form on the page. */
+	export async function start(name: string, text: string) {
+		if (!open) await toggle();
+		chosen = name;
+		await ask(undefined, text);
+	}
+
 	async function poll(id: string) {
 		current = await api<RunDetail>(`/v1/agent-runs/${id}`);
 		if (current.run.status === 'running') timer = setTimeout(() => poll(id), 1000);

@@ -3,6 +3,7 @@
 	import AgentDock from '$lib/AgentDock.svelte';
 	import DailyNeeds from '$lib/DailyNeeds.svelte';
 	import MealPhoto from '$lib/MealPhoto.svelte';
+	import MealPlanner from '$lib/MealPlanner.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -44,6 +45,7 @@
 		null
 	);
 	let error = $state('');
+	let dock = $state<AgentDock>();
 	const today = localDate(new Date());
 
 	async function loadStatus() {
@@ -250,7 +252,7 @@
 <svelte:head><title>{t('Health')} · Axon</title></svelte:head>
 
 <h1>{t('Food and training')}</h1>
-<AgentDock {...pageAgents.health} />
+<AgentDock bind:this={dock} {...pageAgents.health} />
 
 {#if error}
 	<Status kind="error" message={error} retry={loadStatus} />
@@ -302,6 +304,7 @@
 				</figure>
 			</section>
 			<DailyNeeds totals={date === today ? day.totals : null} />
+			<MealPlanner onplan={(request) => dock?.start('chef', request)} />
 
 			{#each meals as m (m)}
 				{@const list = day.entries.filter((e) => e.meal === m)}

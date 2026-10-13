@@ -417,6 +417,7 @@ Privacy controls include consent records, purpose limitation, retention policies
 | Media | Suggest what to watch or read next, and propose new titles. | Sees only your list (no reviews, no catalogue text); every addition needs approval. | ✅ |
 | Personal Trainer | Suggest next sessions from your training log, as tasks to approve. | Own consent (`health_ai`); red flags referred without a model call; non-medical. | ✅ |
 | Nutritionist | Gentle suggestions from your food log, as tasks to approve. | Own consent; never calorie targets, fasting, or diagnosis (enforced, not only prompted). | ✅ |
+| Chef & Nutritionist | Meal plans for the days you choose, within your budget, restrictions and allergies, constraints, and cooking time, close to your daily needs, with recipes, a shopping list, and a cost estimate; saved as a note once approved. | Own consent; strict restrictions, a reminder to check labels; no daily target under 1,200 kcal (enforced); red flags referred. | ✅ |
 
 All agents share a constitution: simple, explicit, small diffs, read before write, think in data, test everything, do not be clever. Skills are versioned `SKILL.md` files. Each task ends with reflection, lessons learned, evaluation evidence, and—when needed—human-in-the-loop approval.
 

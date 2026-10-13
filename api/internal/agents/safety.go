@@ -52,12 +52,17 @@ var (
 )
 
 // Unsafe reports whether text proposes a daily target under 1,200 kcal or a
-// fast of two days or more.
+// fast of two days or more. A figure is a daily target when "a day", "daily",
+// or the like sits next to it on its line: a meal plan's kcal per meal is not.
 func Unsafe(text string) bool {
-	if dayRe.MatchString(text) {
-		for _, m := range kcalRe.FindAllStringSubmatch(text, -1) {
-			n, err := strconv.Atoi(strings.NewReplacer(" ", "", ",", "", ".", "").Replace(m[1]))
-			if err == nil && n > 0 && n < 1200 {
+	for _, line := range strings.Split(text, "\n") {
+		if !dayRe.MatchString(line) {
+			continue
+		}
+		for _, loc := range kcalRe.FindAllStringSubmatchIndex(line, -1) {
+			n, err := strconv.Atoi(strings.NewReplacer(" ", "", ",", "", ".", "").Replace(line[loc[2]:loc[3]]))
+			near := line[max(0, loc[0]-40):min(len(line), loc[1]+40)]
+			if err == nil && n > 0 && n < 1200 && dayRe.MatchString(near) {
 				return true
 			}
 		}

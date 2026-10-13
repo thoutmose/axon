@@ -85,8 +85,9 @@ export const pageAgents: Record<string, PageAgents> = {
 		}
 	},
 	health: {
-		agents: ['personal-trainer', 'nutritionist'],
+		agents: ['chef', 'nutritionist', 'personal-trainer'],
 		suggestions: {
+			chef: ['Plan three days of lunches and dinners for one person, 30 minutes a meal.'],
 			'personal-trainer': ['Plan my training for next week from my recent workouts.'],
 			nutritionist: ['Look at my food log this week and suggest one easy improvement.']
 		}

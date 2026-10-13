@@ -63,3 +63,21 @@ func TestUnsafeAdviceIsCaught(t *testing.T) {
 		}
 	}
 }
+
+// A meal plan names kcal per meal on days of the week: that is not a daily
+// target (EP-90). A low daily figure next to its "per day" still is.
+func TestMealPlansAreNotDailyTargets(t *testing.T) {
+	plan := "## Monday\n- Breakfast (about 450 kcal, 25 g protein): overnight oats.\n- Lunch (650 kcal): lentil salad.\n\n" +
+		"Each day comes close to your reference of 2,200 kcal.\nPrep the beans every day? No: once, on Sunday."
+	if Unsafe(plan) {
+		t.Errorf("a meal plan was refused")
+	}
+	for _, s := range []string{
+		"Plan:\n- Keep to 900 kcal a day this week.",
+		"Each day: 1,000 kcal at most.",
+	} {
+		if !Unsafe(s) {
+			t.Errorf("not caught: %q", s)
+		}
+	}
+}

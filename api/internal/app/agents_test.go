@@ -263,6 +263,11 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		"propose_cards":       {"teacher", `{"cards":[{"front":"Stretch why?","back":"Flexibility.","note_id":"` + studyNote.ID + `"}],"reason":"Basics."}`},
 		"suggest_media":       {"media", `{"kind":"book","title":"Stretching","creators":"Bob Anderson","year":1980,"reason":"Like your stretching notes."}`},
 		"suggest_resources":   {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
+		"draft_meal_plan":     {"chef", `{"title":"Stretch week","markdown":"## Monday\n- Porridge (15 min)","reason":"Asked."}`},
+	}
+	// The chef runs only with the health consents.
+	for _, c := range []string{"health_data", "health_ai"} {
+		alice.mustDo(204, "PUT", "/v1/me/consents/"+c, []byte(`{"granted":true}`))
 	}
 	var tested []string
 	for name := range inputs {
