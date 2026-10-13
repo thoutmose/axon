@@ -1,3 +1,4 @@
+import { storedLocale, t } from './i18n.svelte';
 import type { components, paths } from './api-types';
 import { connection } from './connection.svelte';
 
@@ -30,6 +31,9 @@ export async function apiResponse<T = unknown>(
 			method: init.method ?? 'GET',
 			credentials: 'same-origin',
 			headers: {
+				// The API's messages, in the interface's language (EP-87). The stored
+				// choice is known before the layout has applied it.
+				'Accept-Language': storedLocale(),
 				...(init.body === undefined || init.body instanceof Blob
 					? {}
 					: { 'Content-Type': 'application/json' }),
@@ -41,7 +45,7 @@ export async function apiResponse<T = unknown>(
 		});
 	} catch {
 		connection.apiDown = true;
-		throw new ApiError(0, 'Axon is unreachable. Check your connection and try again.');
+		throw new ApiError(0, t('Axon is unreachable. Check your connection and try again.'));
 	}
 	connection.apiDown = res.status === 502 || res.status === 503 || res.status === 504;
 	if (!res.ok) {

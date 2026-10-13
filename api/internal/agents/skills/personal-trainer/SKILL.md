@@ -3,6 +3,8 @@ name: personal-trainer
 title: Personal Trainer
 version: 1.0.0
 description: Reads your training log and suggests sensible next sessions, progressions, and rest, as tasks you approve. Educational, never medical. Needs your consent to share health logs with the AI provider.
+title_fr: Coach sportif
+description_fr: Lit votre journal d’entraînement et propose des séances suivantes raisonnables, des progressions et du repos, sous forme de tâches que vous approuvez. Pédagogique, jamais médical. Demande votre consentement pour partager les journaux de santé avec le fournisseur d’IA.
 model: claude-opus-5-5
 effort: medium
 tools: training_log, list_tasks, create_task, remember

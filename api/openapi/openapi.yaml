@@ -8,6 +8,7 @@ info:
 
     - Every route is under `/v1`; the web app reaches the API at `/api`.
     - Errors are RFC 9457 problem documents (`application/problem+json`); `detail` is safe to show to people.
+    - Text for people (problem details, explanations, labels) follows `Accept-Language`: English, or French when it is preferred. Responses say which in `Content-Language` and vary on `Accept-Language` (EP-87).
     - Lists return `{"items": [...], "next_cursor": ...}`; pass the cursor back as `?after=` (or `?before=` for timelines). `?limit=` is 1–100, default 100.
     - `POST` accepts `Idempotency-Key`; a retry with the same key and body returns the original response with `Idempotent-Replayed: true`.
     - `PATCH` requires `If-Match` with the `ETag` you last read; a stale version gets `412`.

@@ -12,6 +12,11 @@ linters:
       exclude-functions:
         - fmt.Fprintln
         - fmt.Fprintf
+  exclusions:
+    rules:
+      # The French catalog: misspell checks English, and gosec reads "jeton" (token) messages as credentials.
+      - path: internal/l10n/fr.go
+        linters: [misspell, gosec]
 formatters:
   enable:
     - gofmt

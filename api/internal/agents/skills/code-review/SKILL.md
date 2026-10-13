@@ -3,6 +3,8 @@ name: code-review
 title: Code Review
 version: 1.0.0
 description: Reviews a pull request's diff for correctness, security, tests, and maintainability. It can comment after your approval, but can never approve or merge.
+title_fr: Revue de code
+description_fr: Relit le diff d’une pull request : exactitude, sécurité, tests et maintenabilité. Il peut commenter après votre approbation, mais ne peut jamais approuver ni fusionner.
 model: claude-opus-5-5
 effort: high
 tools: list_repos, list_pull_requests, read_pull_request_diff, read_repo_file, post_review_comment, remember

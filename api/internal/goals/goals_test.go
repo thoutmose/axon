@@ -19,12 +19,12 @@ func TestCompute(t *testing.T) {
 		{"items all done", nil, 4, 4, "items", 100, "4 of 4 milestones and linked tasks done"},
 	}
 	for _, c := range cases {
-		p := compute(c.m, c.done, c.total)
+		p := compute(c.m, c.done, c.total, "en")
 		if p.Method != c.method || p.Percent == nil || *p.Percent != c.percent || p.Summary != c.summary {
 			t.Errorf("%s: got %s %v %q", c.name, p.Method, deref(p.Percent), p.Summary)
 		}
 	}
-	if p := compute(nil, 0, 0); p.Method != "none" || p.Percent != nil {
+	if p := compute(nil, 0, 0, "en"); p.Method != "none" || p.Percent != nil {
 		t.Errorf("nothing to measure: %+v", p)
 	}
 }

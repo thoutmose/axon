@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Metric is a documented weekly measure.
@@ -41,24 +42,24 @@ func week(day string) string { return "date_trunc('week', " + day + ")::date" }
 // Metrics are the definitions, in display order.
 var Metrics = []Metric{
 	{
-		ID: "tasks_done", Title: "Tasks completed", Unit: "count",
-		Formula: "Tasks whose completion time falls in the week.", Source: "tasks.completed_at",
+		ID: "tasks_done", Title: l10n.Mark("Tasks completed"), Unit: "count",
+		Formula: l10n.Mark("Tasks whose completion time falls in the week."), Source: "tasks.completed_at",
 		weekly: `SELECT ` + week(local("t.completed_at")) + `, count(*) FROM tasks t JOIN entities e ON e.id = t.id
 			WHERE e.user_id = $1 AND ` + local("t.completed_at") + ` >= $3 AND ` + local("t.completed_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT t.id, 'task', e.title, t.completed_at FROM tasks t JOIN entities e ON e.id = t.id
 			WHERE e.user_id = $1 AND ` + local("t.completed_at") + ` >= $3 AND ` + local("t.completed_at") + ` < $4 ORDER BY t.completed_at DESC`,
 	},
 	{
-		ID: "tasks_captured", Title: "Tasks captured", Unit: "count",
-		Formula: "Tasks created in the week, whatever their status now.", Source: "entities.created_at (type task)",
+		ID: "tasks_captured", Title: l10n.Mark("Tasks captured"), Unit: "count",
+		Formula: l10n.Mark("Tasks created in the week, whatever their status now."), Source: "entities.created_at (type task)",
 		weekly: `SELECT ` + week(local("created_at")) + `, count(*) FROM entities
 			WHERE user_id = $1 AND type = 'task' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT id, type, title, created_at FROM entities
 			WHERE user_id = $1 AND type = 'task' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4 ORDER BY created_at DESC`,
 	},
 	{
-		ID: "habit_checkins", Title: "Habit check-ins", Unit: "count",
-		Formula: "Days a habit was checked in as done or as its two-minute version (skips do not count).", Source: "habit_checkins.day",
+		ID: "habit_checkins", Title: l10n.Mark("Habit check-ins"), Unit: "count",
+		Formula: l10n.Mark("Days a habit was checked in as done or as its two-minute version (skips do not count)."), Source: "habit_checkins.day",
 		weekly: `SELECT ` + week("c.day") + `, count(*) FROM habit_checkins c JOIN entities e ON e.id = c.habit_id
 			WHERE e.user_id = $1 AND c.status IN ('done', 'two_minute') AND c.day >= $3 AND c.day < $4 AND $2::text <> '' GROUP BY 1`,
 		items: `SELECT e.id, 'habit', e.title || ' · ' || to_char(c.day, 'Dy DD Mon') || CASE WHEN c.status = 'two_minute' THEN ' (two-minute version)' ELSE '' END,
@@ -66,48 +67,48 @@ var Metrics = []Metric{
 			WHERE e.user_id = $1 AND c.status IN ('done', 'two_minute') AND c.day >= $3 AND c.day < $4 AND $2::text <> '' ORDER BY c.day DESC, e.title`,
 	},
 	{
-		ID: "milestones_done", Title: "Milestones reached", Unit: "count",
-		Formula: "Goal milestones marked done in the week.", Source: "milestones.done_at",
+		ID: "milestones_done", Title: l10n.Mark("Milestones reached"), Unit: "count",
+		Formula: l10n.Mark("Goal milestones marked done in the week."), Source: "milestones.done_at",
 		weekly: `SELECT ` + week(local("m.done_at")) + `, count(*) FROM milestones m JOIN entities e ON e.id = m.id
 			WHERE e.user_id = $1 AND ` + local("m.done_at") + ` >= $3 AND ` + local("m.done_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT m.id, 'milestone', e.title, m.done_at FROM milestones m JOIN entities e ON e.id = m.id
 			WHERE e.user_id = $1 AND ` + local("m.done_at") + ` >= $3 AND ` + local("m.done_at") + ` < $4 ORDER BY m.done_at DESC`,
 	},
 	{
-		ID: "focus_minutes", Title: "Focus minutes", Unit: "minutes",
-		Formula: "Minutes worked in Pomodoro sessions started in the week.", Source: "focus_sessions.worked_minutes",
+		ID: "focus_minutes", Title: l10n.Mark("Focus minutes"), Unit: "minutes",
+		Formula: l10n.Mark("Minutes worked in Pomodoro sessions started in the week."), Source: "focus_sessions.worked_minutes",
 		weekly: `SELECT ` + week(local("f.started_at")) + `, sum(f.worked_minutes) FROM focus_sessions f JOIN entities e ON e.id = f.id
 			WHERE e.user_id = $1 AND f.worked_minutes > 0 AND ` + local("f.started_at") + ` >= $3 AND ` + local("f.started_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT f.id, 'focus', e.title || ' · ' || f.worked_minutes || ' min', f.started_at FROM focus_sessions f JOIN entities e ON e.id = f.id
 			WHERE e.user_id = $1 AND f.worked_minutes > 0 AND ` + local("f.started_at") + ` >= $3 AND ` + local("f.started_at") + ` < $4 ORDER BY f.started_at DESC`,
 	},
 	{
-		ID: "notes_written", Title: "Notes written", Unit: "count",
-		Formula: "Notes created in the week (synced vault files count when they first arrive; the notes Axon keeps for items do not).", Source: "entities.created_at (type note)",
+		ID: "notes_written", Title: l10n.Mark("Notes written"), Unit: "count",
+		Formula: l10n.Mark("Notes created in the week (synced vault files count when they first arrive; the notes Axon keeps for items do not)."), Source: "entities.created_at (type note)",
 		weekly: `SELECT ` + week(local("created_at")) + `, count(*) FROM entities ne
 			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4` + notMirrored + ` GROUP BY 1`,
 		items: `SELECT id, type, title, created_at FROM entities ne
 			WHERE user_id = $1 AND type = 'note' AND ` + local("created_at") + ` >= $3 AND ` + local("created_at") + ` < $4` + notMirrored + ` ORDER BY created_at DESC`,
 	},
 	{
-		ID: "cards_reviewed", Title: "Flashcards reviewed", Unit: "count",
-		Formula: "Flashcard reviews in the week (one card reviewed twice counts twice).", Source: "card_reviews.reviewed_at",
+		ID: "cards_reviewed", Title: l10n.Mark("Flashcards reviewed"), Unit: "count",
+		Formula: l10n.Mark("Flashcard reviews in the week (one card reviewed twice counts twice)."), Source: "card_reviews.reviewed_at",
 		weekly: `SELECT ` + week(local("r.reviewed_at")) + `, count(*) FROM card_reviews r JOIN entities e ON e.id = r.card_id
 			WHERE e.user_id = $1 AND ` + local("r.reviewed_at") + ` >= $3 AND ` + local("r.reviewed_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT e.id, 'card', e.title || ' · ' || (ARRAY['again', 'hard', 'good', 'easy'])[r.rating], r.reviewed_at FROM card_reviews r JOIN entities e ON e.id = r.card_id
 			WHERE e.user_id = $1 AND ` + local("r.reviewed_at") + ` >= $3 AND ` + local("r.reviewed_at") + ` < $4 ORDER BY r.reviewed_at DESC`,
 	},
 	{
-		ID: "recall_rate", Title: "Recall rate", Unit: "percent",
-		Formula: "Share of flashcard reviews answered good or easy, out of all reviews in the week.", Source: "card_reviews.rating",
+		ID: "recall_rate", Title: l10n.Mark("Recall rate"), Unit: "percent",
+		Formula: l10n.Mark("Share of flashcard reviews answered good or easy, out of all reviews in the week."), Source: "card_reviews.rating",
 		weekly: `SELECT ` + week(local("r.reviewed_at")) + `, round(100.0 * count(*) FILTER (WHERE r.rating >= 3) / count(*)) FROM card_reviews r JOIN entities e ON e.id = r.card_id
 			WHERE e.user_id = $1 AND ` + local("r.reviewed_at") + ` >= $3 AND ` + local("r.reviewed_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT e.id, 'card', e.title || ' · ' || (ARRAY['again', 'hard', 'good', 'easy'])[r.rating], r.reviewed_at FROM card_reviews r JOIN entities e ON e.id = r.card_id
 			WHERE e.user_id = $1 AND r.rating < 3 AND ` + local("r.reviewed_at") + ` >= $3 AND ` + local("r.reviewed_at") + ` < $4 ORDER BY r.reviewed_at DESC`,
 	},
 	{
-		ID: "skills_learned", Title: "Skills learned", Unit: "count",
-		Formula: "Skills marked learned, dated by their last change.", Source: "skills.status = done, skills.updated_at",
+		ID: "skills_learned", Title: l10n.Mark("Skills learned"), Unit: "count",
+		Formula: l10n.Mark("Skills marked learned, dated by their last change."), Source: "skills.status = done, skills.updated_at",
 		weekly: `SELECT ` + week(local("s.updated_at")) + `, count(*) FROM skills s JOIN entities e ON e.id = s.id
 			WHERE e.user_id = $1 AND s.status = 'done' AND ` + local("s.updated_at") + ` >= $3 AND ` + local("s.updated_at") + ` < $4 GROUP BY 1`,
 		items: `SELECT s.id, 'skill', e.title, s.updated_at FROM skills s JOIN entities e ON e.id = s.id
@@ -204,7 +205,7 @@ func Weekly(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, toda
 		if err != nil {
 			return nil, err
 		}
-		s := Series{Metric: m, Points: make([]Point, weeks)}
+		s := Series{Metric: m.in(l10n.Lang(ctx)), Points: make([]Point, weeks)}
 		withData := 0
 		for i := range weeks {
 			mon := first.AddDate(0, 0, 7*i)
@@ -225,14 +226,14 @@ func Weekly(ctx context.Context, q db.Querier, userID uuid.UUID, tz string, toda
 				s.Total = math.Round(sum / float64(withData))
 			}
 		}
-		s.Trend = trend(s.Points, m.Unit)
+		s.Trend = trend(s.Points, m.Unit, l10n.Lang(ctx))
 		out = append(out, s)
 	}
 	return out, nil
 }
 
 // trend compares the averages of the last four points and the four before.
-func trend(points []Point, unit string) Trend {
+func trend(points []Point, unit, lang string) Trend {
 	avg := func(ps []Point) float64 {
 		if len(ps) == 0 {
 			return 0
@@ -247,15 +248,16 @@ func trend(points []Point, unit string) Trend {
 	recent := avg(points[max(0, n-4):])
 	before := avg(points[max(0, n-8):max(0, n-4)])
 	t := Trend{Recent: math.Round(recent*10) / 10, Before: math.Round(before*10) / 10}
-	per := " a week"
+	per := l10n.Tr(lang, " a week")
 	if unit == "percent" {
 		per = " %"
 	}
+	num := func(f float64) string { return l10n.Num(lang, f, 1) }
 	switch {
 	case before == 0 && recent == 0:
-		t.Direction, t.Sentence = "flat", "Nothing in the last eight weeks."
+		t.Direction, t.Sentence = "flat", l10n.Tr(lang, "Nothing in the last eight weeks.")
 	case before == 0:
-		t.Direction, t.Sentence = "new", fmt.Sprintf("New in the last four weeks: %.1f%s on average.", t.Recent, per)
+		t.Direction, t.Sentence = "new", l10n.Tr(lang, "New in the last four weeks: %s%s on average.", num(t.Recent), per)
 	default:
 		t.Change = math.Round((recent - before) / before * 100)
 		t.Direction = "flat"
@@ -264,10 +266,20 @@ func trend(points []Point, unit string) Trend {
 		} else if t.Change <= -10 {
 			t.Direction = "down"
 		}
-		word := map[string]string{"up": "Up", "down": "Down", "flat": "Steady"}[t.Direction]
-		t.Sentence = fmt.Sprintf("%s %+.0f %% on the four weeks before (%.1f → %.1f%s).", word, t.Change, t.Before, t.Recent, per)
+		format := map[string]string{
+			"up":   l10n.Mark("Up %+.0f %% on the four weeks before (%s → %s%s)."),
+			"down": l10n.Mark("Down %+.0f %% on the four weeks before (%s → %s%s)."),
+			"flat": l10n.Mark("Steady %+.0f %% on the four weeks before (%s → %s%s)."),
+		}[t.Direction]
+		t.Sentence = l10n.Tr(lang, format, t.Change, num(t.Before), num(t.Recent), per)
 	}
 	return t
+}
+
+// in is the metric with its title and formula in lang.
+func (m Metric) in(lang string) Metric {
+	m.Title, m.Formula = l10n.Tr(lang, m.Title), l10n.Tr(lang, m.Formula)
+	return m
 }
 
 // Item is something behind a number.

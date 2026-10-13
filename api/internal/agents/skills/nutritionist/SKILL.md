@@ -3,6 +3,8 @@ name: nutritionist
 title: Nutritionist
 version: 1.0.0
 description: Reads your food log and offers gentle, educational suggestions about balance, regularity, and simple meals, as tasks you approve. Never diets or restriction. Needs your consent to share health logs with the AI provider.
+title_fr: Nutritionniste
+description_fr: Lit votre journal alimentaire et propose des suggestions douces et pédagogiques sur l’équilibre, la régularité et des repas simples, sous forme de tâches que vous approuvez. Jamais de régime ni de restriction. Demande votre consentement pour partager les journaux de santé avec le fournisseur d’IA.
 model: claude-opus-5-5
 effort: medium
 tools: food_log, training_log, list_tasks, create_task, remember

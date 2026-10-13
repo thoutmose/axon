@@ -3,6 +3,8 @@ name: teacher
 title: Teacher
 version: 1.1.0
 description: Turns your literature and permanent notes into retrieval practice — illustrated flashcards that make you recall, with the why, an example, and a vivid memory image, scheduled with FSRS. It never reads fleeting notes, and every card waits for your approval.
+title_fr: Enseignant
+description_fr: Transforme vos notes de lecture et permanentes en pratique de récupération — des cartes mémoire illustrées qui vous font vous rappeler, avec le pourquoi, un exemple et une image frappante, planifiées avec FSRS. Il ne lit jamais les notes éphémères, et chaque carte attend votre approbation.
 model: claude-opus-5-5
 effort: medium
 tools: list_study_notes, read_study_note, list_decks, list_cards, get_assessment, propose_cards, illustrate_cards, remember

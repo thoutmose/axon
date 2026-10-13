@@ -3,6 +3,8 @@ name: side-projects
 title: Side-Projects
 version: 1.0.0
 description: Reads a connected repository and drafts issues for its project board. Read-only; you approve every issue.
+title_fr: Projets annexes
+description_fr: Lit un dépôt connecté et rédige des tickets pour le tableau de son projet. En lecture seule ; vous approuvez chaque ticket.
 model: claude-opus-5-5
 effort: medium
 tools: list_repos, repo_tree, read_repo_file, list_pull_requests, draft_issue, remember

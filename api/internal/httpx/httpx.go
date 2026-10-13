@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // MaxBody caps request bodies; no Axon request needs more.
@@ -29,6 +31,8 @@ func JSON(w http.ResponseWriter, status int, body any) {
 // Problem writes an RFC 9457 problem document. detail must never contain
 // internal error text: callers log that and send a human-readable sentence.
 func Problem(w http.ResponseWriter, status int, detail string) {
+	// The detail is for people: in the language l10n.Middleware chose.
+	detail = l10n.Tr(w.Header().Get("Content-Language"), detail)
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]any{

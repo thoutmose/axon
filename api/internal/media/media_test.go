@@ -31,7 +31,7 @@ func TestRankExplainsEverySuggestion(t *testing.T) {
 		item("Gave up", "dropped", "Ursula K. Le Guin", nil, 0, time.Hour),
 		paused,
 	}
-	got := rank(items, now, 10)
+	got := rank(items, now, 10, "en")
 	titles := make([]string, len(got))
 	for i, r := range got {
 		titles[i] = r.Item.Title
@@ -50,7 +50,7 @@ func TestRankExplainsEverySuggestion(t *testing.T) {
 	if r := got[1].Reasons[0]; r != "You started it and are at 120 of 300; untouched for 30 days." {
 		t.Fatalf("paused reason = %q", r)
 	}
-	if len(rank(items, now, 2)) != 2 {
+	if len(rank(items, now, 2, "en")) != 2 {
 		t.Fatal("limit ignored")
 	}
 }

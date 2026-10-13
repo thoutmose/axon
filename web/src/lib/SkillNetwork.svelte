@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n.svelte';
 	import { forceLayout, nodeHref, type NetEdge, type NetNode } from '$lib/overview';
+	import { typeNames } from '$lib/links';
 
 	let { nodes, edges }: { nodes: NetNode[]; edges: NetEdge[] } = $props();
 	const W = 900;
@@ -21,8 +22,12 @@
 	const radius = (n: NetNode) => (n.type === 'skill' ? (n.status === 'done' ? 9 : 7) : 11);
 	const label = (n: NetNode) =>
 		n.type === 'skill'
-			? t('{title}, {kind} skill, {status}', { title: n.title, kind: n.kind, status: n.status })
-			: `${n.title}, ${n.type}`;
+			? t('{title}, {kind} skill, {status}', {
+					title: n.title,
+					kind: t(n.kind ?? ''),
+					status: t(n.status ?? '')
+				})
+			: `${n.title}, ${t(typeNames[n.type] ?? n.type)}`;
 	let hover = $state<string | null>(null);
 </script>
 

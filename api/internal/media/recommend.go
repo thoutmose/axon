@@ -2,7 +2,6 @@ package media
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"strings"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Recommendation is an item from the person's own list, with why it is
@@ -30,10 +30,10 @@ func Recommend(ctx context.Context, q db.Querier, userID uuid.UUID, kind string,
 	if err != nil {
 		return nil, err
 	}
-	return rank(items, now, limit), nil
+	return rank(items, now, limit, l10n.Lang(ctx)), nil
 }
 
-func rank(items []Item, now time.Time, limit int) []Recommendation {
+func rank(items []Item, now time.Time, limit int, lang string) []Recommendation {
 	var loved []Item
 	for _, it := range items {
 		if it.Status == "done" && it.Rating != nil && *it.Rating >= lovedFrom {
@@ -48,19 +48,25 @@ func rank(items []Item, now time.Time, limit int) []Recommendation {
 		r := Recommendation{Item: it}
 		if it.Status == "doing" {
 			r.Score += 2
-			msg := "You started it"
-			if it.Total != nil && it.Progress > 0 {
-				msg += fmt.Sprintf(" and are at %d of %d", it.Progress, *it.Total)
+			at := it.Total != nil && it.Progress > 0
+			days := int(now.Sub(it.UpdatedAt).Hours() / 24)
+			var msg string
+			switch {
+			case at && days >= 14:
+				msg = l10n.Tr(lang, "You started it and are at %d of %d; untouched for %d days.", it.Progress, *it.Total, days)
+			case at:
+				msg = l10n.Tr(lang, "You started it and are at %d of %d.", it.Progress, *it.Total)
+			case days >= 14:
+				msg = l10n.Tr(lang, "You started it; untouched for %d days.", days)
+			default:
+				msg = l10n.Tr(lang, "You started it.")
 			}
-			if days := int(now.Sub(it.UpdatedAt).Hours() / 24); days >= 14 {
-				msg += fmt.Sprintf("; untouched for %d days", days)
-			}
-			r.Reasons = append(r.Reasons, msg+".")
+			r.Reasons = append(r.Reasons, msg)
 		}
 		for _, name := range people(it.Creators) {
 			if l := find(loved, func(o Item) bool { return o.ID != it.ID && slices.Contains(people(o.Creators), name) }); l != nil {
 				r.Score += 3
-				r.Reasons = append(r.Reasons, fmt.Sprintf("By %s, like %s, which you rated %d/10.", name, l.Title, *l.Rating))
+				r.Reasons = append(r.Reasons, l10n.Tr(lang, "By %s, like %s, which you rated %d/10.", name, l.Title, *l.Rating))
 			}
 		}
 		for _, g := range it.Genres {
@@ -72,11 +78,11 @@ func rank(items []Item, now time.Time, limit int) []Recommendation {
 			}
 			if len(like) > 0 {
 				r.Score++
-				r.Reasons = append(r.Reasons, fmt.Sprintf("%s, like %s, which you loved.", g, list(like)))
+				r.Reasons = append(r.Reasons, l10n.Tr(lang, "%s, like %s, which you loved.", g, list(like, lang)))
 			}
 		}
 		if len(r.Reasons) == 0 {
-			r.Reasons = append(r.Reasons, fmt.Sprintf("On your list since %s.", it.CreatedAt.Format("2 January 2006")))
+			r.Reasons = append(r.Reasons, l10n.Tr(lang, "On your list since %s.", l10n.Date(lang, it.CreatedAt)))
 		}
 		out = append(out, r)
 	}
@@ -108,9 +114,9 @@ func find(items []Item, ok func(Item) bool) *Item {
 	return nil
 }
 
-func list(titles []string) string {
+func list(titles []string, lang string) string {
 	if len(titles) > 2 {
-		return titles[0] + ", " + titles[1] + ", and others"
+		return l10n.Tr(lang, "%s, %s, and others", titles[0], titles[1])
 	}
-	return strings.Join(titles, " and ")
+	return strings.Join(titles, l10n.Tr(lang, " and "))
 }

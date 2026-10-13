@@ -3,6 +3,8 @@ name: media
 title: Media
 version: 1.0.0
 description: Suggests what to watch or read next from your own films, series, and books, and proposes new titles with the reasons they fit you. You approve every addition.
+title_fr: Médias
+description_fr: Suggère quoi regarder ou lire ensuite parmi vos films, séries et livres, et propose de nouveaux titres avec les raisons pour lesquelles ils vous correspondent. Vous approuvez chaque ajout.
 model: claude-opus-5-5
 effort: low
 tools: list_media, media_recommendations, suggest_media, remember

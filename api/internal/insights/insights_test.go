@@ -31,21 +31,29 @@ func TestTrendSentences(t *testing.T) {
 		}
 		return out
 	}
-	if tr := trend(pts(2, 2, 2, 2, 3, 3, 3, 3), "count"); tr.Direction != "up" || tr.Change != 50 || tr.Sentence != "Up +50 % on the four weeks before (2.0 → 3.0 a week)." {
+	if tr := trend(pts(2, 2, 2, 2, 3, 3, 3, 3), "count", "en"); tr.Direction != "up" || tr.Change != 50 || tr.Sentence != "Up +50 % on the four weeks before (2.0 → 3.0 a week)." {
 		t.Fatalf("up = %+v", tr)
 	}
-	if tr := trend(pts(4, 4, 4, 4, 4, 4, 4, 3.8), "count"); tr.Direction != "flat" {
+	if tr := trend(pts(4, 4, 4, 4, 4, 4, 4, 3.8), "count", "en"); tr.Direction != "flat" {
 		t.Fatalf("flat = %+v", tr)
 	}
-	if tr := trend(pts(0, 0, 0, 0, 0, 0, 1, 2), "count"); tr.Direction != "new" {
+	if tr := trend(pts(0, 0, 0, 0, 0, 0, 1, 2), "count", "en"); tr.Direction != "new" {
 		t.Fatalf("new = %+v", tr)
 	}
-	if tr := trend(pts(0, 0, 0, 0), "count"); tr.Direction != "flat" || tr.Sentence != "Nothing in the last eight weeks." {
+	if tr := trend(pts(0, 0, 0, 0), "count", "en"); tr.Direction != "flat" || tr.Sentence != "Nothing in the last eight weeks." {
 		t.Fatalf("empty = %+v", tr)
 	}
 	for _, m := range Metrics {
 		if m.Formula == "" || m.Source == "" || m.weekly == "" || m.items == "" {
 			t.Errorf("%s is not fully documented", m.ID)
 		}
+	}
+}
+
+func TestTrendSentencesInFrench(t *testing.T) {
+	pts := []Point{{Value: 2}, {Value: 2}, {Value: 2}, {Value: 2}, {Value: 3}, {Value: 3}, {Value: 3}, {Value: 3}}
+	want := "En hausse (+50 %) par rapport aux quatre semaines précédentes (2,0 → 3,0 par semaine)."
+	if tr := trend(pts, "count", "fr"); tr.Sentence != want {
+		t.Fatalf("fr = %q", tr.Sentence)
 	}
 }
