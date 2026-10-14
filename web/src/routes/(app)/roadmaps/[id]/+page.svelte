@@ -1,4 +1,5 @@
 <script lang="ts">
+	import StudyHours from '$lib/StudyHours.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -200,6 +201,8 @@
 			<Button variant="danger" onclick={() => (confirmDelete = true)}>{t('Delete')}</Button>
 		</div>
 	</div>
+
+	<StudyHours roadmapId={id} />
 
 	<nav class="tabs" aria-label={t('View')}>
 		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>{t('List')}</a>

@@ -93,6 +93,12 @@
 			})
 			.catch(() => {});
 		loadHistory();
+		// Opened for something (?target=, e.g. a roadmap's block of the day, EP-105).
+		const wanted = new URL(location.href).searchParams.get('target');
+		if (wanted)
+			api<{ id: string; type: string; title: string }>(`/v1/entities/${wanted}`)
+				.then((e) => (target = { id: e.id, type: e.type, title: e.title }))
+				.catch(() => {});
 		// Resume a session that was running when the page was left.
 		try {
 			const saved = JSON.parse(localStorage.getItem(key) ?? 'null');

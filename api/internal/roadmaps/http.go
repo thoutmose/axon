@@ -36,6 +36,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/roadmaps/radar", h.radar)
 	r.Post("/v1/roadmaps/import", h.importRoadmap)
 	r.Get("/v1/roadmaps/{id}", h.get)
+	r.Get("/v1/roadmaps/{id}/hours", h.hours)
 	r.Patch("/v1/roadmaps/{id}", h.update)
 	r.Delete("/v1/roadmaps/{id}", h.delete)
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
@@ -314,4 +315,22 @@ func (h *Handlers) deleteSkill(w http.ResponseWriter, r *http.Request) {
 	h.tx(w, r, 0, func(tx pgx.Tx) (any, error) {
 		return nil, DeleteSkill(r.Context(), tx, who.UserID, sid, graph.UserActor)
 	})
+}
+
+func (h *Handlers) hours(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	rid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	out, err := StudyHours(r.Context(), h.db, who.UserID, rid, time.Now())
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = graph.ErrNotFound
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
 }

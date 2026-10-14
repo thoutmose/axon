@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 )
@@ -292,5 +293,82 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	// Once only.
 	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)); code != 422 || !bytes.Contains(out, []byte("already started")) {
 		t.Fatalf("second start = %d %s", code, out)
+	}
+}
+
+// Study hours against the plan (EP-105): focus sessions on the roadmap, its
+// skills, or its plan's projects and tasks count; others do not.
+func TestStudyHoursAgainstThePlan(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	var rm roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
+	var dsa string
+	for _, s := range rm.Skills {
+		if s.Title == "Data structures and algorithms" {
+			dsa = s.ID
+		}
+	}
+	var projects struct {
+		Items []struct{ ID, Title string } `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects", nil), &projects)
+	pipekit := ""
+	for _, p := range projects.Items {
+		if strings.HasPrefix(p.Title, "pipekit") {
+			pipekit = p.ID
+		}
+	}
+	focus := func(target string, minutes int) {
+		t.Helper()
+		body := `{"planned_minutes":25}`
+		if target != "" {
+			body = `{"planned_minutes":25,"target_id":"` + target + `"}`
+		}
+		var s struct{ ID string }
+		_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/focus-sessions", []byte(body)), &s)
+		// Started long enough ago to have worked that long.
+		if _, err := pool.Exec(context.Background(), `UPDATE focus_sessions SET started_at = now() - make_interval(mins => $2) WHERE id = $1`, s.ID, minutes+1); err != nil {
+			t.Fatal(err)
+		}
+		alice.mustDo(200, "POST", "/v1/focus-sessions/"+s.ID+"/finish", []byte(fmt.Sprintf(`{"worked_minutes":%d,"rounds":1,"status":"completed"}`, minutes)))
+	}
+	focus(dsa, 50)
+	focus(rm.ID, 30)
+	focus(pipekit, 40)
+	focus("", 25) // a session for nothing in particular: not counted
+
+	var h struct {
+		TargetHours float64 `json:"target_hours"`
+		Weeks       []struct {
+			Week    string `json:"week"`
+			Minutes int    `json:"minutes"`
+		} `json:"weeks"`
+		Days []struct {
+			Date    string `json:"date"`
+			Block   string `json:"block"`
+			Minutes int    `json:"minutes"`
+		} `json:"days"`
+		Skills []struct {
+			Title   string `json:"title"`
+			Minutes int    `json:"minutes"`
+		} `json:"skills"`
+		Projects []struct {
+			Title   string `json:"title"`
+			Minutes int    `json:"minutes"`
+		} `json:"projects"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/hours", nil), &h)
+	if h.TargetHours != 22 || len(h.Weeks) != 12 || h.Weeks[11].Minutes != 120 || len(h.Days) != 7 {
+		t.Fatalf("hours = %+v", h)
+	}
+	if len(h.Skills) != 1 || h.Skills[0].Minutes != 50 || len(h.Projects) != 1 || h.Projects[0].Minutes != 40 {
+		t.Fatalf("by skill %+v, by project %+v", h.Skills, h.Projects)
+	}
+	var mine roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Mine"}`)), &mine)
+	if out := alice.mustDo(200, "GET", "/v1/roadmaps/"+mine.ID+"/hours", nil); !bytes.Contains(out, []byte(`"target_hours":null`)) {
+		t.Fatalf("a roadmap without a plan = %s", out)
 	}
 }

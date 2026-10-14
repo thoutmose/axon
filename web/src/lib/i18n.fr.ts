@@ -3008,5 +3008,14 @@ export const fr: Record<string, string> = {
 	'Add a certification': 'Ajouter une certification',
 	'Aim to take it by': 'À passer d’ici le',
 	'Valid for (months)': 'Valable (mois)',
-	CKA: 'CKA'
+	CKA: 'CKA',
+	'Study hours': 'Heures d’étude',
+	'{done} h of {target} h this week': '{done} h sur {target} h cette semaine',
+	'{done} h this week': '{done} h cette semaine',
+	'This week against the plan': 'Cette semaine face au plan',
+	'Focus on today’s block': 'Se concentrer sur le bloc du jour',
+	'The last 12 weeks': 'Les 12 dernières semaines',
+	'Week of {week}: {h} h': 'Semaine du {week} : {h} h',
+	'Focus sessions count when they are for this roadmap, one of its skills, its goal and milestones, or the projects, habits, and tasks of its plan.':
+		'Les sessions de concentration comptent quand elles portent sur ce parcours, une de ses compétences, son objectif et ses jalons, ou les projets, habitudes et tâches de son plan.'
 };
