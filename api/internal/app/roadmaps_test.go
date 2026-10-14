@@ -280,6 +280,15 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Errorf("pipekit's project note is missing: %.300s", n)
 	}
 
+	// The plan's nine exams, planned for the end of their phases (EP-104).
+	var certs struct {
+		Items []certJSON `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
+	if len(certs.Items) != 9 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
+		t.Fatalf("certifications = %+v", certs.Items)
+	}
+
 	// Once only.
 	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)); code != 422 || !bytes.Contains(out, []byte("already started")) {
 		t.Fatalf("second start = %d %s", code, out)

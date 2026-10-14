@@ -1060,6 +1060,42 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/certifications': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Certifications, upcoming exams first */
+		get: operations['listCertifications'];
+		put?: never;
+		/** Add a certification */
+		post: operations['createCertification'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/certifications/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Rewrite a certification (passing sets its expiry from the validity) */
+		put: operations['replaceCertification'];
+		post?: never;
+		/** Remove a certification */
+		delete: operations['deleteCertification'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/practice': {
 		parameters: {
 			query?: never;
@@ -4050,6 +4086,36 @@ export interface components {
 			 */
 			loci?: string[];
 		};
+		Certification: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			provider: string;
+			code: string;
+			url: string | null;
+			/** @enum {unknown} */
+			status: 'planned' | 'booked' | 'passed' | 'failed';
+			/** Format: date */
+			target_on: string | null;
+			/** Format: date */
+			exam_on: string | null;
+			/** Format: date */
+			passed_on: string | null;
+			/** Format: date */
+			expires_on: string | null;
+			validity_months: number | null;
+			score: string;
+			cost_cents: number | null;
+			currency: string;
+			credential_url: string | null;
+			notes: string;
+			/** Format: uuid */
+			skill_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			updated_at: string;
+		};
 		PracticeProblem: {
 			/** Format: uuid */
 			id: string;
@@ -4571,9 +4637,9 @@ export interface components {
 			/** Format: date */
 			date: string;
 			/** @enum {unknown} */
-			type: 'task' | 'goal' | 'milestone' | 'study';
+			type: 'task' | 'goal' | 'milestone' | 'study' | 'certification';
 			/** @enum {unknown} */
-			kind: 'scheduled' | 'due' | 'target' | 'milestone' | 'block';
+			kind: 'scheduled' | 'due' | 'target' | 'milestone' | 'block' | 'exam' | 'expiry';
 			/** Format: uuid */
 			id: string;
 			title: string;
@@ -4593,7 +4659,7 @@ export interface components {
 			/** Format: uuid */
 			id: string;
 			name: string;
-			types: ('task' | 'goal' | 'milestone' | 'study')[];
+			types: ('task' | 'goal' | 'milestone' | 'study' | 'certification')[];
 			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
@@ -7909,6 +7975,193 @@ export interface operations {
 			422: components['responses']['Problem'];
 		};
 	};
+	listCertifications: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Certifications. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Certification'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createCertification: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Certified Kubernetes Administrator */
+					name: string;
+					/** @example The Linux Foundation */
+					provider?: string;
+					/** @example CKA */
+					code?: string;
+					/** Format: uri */
+					url?: string | null;
+					/** @enum {unknown} */
+					status: 'planned' | 'booked' | 'passed' | 'failed';
+					/**
+					 * Format: date
+					 * @description When the plan aims to take it.
+					 */
+					target_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Needed when booked or failed.
+					 */
+					exam_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Defaults to the exam day when passed.
+					 */
+					passed_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Worked out from passed_on and validity_months when left out.
+					 */
+					expires_on?: string | null;
+					validity_months?: number | null;
+					score?: string;
+					cost_cents?: number | null;
+					/** @example USD */
+					currency?: string;
+					/** Format: uri */
+					credential_url?: string | null;
+					notes?: string;
+					/** Format: uuid */
+					skill_id?: string | null;
+				};
+			};
+		};
+		responses: {
+			/** @description The certification. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Certification'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	replaceCertification: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Certified Kubernetes Administrator */
+					name: string;
+					/** @example The Linux Foundation */
+					provider?: string;
+					/** @example CKA */
+					code?: string;
+					/** Format: uri */
+					url?: string | null;
+					/** @enum {unknown} */
+					status: 'planned' | 'booked' | 'passed' | 'failed';
+					/**
+					 * Format: date
+					 * @description When the plan aims to take it.
+					 */
+					target_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Needed when booked or failed.
+					 */
+					exam_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Defaults to the exam day when passed.
+					 */
+					passed_on?: string | null;
+					/**
+					 * Format: date
+					 * @description Worked out from passed_on and validity_months when left out.
+					 */
+					expires_on?: string | null;
+					validity_months?: number | null;
+					score?: string;
+					cost_cents?: number | null;
+					/** @example USD */
+					currency?: string;
+					/** Format: uri */
+					credential_url?: string | null;
+					notes?: string;
+					/** Format: uuid */
+					skill_id?: string | null;
+				};
+			};
+		};
+		responses: {
+			/** @description The certification. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Certification'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCertification: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
 	listPractice: {
 		parameters: {
 			query?: {
@@ -11091,7 +11344,7 @@ export interface operations {
 			query: {
 				from: string;
 				to: string;
-				/** @description Comma-separated subset of task, goal, milestone, study (default all). */
+				/** @description Comma-separated subset of task, goal, milestone, study, certification (default all). */
 				types?: string;
 			};
 			header?: never;
@@ -11151,7 +11404,7 @@ export interface operations {
 				'application/json': {
 					/** @example Phone */
 					name: string;
-					types: ('task' | 'goal' | 'milestone' | 'study')[];
+					types: ('task' | 'goal' | 'milestone' | 'study' | 'certification')[];
 				};
 			};
 		};
