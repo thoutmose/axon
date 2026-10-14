@@ -38,6 +38,7 @@ import (
 	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/para"
+	"github.com/thoutmose/axon/api/internal/practice"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
@@ -101,6 +102,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	focusAPI := focus.NewHandlers(pool, log)
 	cardsAPI := cards.NewHandlers(pool, log)
 	learningAPI := learning.NewHandlers(pool, log)
+	practiceAPI := practice.NewHandlers(pool, log)
+	priv.Register("practice", practice.Export)
 	remindersAPI, err := Reminders(cfg, pool, log)
 	if err != nil {
 		return nil, err
@@ -163,6 +166,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				focusAPI.Routes(r)
 				cardsAPI.Routes(r)
 				learningAPI.Routes(r)
+				practiceAPI.Routes(r)
 				remindersAPI.Routes(r)
 				calendarsAPI.Routes(r)
 				householdAPI.Routes(r)

@@ -14,6 +14,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/images"
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/practice"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 )
 
@@ -70,6 +71,10 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 			return plan, err
 		}
 	}
+	if err := seedPractice(ctx, tx, user, today, plan.Roadmap.Skills); err != nil {
+		return plan, err
+	}
+
 	// The first course's literature note, and its flashcards with diagrams.
 	note, err := notes.Create(ctx, tx, user, graph.UserActor, "4-Zettelkasten/Literature/MIT 6.042J Mathematics for Computer Science.md", logicNote)
 	if err != nil {
@@ -167,3 +172,69 @@ A proof is a chain of logical deductions from axioms to a proposition: a stateme
 
 - [ ] Implication and its contrapositive
 `
+
+// seedPractice gives the demo twelve weeks of practice (EP-103): classic
+// LeetCode problems on arrays, two pointers, stacks, lists, trees, and
+// graphs, and the first OverTheWire Bandit levels, some solved with help
+// and coming back to be re-solved today.
+func seedPractice(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time, skills []roadmaps.Skill) error {
+	skill := map[string]*uuid.UUID{}
+	for _, sk := range skills {
+		skill[sk.Title] = &sk.ID
+	}
+	type try struct {
+		back    int
+		outcome string
+		minutes int
+	}
+	for _, p := range []struct {
+		title, slug, difficulty string
+		topics                  []string
+		tries                   []try
+	}{
+		{"Two Sum", "two-sum", "easy", []string{"arrays", "hash table"}, []try{{80, "with_help", 30}, {77, "solved", 12}}},
+		{"Contains Duplicate", "contains-duplicate", "easy", []string{"arrays", "hash table"}, []try{{78, "solved", 8}}},
+		{"Valid Anagram", "valid-anagram", "easy", []string{"strings", "hash table"}, []try{{75, "solved", 10}}},
+		{"Group Anagrams", "group-anagrams", "medium", []string{"strings", "hash table"}, []try{{70, "with_help", 40}, {67, "solved", 22}, {60, "solved", 15}}},
+		{"Top K Frequent Elements", "top-k-frequent-elements", "medium", []string{"arrays", "heap"}, []try{{62, "solved", 28}}},
+		{"Product of Array Except Self", "product-of-array-except-self", "medium", []string{"arrays", "prefix sum"}, []try{{55, "with_help", 45}, {52, "with_help", 25}, {3, "with_help", 20}}},
+		{"Longest Consecutive Sequence", "longest-consecutive-sequence", "medium", []string{"arrays", "hash table"}, []try{{48, "solved", 30}, {41, "solved", 18}}},
+		{"Valid Palindrome", "valid-palindrome", "easy", []string{"two pointers", "strings"}, []try{{45, "solved", 9}}},
+		{"3Sum", "3sum", "medium", []string{"two pointers", "sorting"}, []try{{40, "not_solved", 50}, {39, "with_help", 35}, {36, "solved", 25}, {29, "solved", 18}}},
+		{"Container With Most Water", "container-with-most-water", "medium", []string{"two pointers", "greedy"}, []try{{34, "solved", 20}}},
+		{"Best Time to Buy and Sell Stock", "best-time-to-buy-and-sell-stock", "easy", []string{"arrays", "sliding window"}, []try{{30, "solved", 11}}},
+		{"Longest Substring Without Repeating Characters", "longest-substring-without-repeating-characters", "medium", []string{"sliding window", "hash table"}, []try{{27, "with_help", 40}, {24, "solved", 20}}},
+		{"Valid Parentheses", "valid-parentheses", "easy", []string{"stack", "strings"}, []try{{22, "solved", 10}}},
+		{"Min Stack", "min-stack", "medium", []string{"stack", "design"}, []try{{19, "solved", 25}, {12, "solved", 10}}},
+		{"Binary Search", "binary-search", "easy", []string{"binary search"}, []try{{16, "solved", 7}}},
+		{"Reverse Linked List", "reverse-linked-list", "easy", []string{"linked list"}, []try{{13, "with_help", 20}, {10, "solved", 8}}},
+		{"Merge Two Sorted Lists", "merge-two-sorted-lists", "easy", []string{"linked list"}, []try{{11, "solved", 12}}},
+		{"Invert Binary Tree", "invert-binary-tree", "easy", []string{"trees", "dfs"}, []try{{8, "solved", 9}}},
+		{"Number of Islands", "number-of-islands", "medium", []string{"graphs", "bfs", "dfs"}, []try{{6, "not_solved", 45}, {5, "with_help", 30}, {2, "with_help", 25}}},
+		{"Course Schedule", "course-schedule", "medium", []string{"graphs", "topological sort"}, []try{{4, "with_help", 40}, {1, "solved", 26}}},
+		{"Climbing Stairs", "climbing-stairs", "easy", []string{"dynamic programming"}, []try{{1, "not_solved", 20}}},
+	} {
+		in := practice.Input{Title: p.title, URL: "https://leetcode.com/problems/" + p.slug + "/", Platform: "leetcode", Difficulty: p.difficulty,
+			Topics: p.topics, Language: "python", SkillID: skill["Data structures and algorithms"]}
+		for i, t := range p.tries {
+			in.AttemptInput = practice.AttemptInput{Outcome: t.outcome, Minutes: &t.minutes, On: today.AddDate(0, 0, -t.back).Format(time.DateOnly)}
+			if _, _, err := practice.Log(ctx, tx, user, in, today); err != nil {
+				return fmt.Errorf("practice %s, try %d: %w", p.title, i, err)
+			}
+		}
+	}
+	for level := range 9 {
+		minutes := 5 + level*3
+		outcome := "solved"
+		if level == 5 || level == 8 {
+			outcome = "with_help"
+		}
+		in := practice.Input{Title: fmt.Sprintf("Bandit level %d → %d", level, level+1), URL: fmt.Sprintf("https://overthewire.org/wargames/bandit/bandit%d.html", level+1),
+			Platform: "overthewire", Difficulty: "easy", Topics: []string{"bash", "linux"}, Language: "bash", SkillID: skill["Bash"],
+			AttemptInput: practice.AttemptInput{Outcome: outcome, Minutes: &minutes, On: today.AddDate(0, 0, -(9 - level)).Format(time.DateOnly)}}
+		if _, _, err := practice.Log(ctx, tx, user, in, today); err != nil {
+			return err
+		}
+	}
+	return nil
+}

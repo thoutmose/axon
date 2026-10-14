@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Practice log**: problems, wargame levels, and labs from a pasted link, each attempt solved unaided, with help, or not, re-solved at growing intervals, with stats by difficulty, topic, and week (EP-103).
 - **Water**: log a glass or a bottle in one tap on Health or Today, against the drinks' share of your daily water need (EFSA), with the week, and in What helps you (EP-101).
 - **Your vault's templates**: the SecondBrain vault's nineteen templates ship as Axon's own, byte for byte (Zettelkasten, PARA, daily, weekly, and monthly notes, roadmaps, goals, milestones, habits, media, and six retrieval tests), filed where the vault keeps them, with their placeholders filled (EP-100).
 - **Every page its picture**: Journal, Insights, the weekly review, and Agents get their own scenery (Vermeer's evening light, an observatory, a lighthouse, clockwork automata); every themed page says what its picture shows and the painting, film, or game it nods to; each type of note has a small drawing and a sentence on what it is for (EP-98).

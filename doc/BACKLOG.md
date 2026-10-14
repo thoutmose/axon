@@ -151,6 +151,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-100 | Your vault's templates | Owner request: the SecondBrain vault's templates for each type of note, implemented in Axon. | SHOULD | 3 pts | EP-11, EP-48 | Done |
 | EP-101 | Water | Owner request: a tracker of the water drunk, in health and food. | SHOULD | 3 pts | EP-18, EP-88 | Done |
 | EP-102 | Patched third-party images | Owner request: check the project for active CVEs and fix them. Caddy and PostgreSQL images rebuilt with security fixes, scanned and shipped like Axon's own. | MUST | 2 pts | EP-02, EP-81 | Done |
+| EP-103 | Practice log | Problems, wargame levels, and labs with honest attempts and spaced re-solving, measuring the roadmap's DSA and security proofs. | SHOULD | 5 pts | EP-52, EP-95 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1914,6 +1915,15 @@ Cross-cutting matrix:
 - [x] **EP-102/IS-102.02** · 1 pt · MUST — `deploy/db`: pgvector 0.8.7 on PostgreSQL 16 with Debian's security updates and `gosu` 1.19 rebuilt with Go 1.26.9 (54 HIGH or CRITICAL fixed); same major version and Debian release, so existing data directories start as they are. Both images join the CI build, Trivy gate, and SBOM matrix and are built and copied by `deploy.sh`; servers run the copied images.
 
 **Tests.** Trivy (the CI gate: no fixable HIGH or CRITICAL) on both built images; the preview's database restarted on the new image with the same 1,146 entities and pgvector working; the full Go suite on it; all e2e tests on fresh stacks of the new images.
+
+### EP-103 — Practice log
+
+**Goal.** The roadmap asks for 400 LeetCode problems, OverTheWire levels, every PortSwigger lab, and Kaggle medals (EP-95), and Axon could not log one. Practising problems also forgets like anything else: re-solving a problem from scratch, not recognising its solution, is the skill.
+
+- [x] **EP-103/IS-103.01** · 3 pts · SHOULD — Migration `00052` adds `practice_problems` (title, link unique per person, platform, difficulty, up to ten topics, language, an optional roadmap skill) and `practice_attempts` (day, solved unaided, with help, or not solved, minutes). `POST /v1/practice` logs an attempt, creating the problem the first time (the same link is the same problem); `POST /v1/practice/{id}/attempts`, `GET /v1/practice` (with `due=true`), `GET /v1/practice/stats`, `DELETE`. The re-solve day: tomorrow after a miss, three days after help, a week after a first unaided solve (an easy one is then done), then 2.5 times the last gap, until it would pass 90 days. In the export.
+- [x] **EP-103/IS-103.02** · 2 pts · SHOULD — Learn → Practice: paste a link and the platform and title fill in (LeetCode, Codeforces, HackerRank, Advent of Code, Exercism, Project Euler, OverTheWire, PortSwigger, Hack The Box, TryHackMe, Kaggle); re-solve today with one tap per outcome; solved by difficulty, topic, and the last twelve weeks; every problem with its attempts and next re-solve. The demo has twelve weeks of classic problems and the first Bandit levels, linked to the roadmap's skills.
+
+**Tests.** The re-solve schedule (written first, ten cases); the link reader; `TestPracticeLog` against PostgreSQL (create, same link, attempts, validation, due, stats, other people); an e2e test that pastes a link, logs with help and unaided, and reads the schedule, with axe.
 
 ### EP-20 — Analytics & insights
 
