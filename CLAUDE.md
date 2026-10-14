@@ -4,7 +4,7 @@ Axon is a self-hosted life OS. Product and architecture: [README.md](README.md).
 
 ## Current state
 
-Every Epic in the backlog through EP-68 is delivered (1.0 release candidate); 1.0 waits for the external security review, an observed install, and the owner merging the stack. The twelve features proposed in the EP-49 audit are delivered (EP-54 to EP-64, pictures in notes in EP-51); nothing is planned next until the owner decides. Open items and the delivery order are in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
+Every Epic in the backlog through EP-72 is delivered (1.0 release candidate; EP-69 to EP-72, the vault server, digests on every channel, answering them, and sign-in with other accounts, await the owner's review); 1.0 waits for the external security review, an observed install, and the owner merging the stack. The twelve features proposed in the EP-49 audit are delivered (EP-54 to EP-64, pictures in notes in EP-51); nothing is planned next until the owner decides. Open items and the delivery order are in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order). Servers: staging `srv-staging`, production `srv-prod`; runbook in [doc/operations.md](doc/operations.md).
 
 - `api/` — Go API (`chi`, `pgx`, `goose` migrations embedded in `internal/db/migrations`).
 - `web/` — SvelteKit 2 + TypeScript, Node 24.
