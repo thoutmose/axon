@@ -485,5 +485,28 @@ export const fr: Record<string, string> = {
 	Thursday: 'Jeudi',
 	Friday: 'Vendredi',
 	Saturday: 'Samedi',
-	Sunday: 'Dimanche'
+	Sunday: 'Dimanche',
+	// Sign in with another account (EP-72)
+	'Continue with {name}': 'Continuer avec {name}',
+	'Link {name}': 'Lier {name}',
+	'Linked accounts': 'Comptes liés',
+	'Sign in with another account you link here. Axon never links one by its email address.':
+		'Connectez-vous avec un autre compte que vous liez ici. Axon ne lie jamais un compte par son adresse e-mail.',
+	'No linked account.': 'Aucun compte lié.',
+	'last used': 'dernière utilisation',
+	Unlink: 'Délier',
+	'Unlinked.': 'Délié.',
+	'Linked: you can now sign in with it.': 'Lié : vous pouvez maintenant vous connecter avec.',
+	'That account is already linked to another Axon account.':
+		'Ce compte est déjà lié à un autre compte Axon.',
+	'Welcome to Axon. Add a passkey below: it is the safest way to sign in, and works if the other service is unavailable.':
+		'Bienvenue dans Axon. Ajoutez une clé d’accès ci-dessous : c’est la façon la plus sûre de vous connecter, et elle marche même si l’autre service est indisponible.',
+	'That account is not linked to an Axon account here. Sign in with your passkey, then link it in Account → Sign-in & security.':
+		'Ce compte n’est lié à aucun compte Axon ici. Connectez-vous avec votre clé d’accès, puis liez-le dans Compte → Connexion et sécurité.',
+	'That sign-in was started in another browser or tab, or took too long. Try again.':
+		'Cette connexion a été commencée dans un autre navigateur ou onglet, ou a pris trop de temps. Réessayez.',
+	'That sign-in took too long. Try again.': 'Cette connexion a pris trop de temps. Réessayez.',
+	'Sign-in was cancelled.': 'La connexion a été annulée.',
+	'The other service did not confirm who you are. Try again.':
+		'L’autre service n’a pas confirmé votre identité. Réessayez.'
 };

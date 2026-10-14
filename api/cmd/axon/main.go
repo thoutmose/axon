@@ -104,12 +104,17 @@ func serve() error {
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
+	providers, err := auth.ProvidersFromEnv(os.Getenv)
+	if err != nil {
+		return err
+	}
 	cfg := auth.Config{
 		BaseURL:          os.Getenv("AXON_BASE_URL"),
 		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
 		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
 		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
 		Demo:             demoEnabled(),
+		Providers:        providers,
 	}
 	handler, err := app.Handler(version, cfg, pool, log, metrics, provider(log))
 	if err != nil {

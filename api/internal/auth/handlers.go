@@ -21,6 +21,7 @@ import (
 // Routes mounts the authentication and account endpoints.
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/v1/auth/status", s.status)
+	r.Get("/v1/auth/providers", s.providersList)
 	r.Post("/v1/auth/logout", s.logout)
 	r.Group(func(r chi.Router) {
 		r.Use(s.signInLimit.middleware)
@@ -31,6 +32,10 @@ func (s *Service) Routes(r chi.Router) {
 		r.Post("/v1/auth/recovery", s.recoveryLogin)
 		r.Post("/v1/auth/demo", s.demoLogin)
 	})
+	// Each start stores a state row: limited on its own, more loosely than
+	// passkey attempts. The callback needs that state's cookie.
+	r.With(s.oauthLimit.middleware).Get("/v1/auth/oauth/{provider}/start", s.oauthStart)
+	r.Get("/v1/auth/oauth/{provider}/callback", s.oauthCallback)
 	r.Group(func(r chi.Router) {
 		r.Use(s.RequireSession)
 		r.Get("/v1/me", s.me)
@@ -50,6 +55,8 @@ func (s *Service) Routes(r chi.Router) {
 		r.With(NotDemo).Post("/v1/me/totp/confirm", s.totpConfirm)
 		r.With(NotDemo).Post("/v1/me/totp/disable", s.totpDisable)
 		r.Get("/v1/me/audit", s.listAudit)
+		r.Get("/v1/me/identities", s.listIdentities)
+		r.Delete("/v1/me/identities/{id}", s.unlinkIdentity)
 	})
 }
 

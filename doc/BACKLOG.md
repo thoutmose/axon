@@ -120,6 +120,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-69 | Where the vault lives | Notes live in the database by default; a person can name a server and folder for the Markdown vault, pair it with a one-time code and one command, and an empty vault starts with its structure and templates. Owner request. | SHOULD | 5 pts | EP-36, EP-48 | Done |
 | EP-70 | Digests everywhere | Daily, weekly, and monthly digests by email, Slack, Discord, Teams, Telegram, ntfy, or a webhook: what to do, what comes next, what to learn, how the period went, illustrated, with a quote for the day. Owner request. | SHOULD | 8 pts | EP-56 | Done |
 | EP-71 | Answering the digest | Answer in Slack, Discord, or Telegram: "done 2", "I finished the passport", "add … tomorrow at 3pm", "snooze", "note", "undo"; Axon follows at once. Owner request. | SHOULD | 8 pts | EP-70 | Done |
+| EP-72 | Sign in with other accounts | Google, Microsoft, Apple, Discord, Slack, or any OpenID Connect provider, linked by their owner; never matched by email. Owner request. | SHOULD | 8 pts | EP-04 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1592,6 +1593,15 @@ Cross-cutting matrix:
 - [x] **EP-71/IS-71.03** · 2 pts · SHOULD — Preferences shows each bot's state (linked to whom, a new code) and how to create the bot; the Digest page explains the answers.
 
 **Tests.** `TestParse`, `TestResolve` (English and French commands, numbers and ranges, days, weekdays, times, "buy 2 apples" is not 2 o'clock); `TestAgainstAServer` (the WebSocket client against a standard server, large messages, close); `TestAnsweringTheDigest` (nobody obeyed before linking, a wrong or used code refused, a stranger refused, list, done, already done, undo, a habit by number, an unknown number, a sentence, a choice between close matches, no match, a repeating task, add with a day and a time, undo of an add, snooze, a note, French, a disabled channel); `TestChatListeners` (Telegram, Slack, and Discord each answer a direct message through their real protocol against fakes; group and server messages ignored; the Slack acknowledgement, the Discord identify with the DM intent, and a heartbeat); the race detector on both.
+
+### EP-72 — Sign in with other accounts
+
+**Goal.** "Allow other types of connections like with Google, Microsoft, Discord, Slack, Apple" (owner, 2026-10-14). Decisions in [ADR 0031](adr/0031-sign-in-with-other-accounts.md).
+
+- [x] **EP-72/IS-72.01** · 5 pts · SHOULD — providers from the environment (Google, Microsoft with its tenant, Apple with an ES256 client secret, Discord as OAuth 2, Slack, any OpenID Connect issuer by discovery); the code flow with PKCE, a cookie-bound state, and a nonce; ID token claims checked (issuer, audience and azp, expiry, nonce); sign-in, link, or a new account when registration is open; never matched by email; one identity per account; the last way in kept; audit events; in the personal export; starts rate limited.
+- [x] **EP-72/IS-72.02** · 3 pts · SHOULD — buttons on the sign-in page with clear errors; Account → Sign-in & security lists linked accounts (last use, unlink) with link buttons; a new account made with a provider is asked to add a passkey.
+
+**Tests.** `TestProvidersFromEnv`, `TestAppleClientSecret` (the JWT verifies with the key), `TestIDTokenChecks` (issuer, audience, azp, expiry, nonce, subject, Microsoft's tenant issuer and a look-alike, safe redirects); `TestSignInWithAnotherAccount` (PKCE, state, and nonce in the authorize address; an unlinked account refused with registration closed; link; sign-in from a new browser to the asked page; another browser's state, a used state, a wrong nonce, a wrong issuer, a cancel, an off-site next; Discord's user endpoint; unlink); `TestSignUpWithAnotherAccount` (a new account, someone else's account refused, the last way in kept).
 
 ### EP-20 — Analytics & insights
 

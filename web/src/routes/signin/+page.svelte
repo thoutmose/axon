@@ -7,9 +7,23 @@
 	import Button from '$lib/ui/Button.svelte';
 	import Section from '$lib/ui/Section.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
+	import SignInProviders from '$lib/SignInProviders.svelte';
 
 	let busy = $state(false);
-	let error = $state('');
+	// A provider sign-in that did not work comes back with ?error=.
+	const reasons: Record<string, string> = {
+		not_linked:
+			'That account is not linked to an Axon account here. Sign in with your passkey, then link it in Account → Sign-in & security.',
+		state: 'That sign-in was started in another browser or tab, or took too long. Try again.',
+		expired: 'That sign-in took too long. Try again.',
+		cancelled: 'Sign-in was cancelled.',
+		provider: 'The other service did not confirm who you are. Try again.'
+	};
+	let error = $state(
+		reasons[page.url.searchParams.get('error') ?? '']
+			? t(reasons[page.url.searchParams.get('error')!])
+			: ''
+	);
 	let code = $state('');
 	let totp = $state('');
 
@@ -50,6 +64,7 @@
 <h1>{t('Sign in')}</h1>
 <p class="muted">{t('Use the passkey on this device or your phone.')}</p>
 <p><Button onclick={withPasskey} {busy}>{t('Sign in with a passkey')}</Button></p>
+<SignInProviders {next} />
 {#if error}<p class="error" role="alert">{error}</p>{/if}
 
 <Section
