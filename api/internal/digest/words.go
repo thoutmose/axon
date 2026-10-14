@@ -1,0 +1,54 @@
+package digest
+
+// words are the digest's strings in each language, keyed by the English.
+var words = map[string]map[string]string{"en": en, "fr": fr}
+
+var en = map[string]string{
+	"Good morning": "Good morning", "Good afternoon": "Good afternoon", "Good evening": "Good evening",
+	"Your day": "Your day", "Your week": "Your week", "Your month": "Your month",
+	"To do today": "To do today", "Habits": "Habits", "Coming up": "Coming up", "Learn and remember": "Learn and remember",
+	"Still open": "Still open", "This week": "This week", "Reflect": "Reflect", "Goals": "Goals", "This month": "This month",
+	"%d days late": "%d days late", "since yesterday": "since yesterday", "today": "today", "tomorrow": "tomorrow",
+	"%d %s": "%[2]s %[1]d", "due": "due", "carried over": "carried over", "in progress": "in progress", "or just": "or just",
+	"target": "target", "task": "task", "tasks": "tasks", "habit": "habit", "habits": "habits",
+	" (%d late)": " (%d late)", "Nothing is due today.": "Nothing is due today.",
+	"%d household items for you":      "%d household items for you",
+	"The weekly review, about 20 min": "The weekly review, about 20 min",
+	"card to review":                  "card to review", "cards to review": "cards to review", "about %d min": "about %d min",
+	"and %d more notes to recall": "and %d more notes to recall", "to recall": "to recall", "The weekly test": "The weekly test",
+	"Tasks done": "Tasks done", "Milestones reached": "Milestones reached", "Habit check-ins": "Habit check-ins",
+	"Cards reviewed": "Cards reviewed", "Focused": "Focused", "Notes written": "Notes written",
+	"Week of %s": "Week of %s", "Last week: %s.": "Last week: %s.", "A new week, a fresh start.": "A new week, a fresh start.",
+	"In %s: %s.": "In %s: %s.", "A new month: a good time to choose what matters.": "A new month: a good time to choose what matters.",
+	"%s %d of %d milestones": "%s %d of %d milestones",
+	"Open Axon":              "Open Axon", "Reply to act": "Reply “done 1” when you finish something, “add …” to capture, or “help”.",
+	"and %d more": "and %d more", "Turn digests off": "Turn digests off in Axon: Account → Preferences → Reminders and digests.",
+	"Monday": "Monday", "Tuesday": "Tuesday", "Wednesday": "Wednesday", "Thursday": "Thursday", "Friday": "Friday", "Saturday": "Saturday", "Sunday": "Sunday",
+	"January": "January", "February": "February", "March": "March", "April": "April", "May": "May", "June": "June",
+	"July": "July", "August": "August", "September": "September", "October": "October", "November": "November", "December": "December",
+}
+
+var fr = map[string]string{
+	"Good morning": "Bonjour", "Good afternoon": "Bon après-midi", "Good evening": "Bonsoir",
+	"Your day": "Votre journée", "Your week": "Votre semaine", "Your month": "Votre mois",
+	"To do today": "À faire aujourd’hui", "Habits": "Habitudes", "Coming up": "À venir", "Learn and remember": "Apprendre et retenir",
+	"Still open": "Encore ouvert", "This week": "Cette semaine", "Reflect": "Prendre du recul", "Goals": "Objectifs", "This month": "Ce mois-ci",
+	"%d days late": "%d jours de retard", "since yesterday": "depuis hier", "today": "aujourd’hui", "tomorrow": "demain",
+	"%d %s": "%d %s", "due": "pour", "carried over": "reporté", "in progress": "en cours", "or just": "ou juste",
+	"target": "échéance", "task": "tâche", "tasks": "tâches", "habit": "habitude", "habits": "habitudes",
+	" (%d late)": " (%d en retard)", "Nothing is due today.": "Rien n’est prévu aujourd’hui.",
+	"%d household items for you":      "%d éléments du foyer pour vous",
+	"The weekly review, about 20 min": "La revue de la semaine, environ 20 min",
+	"card to review":                  "carte à réviser", "cards to review": "cartes à réviser", "about %d min": "environ %d min",
+	"and %d more notes to recall": "et %d autres notes à se remémorer", "to recall": "à se remémorer", "The weekly test": "Le test de la semaine",
+	"Tasks done": "Tâches faites", "Milestones reached": "Jalons atteints", "Habit check-ins": "Habitudes cochées",
+	"Cards reviewed": "Cartes révisées", "Focused": "Concentration", "Notes written": "Notes écrites",
+	"Week of %s": "Semaine du %s", "Last week: %s.": "La semaine dernière : %s.", "A new week, a fresh start.": "Une nouvelle semaine, un nouveau départ.",
+	"In %s: %s.": "En %s : %s.", "A new month: a good time to choose what matters.": "Un nouveau mois : le bon moment pour choisir ce qui compte.",
+	"%s %d of %d milestones": "%s %d jalons sur %d",
+	"Open Axon":              "Ouvrir Axon", "Reply to act": "Répondez « fait 1 » quand vous terminez quelque chose, « ajoute … » pour noter, ou « aide ».",
+	"and %d more": "et %d de plus", "Turn digests off": "Désactiver les récapitulatifs dans Axon : Compte → Préférences → Rappels et récapitulatifs.",
+	"Monday": "lundi", "Tuesday": "mardi", "Wednesday": "mercredi", "Thursday": "jeudi", "Friday": "vendredi", "Saturday": "samedi", "Sunday": "dimanche",
+	"January": "janvier", "February": "février", "March": "mars", "April": "avril", "May": "mai", "June": "juin",
+	"July": "juillet", "August": "août", "September": "septembre", "October": "octobre", "November": "novembre", "December": "décembre",
+}

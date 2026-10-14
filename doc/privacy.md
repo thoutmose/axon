@@ -42,6 +42,8 @@ What Axon stores, why, for how long, and who else sees it. Update this file in t
 | Roadmaps and skills (titles, sections, links, status) | `roadmaps`, `skills` | Personal | Planning what to learn | Until deleted or erasure |
 | Paths of deleted notes | `note_tombstones` | Personal | Let a sync client delete the file too | 30 days, or erasure |
 | Sync state (path → content hash; no content) | `.axon-sync-<vault>.json` next to the vault, on the vault host | Personal | Detect changes on both sides | Until the file is deleted |
+| Vault server (host, folder, pairing state, last sync report; the token is in `api_tokens`, hashed) | `vault_sources` | Personal | Show where the vault lives and whether it is in step (EP-69) | Until removed or erasure; exported without the token |
+| Chat channels (kind, name, webhook address or bot tokens sealed with `AXON_ENCRYPTION_KEY`, the linked chat's id and name) | `notify_channels` | Secret (addresses, tokens), personal | Send digests and reminders, read answers (EP-70, EP-71) | Until disconnected or erasure; secrets are never exported |
 | Entities, links, events | `entities`, `links`, `events` | Personal | The universal graph | Until deleted or erasure; events keep field names only |
 | Health, food, training data (EP-18) | — | **Special category (GDPR Art. 9)** | Health tracking | Not stored before explicit `health_data` consent |
 | Request logs (method, route pattern, status, duration, request ID) | Loki on `srv-monitoring` | Operational, no personal data | Operations | Fleet Loki retention |
@@ -72,6 +74,7 @@ Features must call `privacy.Granted` before acting on a purpose.
 | Let's Encrypt (via Tailscale) | Host names (`srv-*.tail781d53.ts.net`) | Certificate issuance | In use |
 | GitHub | Source code, CI logs (no user data) | Development | In use |
 | The AI provider the person chose: Anthropic, OpenAI, Mistral, Google (Gemini), DeepSeek, or their own local server | The instruction, and the tasks, goals, habits, and notes an agent reads through its tools during a run (the Teacher reads only literature and permanent notes) | Only with `ai_agents` consent, during a run they start | Available (EP-19, EP-22) |
+| The chat services a person connects: Slack, Discord, Microsoft Teams, Telegram, an ntfy server, or their own webhook | Their digests and reminders: their first name, the titles of tasks, habits, milestones, goals, and notes to recall, counts of what they did, and a generated picture | Only for channels they connect, at the times they choose; nothing on a day with nothing to say | Available (EP-70) |
 | TMDB, Open Library | Search terms for media | Only with `external_metadata` consent | Planned (EP-17) |
 | Open Food Facts, USDA FoodData Central | Food search terms | Only with `health_data` consent | Planned (EP-18) |
 
