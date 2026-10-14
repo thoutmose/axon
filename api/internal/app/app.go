@@ -46,6 +46,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
+	vaultsrv "github.com/thoutmose/axon/api/internal/vault"
 )
 
 // Handler builds the complete API handler.
@@ -116,6 +117,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("anki_account", ankiAPI.Export)
 	priv.Register("card_reviews", cards.ExportReviews)
 	priv.RegisterFiles("account", avatars.Files)
+	vaultAPI := vaultsrv.NewHandlers(pool, log, cfg.BaseURL, version)
+	priv.Register("vault_source", vaultsrv.Export)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -132,9 +135,15 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			notesAPI.Routes(r)
 			importsAPI.Routes(r)
 		})
+		// Vault servers pair with a one-time code: no session, no Origin (EP-69).
+		r.Group(func(r chi.Router) {
+			r.Use(limitBody(httpx.MaxBody), authn.Throttle)
+			vaultAPI.PairRoute(r)
+		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(httpx.MaxBody), authn.SameOrigin)
 			authn.Routes(r)
+			vaultAPI.PublicRoutes(r)
 			dashboardAPI.PublicRoutes(r) // the feed URL's token is its credential
 			r.Group(func(r chi.Router) {
 				r.Use(authn.RequireSession)
@@ -145,6 +154,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				avatarsAPI.Routes(r)
 				ankiAPI.Routes(r)
 				reposAPI.Routes(r)
+				vaultAPI.SessionRoutes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
@@ -171,6 +181,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				dashboardAPI.Routes(r)
 				insightsAPI.Routes(r)
 				agentsAPI.Routes(r)
+				vaultAPI.Routes(r)
 			})
 		})
 	}), nil

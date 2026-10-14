@@ -115,6 +115,10 @@ rm axon-instance.tar.gz
 
 Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
 
+## Vault server set up from Axon (EP-69)
+
+Notes live in the database unless a person names a vault server. To name one: Account → Preferences → Markdown vault → **Also as files on a server**, enter the host and folder, **Set up this server**, and run the line shown on that server within 30 minutes. It downloads `axon` from this Axon (same OS and architecture only; otherwise use the Docker command shown), pairs with the one-time code, saves a write token to `~/.config/axon/vault-token` (0600), syncs once, and installs the user service `axon-vault` (`systemctl --user status axon-vault`; `sudo loginctl enable-linger <user>` keeps it running after logout). An empty folder gets the inbox, PARA, Zettelkasten, daily, template, and attachment folders, `Home.md`, and the templates. Preferences shows whether the vault is in step (a report at least every 5 minutes), silent, or failing. **Stop syncing** revokes the token. For fleet hosts, the fleet repository runs the same `notes-sync -pair` command (ADR 0004).
+
 ## Live notes sync with SecondBrain (EP-36)
 
 Run this once on `srv-secondbrain` to import `~/SecondBrain` (notes and its `Templates/` folder) and keep it in step both ways. Create a write token first under Account → Access tokens, and save it to `~/.config/axon/notes-token` (mode 0600):

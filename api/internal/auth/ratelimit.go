@@ -47,3 +47,7 @@ func (l *limiter) middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// Throttle applies the sign-in limit to other routes that take a secret
+// from an anonymous caller, such as a vault pairing code.
+func (s *Service) Throttle(next http.Handler) http.Handler { return s.signInLimit.middleware(next) }

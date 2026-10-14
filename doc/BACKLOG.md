@@ -117,6 +117,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-66 | Trash and undo | Every deletion goes to a 30-day trash with what was deleted along with it; Undo after each deletion, and Account → Trash to restore or forget. Owner request: essential functionality. | MUST | 5 pts | EP-03 | Done |
 | EP-67 | Share to Axon | The installed app in the phone's share sheet, a "Save to Axon" bookmarklet, and a clipper that keeps a page's readable text as a literature note. Owner request: essential functionality. | SHOULD | 3 pts | EP-55 | Done |
 | EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
+| EP-69 | Where the vault lives | Notes live in the database by default; a person can name a server and folder for the Markdown vault, pair it with a one-time code and one command, and an empty vault starts with its structure and templates. Owner request. | SHOULD | 5 pts | EP-36, EP-48 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -153,7 +154,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → … → EP-68 → EP-69 → EP-70 → EP-71 → EP-72 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -1560,6 +1561,16 @@ Cross-cutting matrix:
 - [x] **EP-68/IS-68.02** · 1 pt · SHOULD — "Remind me at" in the task editor; quick add reads "at 15:00", "at 3pm", "à 18h30" (a time already gone today, without a day said, means tomorrow); tasks show 🔔 and the time.
 
 **Tests.** `TestReminders` (a task's reminder sent once with the daily reminders off, a new time reminds again, a two-day-old one is not sent); quick-add unit tests for times; e2e "a task can carry a reminder at a time, set by quick add or in the task".
+### EP-69 — Where the vault lives
+
+**Goal.** "Easily define the server where the vault Markdown will be; set up the synchronisation with a new server automatically; generate the structure and the templates if it is empty; the server is an option: by default everything is in the database" (owner, 2026-10-14). Decisions in [ADR 0028](adr/0028-vault-servers-pair.md).
+
+- [x] **EP-69/IS-69.01** · 2 pts · SHOULD — `vault_sources` (one server and folder per person, none by default); `PUT /v1/vault/source` makes a one-time pairing code (hashed, 30 min, rate limited) and two ready commands; `POST /v1/vault/pair` gives the server a write token valid a year, replacing the previous one; `DELETE` revokes it and keeps the notes; host and folder are checked so they cannot break the shell quoting.
+- [x] **EP-69/IS-69.02** · 2 pts · SHOULD — `axon notes-sync -pair CODE` saves the token (0600) and, in an empty folder, makes the folders while Axon adds `Home.md` and the built-in templates, which the first sync writes; a folder with notes is left alone. The sync reports after each run and every 5 minutes (`/v1/vault/heartbeat`): in step, silent, or failing, with the conflicts. `/v1/vault/install.sh` and `/v1/vault/agent` give a one-line install with no root and a user systemd service; the Docker command does the same.
+- [x] **EP-69/IS-69.03** · 1 pt · SHOULD — Preferences → Markdown vault: "In Axon only" (default) or "Also as files on a server", the commands with a copy button, and the vault's state.
+
+**Tests.** `TestVaultServer` (default none, unsafe host and folder refused, a code used once and typed loosely, scaffold once, heartbeat and status, another person's token refused, pairing again revokes the old token, removal revokes and keeps notes, public script and program); `TestVaultPairingFillsAnEmptyVault` (pair with the real `notesync` client, token file 0600, folders, first sync writes Home and templates, a full vault untouched); a web test keeps the API's templates equal to the web's.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -1761,6 +1772,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-14 | Owner requests: EP-69 (where the vault lives), EP-70 (digests on every channel), EP-71 (answering the digest), EP-72 (sign in with other accounts). |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
 | 2026-10-12 | Owner request: EP-49 audit; fixes and legacy removal delivered. |
 | 2026-10-12 | Owner request: EP-48 puts every item in the vault as a note, both ways, and shows every template with its sections. Delivered. |

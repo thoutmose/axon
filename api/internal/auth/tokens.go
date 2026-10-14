@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -39,7 +40,8 @@ func (s *Service) identifyToken(r *http.Request, token string) (Identity, error)
 	return id, nil
 }
 
-type tokenInfo struct {
+// TokenInfo describes a personal access token, never the token itself.
+type TokenInfo struct {
 	ID         uuid.UUID  `json:"id"`
 	Name       string     `json:"name"`
 	Scope      string     `json:"scope"`
@@ -57,7 +59,7 @@ func (s *Service) listTokens(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	list, err := pgx.CollectRows(rows, pgx.RowToStructByPos[tokenInfo])
+	list, err := pgx.CollectRows(rows, pgx.RowToStructByPos[TokenInfo])
 	if err != nil {
 		s.fail(w, r, err)
 		return
@@ -88,28 +90,34 @@ func (s *Service) createToken(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusUnprocessableEntity, "Tokens expire after 1 to 365 days.")
 		return
 	}
-	raw, _ := newToken()
-	token := tokenPrefix + raw
-	hash := hashToken(token)
-	info := tokenInfo{
-		ID: uuid.Must(uuid.NewV7()), Name: name, Scope: body.Scope,
-		CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().UTC().Add(time.Duration(body.ExpiresInDays) * 24 * time.Hour),
-	}
+	var token string
+	var info TokenInfo
 	err := pgx.BeginFunc(r.Context(), s.db, func(tx pgx.Tx) error {
-		_, err := tx.Exec(r.Context(),
-			`INSERT INTO api_tokens (id, user_id, name, token_hash, scope, expires_at) VALUES ($1, $2, $3, $4, $5, $6)`,
-			info.ID, id.UserID, info.Name, hash, info.Scope, info.ExpiresAt)
-		if err != nil {
-			return err
-		}
-		return audit.Record(r.Context(), tx, id.UserID, audit.TokenCreated, httpx.ClientIP(r), r.UserAgent(),
-			map[string]any{"name": name, "scope": body.Scope})
+		var err error
+		token, info, err = IssueToken(r.Context(), tx, id.UserID, name, body.Scope, time.Duration(body.ExpiresInDays)*24*time.Hour, httpx.ClientIP(r), r.UserAgent())
+		return err
 	})
 	if err != nil {
 		s.fail(w, r, err)
 		return
 	}
 	httpx.JSON(w, http.StatusCreated, map[string]any{"token": token, "info": info})
+}
+
+// IssueToken creates a personal access token in tx, as the Access tokens
+// page does, and records it in the audit log. The token is returned once;
+// only its hash is stored.
+func IssueToken(ctx context.Context, tx pgx.Tx, userID uuid.UUID, name, scope string, ttl time.Duration, ip, userAgent string) (string, TokenInfo, error) {
+	raw, _ := newToken()
+	token := tokenPrefix + raw
+	now := time.Now().UTC()
+	info := TokenInfo{ID: uuid.Must(uuid.NewV7()), Name: name, Scope: scope, CreatedAt: now, ExpiresAt: now.Add(ttl)}
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO api_tokens (id, user_id, name, token_hash, scope, expires_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+		info.ID, userID, info.Name, hashToken(token), info.Scope, info.ExpiresAt); err != nil {
+		return "", info, err
+	}
+	return token, info, audit.Record(ctx, tx, userID, audit.TokenCreated, ip, userAgent, map[string]any{"name": name, "scope": scope})
 }
 
 func (s *Service) revokeToken(w http.ResponseWriter, r *http.Request) {

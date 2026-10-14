@@ -2,6 +2,7 @@
 	import { install, promptInstall } from '$lib/install.svelte';
 	import { disablePush, enablePush } from '$lib/reminders';
 	import EmbeddingSettings from '$lib/EmbeddingSettings.svelte';
+	import VaultServer from '$lib/VaultServer.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
@@ -340,6 +341,8 @@
 		</Section>
 
 		<Section id="vault" title={t('Markdown vault')}>
+			<VaultServer />
+			<h3 class="sub">{t('Items as notes')}</h3>
 			<label class="check"
 				><input type="checkbox" bind:checked={s.vault.mirror} />
 				{t(
