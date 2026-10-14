@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { ago, describeSchedule, filterQuery, lastDays, trendWord } from './watch';
+import {
+	ago,
+	describeSchedule,
+	exportURL,
+	filterQuery,
+	lastDays,
+	shareQuery,
+	trendWord
+} from './watch';
 
 describe('watch helpers', () => {
 	it('builds a filter query without empty values', () => {
@@ -36,5 +44,19 @@ describe('the news graph', () => {
 			from: '2026-10-07',
 			to: '2026-10-15'
 		});
+	});
+});
+
+describe('exports and shares', () => {
+	it('builds a download address from the filter', () => {
+		expect(exportURL('pdf', {})).toBe('/api/v1/watch/export?format=pdf');
+		expect(exportURL('csv', { kind: 'video', label: 'ai', status: '' })).toBe(
+			'/api/v1/watch/export?kind=video&label=ai&format=csv'
+		);
+	});
+	it('shares the filter without outliers', () => {
+		expect(shareQuery({ label: 'ai', outliers: true, from: '2026-10-01' })).toBe(
+			'label=ai&from=2026-10-01'
+		);
 	});
 });

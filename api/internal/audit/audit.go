@@ -35,6 +35,8 @@ const (
 	SignInProvider      = "signin.provider"
 	IdentityLinked      = "identity.linked"
 	IdentityUnlinked    = "identity.unlinked"
+	WatchShareCreated   = "watch_share.created"
+	WatchShareRevoked   = "watch_share.revoked"
 )
 
 // Event is one audit log entry.

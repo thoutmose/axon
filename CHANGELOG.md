@@ -12,6 +12,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **Sign in with other accounts** (EP-72): Google, Microsoft, Apple, Discord, Slack, or any OpenID Connect provider the operator configures, linked by their owner and never matched by email.
 - **Tech watch** (EP-73): sources on a schedule (midnight by default) from feeds, sites, Medium, Substack, YouTube, GitHub, CSV, OPML, or FreshRSS; each story stored once; labels by local NLP; feed notes; a reader and a health page; Prometheus metrics.
 - **News graph** (EP-74): the concepts of your news, how strongly they go together, their communities, and what is rising, drawn apart from your notes' graph; hover a concept for a summary taken from its own news and the notes that share it.
+- **Tech watch exports and share links** (EP-75): download the news a view shows, by kind, source, topic, label, and period, as PDF, ODS, CSV, Markdown, feed notes, or JSON, each marked as coming from Axon Project; share a read-only link that expires, shows only what the sources published, and can be revoked at once.
 
 ## 1.0.0 (release candidate)
 

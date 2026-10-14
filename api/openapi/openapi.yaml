@@ -6622,6 +6622,7 @@ paths:
       summary: "News, newest first, each stored once however many sources carried it"
       parameters:
         - { $ref: "#/components/parameters/WatchStatus" }
+        - { $ref: "#/components/parameters/WatchKind" }
         - { $ref: "#/components/parameters/WatchSource" }
         - { $ref: "#/components/parameters/WatchTopic" }
         - { $ref: "#/components/parameters/WatchLabel" }
@@ -6730,6 +6731,136 @@ paths:
         "200": { description: The graph., content: { application/json: { schema: { $ref: "#/components/schemas/WatchGraph" } } } }
         "401": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/export:
+    get:
+      tags: [watch]
+      operationId: exportWatch
+      summary: "Download the news a filter selects (by kind, source, topic, label, words, status, and period), each export saying it comes from Axon Project"
+      parameters:
+        - { $ref: "#/components/parameters/WatchFormat" }
+        - { $ref: "#/components/parameters/WatchStatus" }
+        - { $ref: "#/components/parameters/WatchKind" }
+        - { $ref: "#/components/parameters/WatchSource" }
+        - { $ref: "#/components/parameters/WatchTopic" }
+        - { $ref: "#/components/parameters/WatchLabel" }
+        - { $ref: "#/components/parameters/WatchQuery" }
+        - { $ref: "#/components/parameters/WatchFrom" }
+        - { $ref: "#/components/parameters/WatchTo" }
+        - { $ref: "#/components/parameters/WatchOutliers" }
+      responses:
+        "200":
+          description: "The file: CSV, OpenDocument spreadsheet, Markdown, a zip of feed notes, JSON, or PDF; at most 5,000 news, newest first."
+          content:
+            text/csv: { schema: { type: string } }
+            application/vnd.oasis.opendocument.spreadsheet: { schema: { type: string, format: binary } }
+            text/markdown: { schema: { type: string } }
+            application/zip: { schema: { type: string, format: binary } }
+            application/json: { schema: { type: object } }
+            application/pdf: { schema: { type: string, format: binary } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/shares:
+    get:
+      tags: [watch]
+      operationId: listWatchShares
+      summary: Your links to a selection of the news
+      responses:
+        "200":
+          description: Links, newest first.
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/WatchShare" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [watch]
+      operationId: createWatchShare
+      summary: "Share a selection of the news with a read-only link (signed-in session only; audited)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 100, description: "Who or what it is for." }
+                query: { type: string, description: "The filter as a query string, e.g. label=ai&from=2026-10-01. Only status, kind, source, topic, label, q, from, and to are kept." }
+                days: { type: integer, minimum: 1, maximum: 365, default: 30, description: "How long the link lives." }
+      responses:
+        "201":
+          description: Created. The path holds the link's secret and is not shown again.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [share, path]
+                properties:
+                  share: { $ref: "#/components/schemas/WatchShare" }
+                  path: { type: string, description: "/shared/watch/<token> on this server." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/shares/{id}:
+    delete:
+      tags: [watch]
+      operationId: deleteWatchShare
+      summary: Revoke a link at once
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/shared/watch/{token}:
+    get:
+      tags: [watch]
+      operationId: getSharedWatch
+      summary: "A shared selection of news, for anyone with the link: what the sources published, never the owner's status or notes"
+      security: []
+      parameters:
+        - { name: token, in: path, required: true, description: The secret part of the link., schema: { type: string } }
+        - { name: format, in: query, description: "A download instead of the page's data.", schema: { type: string, enum: [csv, ods, md, zip, json, pdf] } }
+      responses:
+        "200":
+          description: The page's data (the newest 200 news), or the file.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "The page's data; with format=json, the export instead."
+                properties:
+                  name: { type: string }
+                  description: { type: string }
+                  count: { type: integer }
+                  generated_at: { type: string, format: date-time }
+                  expires_at: { type: string, format: date-time }
+                  attribution: { type: string }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [title, url, source_title, author, published_at, summary, kind, labels, reading_minutes]
+                      properties:
+                        title: { type: string }
+                        url: { type: string }
+                        source_title: { type: string }
+                        author: { type: string }
+                        published_at: { type: string, format: date-time }
+                        summary: { type: string }
+                        kind: { type: string, enum: [article, video, podcast] }
+                        labels: { type: array, items: { type: string } }
+                        reading_minutes: { type: integer }
+            text/csv: { schema: { type: string } }
+            application/vnd.oasis.opendocument.spreadsheet: { schema: { type: string, format: binary } }
+            text/markdown: { schema: { type: string } }
+            application/zip: { schema: { type: string, format: binary } }
+            application/pdf: { schema: { type: string, format: binary } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
   /v1/vault/source:
     get:
       tags: [vault]
@@ -6915,6 +7046,8 @@ components:
     WatchQuery: { name: q, in: query, description: "Words in the title or summary.", schema: { type: string } }
     WatchFrom: { name: from, in: query, description: "Published from (2026-10-14 or RFC 3339).", schema: { type: string } }
     WatchTo: { name: to, in: query, description: "Published before.", schema: { type: string } }
+    WatchKind: { name: kind, in: query, description: "Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure).", schema: { type: string, enum: [article, video, podcast] } }
+    WatchFormat: { name: format, in: query, required: true, schema: { type: string, enum: [csv, ods, md, zip, json, pdf] } }
     WatchOutliers: { name: outliers, in: query, description: "1 to include items flagged as outliers.", schema: { type: string, enum: ["0", "1"] } }
     ID:
       name: id
@@ -7137,7 +7270,7 @@ components:
           items: { type: object, required: [line, url, reason], properties: { line: { type: integer }, url: { type: string }, reason: { type: string } } }
     WatchItem:
       type: object
-      required: [id, source_id, source_title, url, title, author, published_at, fetched_at, summary, image, audio, lang, words, reading_minutes, keywords, labels, categories, topic_ids, score, outlier, also_in, status, note_id]
+      required: [id, source_id, source_title, url, title, author, published_at, fetched_at, summary, image, audio, lang, words, reading_minutes, keywords, labels, categories, topic_ids, score, outlier, also_in, status, note_id, kind]
       properties:
         id: { type: string, format: uuid }
         source_id: { type: [string, "null"], format: uuid }
@@ -7163,6 +7296,19 @@ components:
         also_in: { type: array, items: { type: string } }
         status: { type: string, enum: [unread, read, saved, archived] }
         note_id: { type: [string, "null"], format: uuid }
+        kind: { type: string, enum: [article, video, podcast] }
+    WatchShare:
+      type: object
+      required: [id, name, description, query, expires_at, created_at, last_viewed_at, views]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, description: "The filter, in words." }
+        query: { type: string }
+        expires_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        last_viewed_at: { type: [string, "null"], format: date-time }
+        views: { type: integer }
     WatchStats:
       type: object
       required: [sources, items, daily, labels, next_fetch_at]

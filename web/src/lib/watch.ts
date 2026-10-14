@@ -15,6 +15,7 @@ export type WatchFilter = {
 	from?: string;
 	to?: string;
 	outliers?: boolean;
+	kind?: '' | 'article' | 'video' | 'podcast';
 };
 
 /** The query string for a filter, empty values left out. */
@@ -86,4 +87,28 @@ export function lastDays(days: number, now = new Date()): { from: string; to: st
 	const from = new Date(now.getTime() - days * 86400000);
 	const day = (d: Date) => d.toISOString().slice(0, 10);
 	return { from: day(from), to: day(to) };
+}
+
+export type WatchShare = Schemas['WatchShare'];
+
+/** Export formats, in the order they are offered. */
+export const exportFormats: [string, string][] = [
+	['pdf', 'PDF'],
+	['ods', 'Spreadsheet (ODS)'],
+	['csv', 'CSV'],
+	['md', 'Markdown'],
+	['zip', 'Feed notes (zip)'],
+	['json', 'JSON']
+];
+
+/** The download address of the news a filter selects. */
+export function exportURL(format: string, f: WatchFilter): string {
+	const qs = filterQuery(f);
+	return `/api/v1/watch/export${qs ? qs + '&' : '?'}format=${format}`;
+}
+
+/** The filter as a share link keeps it (no outliers, no paging). */
+export function shareQuery(f: WatchFilter): string {
+	const { outliers: _o, ...rest } = f;
+	return filterQuery(rest).slice(1);
 }

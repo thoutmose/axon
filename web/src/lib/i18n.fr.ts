@@ -660,5 +660,63 @@ export const fr: Record<string, string> = {
 	'{items} news · {concepts} concepts · {edges} links · {communities} communities · {bridges} also in your notes':
 		'{items} actualités · {concepts} concepts · {edges} liens · {communities} communautés · {bridges} aussi dans vos notes',
 	'Hover a star for its summary; select it to keep it here. Larger stars are more central; a ring means your notes share the concept.':
-		'Survolez une étoile pour son résumé ; sélectionnez-la pour la garder ici. Les plus grandes sont les plus centrales ; un anneau signifie que vos notes partagent le concept.'
+		'Survolez une étoile pour son résumé ; sélectionnez-la pour la garder ici. Les plus grandes sont les plus centrales ; un anneau signifie que vos notes partagent le concept.',
+	'30 days': '30 jours',
+	'7 days': '7 jours',
+	'90 days': '90 jours',
+	'All kinds': 'Tous les types',
+	'Anyone with this link sees these news until it expires. It is shown only now.':
+		'Toute personne ayant ce lien voit ces actualités jusqu’à son expiration. Il n’est affiché que maintenant.',
+	Article: 'Article',
+	Articles: 'Articles',
+	CSV: 'CSV',
+	'Create the link': 'Créer le lien',
+	Download: 'Télécharger',
+	'Each file says it comes from Axon Project.':
+		'Chaque fichier indique qu’il provient d’Axon Project.',
+	Expired: 'Expiré',
+	Expires: 'Expire',
+	'Expires after': 'Expire après',
+	'Export or share': 'Exporter ou partager',
+	'Feed notes (zip)': 'Notes de veille (zip)',
+	From: 'Du',
+	'It shows titles, links, summaries, and labels; never what you read or wrote. From the Saved tab, it shares what you saved.':
+		'Il montre les titres, liens, résumés et étiquettes ; jamais ce que vous avez lu ou écrit. Depuis l’onglet Sauvegardées, il partage ce que vous avez sauvegardé.',
+	JSON: 'JSON',
+	Link: 'Lien',
+	'Link copied.': 'Lien copié.',
+	'Link revoked.': 'Lien révoqué.',
+	'Loading the shared news…': 'Chargement des actualités partagées…',
+	Markdown: 'Markdown',
+	Name: 'Nom',
+	'No links yet.': 'Aucun lien pour l’instant.',
+	'Nothing in this selection yet.': 'Rien dans cette sélection pour l’instant.',
+	PDF: 'PDF',
+	Podcast: 'Podcast',
+	Podcasts: 'Podcasts',
+	'Read-only links to a selection of your news, made from the reader with Export or share. Revoke one and it stops working at once.':
+		'Des liens en lecture seule vers une sélection de vos actualités, créés depuis le lecteur avec Exporter ou partager. Révoquez-en un et il cesse aussitôt de fonctionner.',
+	Revoke: 'Révoquer',
+	'Revoke “{name}”? The link stops working at once.':
+		'Révoquer « {name} » ? Le lien cesse aussitôt de fonctionner.',
+	'Select the link and copy it.': 'Sélectionnez le lien et copiez-le.',
+	'Share a read-only link': 'Partager un lien en lecture seule',
+	'Shared from Axon Project': 'Partagé depuis Axon Project',
+	'Shared links': 'Liens partagés',
+	'Shared news': 'Actualités partagées',
+	'Spreadsheet (ODS)': 'Tableur (ODS)',
+	'The newest {shown} of {n}; the downloads hold them all.':
+		'Les {shown} plus récentes sur {n} ; les téléchargements les contiennent toutes.',
+	'The news this view shows: its tab, kind, topic, label, and words. Narrow it to a period if you like.':
+		'Les actualités de cette vue : son onglet, son type, son sujet, son étiquette et ses mots. Restreignez-la à une période si vous le souhaitez.',
+	To: 'Au',
+	Video: 'Vidéo',
+	Videos: 'Vidéos',
+	Views: 'Vues',
+	'Your links': 'Vos liens',
+	'a year': 'un an',
+	'e.g. the team': 'p. ex. l’équipe',
+	'link valid until {date}': 'lien valable jusqu’au {date}',
+	today: 'aujourd’hui',
+	'{n} min': '{n} min'
 };

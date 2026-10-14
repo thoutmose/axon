@@ -19,7 +19,7 @@ import (
 // fakeWriter writes the fake sites' fixed pages.
 type fakeWriter struct{ http.ResponseWriter }
 
-func (w fakeWriter) print(s string) { _, _ = io.WriteString(w.ResponseWriter, s) }
+func (w fakeWriter) print(s string) { _, _ = io.WriteString(w.ResponseWriter, s) } //nolint:gosec // a test server's own pages
 
 func (w fakeWriter) printf(format string, a ...any) {
 	_, _ = fmt.Fprintf(w.ResponseWriter, format, a...) //nolint:gosec // a test server's own pages

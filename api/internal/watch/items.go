@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -43,6 +44,26 @@ type Item struct {
 	AlsoIn      []string   `json:"also_in"`
 	Status      string     `json:"status"`
 	NoteID      *uuid.UUID `json:"note_id"`
+	Kind        string     `json:"kind"` // article, video, podcast
+}
+
+// Kinds of news, for filters and exports.
+var Kinds = []string{"article", "video", "podcast"}
+
+// videoURL matches the video sites whose links are videos.
+const videoURL = `^https?://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/`
+
+var videoLink = regexp.MustCompile(`(?i)` + videoURL)
+
+// kindOf tells an article from a video or a podcast episode.
+func kindOf(url, audio string) string {
+	switch {
+	case audio != "":
+		return "podcast"
+	case videoLink.MatchString(url):
+		return "video"
+	}
+	return "article"
 }
 
 const itemColumns = `i.id, i.source_id, i.source_title, i.url, i.title, i.author, i.published_at, i.fetched_at, i.summary, i.image, i.audio,
@@ -58,6 +79,7 @@ func scanItem(r pgx.Row, content *string) (Item, error) {
 	}
 	err := r.Scan(dst...)
 	it.Score = float64(score)
+	it.Kind = kindOf(it.URL, it.Audio)
 	// About 230 words a minute.
 	it.Minutes = max(1, (it.Words+115)/230)
 	return it, err
@@ -72,6 +94,7 @@ type Filter struct {
 	Query    string     // words in the title or summary
 	From, To *time.Time // published
 	Outliers bool       // include items flagged as outliers
+	Kind     string     // article, video, podcast
 	Limit    int
 	Before   *time.Time // published before (paging)
 }
@@ -113,6 +136,14 @@ func (f Filter) where(userID uuid.UUID) (string, []any) {
 	if f.Before != nil {
 		add("i.published_at < ?", *f.Before)
 	}
+	switch f.Kind {
+	case "podcast":
+		conds = append(conds, "i.audio <> ''")
+	case "video":
+		conds = append(conds, "i.audio = '' AND i.url ~* '"+videoURL+"'")
+	case "article":
+		conds = append(conds, "i.audio = '' AND i.url !~* '"+videoURL+"'")
+	}
 	if !f.Outliers {
 		conds = append(conds, "i.outlier = ''")
 	}
@@ -125,7 +156,7 @@ func ListItems(ctx context.Context, q db.Querier, userID uuid.UUID, f Filter) ([
 	limit := ""
 	switch {
 	case f.Limit < 0: // everything: exports
-	case f.Limit == 0 || f.Limit > 500:
+	case f.Limit == 0:
 		limit = " LIMIT 50"
 	default:
 		limit = fmt.Sprintf(" LIMIT %d", f.Limit)
@@ -291,7 +322,8 @@ func Purge(ctx context.Context, q db.Querier, olderThan time.Time) (int64, error
 }
 
 // exportItems is the tech watch part of a personal export: topics, sources
-// (with their schedule), and news without their full text.
+// (with their schedule), news without their full text, and share links
+// (never their tokens, which are not kept).
 func exportItems(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 	topics, err := ListTopics(ctx, q, userID)
 	if err != nil {
@@ -305,5 +337,9 @@ func exportItems(ctx context.Context, q db.Querier, userID uuid.UUID) (any, erro
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"topics": topics, "sources": sources, "items": items}, nil
+	shares, err := ListShares(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"topics": topics, "sources": sources, "items": items, "shares": shares}, nil
 }
