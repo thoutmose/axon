@@ -110,17 +110,18 @@ func Scene(d Digest) []byte {
 	// Sun (or moon) with a soft glow.
 	sx, sy := float64(SceneWidth)*(0.2+r.Float64()*0.6), float64(SceneHeight)*(0.28+r.Float64()*0.17)
 	radius := 34 + r.Float64()*16
-	for y := range SceneHeight {
-		for x := range SceneWidth {
+	glow := radius * 4
+	for y := max(0, int(sy-glow)); y < min(SceneHeight, int(sy+glow)+1); y++ {
+		for x := max(0, int(sx-glow)); x < min(SceneWidth, int(sx+glow)+1); x++ {
 			dist := math.Hypot(float64(x)-sx, float64(y)-sy)
 			switch {
 			case dist < radius:
 				img.SetRGBA(x, y, p.sun)
 			case dist < radius+1.5: // a smooth edge
 				img.SetRGBA(x, y, mix(img.RGBAAt(x, y), p.sun, (radius+1.5-dist)/1.5))
-			case dist < radius*4:
-				glow := (1 - (dist-radius)/(radius*3)) * 0.35
-				img.SetRGBA(x, y, mix(img.RGBAAt(x, y), p.sun, glow*glow))
+			case dist < glow:
+				g := (1 - (dist-radius)/(glow-radius)) * 0.35
+				img.SetRGBA(x, y, mix(img.RGBAAt(x, y), p.sun, g*g))
 			}
 		}
 	}
@@ -152,7 +153,7 @@ func Scene(d Digest) []byte {
 		}
 	}
 	var buf bytes.Buffer
-	enc := png.Encoder{CompressionLevel: png.BestCompression}
+	enc := png.Encoder{CompressionLevel: png.DefaultCompression}
 	_ = enc.Encode(&buf, img)
 	return buf.Bytes()
 }
