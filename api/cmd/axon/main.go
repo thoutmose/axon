@@ -35,6 +35,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
+	"github.com/thoutmose/axon/api/internal/watch"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
@@ -101,6 +102,7 @@ func serve() error {
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	registerPoolStats(reg, pool)
 	metrics := server.NewMetrics(reg, version, pool)
+	watch.RegisterMetrics(reg)
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
@@ -146,6 +148,7 @@ func serve() error {
 		go cals.Run(ctx)
 		go index.Run(ctx)
 		go listeners.Run(ctx)
+		go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))

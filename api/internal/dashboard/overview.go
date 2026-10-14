@@ -169,7 +169,7 @@ func (h *Handlers) overview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	heat, err := h.daily(ctx, `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM events
-		WHERE user_id = $1 AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`, who.UserID, tz, window{day.AddDate(0, 0, -364), day})
+		WHERE user_id = $1 AND actor <> 'watch' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`, who.UserID, tz, window{day.AddDate(0, 0, -364), day})
 	if err != nil {
 		h.fail(w, err)
 		return

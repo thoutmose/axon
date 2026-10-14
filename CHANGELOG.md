@@ -10,6 +10,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **Digests everywhere** (EP-70): daily, weekly, and monthly digests by email (HTML with a picture drawn for the day), Slack, Discord, Microsoft Teams, Telegram, ntfy, or a signed webhook, with a quote chosen for the day; a Digest page to preview them.
 - **Answering the digest** (EP-71): in Slack, Discord, or Telegram, "done 2", a sentence such as "I finished the passport", "add … tomorrow at 3pm", "snooze", "note", and "undo" act in Axon at once; the bots connect out, so a private instance needs no public address.
 - **Sign in with other accounts** (EP-72): Google, Microsoft, Apple, Discord, Slack, or any OpenID Connect provider the operator configures, linked by their owner and never matched by email.
+- **Tech watch** (EP-73): sources on a schedule (midnight by default) from feeds, sites, Medium, Substack, YouTube, GitHub, CSV, OPML, or FreshRSS; each story stored once; labels by local NLP; feed notes; a reader and a health page; Prometheus metrics.
 
 ## 1.0.0 (release candidate)
 

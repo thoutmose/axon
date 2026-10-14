@@ -115,6 +115,10 @@ rm axon-instance.tar.gz
 
 Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
 
+## Tech watch (EP-73)
+
+A worker in the API fetches each person's sources when their schedule comes (cron in the person's time zone, midnight by default), four at a time, with `If-None-Match`/`If-Modified-Since`. It needs outbound HTTPS to the sites people follow; sources on a private network need `AXON_CALENDAR_PRIVATE=1`. A failing source shows its error in **Tech watch → Sources and health** and is retried after 15 minutes, then up to 8 hours. Metrics on the metrics port: `axon_watch_fetches_total{result="ok|not_modified|error"}`, `axon_watch_items_total{outcome="new|merged|skipped"}`, `axon_watch_fetch_seconds`. A rising error rate in Grafana usually means one site changed its feed; logs say `tech watch fetch failed` with the source id. News nobody saved, kept, or linked are purged after 180 days. The shared demo fetches nothing.
+
 ## Digests and chat channels (EP-70)
 
 People choose times and channels in Account → Preferences → Reminders and digests; nothing needs configuring on the server beyond what reminders use (`AXON_SMTP_URL`/`AXON_SMTP_FROM` for email, `AXON_ENCRYPTION_KEY` so channel secrets are sealed). The API calls the chat services' own hosts (`hooks.slack.com`, `slack.com`, `discord.com`, `*.webhook.office.com` or `*.logic.azure.com`, `api.telegram.org`) and the ntfy servers and webhooks people chose (public addresses only, unless `AXON_CALENDAR_PRIVATE=1`), so the server needs outbound HTTPS to them. A channel that fails shows its last error in Preferences; the logs say `digest to a channel failed` with the channel id.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <title>Some Channel</title><link rel="alternate" href="https://www.youtube.com/channel/UC123"/>
+ <entry><id>yt:video:abc</id><title>Go 1.27 in ten minutes</title><link rel="alternate" href="https://www.youtube.com/watch?v=abc"/>
+  <author><name>Gopher</name></author><published>2026-10-10T12:00:00+00:00</published><updated>2026-10-11T12:00:00+00:00</updated>
+  <media:group><media:title>Go 1.27</media:title><media:thumbnail url="https://i.ytimg.com/vi/abc/hq.jpg" width="480" height="360"/><media:description>What is new &amp; why.</media:description></media:group>
+ </entry>
+ <entry><id>tag:github.com,2008:Repository/1/v1.2.0</id><title type="html">v1.2.0 &lt;b&gt;stable&lt;/b&gt;</title><updated>2026-10-09T10:00:00Z</updated>
+  <link rel="alternate" type="text/html" href="https://github.com/o/r/releases/tag/v1.2.0"/><content type="html">&lt;p&gt;Fixes &amp;amp; features&lt;/p&gt;</content>
+  <category term="release"/></entry>
+</feed>

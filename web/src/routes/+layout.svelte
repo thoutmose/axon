@@ -41,6 +41,7 @@
 			label: 'Think',
 			links: [
 				{ href: '/notes', label: 'Notes' },
+				{ href: '/watch', label: 'Tech watch' },
 				{ href: '/areas', label: 'Areas' },
 				{ href: '/resources', label: 'Resources' },
 				{ href: '/archive', label: 'Archive' }

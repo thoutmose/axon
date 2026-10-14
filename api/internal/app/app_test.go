@@ -72,7 +72,7 @@ func newEnvWith(t *testing.T, cfg auth.Config) *env {
 		t.Fatal(err)
 	}
 	cfg.BaseURL, cfg.RPID, cfg.EncryptionKey = origin, "localhost", strings.Repeat("ab", 32)
-	h, err := Handler("test", cfg, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), server.NewMetrics(prometheus.NewRegistry(), "test", pool), fake)
+	h, err := Handler("test", cfg, pool, testLog(), server.NewMetrics(prometheus.NewRegistry(), "test", pool), fake)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -421,4 +421,12 @@ func TestRecoveryLocksAfterFiveWrongAuthenticatorCodes(t *testing.T) {
 		t.Fatal(err)
 	}
 	e.client().mustDo(200, "POST", "/v1/auth/recovery", []byte(`{"code":"`+codes[2]+`","totp":"`+next+`"}`))
+}
+
+// testLog discards logs, unless AXON_TEST_LOG=1 shows them.
+func testLog() *slog.Logger {
+	if os.Getenv("AXON_TEST_LOG") == "1" {
+		return slog.New(slog.NewTextHandler(os.Stderr, nil))
+	}
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
 }
