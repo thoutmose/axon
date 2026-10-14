@@ -150,6 +150,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-98 | Every page its picture | Owner request: illustrations for each page, type of note, and section, with a short description (paintings, films, games), and a background for each Reflect page. | SHOULD | 3 pts | EP-38 | Done |
 | EP-100 | Your vault's templates | Owner request: the SecondBrain vault's templates for each type of note, implemented in Axon. | SHOULD | 3 pts | EP-11, EP-48 | Done |
 | EP-101 | Water | Owner request: a tracker of the water drunk, in health and food. | SHOULD | 3 pts | EP-18, EP-88 | Done |
+| EP-102 | Patched third-party images | Owner request: check the project for active CVEs and fix them. Caddy and PostgreSQL images rebuilt with security fixes, scanned and shipped like Axon's own. | MUST | 2 pts | EP-02, EP-81 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1904,6 +1905,15 @@ Cross-cutting matrix:
 - [x] **EP-101/IS-101.02** · 1 pt · SHOULD — A Water card on Health (for the day shown) and, if added, on Today: a glass or a bottle in one tap, any amount, the day as glasses, the drinks with their time to remove one, and the last seven days. "Health and well-being" at the first question adds it to Today. What helps you (EP-92) has a factor for the days water was logged: 1.5 L or more. The demo has a month of drinks.
 
 **Tests.** `TestWaterTracker` against PostgreSQL (consent, bounds, a later day, the target from a profile, another day, other people, export, withdrawal; written first), the water factor in What helps you, the glasses and litres helpers, and the e2e health test (two drinks against the target, one removed, with axe).
+
+### EP-102 — Patched third-party images
+
+**Goal.** The owner asked (2026-10-14) for a check of active CVEs and their fixes. Axon's own code and images were clean; the two third-party images it runs were not, and upstream had not rebuilt them.
+
+- [x] **EP-102/IS-102.01** · 1 pt · MUST — `deploy/caddy`: Caddy v2.11.7 with its standard modules, built with Go 1.26.9 and `golang.org/x/net` 0.60.0 on the upstream image (four HIGH denial-of-service flaws fixed). Its file capability is gone, and so is `cap_add: NET_BIND_SERVICE`.
+- [x] **EP-102/IS-102.02** · 1 pt · MUST — `deploy/db`: pgvector 0.8.7 on PostgreSQL 16 with Debian's security updates and `gosu` 1.19 rebuilt with Go 1.26.9 (54 HIGH or CRITICAL fixed); same major version and Debian release, so existing data directories start as they are. Both images join the CI build, Trivy gate, and SBOM matrix and are built and copied by `deploy.sh`; servers run the copied images.
+
+**Tests.** Trivy (the CI gate: no fixable HIGH or CRITICAL) on both built images; the preview's database restarted on the new image with the same 1,146 entities and pgvector working; the full Go suite on it; all e2e tests on fresh stacks of the new images.
 
 ### EP-20 — Analytics & insights
 

@@ -60,12 +60,12 @@ if [[ "$env" == prod ]]; then
 fi
 
 echo "building $version"
-AXON_VERSION=$version docker compose build api web anki
+AXON_VERSION=$version docker compose build api web anki caddy db
 build_net=$(sed -n 's/^AXON_BUILD_NETWORK=//p' .env 2>/dev/null)
 docker build -q --network "${build_net:-default}" -t "axon-backup:$version" deploy/backup >/dev/null
 
 echo "copying images to $host"
-docker save "axon-api:$version" "axon-web:$version" "axon-anki:$version" "axon-backup:$version" | ssh "$host" docker load
+docker save "axon-api:$version" "axon-web:$version" "axon-anki:$version" "axon-backup:$version" "axon-caddy:$version" "axon-db:$version" | ssh "$host" docker load
 
 echo "copying configuration"
 ssh "$host" "sudo install -d -o \$(id -un) -g \$(id -gn) -m 0750 $remote_dir && mkdir -p -m 0700 $remote_dir/backups"
@@ -96,11 +96,11 @@ remote '
   docker compose up -d --wait --no-deps --force-recreate caddy
   # Keep only the running and previous versions for rollback.
   keep="$(grep "^AXON_VERSION=" .env | cut -d= -f2)|$(cat previous-version 2>/dev/null || echo none)"
-  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup):" \
+  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup|caddy|db):" \
     | grep -vE ":($keep)\$" | xargs -r docker rmi >/dev/null
 '
 # Locally, only the version just deployed is worth keeping.
-docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup):" \
+docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^axon-(api|web|anki|backup|caddy|db):" \
   | grep -vE ":($version|dev)\$" | xargs -r docker rmi >/dev/null || true
 
 echo "serving on the tailnet"

@@ -2,6 +2,7 @@
 # and restart after reboots. Selected on servers through COMPOSE_FILE in /opt/axon/.env.
 services:
   caddy:
+    build: !reset null
     restart: unless-stopped
   api:
     build: !reset null
@@ -12,6 +13,7 @@ services:
     build: !reset null
     restart: unless-stopped
   db:
+    build: !reset null
     restart: unless-stopped
   anki:
     build: !reset null
