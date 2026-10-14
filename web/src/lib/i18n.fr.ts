@@ -544,8 +544,8 @@ export const fr: Record<string, string> = {
 	'Sync to Anki now': 'Synchroniser avec Anki maintenant',
 	'Change account': 'Changer de compte',
 	Disconnect: 'Déconnecter',
-	'Send your cards to your own anki-sync-server (for example the one on srv-services), then sync Anki on your computer or phone. Notes are updated in place; cards that exist only in Anki are never deleted.':
-		'Envoyez vos cartes vers votre propre anki-sync-server (par exemple celui de srv-services), puis synchronisez Anki sur votre ordinateur ou votre téléphone. Les notes sont mises à jour sur place ; les cartes qui n’existent que dans Anki ne sont jamais supprimées.',
+	'Send your cards to your own anki-sync-server (for example on a server at home), then sync Anki on your computer or phone. Notes are updated in place; cards that exist only in Anki are never deleted.':
+		'Envoyez vos cartes vers votre propre anki-sync-server (par exemple sur un serveur chez vous), puis synchronisez Anki sur votre ordinateur ou votre téléphone. Les notes sont mises à jour sur place ; les cartes qui n’existent que dans Anki ne sont jamais supprimées.',
 	'Sync server': 'Serveur de synchronisation',
 	'Anki user name': 'Nom d’utilisateur Anki',
 	'Anki password': 'Mot de passe Anki',

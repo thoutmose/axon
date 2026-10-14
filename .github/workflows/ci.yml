@@ -143,6 +143,8 @@ jobs:
           - { name: web, context: web }
           - { name: backup, context: deploy/backup }
           - { name: anki, context: deploy/anki }
+          - { name: caddy, context: deploy/caddy }
+          - { name: db, context: deploy/db }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build

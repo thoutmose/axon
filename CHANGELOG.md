@@ -4,7 +4,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 ## Unreleased (1.1)
 
-Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-101 in #85.
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-102 in #85.
 
 ### Added
 
@@ -60,6 +60,7 @@ The first release meant for someone other than its author to install, operate, u
 
 ### Security
 
+- Caddy is rebuilt with the patched Go (four denial-of-service fixes) and PostgreSQL gets Debian's security updates and a rebuilt `gosu` (54 HIGH or CRITICAL fixed); both images are now scanned in CI and shipped by `deploy.sh` like Axon's own (EP-102).
 - Recovery sign-in locks for 15 minutes after five wrong authenticator codes for an account, and the failures are audited.
 - `Permissions-Policy` header; reachable-vulnerability scanning (govulncheck) in CI; the Go toolchain is pinned to 1.26.9.
 

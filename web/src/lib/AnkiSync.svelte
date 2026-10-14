@@ -96,7 +96,7 @@
 		{:else}
 			<p class="muted small">
 				{t(
-					'Send your cards to your own anki-sync-server (for example the one on srv-services), then sync Anki on your computer or phone. Notes are updated in place; cards that exist only in Anki are never deleted.'
+					'Send your cards to your own anki-sync-server (for example on a server at home), then sync Anki on your computer or phone. Notes are updated in place; cards that exist only in Anki are never deleted.'
 				)}
 			</p>
 			<form onsubmit={save}>
