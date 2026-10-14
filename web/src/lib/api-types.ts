@@ -3897,6 +3897,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/roadmaps/{id}/hours': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Study time on a roadmap against its plan
+		 * @description Focus sessions count when they were for the roadmap, one of its skills, its goal or milestones, or the projects, habits, and tasks of its plan. The last 12 weeks, this week day by day with the plan's block, and minutes by skill and by project.
+		 */
+		get: operations['getStudyHours'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}': {
 		parameters: {
 			query?: never;
@@ -4085,6 +4105,12 @@ export interface components {
 			 *     ]
 			 */
 			loci?: string[];
+		};
+		FocusMinutes: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			minutes: number;
 		};
 		Certification: {
 			/** Format: uuid */
@@ -15018,6 +15044,47 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getStudyHours: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Study hours. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @description A week, from the plan; null without one. */
+						target_hours: number | null;
+						weeks: {
+							/** Format: date */
+							week: string;
+							minutes: number;
+						}[];
+						days: {
+							/** Format: date */
+							date: string;
+							/** @description The plan's block for the day; empty without one. */
+							block: string;
+							minutes: number;
+						}[];
+						skills: components['schemas']['FocusMinutes'][];
+						projects: components['schemas']['FocusMinutes'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 		};
 	};

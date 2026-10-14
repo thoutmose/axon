@@ -609,6 +609,13 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(graph.getByRole('link', { name: 'Operating systems, learning' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// Study hours against the plan, and a focus session on today's block (EP-105).
+	const hours = page.getByRole('region', { name: 'Study hours' });
+	await expect(hours).toContainText('0 h of 22 h this week');
+	await hours.getByRole('link', { name: 'Focus on today’s block' }).click();
+	await expect(page).toHaveURL(/\/focus\?target=/);
+	await expect(page.getByText('Top-5% in 26 engineering domains').first()).toBeVisible();
+
 	await page.goto('/goals');
 	await expect(page.getByText('Top-5% in 26 engineering domains').first()).toBeVisible();
 	await page.goto('/projects');

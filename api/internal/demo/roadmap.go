@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/focus"
 	"github.com/thoutmose/axon/api/internal/fsrs"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/images"
@@ -72,6 +73,9 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 		}
 	}
 	if err := seedPractice(ctx, tx, user, today, plan.Roadmap.Skills); err != nil {
+		return plan, err
+	}
+	if err := seedStudy(ctx, tx, user, start, today, plan); err != nil {
 		return plan, err
 	}
 
@@ -234,6 +238,48 @@ func seedPractice(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Tim
 			AttemptInput: practice.AttemptInput{Outcome: outcome, Minutes: &minutes, On: today.AddDate(0, 0, -(9 - level)).Format(time.DateOnly)}}
 		if _, _, err := practice.Log(ctx, tx, user, in, today); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// seedStudy gives the demo the focus sessions of its first week on the
+// roadmap (EP-105): each day's block, on the skill or project it was for.
+func seedStudy(ctx context.Context, tx pgx.Tx, user uuid.UUID, start, today time.Time, plan roadmaps.Started) error {
+	skill := map[string]uuid.UUID{}
+	for _, sk := range plan.Roadmap.Skills {
+		skill[sk.Title] = sk.ID
+	}
+	pipekit := plan.Projects["pipekit"]
+	// Weekday by weekday: what the block was for and the minutes kept.
+	blocks := []struct {
+		target  uuid.UUID
+		minutes []int
+	}{
+		{skill["Maths"], []int{50, 50, 40}},
+		{skill["Data structures and algorithms"], []int{50, 50}},
+		{skill["Python"], []int{50, 45, 30}},
+		{skill["Maths"], []int{50, 25}},
+		{plan.Roadmap.ID, []int{50, 40}},
+		{pipekit, []int{50, 50, 50, 50, 50, 50, 40}},
+		{pipekit, []int{50, 50, 50, 40, 50, 50}},
+	}
+	for d := start; d.Before(today); d = d.AddDate(0, 0, 1) {
+		b := blocks[(int(d.Weekday())+6)%7]
+		at := d.Add(19 * time.Hour)
+		if d.Weekday() == time.Saturday || d.Weekday() == time.Sunday {
+			at = d.Add(9 * time.Hour)
+		}
+		for _, m := range b.minutes {
+			target := b.target
+			sess, err := focus.Start(ctx, tx, user, "", &target, 50, at)
+			if err != nil {
+				return err
+			}
+			if _, err := focus.Finish(ctx, tx, user, sess.ID, m, 1, "completed", at.Add(time.Duration(m+5)*time.Minute)); err != nil {
+				return err
+			}
+			at = at.Add(time.Duration(m+10) * time.Minute)
 		}
 	}
 	return nil

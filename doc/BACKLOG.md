@@ -153,6 +153,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-102 | Patched third-party images | Owner request: check the project for active CVEs and fix them. Caddy and PostgreSQL images rebuilt with security fixes, scanned and shipped like Axon's own. | MUST | 2 pts | EP-02, EP-81 | Done |
 | EP-103 | Practice log | Problems, wargame levels, and labs with honest attempts and spaced re-solving, measuring the roadmap's DSA and security proofs. | SHOULD | 5 pts | EP-52, EP-95 | Done |
 | EP-104 | Certifications | The roadmap's nine exams and any other: status, exam date, cost, result, credential, and expiry, on the calendar. | SHOULD | 5 pts | EP-08, EP-95 | Done |
+| EP-105 | Study hours against the plan | Focus time on a roadmap, by week, day, skill, and project, against the plan's hours and blocks. | SHOULD | 3 pts | EP-35, EP-97 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1934,6 +1935,15 @@ Cross-cutting matrix:
 - [x] **EP-104/IS-104.02** · 2 pts · SHOULD — Learn → Certifications: a card per exam with its status, target, countdown, result, credential, and expiry; an update form for booking and results; passed of planned, the next exam, paid of planned per currency, and a warning 90 days before a certification expires.
 
 **Tests.** `TestCertifications` against PostgreSQL (written first: create, validation, a pass setting the expiry, exam and expiry on the calendar, other people); the roadmap test finds its nine exams; costs, next exam, and expiring helpers; an e2e test that books the CKA and reads its countdown, with axe.
+
+### EP-105 — Study hours against the plan
+
+**Goal.** The roadmap's monthly check asks for "hours vs plan" (EP-95), and its weekly reflection for "hours done vs 22 h"; Axon timed focus sessions but could not say which were for the roadmap.
+
+- [x] **EP-105/IS-105.01** · 2 pts · SHOULD — `GET /v1/roadmaps/{id}/hours` adds up the focus sessions for the roadmap, one of its skills, its goal and milestones, the projects, habits, and tasks supporting the goal, and the tasks on those projects' boards (in the person's time zone): the last 12 weeks, this week day by day with the plan's block (EP-97), and minutes by skill and by project. The weekly target is the low end of the plan's hours. A session for nothing in particular is not counted.
+- [x] **EP-105/IS-105.02** · 1 pt · SHOULD — A roadmap's page shows the week against its target, the days beside their blocks, twelve weeks of bars under the target line, and the time by skill and project; **Focus on today's block** opens Focus aimed at the roadmap (Focus now takes `?target=`). The demo has its first week of sessions.
+
+**Tests.** `TestStudyHoursAgainstThePlan` against PostgreSQL (written first: sessions on a skill, the roadmap, and a project count, one for nothing does not; a roadmap without a plan has no target); the e2e roadmap test reads 0 h of 22 h and opens Focus on the block, with axe.
 
 ### EP-20 — Analytics & insights
 

@@ -4,7 +4,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 ## Unreleased (1.1)
 
-Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-102 in #85.
+Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-105 in #85.
 
 ### Added
 
@@ -15,6 +15,7 @@ Owner requests delivered after the 1.0 release candidate: EP-47 to EP-68 are mer
 - **Skills radar**: Roadmaps shows the hard and the soft skills acquired as two radar charts (EP-82).
 - **Focus music**: music composed in the browser as you work, matched to what you focus on: lo-fi beats, ambient, or calm piano; nothing streamed (EP-83).
 - **Teaser**: with the demo on, the home page shows a one-minute tour of Axon, recorded by `make teaser` (EP-84).
+- **Study hours**: focus time on a roadmap against its plan, day by day with the plan's block and over 12 weeks, by skill and project, with a shortcut to focus on today's block (EP-105).
 - **Certifications**: exams planned, booked, passed, or failed, with countdowns, costs, credentials, and expiries, on the calendar; the roadmap plans its nine (EP-104).
 - **Practice log**: problems, wargame levels, and labs from a pasted link, each attempt solved unaided, with help, or not, re-solved at growing intervals, with stats by difficulty, topic, and week (EP-103).
 - **Water**: log a glass or a bottle in one tap on Health or Today, against the drinks' share of your daily water need (EFSA), with the week, and in What helps you (EP-101).
