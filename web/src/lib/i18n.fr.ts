@@ -766,5 +766,6 @@ export const fr: Record<string, string> = {
 	'Turn on the podcast': 'Activer le podcast',
 	Voice: 'Voix',
 	'Weekly digest': 'Résumé de la semaine',
-	'{n} stories · about {m} minutes': '{n} sujets · environ {m} minutes'
+	'{n} stories · about {m} min': '{n} sujets · environ {m} min',
+	'1 story · about {m} min': '1 sujet · environ {m} min'
 };

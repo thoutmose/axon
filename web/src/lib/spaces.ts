@@ -8,7 +8,11 @@ export type Space =
 	| 'almanac'
 	| 'ledger'
 	| 'atlas'
-	| 'desk';
+	| 'desk'
+	| 'observatory'
+	| 'constellation'
+	| 'studio'
+	| 'dispatch';
 
 const byPath: [string, Space][] = [
 	['/notes', 'notebook'],
@@ -28,7 +32,13 @@ const byPath: [string, Space][] = [
 	['/areas', 'atlas'],
 	['/archive', 'atlas'],
 	['/tasks', 'desk'],
-	['/focus', 'desk']
+	['/focus', 'desk'],
+	// The tech watch (EP-76): its analysis and podcast before the reader,
+	// as the first match wins.
+	['/watch/graph', 'constellation'],
+	['/watch/podcast', 'studio'],
+	['/watch', 'observatory'],
+	['/digest', 'dispatch']
 ];
 
 /** The space for a page, or null for pages with their own scenery or none. */

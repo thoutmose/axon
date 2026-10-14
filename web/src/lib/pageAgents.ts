@@ -84,6 +84,16 @@ export const pageAgents: Record<string, PageAgents> = {
 			]
 		}
 	},
+	watch: {
+		agents: ['tech-watch'],
+		suggestions: {
+			'tech-watch': [
+				'Brief me on this week’s news, grouped by theme, and say what changed.',
+				'What is rising in my news that none of my topics covers yet?',
+				'Suggest a few primary sources for my topics that I do not follow yet.'
+			]
+		}
+	},
 	health: {
 		agents: ['personal-trainer', 'nutritionist'],
 		suggestions: {
