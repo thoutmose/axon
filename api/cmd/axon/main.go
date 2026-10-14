@@ -127,6 +127,10 @@ func serve() error {
 	if err != nil {
 		return err
 	}
+	listeners, err := app.Replies(cfg, pool, log)
+	if err != nil {
+		return err
+	}
 	if demoEnabled() {
 		go keepDemo(ctx, pool, log)
 	}
@@ -136,6 +140,7 @@ func serve() error {
 		go reminders.Run(ctx)
 		go cals.Run(ctx)
 		go index.Run(ctx)
+		go listeners.Run(ctx)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))

@@ -368,3 +368,32 @@ func webhookSend(ctx context.Context, c Config, event string, payload any) error
 	}
 	return do(FreeClient, req, nil)
 }
+
+// Reply answers a message in the chat it came from, as plain text (EP-71).
+func Reply(ctx context.Context, t Target, chat, text string) error {
+	c := t.Config
+	switch t.Kind {
+	case "telegram":
+		return telegramCall(ctx, c.BotToken, "sendMessage", map[string]any{"chat_id": chat, "text": limit(text, 4096), "link_preview_options": map[string]any{"is_disabled": true}}, nil)
+	case "slack":
+		return slackCall(ctx, c.BotToken, "chat.postMessage", map[string]any{"channel": chat, "text": slackEscape(text), "unfurl_links": false}, nil)
+	case "discord":
+		return discordCall(ctx, c.BotToken, http.MethodPost, "/channels/"+chat+"/messages", map[string]any{"content": limit(text, 2000), "allowed_mentions": map[string]any{"parse": []any{}}}, nil)
+	}
+	return fmt.Errorf("%s cannot answer", t.Kind)
+}
+
+// SlackCall and DiscordCall let listeners use the same clients and addresses.
+func SlackCall(ctx context.Context, token, method string, payload, out any) error {
+	return slackCall(ctx, token, method, payload, out)
+}
+
+// DiscordCall calls the Discord API as a bot.
+func DiscordCall(ctx context.Context, token, method, path string, payload, out any) error {
+	return discordCall(ctx, token, method, path, payload, out)
+}
+
+// TelegramCall calls the Bot API.
+func TelegramCall(ctx context.Context, token, method string, payload, out any) error {
+	return telegramCall(ctx, token, method, payload, out)
+}

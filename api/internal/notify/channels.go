@@ -498,3 +498,33 @@ func HashCode(code string) []byte {
 	h := sha256.Sum256([]byte(c))
 	return h[:]
 }
+
+// Bots lists every enabled bot channel, for the listeners (EP-71).
+func (s *Store) Bots(ctx context.Context) ([]Target, error) {
+	rows, err := s.db.Query(ctx, `SELECT id, user_id, kind, name, config, peer FROM notify_channels WHERE enabled AND kind IN ('telegram', 'slack', 'discord')`)
+	if err != nil {
+		return nil, err
+	}
+	type row struct {
+		t   Target
+		raw []byte
+	}
+	list, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (row, error) {
+		var x row
+		err := r.Scan(&x.t.ID, &x.t.UserID, &x.t.Kind, &x.t.Name, &x.raw, &x.t.Peer)
+		return x, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	var out []Target
+	for _, x := range list {
+		cfg, err := s.open(x.raw)
+		if err != nil || !cfg.Bot() {
+			continue
+		}
+		x.t.Config = cfg
+		out = append(out, x.t)
+	}
+	return out, nil
+}

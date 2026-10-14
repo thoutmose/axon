@@ -32,9 +32,10 @@ type chatPost struct {
 // receiver: every request from notify goes to one test server, which
 // records it under the host it was meant for.
 type fakeChats struct {
-	mu    sync.Mutex
-	posts []chatPost
-	fail  map[string]bool // hosts that answer 500
+	mu      sync.Mutex
+	posts   []chatPost
+	fail    map[string]bool          // hosts that answer 500
+	answers map[string]func() string // answers by path suffix, for listeners
 }
 
 func (f *fakeChats) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -54,16 +55,24 @@ func (f *fakeChats) RoundTrip(req *http.Request) (*http.Response, error) {
 				p.body += part.FormName() + "=" + string(b) + "\n"
 			}
 		}
-	} else {
+	} else if req.Body != nil {
 		b, _ := io.ReadAll(req.Body)
 		p.body = string(b)
 	}
 	f.mu.Lock()
 	f.posts = append(f.posts, p)
 	failing := f.fail[req.URL.Host]
+	var answer func() string
+	for suffix, a := range f.answers {
+		if strings.HasSuffix(req.URL.Path, suffix) {
+			answer = a
+		}
+	}
 	f.mu.Unlock()
 	rec := httptest.NewRecorder()
 	switch {
+	case answer != nil:
+		_, _ = rec.WriteString(answer())
 	case failing:
 		rec.WriteHeader(500)
 		_, _ = rec.WriteString("down")
@@ -100,7 +109,7 @@ func (f *fakeChats) count() int {
 }
 
 func newFakeChats(t *testing.T) *fakeChats {
-	f := &fakeChats{fail: map[string]bool{}}
+	f := &fakeChats{fail: map[string]bool{}, answers: map[string]func() string{}}
 	client, free := notify.Client, notify.FreeClient
 	notify.Client, notify.FreeClient = &http.Client{Transport: f}, &http.Client{Transport: f}
 	t.Cleanup(func() { notify.Client, notify.FreeClient = client, free })

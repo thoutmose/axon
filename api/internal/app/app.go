@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -41,6 +42,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/reminders"
+	"github.com/thoutmose/axon/api/internal/replies"
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/semantic"
@@ -246,4 +248,21 @@ func limitBody(n int64) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// Replies returns the listeners that read answers to digests in chat apps
+// (EP-71); the process runs them.
+func Replies(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*replies.Manager, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	return &replies.Manager{
+		Handler: replies.Handler{DB: pool, Base: cfg.BaseURL, Now: time.Now},
+		Store:   notify.NewStore(pool, sealer),
+		Log:     log,
+	}, nil
 }
