@@ -7,6 +7,7 @@
 		{ href: '/cards', label: t('Flashcards') },
 		{ href: '/learn/palaces', label: t('Memory palaces') },
 		{ href: '/learn/practice', label: t('Practice') },
+		{ href: '/learn/certifications', label: t('Certifications') },
 		{ href: '/roadmaps', label: t('Roadmaps') },
 		{ href: '/roadmaps/assessment', label: t('Skills assessment') }
 	]);

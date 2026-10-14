@@ -214,8 +214,8 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 // Event is one dated item on the calendar.
 type Event struct {
 	Date  tasks.Date `json:"date"`
-	Type  string     `json:"type"` // task, goal, milestone, study
-	Kind  string     `json:"kind"` // scheduled, due, target, milestone, block
+	Type  string     `json:"type"` // task, goal, milestone, study, certification
+	Kind  string     `json:"kind"` // scheduled, due, target, milestone, block, exam, expiry
 	ID    uuid.UUID  `json:"id"`
 	Title string     `json:"title"`
 	Done  bool       `json:"done"`
@@ -225,7 +225,7 @@ type Event struct {
 	RoadmapID *uuid.UUID `json:"roadmap_id,omitempty"`
 }
 
-var allTypes = []string{"task", "goal", "milestone", "study"}
+var allTypes = []string{"task", "goal", "milestone", "study", "certification"}
 
 // events returns dated items of the given types between from and to
 // (inclusive), oldest first. Cancelled tasks and archived goals are left out;
@@ -249,6 +249,14 @@ func events(ctx context.Context, q db.Querier, userID uuid.UUID, from, to time.T
 			SELECT m.due_on, 'milestone', 'milestone', m.id, e.title, m.done_at IS NOT NULL, m.goal_id
 			  FROM milestones m JOIN entities e ON e.id = m.id JOIN goals g ON g.id = m.goal_id
 			 WHERE e.user_id = $1 AND g.status <> 'archived' AND m.due_on BETWEEN $2 AND $3
+			UNION ALL
+			SELECT c.exam_on, 'certification', 'exam', c.id, 'Exam: ' || c.name || CASE WHEN c.code <> '' THEN ' (' || c.code || ')' ELSE '' END,
+			       c.status IN ('passed', 'failed'), NULL
+			  FROM certifications c WHERE c.user_id = $1 AND c.exam_on BETWEEN $2 AND $3
+			UNION ALL
+			SELECT c.expires_on, 'certification', 'expiry', c.id, 'Expires: ' || c.name || CASE WHEN c.code <> '' THEN ' (' || c.code || ')' ELSE '' END,
+			       false, NULL
+			  FROM certifications c WHERE c.user_id = $1 AND c.status = 'passed' AND c.expires_on BETWEEN $2 AND $3
 		) d
 		WHERE d.type = ANY($4) AND NOT ($5 AND d.done)
 		ORDER BY d.day, d.type, d.title, d.id LIMIT $6`, userID, from, to, types, openOnly, limit)
@@ -310,7 +318,7 @@ func (h *Handlers) calendar(w http.ResponseWriter, r *http.Request) {
 	}
 	types, ok := parseTypes(q.Get("types"))
 	if !ok {
-		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, milestone, and study.")
+		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, milestone, study, and certification.")
 		return
 	}
 	items, err := events(r.Context(), h.db, who.UserID, from, to, types, false, 2000)

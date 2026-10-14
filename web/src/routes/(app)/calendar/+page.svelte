@@ -23,20 +23,23 @@
 	type Source = Schemas['CalendarSource'];
 	type Event = Own | External;
 	type Feed = Schemas['CalendarFeed'];
-	type Kind = 'task' | 'goal' | 'milestone' | 'study';
+	type Kind = 'task' | 'goal' | 'milestone' | 'study' | 'certification';
 
 	const kinds: { id: Kind; label: string }[] = $derived([
 		{ id: 'task', label: t('Tasks') },
 		{ id: 'goal', label: t('Goal target dates') },
 		{ id: 'milestone', label: t('Milestones') },
-		{ id: 'study', label: t('Study blocks') }
+		{ id: 'study', label: t('Study blocks') },
+		{ id: 'certification', label: t('Certifications') }
 	]);
 	const prefix: Record<string, string> = $derived({
 		scheduled: '',
 		due: t('Due'),
 		target: t('Goal target'),
 		milestone: t('Milestone'),
-		block: t('Study')
+		block: t('Study'),
+		exam: t('Exam'),
+		expiry: t('Expiry')
 	});
 
 	const todayISO = localDate(new Date());
@@ -55,7 +58,9 @@
 		return `?${u}`;
 	};
 	const shown = $derived(
-		(page.url.searchParams.get('types') ?? 'task,goal,milestone,study').split(',') as Kind[]
+		(page.url.searchParams.get('types') ?? 'task,goal,milestone,study,certification').split(
+			','
+		) as Kind[]
 	);
 	let own = $state<Own[] | null>(null);
 	let occurrences = $state<Occurrence[]>([]);
@@ -234,6 +239,7 @@
 		if (e.type === 'task') return `/tasks/${e.id}`;
 		// A roadmap's weekly rhythm (EP-97): the day's block opens the roadmap.
 		if (e.type === 'study' && e.roadmap_id) return `/roadmaps/${e.roadmap_id}`;
+		if (e.type === 'certification') return '/learn/certifications';
 		return null;
 	}
 
@@ -371,9 +377,9 @@
 	<p class="legend">
 		<span class="ev task">{t('Task')}</span><span class="ev goal">{t('Goal target')}</span><span
 			class="ev milestone">{t('Milestone')}</span
-		><span class="ev study">{t('Study block')}</span>{#each sources as src (src.id)}<span
-				class="ev external"
-				style:--c={src.color}>{src.name}</span
+		><span class="ev study">{t('Study block')}</span><span class="ev certification"
+			>{t('Certification')}</span
+		>{#each sources as src (src.id)}<span class="ev external" style:--c={src.color}>{src.name}</span
 			>{/each}
 	</p>
 {:else if events.length === 0}
@@ -794,6 +800,9 @@
 		border-left-color: var(--chart-3);
 	}
 	/* A study block is a plan, not a commitment: the task colour, dashed. */
+	.ev.certification {
+		border-left-color: var(--accent);
+	}
 	.ev.study {
 		border-left-style: dashed;
 		background: transparent;

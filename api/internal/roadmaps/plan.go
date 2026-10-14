@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/certs"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/goals"
 	"github.com/thoutmose/axon/api/internal/graph"
@@ -48,6 +49,19 @@ type Plan struct {
 	Areas     []PlanArea     `json:"areas"`
 	Resources []PlanResource `json:"resources"`
 	Rhythm    []PlanDay      `json:"rhythm"`
+	Certs     []PlanCert     `json:"certifications"`
+}
+
+// PlanCert is an exam the plan takes, by the end of its phase.
+type PlanCert struct {
+	Name           string `json:"name"`
+	Code           string `json:"code"`
+	Provider       string `json:"provider"`
+	URL            string `json:"url"`
+	CostCents      *int64 `json:"cost_cents"`
+	ValidityMonths *int   `json:"validity_months"`
+	Phase          int    `json:"phase"`
+	Skill          string `json:"skill"`
 }
 
 // PlanDay is a weekday's study block (1 Monday to 7 Sunday): {M}, {C},
@@ -441,6 +455,27 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 			}
 		} else if err := link(task.ID, goals.Supports, g.ID); err != nil {
 			return s, err
+		}
+	}
+
+	// The exams, planned for the end of their phase (EP-104).
+	for _, c := range p.Certs {
+		var target string
+		for _, ph := range p.Phases {
+			if ph.N == c.Phase {
+				target = at(ph.End).Format(time.DateOnly)
+			}
+		}
+		f := certs.Fields{Name: c.Name, Code: c.Code, Provider: c.Provider, Status: "planned", TargetOn: &target,
+			CostCents: c.CostCents, Currency: "USD", ValidityMonths: c.ValidityMonths}
+		if c.URL != "" {
+			f.URL = str(c.URL)
+		}
+		if id, ok := skills[c.Skill]; ok {
+			f.SkillID = &id
+		}
+		if _, err := certs.Create(ctx, tx, userID, f); err != nil {
+			return s, fmt.Errorf("certification %s: %w", c.Code, err)
 		}
 	}
 

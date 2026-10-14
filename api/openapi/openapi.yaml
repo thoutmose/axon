@@ -1600,6 +1600,115 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/certifications:
+    get:
+      tags: [learning]
+      operationId: listCertifications
+      summary: Certifications, upcoming exams first
+      responses:
+        "200":
+          description: Certifications.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Certification" } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [learning]
+      operationId: createCertification
+      summary: Add a certification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, status]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 200, example: Certified Kubernetes Administrator }
+                provider: { type: string, maxLength: 100, example: The Linux Foundation }
+                code: { type: string, maxLength: 40, example: CKA }
+                url: { type: [string, "null"], format: uri }
+                status: { enum: [planned, booked, passed, failed] }
+                target_on: { type: [string, "null"], format: date, description: "When the plan aims to take it." }
+                exam_on: { type: [string, "null"], format: date, description: "Needed when booked or failed." }
+                passed_on: { type: [string, "null"], format: date, description: "Defaults to the exam day when passed." }
+                expires_on: { type: [string, "null"], format: date, description: "Worked out from passed_on and validity_months when left out." }
+                validity_months: { type: [integer, "null"], minimum: 1, maximum: 240 }
+                score: { type: string, maxLength: 40 }
+                cost_cents: { type: [integer, "null"], minimum: 0 }
+                currency: { type: string, pattern: "^[A-Z]{3}$", example: USD }
+                credential_url: { type: [string, "null"], format: uri }
+                notes: { type: string, maxLength: 5000 }
+                skill_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201":
+          description: The certification.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Certification" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/certifications/{id}:
+    put:
+      tags: [learning]
+      operationId: replaceCertification
+      summary: Rewrite a certification (passing sets its expiry from the validity)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, status]
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 200, example: Certified Kubernetes Administrator }
+                provider: { type: string, maxLength: 100, example: The Linux Foundation }
+                code: { type: string, maxLength: 40, example: CKA }
+                url: { type: [string, "null"], format: uri }
+                status: { enum: [planned, booked, passed, failed] }
+                target_on: { type: [string, "null"], format: date, description: "When the plan aims to take it." }
+                exam_on: { type: [string, "null"], format: date, description: "Needed when booked or failed." }
+                passed_on: { type: [string, "null"], format: date, description: "Defaults to the exam day when passed." }
+                expires_on: { type: [string, "null"], format: date, description: "Worked out from passed_on and validity_months when left out." }
+                validity_months: { type: [integer, "null"], minimum: 1, maximum: 240 }
+                score: { type: string, maxLength: 40 }
+                cost_cents: { type: [integer, "null"], minimum: 0 }
+                currency: { type: string, pattern: "^[A-Z]{3}$", example: USD }
+                credential_url: { type: [string, "null"], format: uri }
+                notes: { type: string, maxLength: 5000 }
+                skill_id: { type: [string, "null"], format: uuid }
+      responses:
+        "200":
+          description: The certification.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Certification" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [learning]
+      operationId: deleteCertification
+      summary: Remove a certification
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/practice:
     get:
       tags: [learning]
@@ -3893,7 +4002,7 @@ paths:
         - { name: to, in: query, required: true, schema: { type: string, format: date } }
         - name: types
           in: query
-          description: Comma-separated subset of task, goal, milestone, study (default all).
+          description: Comma-separated subset of task, goal, milestone, study, certification (default all).
           schema: { type: string, example: "task,milestone" }
       responses:
         "200":
@@ -3940,7 +4049,7 @@ paths:
               additionalProperties: false
               properties:
                 name: { type: string, minLength: 1, maxLength: 100, example: Phone }
-                types: { type: array, minItems: 1, items: { enum: [task, goal, milestone, study] } }
+                types: { type: array, minItems: 1, items: { enum: [task, goal, milestone, study, certification] } }
       responses:
         "201":
           description: Created. Subscribe to path on this server; it is not shown again.
@@ -6909,6 +7018,29 @@ components:
           maxItems: 100
           items: { type: string, minLength: 1, maxLength: 200 }
           example: [Front door, Coat hook, Kitchen sink, Sofa]
+    Certification:
+      type: object
+      required: [id, name, provider, code, url, status, target_on, exam_on, passed_on, expires_on, validity_months, score, cost_cents, currency, credential_url, notes, skill_id, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        provider: { type: string }
+        code: { type: string }
+        url: { type: [string, "null"] }
+        status: { enum: [planned, booked, passed, failed] }
+        target_on: { type: [string, "null"], format: date }
+        exam_on: { type: [string, "null"], format: date }
+        passed_on: { type: [string, "null"], format: date }
+        expires_on: { type: [string, "null"], format: date }
+        validity_months: { type: [integer, "null"] }
+        score: { type: string }
+        cost_cents: { type: [integer, "null"] }
+        currency: { type: string }
+        credential_url: { type: [string, "null"] }
+        notes: { type: string }
+        skill_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     PracticeProblem:
       type: object
       required: [id, title, url, platform, difficulty, topics, language, skill_id, created_at, attempts, solved, due_on]
@@ -7436,8 +7568,8 @@ components:
       required: [date, type, kind, id, title, done]
       properties:
         date: { type: string, format: date }
-        type: { enum: [task, goal, milestone, study] }
-        kind: { enum: [scheduled, due, target, milestone, block] }
+        type: { enum: [task, goal, milestone, study, certification] }
+        kind: { enum: [scheduled, due, target, milestone, block, exam, expiry] }
         id: { type: string, format: uuid }
         title: { type: string }
         done: { type: boolean }
@@ -7449,7 +7581,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-        types: { type: array, items: { enum: [task, goal, milestone, study] } }
+        types: { type: array, items: { enum: [task, goal, milestone, study, certification] } }
         created_at: { type: string, format: date-time }
         last_used_at: { type: [string, "null"], format: date-time }
     AgentStatus:

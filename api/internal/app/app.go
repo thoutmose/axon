@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/budget"
 	"github.com/thoutmose/axon/api/internal/calendars"
 	"github.com/thoutmose/axon/api/internal/cards"
+	"github.com/thoutmose/axon/api/internal/certs"
 	"github.com/thoutmose/axon/api/internal/clip"
 	"github.com/thoutmose/axon/api/internal/dashboard"
 	"github.com/thoutmose/axon/api/internal/focus"
@@ -103,6 +104,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	cardsAPI := cards.NewHandlers(pool, log)
 	learningAPI := learning.NewHandlers(pool, log)
 	practiceAPI := practice.NewHandlers(pool, log)
+	certsAPI := certs.NewHandlers(pool, log)
+	priv.Register("certifications", certs.Export)
 	priv.Register("practice", practice.Export)
 	remindersAPI, err := Reminders(cfg, pool, log)
 	if err != nil {
@@ -167,6 +170,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				cardsAPI.Routes(r)
 				learningAPI.Routes(r)
 				practiceAPI.Routes(r)
+				certsAPI.Routes(r)
 				remindersAPI.Routes(r)
 				calendarsAPI.Routes(r)
 				householdAPI.Routes(r)

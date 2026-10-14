@@ -989,6 +989,21 @@ test('savings pots: put money aside for a later purchase', async () => {
 	await noSeriousA11yViolations(page);
 });
 
+test('certifications: the plan exams, one booked with its countdown', async () => {
+	await page.goto('/learn/certifications');
+	await page.waitForLoadState('networkidle');
+	await expect(page.getByText('0 passed of 9')).toBeVisible();
+	await page.getByRole('button', { name: 'Update Certified Kubernetes Administrator' }).click();
+	const card = page.getByRole('listitem').filter({ hasText: 'Certified Kubernetes Administrator' });
+	await card.getByLabel('Status').selectOption('booked');
+	const exam = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+	await card.getByLabel('Exam date').fill(exam);
+	await card.getByRole('button', { name: 'Save' }).click();
+	await expect(card).toContainText(`Exam on ${exam}`);
+	await expect(page.getByText(/Next exam: CKA, in \d+ days/)).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('practice: paste a problem link, log how it went, and see when it comes back', async () => {
 	await page.goto('/learn/practice');
 	await page.waitForLoadState('networkidle');

@@ -152,6 +152,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-101 | Water | Owner request: a tracker of the water drunk, in health and food. | SHOULD | 3 pts | EP-18, EP-88 | Done |
 | EP-102 | Patched third-party images | Owner request: check the project for active CVEs and fix them. Caddy and PostgreSQL images rebuilt with security fixes, scanned and shipped like Axon's own. | MUST | 2 pts | EP-02, EP-81 | Done |
 | EP-103 | Practice log | Problems, wargame levels, and labs with honest attempts and spaced re-solving, measuring the roadmap's DSA and security proofs. | SHOULD | 5 pts | EP-52, EP-95 | Done |
+| EP-104 | Certifications | The roadmap's nine exams and any other: status, exam date, cost, result, credential, and expiry, on the calendar. | SHOULD | 5 pts | EP-08, EP-95 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1924,6 +1925,15 @@ Cross-cutting matrix:
 - [x] **EP-103/IS-103.02** · 2 pts · SHOULD — Learn → Practice: paste a link and the platform and title fill in (LeetCode, Codeforces, HackerRank, Advent of Code, Exercism, Project Euler, OverTheWire, PortSwigger, Hack The Box, TryHackMe, Kaggle); re-solve today with one tap per outcome; solved by difficulty, topic, and the last twelve weeks; every problem with its attempts and next re-solve. The demo has twelve weeks of classic problems and the first Bandit levels, linked to the roadmap's skills.
 
 **Tests.** The re-solve schedule (written first, ten cases); the link reader; `TestPracticeLog` against PostgreSQL (create, same link, attempts, validation, due, stats, other people); an e2e test that pastes a link, logs with help and unaided, and reads the schedule, with axe.
+
+### EP-104 — Certifications
+
+**Goal.** Nine of the roadmap's proofs are exams, about $3,000 over three years, and some expire (EP-95). Axon knew their names only as text in a resource.
+
+- [x] **EP-104/IS-104.01** · 3 pts · SHOULD — Migration `00053` adds `certifications` (name, provider, code, link, planned, booked, passed, or failed, target, exam, pass, and expiry dates, validity, score, cost and currency, credential link, notes, a roadmap skill). A booked or failed exam has its date; a pass defaults to the exam day and sets its expiry from the validity. `GET`, `POST`, `PUT`, and `DELETE /v1/certifications`; in the export. The calendar's new type `certification` shows booked exams and the expiry of passed ones (and iCal feeds can carry them). Starting the roadmap plans its nine exams for the end of their phases, with their price and validity, each linked to its skill.
+- [x] **EP-104/IS-104.02** · 2 pts · SHOULD — Learn → Certifications: a card per exam with its status, target, countdown, result, credential, and expiry; an update form for booking and results; passed of planned, the next exam, paid of planned per currency, and a warning 90 days before a certification expires.
+
+**Tests.** `TestCertifications` against PostgreSQL (written first: create, validation, a pass setting the expiry, exam and expiry on the calendar, other people); the roadmap test finds its nine exams; costs, next exam, and expiring helpers; an e2e test that books the CKA and reads its countdown, with axe.
 
 ### EP-20 — Analytics & insights
 

@@ -2972,5 +2972,41 @@ export const fr: Record<string, string> = {
 	'Next re-solve': 'Prochaine reprise',
 	known: 'acquis',
 	'No problems yet. Paste a link above to log the first.':
-		'Aucun problème pour l’instant. Collez un lien ci-dessus pour noter le premier.'
+		'Aucun problème pour l’instant. Collez un lien ci-dessus pour noter le premier.',
+	Certifications: 'Certifications',
+	Exam: 'Examen',
+	Expiry: 'Expiration',
+	Certification: 'Certification',
+	Planned: 'Prévue',
+	Booked: 'Réservée',
+	Passed: 'Obtenue',
+	today: 'aujourd’hui',
+	'in {n} days': 'dans {n} jours',
+	'{n} days ago': 'il y a {n} jours',
+	'Remove “{name}”?': 'Retirer « {name} » ?',
+	'The exams you plan, book, and pass, what they cost, and when they expire. Booked exams and expiries are on the calendar.':
+		'Les examens que vous prévoyez, réservez et obtenez, ce qu’ils coûtent et quand ils expirent. Les examens réservés et les expirations sont dans l’agenda.',
+	'passed of {n}': 'obtenues sur {n}',
+	'Next exam: {name}, {when}': 'Prochain examen : {name}, {when}',
+	'{paid} paid of {planned}': '{paid} payés sur {planned}',
+	'{name} expires {when}: plan the renewal.': '{name} expire {when} : prévoyez le renouvellement.',
+	'valid {n} months': 'valable {n} mois',
+	'Aim: by {date}': 'Objectif : d’ici le {date}',
+	'Exam on {date}, {when}': 'Examen le {date}, {when}',
+	'Passed on {date}': 'Obtenue le {date}',
+	'expires {date}': 'expire le {date}',
+	Credential: 'Certificat',
+	'Not passed on {date}: book a retake when ready.':
+		'Non obtenue le {date} : réservez une nouvelle tentative quand vous serez prêt.',
+	'Exam date': 'Date de l’examen',
+	Score: 'Score',
+	'Credential link': 'Lien du certificat',
+	'Update {name}': 'Mettre à jour {name}',
+	Update: 'Mettre à jour',
+	'No certifications yet. Add one below, or start the roadmap: it plans its nine exams.':
+		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses neuf examens.',
+	'Add a certification': 'Ajouter une certification',
+	'Aim to take it by': 'À passer d’ici le',
+	'Valid for (months)': 'Valable (mois)',
+	CKA: 'CKA'
 };
