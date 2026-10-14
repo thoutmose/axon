@@ -4098,6 +4098,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/watch/graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The knowledge graph of the news (not of your notes): concepts, how strongly they go together, their communities, and a summary of each */
+		get: operations['watchGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/vault/source': {
 		parameters: {
 			query?: never;
@@ -4333,6 +4350,59 @@ export interface components {
 			}[];
 			/** Format: date-time */
 			next_fetch_at: string | null;
+		};
+		WatchGraphRef: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+		};
+		WatchGraph: {
+			nodes: {
+				id: string;
+				/** @enum {string} */
+				kind: 'concept';
+				label: string;
+				/** @description News it appears in. */
+				count: number;
+				sources: number;
+				/** @description 0: no strong link (fringe). */
+				community: number;
+				/** @description PageRank relative to the most central concept. */
+				rank: number;
+				/** @description Last week against the weeks before: above 1.5 rising, below -1.5 fading. */
+				trend: number;
+				fringe: boolean;
+				/** @description The sentences of its news closest to what they share. */
+				summary: string;
+				items: components['schemas']['WatchGraphRef'][];
+				related: string[];
+				/** @description Your literature and permanent notes that share the concept. */
+				in_notes: components['schemas']['WatchGraphRef'][];
+				topics: string[];
+				/** Format: date-time */
+				first_seen: string;
+			}[];
+			edges: {
+				from: string;
+				to: string;
+				together: number;
+				npmi: number;
+				reason: string;
+			}[];
+			communities: {
+				id: number;
+				label: string;
+				size: number;
+			}[];
+			stats: {
+				items: number;
+				outliers: number;
+				concepts: number;
+				edges: number;
+				communities: number;
+				modularity: number;
+				bridges: number;
+			};
 		};
 		Channel: {
 			/** Format: uuid */
@@ -15589,6 +15659,39 @@ export interface operations {
 				};
 			};
 			401: components['responses']['Problem'];
+		};
+	};
+	watchGraph: {
+		parameters: {
+			query?: {
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				/** @description Published from (2026-10-14 or RFC 3339); 30 days before to by default. */
+				from?: string;
+				/** @description Published before; now by default. */
+				to?: string;
+				/** @description 1 to keep concepts with no strong link and the news set aside as outliers. */
+				fringe?: '0' | '1';
+				/** @description Weakest link kept (NPMI), above 0 and at most 1. */
+				min?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The graph. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchGraph'];
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	getVaultSource: {

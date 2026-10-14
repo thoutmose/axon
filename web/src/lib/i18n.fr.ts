@@ -618,5 +618,47 @@ export const fr: Record<string, string> = {
 	'Set an API password in FreshRSS: Profile → API management. It is used once, not stored.':
 		'Définissez un mot de passe d’API dans FreshRSS : Profil → Gestion de l’API. Il sert une fois et n’est pas conservé.',
 	'Topics label the news: a keyword in the title, or two in the text, and the item gets the topic. Synonyms from the thesaurus count too.':
-		'Les sujets étiquettent les actualités : un mot-clé dans le titre, ou deux dans le texte, et l’élément reçoit le sujet. Les synonymes du thésaurus comptent aussi.'
+		'Les sujets étiquettent les actualités : un mot-clé dans le titre, ou deux dans le texte, et l’élément reçoit le sujet. Les synonymes du thésaurus comptent aussi.',
+	'All its news': 'Toutes ses actualités',
+	Communities: 'Communautés',
+	Community: 'Communauté',
+	Concept: 'Concept',
+	'Goes with': 'Va avec',
+	'Graph summary': 'Résumé du graphe',
+	'In your notes': 'Dans vos notes',
+	'Last year': 'Dernière année',
+	'Link strength at least {n}': 'Force des liens d’au moins {n}',
+	'News graph': 'Graphe des actualités',
+	'News graph: {n} concepts. The table below lists them.':
+		'Graphe des actualités : {n} concepts. Le tableau ci-dessous les liste.',
+	'No literature or permanent note shares it yet.':
+		'Aucune note de lecture ou permanente ne le partage encore.',
+	'No two concepts go together often enough yet.':
+		'Aucun couple de concepts n’apparaît encore assez souvent ensemble.',
+	'Reading your news…': 'Lecture de vos actualités…',
+	'Rising this week': 'En hausse cette semaine',
+	'Show the concepts as a table': 'Afficher les concepts en tableau',
+	'Show the fringe': 'Afficher la frange',
+	Summary: 'Résumé',
+	Trend: 'Tendance',
+	With: 'Avec',
+	'Your notes’ graph': 'Le graphe de vos notes',
+	'also in your notes': 'aussi dans vos notes',
+	fading: 'en baisse',
+	'first seen {date}': 'vu pour la première fois le {date}',
+	rising: 'en hausse',
+	steady: 'stable',
+	'{n} concepts': '{n} concepts',
+	'{n} news': '{n} actualités',
+	'{n} outliers set aside': '{n} éléments atypiques mis de côté',
+	'1 source': '1 source',
+	'{n} sources': '{n} sources',
+	'The concepts of your news and how often they appear together. Built from the tech watch only; your notes have their own graph.':
+		'Les concepts de vos actualités et leur fréquence d’apparition commune. Construit à partir de la veille seule ; vos notes ont leur propre graphe.',
+	'Not enough news in this period to see concepts. A concept needs at least two news items.':
+		'Pas assez d’actualités sur cette période pour dégager des concepts. Un concept doit apparaître dans au moins deux actualités.',
+	'{items} news · {concepts} concepts · {edges} links · {communities} communities · {bridges} also in your notes':
+		'{items} actualités · {concepts} concepts · {edges} liens · {communities} communautés · {bridges} aussi dans vos notes',
+	'Hover a star for its summary; select it to keep it here. Larger stars are more central; a ring means your notes share the concept.':
+		'Survolez une étoile pour son résumé ; sélectionnez-la pour la garder ici. Les plus grandes sont les plus centrales ; un anneau signifie que vos notes partagent le concept.'
 };

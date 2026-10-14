@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ago, describeSchedule, filterQuery } from './watch';
+import { ago, describeSchedule, filterQuery, lastDays, trendWord } from './watch';
 
 describe('watch helpers', () => {
 	it('builds a filter query without empty values', () => {
@@ -22,5 +22,19 @@ describe('watch helpers', () => {
 		expect(describeSchedule('0 9 * * 1')).toBe('Mondays at 09:00');
 		expect(describeSchedule('0 */6 * * *')).toBe('every 6 hours');
 		expect(describeSchedule('5 4 1 * *')).toBe('5 4 1 * *');
+	});
+});
+
+describe('the news graph', () => {
+	it('names a trend', () => {
+		expect(trendWord(2)).toBe('rising');
+		expect(trendWord(-2)).toBe('fading');
+		expect(trendWord(0.4)).toBe('steady');
+	});
+	it('covers the last days, today included', () => {
+		expect(lastDays(7, new Date('2026-10-14T12:00:00Z'))).toEqual({
+			from: '2026-10-07',
+			to: '2026-10-15'
+		});
 	});
 });

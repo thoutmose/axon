@@ -1085,7 +1085,7 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	await page.getByLabel('A CSV or OPML file').setInputFiles({
 		name: 'sources.csv',
 		mimeType: 'text/csv',
-		buffer: Buffer.from(
+		buffer: (globalThis as unknown as { Buffer: { from(s: string): never } }).Buffer.from(
 			'url,title,topics,schedule,full_text\nhttps://feeds.example.org/e2e.xml,E2E feed,Databases,0 7 * * *,no\n'
 		)
 	});
@@ -1097,6 +1097,11 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	page.once('dialog', (d) => d.dismiss());
 	await row.getByRole('button', { name: 'Unfollow' }).click();
 	await expect(page.getByRole('row', { name: /E2E feed/ })).toHaveCount(0);
+	// The news graph is its own page, apart from the notes' graph.
+	await page.goto('/watch/graph');
+	await expect(page.getByRole('heading', { name: 'News graph', level: 1 })).toBeVisible();
+	await expect(page.getByText(/Not enough news in this period/)).toBeVisible();
+	await noSeriousA11yViolations(page);
 });
 
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
