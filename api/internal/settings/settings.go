@@ -106,12 +106,23 @@ var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "l
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them
 // on for, and emailed to Email when set and the instance can send mail.
+//
+// The weekly and monthly digests (EP-70) go out on WeeklyDay at WeeklyAt
+// and on day MonthlyDay of the month at MonthlyAt; an empty time skips
+// them. Digests also reach the chat channels the person connected.
 type Reminders struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"`
-	Morning string `json:"morning" yaml:"morning"`
-	Evening string `json:"evening" yaml:"evening"`
-	Email   string `json:"email" yaml:"email"`
+	Enabled    bool   `json:"enabled" yaml:"enabled"`
+	Morning    string `json:"morning" yaml:"morning"`
+	Evening    string `json:"evening" yaml:"evening"`
+	Email      string `json:"email" yaml:"email"`
+	WeeklyDay  string `json:"weekly_day" yaml:"weekly_day"`   // monday … sunday
+	WeeklyAt   string `json:"weekly_at" yaml:"weekly_at"`     // "18:00", or empty for none
+	MonthlyDay int    `json:"monthly_day" yaml:"monthly_day"` // 1–28
+	MonthlyAt  string `json:"monthly_at" yaml:"monthly_at"`   // "09:00", or empty for none
 }
+
+// Weekdays name the days a weekly digest can go out.
+var Weekdays = []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
 // Learning tunes the review engine (EP-52); package cards reads the same
 // keys. NewPerDay paces new cards, Retention is the chance FSRS aims for
@@ -149,7 +160,7 @@ func Defaults() Doc {
 		Keyboard:  Keyboard{Shortcuts: true},
 		Vault:     Vault{Mirror: true, Folder: "Axon"},
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
-		Reminders: Reminders{Morning: "08:00", Evening: "20:00"},
+		Reminders: Reminders{Morning: "08:00", Evening: "20:00", WeeklyDay: "sunday", WeeklyAt: "18:00", MonthlyDay: 1, MonthlyAt: "09:00"},
 		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
@@ -219,10 +230,17 @@ func (d Doc) Validate() error {
 	case d.Learning.Retention < 0.7 || d.Learning.Retention > 0.97:
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
-	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening}} {
+	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening},
+		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}} {
 		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
 			return FieldError{t.path, "is a time like 08:00, or empty for none"}
 		}
+	}
+	if err := oneOf("reminders.weekly_day", d.Reminders.WeeklyDay, Weekdays...); err != nil {
+		return err
+	}
+	if d.Reminders.MonthlyDay < 1 || d.Reminders.MonthlyDay > 28 {
+		return FieldError{"reminders.monthly_day", "is a day between 1 and 28, so every month has it"}
 	}
 	seen := map[string]bool{}
 	for _, sec := range d.Today.Sections {

@@ -1,7 +1,6 @@
 package reminders
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/thoutmose/axon/api/internal/auth"
+	"github.com/thoutmose/axon/api/internal/digest"
 	"github.com/thoutmose/axon/api/internal/httpx"
 	"github.com/thoutmose/axon/api/internal/settings"
 )
@@ -112,31 +112,31 @@ func (w *Worker) unsubscribe(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusNoContent)
 }
 
-// test sends today's digest now (or, with nothing to say, a short hello),
-// so the person sees what reminders look like.
+// test sends a digest now, even with nothing to say, so the person sees
+// what it looks like on each device, by email, and in each channel.
 func (w *Worker) test(rw http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
+	kind := r.URL.Query().Get("kind")
+	if kind == "" {
+		kind = digest.Daily
+	}
+	if !digest.Valid(kind) {
+		httpx.Problem(rw, http.StatusBadRequest, "kind is daily, weekly, or monthly.")
+		return
+	}
 	doc, err := settings.Get(r.Context(), w.db, who.UserID)
 	if err != nil {
 		w.fail(rw, err)
 		return
 	}
-	msg, err := Morning(r.Context(), w.db, who.UserID, w.now())
+	got, err := w.DeliverDigest(r.Context(), who.UserID, doc, kind, true)
 	if err != nil {
 		w.fail(rw, err)
 		return
 	}
-	if msg.Title == "" {
-		msg = Message{Title: "Reminders are on", Body: "Nothing is due right now. Axon will tell you when something is.", URL: "/today", Tag: "test"}
-	}
-	got, err := w.Deliver(r.Context(), who.UserID, doc.Reminders.Email, msg)
-	if errors.Is(err, nil) && got.Devices == 0 && !got.Email {
-		httpx.Problem(rw, http.StatusUnprocessableEntity, "No device or email received it: turn notifications on for this device, or add an email address.")
+	if got.Devices == 0 && !got.Email && got.Channels == 0 {
+		httpx.Problem(rw, http.StatusUnprocessableEntity, "Nothing received it: turn notifications on for this device, add an email address, or connect a channel.")
 		return
 	}
-	if err != nil {
-		w.fail(rw, err)
-		return
-	}
-	httpx.JSON(rw, http.StatusOK, map[string]any{"message": msg, "devices": got.Devices, "email": got.Email})
+	httpx.JSON(rw, http.StatusOK, got)
 }

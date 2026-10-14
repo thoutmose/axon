@@ -421,5 +421,69 @@ export const fr: Record<string, string> = {
 	'It downloads axon to ~/.local/bin, pairs, syncs once, and installs a user service. Nothing runs as root. With Docker instead:':
 		'Il télécharge axon dans ~/.local/bin, appaire, synchronise une fois et installe un service utilisateur. Rien ne tourne en root. Avec Docker à la place :',
 	'Axon must be reachable from the server (on your tailnet, for example). This page shows when it is in step.':
-		'Axon doit être joignable depuis le serveur (sur votre tailnet, par exemple). Cette page indique quand tout est synchronisé.'
+		'Axon doit être joignable depuis le serveur (sur votre tailnet, par exemple). Cette page indique quand tout est synchronisé.',
+	// Digests and channels (EP-70)
+	Digest: 'Récapitulatif',
+	'Reminders and digests': 'Rappels et récapitulatifs',
+	'Send me digests and reminders': 'M’envoyer les récapitulatifs et les rappels',
+	'Weekly digest on': 'Récapitulatif de la semaine le',
+	'Monthly digest on day': 'Récapitulatif du mois le jour',
+	at: 'à',
+	'The daily digest says what today holds and what comes next: tasks, milestones, habits, cards to review, notes to recall, with a line to carry and a picture of the day. The weekly and monthly ones look back and ahead. The nudge names the habits still open. Nothing is sent on days with nothing to say. Clear a time to skip it.':
+		'Le récapitulatif du jour dit ce que la journée contient et ce qui arrive : tâches, jalons, habitudes, cartes à réviser, notes à se remémorer, avec une phrase à garder et une image du jour. Ceux de la semaine et du mois regardent en arrière et en avant. Le rappel du soir nomme les habitudes encore ouvertes. Rien n’est envoyé les jours sans rien à dire. Videz une heure pour l’ignorer.',
+	'See your digest': 'Voir votre récapitulatif',
+	'Chat apps': 'Applications de discussion',
+	Channels: 'Canaux',
+	'Also to {n} channel(s).': 'Aussi vers {n} canal(aux).',
+	'Channel connected.': 'Canal connecté.',
+	'Sent to {name}.': 'Envoyé à {name}.',
+	'Disconnect {name}?': 'Déconnecter {name} ?',
+	'answers {name}': 'répond à {name}',
+	you: 'vous',
+	'not linked yet': 'pas encore lié',
+	On: 'Actif',
+	Daily: 'Quotidien',
+	Weekly: 'Hebdomadaire',
+	Monthly: 'Mensuel',
+	'Link another chat': 'Lier une autre discussion',
+	'New code': 'Nouveau code',
+	Disconnect: 'Déconnecter',
+	'Receive the digests in Slack, Discord, Teams, Telegram, ntfy, or any web address. With a bot, answer “done 2” when you finish something.':
+		'Recevez les récapitulatifs dans Slack, Discord, Teams, Telegram, ntfy ou à n’importe quelle adresse web. Avec un bot, répondez « fait 2 » quand vous terminez quelque chose.',
+	How: 'Comment',
+	'Webhook: Axon posts to a channel': 'Webhook : Axon publie dans un canal',
+	'Bot: also reads your answers': 'Bot : lit aussi vos réponses',
+	'Bot token': 'Jeton du bot',
+	'App-level token': 'Jeton d’application',
+	'Webhook address': 'Adresse du webhook',
+	Address: 'Adresse',
+	Topic: 'Sujet',
+	'Access token (optional)': 'Jeton d’accès (facultatif)',
+	'Secret (optional)': 'Secret (facultatif)',
+	'Task reminders and the evening nudge': 'Rappels de tâches et rappel du soir',
+	Connect: 'Connecter',
+	'Add a channel': 'Ajouter un canal',
+	'Open your bot in Telegram and send: /start {code}':
+		'Ouvrez votre bot dans Telegram et envoyez : /start {code}',
+	'Send this to the bot in a direct message: link {code}':
+		'Envoyez ceci au bot en message privé : link {code}',
+	'This week': 'Cette semaine',
+	'This month': 'Ce mois-ci',
+	'Answer with this number': 'Répondez avec ce numéro',
+	'and {n} more': 'et {n} de plus',
+	'Nothing to do and nothing to report: enjoy the day.':
+		'Rien à faire ni à signaler : profitez de la journée.',
+	'Send it to me now': 'Me l’envoyer maintenant',
+	'Times and channels': 'Horaires et canaux',
+	'Sent to {devices} device(s), {channels} channel(s){email}.':
+		'Envoyé à {devices} appareil(s), {channels} canal(aux){email}.',
+	'In a chat app with a bot, answer “done 2” when you finish the second item, “add call the bank tomorrow” to capture, or “help”.':
+		'Dans une application avec un bot, répondez « fait 2 » quand vous terminez le deuxième élément, « ajoute appeler la banque demain » pour noter, ou « aide ».',
+	Monday: 'Lundi',
+	Tuesday: 'Mardi',
+	Wednesday: 'Mercredi',
+	Thursday: 'Jeudi',
+	Friday: 'Vendredi',
+	Saturday: 'Samedi',
+	Sunday: 'Dimanche'
 };

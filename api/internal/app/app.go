@@ -35,6 +35,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/media"
 	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/notify"
 	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/progress"
@@ -119,6 +120,8 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.RegisterFiles("account", avatars.Files)
 	vaultAPI := vaultsrv.NewHandlers(pool, log, cfg.BaseURL, version)
 	priv.Register("vault_source", vaultsrv.Export)
+	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
+	priv.Register("channels", notify.Export)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")
@@ -155,6 +158,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				ankiAPI.Routes(r)
 				reposAPI.Routes(r)
 				vaultAPI.SessionRoutes(r)
+				notifyAPI.SessionRoutes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
@@ -182,6 +186,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				insightsAPI.Routes(r)
 				agentsAPI.Routes(r)
 				vaultAPI.Routes(r)
+				notifyAPI.Routes(r)
 			})
 		})
 	}), nil
@@ -231,7 +236,7 @@ func Reminders(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*reminder
 	if contact == "" {
 		contact = cfg.BaseURL
 	}
-	return reminders.NewWorker(pool, log, sealer, mailer, contact), nil
+	return reminders.NewWorker(pool, log, sealer, mailer, contact, cfg.BaseURL), nil
 }
 
 func limitBody(n int64) func(http.Handler) http.Handler {

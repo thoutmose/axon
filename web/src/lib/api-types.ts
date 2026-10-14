@@ -1200,8 +1200,114 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/** Send today's digest now (or a short hello when nothing is due) to your devices and email */
+		/** Send a digest now, even with nothing due, to your devices, your email, and your channels */
 		post: operations['testReminders'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Chat apps that receive your digests and reminders: Slack, Discord, Teams, Telegram, ntfy, or a webhook */
+		get: operations['listChannels'];
+		put?: never;
+		/** Connect a channel; a bot gets a one-time code to send it from your chat, to link it */
+		post: operations['createChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Change a channel; secrets left empty keep their value */
+		put: operations['updateChannel'];
+		post?: never;
+		/** Disconnect a channel */
+		delete: operations['deleteChannel'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}/link': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A new one-time code to link a bot to your chat (30 minutes) */
+		post: operations['relinkChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send today's digest to this channel now */
+		post: operations['testChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/digest': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your daily, weekly, or monthly digest as it would go out now */
+		get: operations['getDigest'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/digest/picture': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The digest's illustration: a landscape drawn for the day and its theme */
+		get: operations['getDigestPicture'];
+		put?: never;
+		post?: never;
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -3766,6 +3872,78 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		Channel: {
+			/** Format: uuid */
+			id: string;
+			/** @enum {string} */
+			kind: 'slack' | 'discord' | 'teams' | 'telegram' | 'ntfy' | 'webhook';
+			name: string;
+			/** @description Where it posts, without the secret part. */
+			target: string;
+			/**
+			 * @description bot: also reads your answers once linked (Slack, Discord, Telegram).
+			 * @enum {string}
+			 */
+			mode: 'webhook' | 'bot';
+			digests: ('daily' | 'weekly' | 'monthly')[];
+			/** @description Task reminders and the evening nudge too. */
+			reminders: boolean;
+			enabled: boolean;
+			linked: boolean;
+			/** @description Who the bot answers, once linked. */
+			peer_name: string;
+			/** Format: date-time */
+			link_expires_at: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_sent_at: string | null;
+			last_error: string;
+		};
+		DigestItem: {
+			/** @description The number to answer with ("done 2"). */
+			n?: number;
+			/** Format: uuid */
+			id: string;
+			type: string;
+			text: string;
+			detail?: string;
+			url: string;
+			late?: boolean;
+		};
+		Digest: {
+			/** @enum {string} */
+			kind: 'daily' | 'weekly' | 'monthly';
+			lang: string;
+			title: string;
+			greeting: string;
+			/** Format: date */
+			date: string;
+			label: string;
+			summary: string;
+			sections:
+				| {
+						key: string;
+						emoji: string;
+						title: string;
+						items: components['schemas']['DigestItem'][];
+						more?: number;
+				  }[]
+				| null;
+			stats:
+				| {
+						emoji: string;
+						label: string;
+						value: string;
+				  }[]
+				| null;
+			quote: {
+				text: string;
+				author: string;
+			};
+			theme: string;
+			url: string;
+		};
 		VaultReport: {
 			host?: string;
 			notes?: number;
@@ -5041,7 +5219,7 @@ export interface components {
 					| 'overview'
 				)[];
 			};
-			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
+			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), and weekly and monthly digests, pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
 			reminders?: {
 				enabled: boolean;
 				/** @example 08:00 */
@@ -5049,6 +5227,23 @@ export interface components {
 				/** @example 20:00 */
 				evening: string;
 				email: string;
+				/**
+				 * @description The day of the weekly digest (EP-70).
+				 * @enum {string}
+				 */
+				weekly_day?:
+					'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+				/**
+				 * @description Empty for no weekly digest.
+				 * @example 18:00
+				 */
+				weekly_at?: string;
+				monthly_day?: number;
+				/**
+				 * @description Empty for no monthly digest.
+				 * @example 09:00
+				 */
+				monthly_at?: string;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -5459,6 +5654,19 @@ export interface components {
 		};
 	};
 	responses: {
+		/** @description The channel, and for a bot not linked yet the code to send it. */
+		ChannelSaved: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/json': {
+					channel: components['schemas']['Channel'];
+					/** @example ABCD-EFGH */
+					link_code?: string;
+				};
+			};
+		};
 		/** @description RFC 9457 problem document. */
 		Problem: {
 			headers: {
@@ -5539,6 +5747,31 @@ export interface components {
 		IdempotencyKey: string;
 	};
 	requestBodies: {
+		ChannelInput: {
+			content: {
+				'application/json': {
+					/**
+					 * @description Required to create; a channel keeps its kind.
+					 * @enum {string}
+					 */
+					kind?: 'slack' | 'discord' | 'teams' | 'telegram' | 'ntfy' | 'webhook';
+					name: string;
+					/** @description Write-only. Slack: webhook_url, or bot_token (xoxb-) and app_token (xapp-). Discord: webhook_url or bot_token. Teams: webhook_url. Telegram: bot_token. ntfy: server, topic, token. Webhook: webhook_url, secret. */
+					config?: {
+						webhook_url?: string;
+						bot_token?: string;
+						app_token?: string;
+						server?: string;
+						topic?: string;
+						token?: string;
+						secret?: string;
+					};
+					digests?: ('daily' | 'weekly' | 'monthly')[];
+					reminders?: boolean;
+					enabled?: boolean;
+				};
+			};
+		};
 		/** @description The browser's PublicKeyCredential, JSON-encoded (WebAuthn Level 3 toJSON()). */
 		WebAuthnCredential: {
 			content: {
@@ -7923,7 +8156,9 @@ export interface operations {
 	};
 	testReminders: {
 		parameters: {
-			query?: never;
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
 			header?: {
 				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
 				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
@@ -7933,27 +8168,209 @@ export interface operations {
 		};
 		requestBody?: never;
 		responses: {
-			/** @description What was sent, and where. */
+			/** @description Where it went. */
 			200: {
 				headers: {
 					[name: string]: unknown;
 				};
 				content: {
 					'application/json': {
-						message: {
-							title: string;
-							body: string;
-							url: string;
-							tag: string;
-						};
 						devices: number;
 						email: boolean;
+						channels: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listChannels: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The channels, without their secrets. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Channel'][];
 					};
 				};
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+		};
+	};
+	createChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['ChannelInput'];
+		responses: {
+			201: components['responses']['ChannelSaved'];
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	updateChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['ChannelInput'];
+		responses: {
+			200: components['responses']['ChannelSaved'];
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	relinkChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The code. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @example ABCD-EFGH */
+						link_code: string;
+						/** Format: date-time */
+						expires_at: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	testChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sent. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+		};
+	};
+	getDigest: {
+		parameters: {
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The digest. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Digest'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getDigestPicture: {
+		parameters: {
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A 1200 × 360 PNG. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	listCalendarSources: {

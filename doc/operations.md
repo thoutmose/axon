@@ -115,6 +115,10 @@ rm axon-instance.tar.gz
 
 Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
 
+## Digests and chat channels (EP-70)
+
+People choose times and channels in Account → Preferences → Reminders and digests; nothing needs configuring on the server beyond what reminders use (`AXON_SMTP_URL`/`AXON_SMTP_FROM` for email, `AXON_ENCRYPTION_KEY` so channel secrets are sealed). The API calls the chat services' own hosts (`hooks.slack.com`, `slack.com`, `discord.com`, `*.webhook.office.com` or `*.logic.azure.com`, `api.telegram.org`) and the ntfy servers and webhooks people chose (public addresses only, unless `AXON_CALENDAR_PRIVATE=1`), so the server needs outbound HTTPS to them. A channel that fails shows its last error in Preferences; the logs say `digest to a channel failed` with the channel id.
+
 ## Vault server set up from Axon (EP-69)
 
 Notes live in the database unless a person names a vault server. To name one: Account → Preferences → Markdown vault → **Also as files on a server**, enter the host and folder, **Set up this server**, and run the line shown on that server within 30 minutes. It downloads `axon` from this Axon (same OS and architecture only; otherwise use the Docker command shown), pairs with the one-time code, saves a write token to `~/.config/axon/vault-token` (0600), syncs once, and installs the user service `axon-vault` (`systemctl --user status axon-vault`; `sudo loginctl enable-linger <user>` keeps it running after logout). An empty folder gets the inbox, PARA, Zettelkasten, daily, template, and attachment folders, `Home.md`, and the templates. Preferences shows whether the vault is in step (a report at least every 5 minutes), silent, or failing. **Stop syncing** revokes the token. For fleet hosts, the fleet repository runs the same `notes-sync -pair` command (ADR 0004).
