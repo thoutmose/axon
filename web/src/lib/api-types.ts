@@ -3658,10 +3658,144 @@ export interface paths {
 		patch: operations['updateSkill'];
 		trace?: never;
 	};
+	'/v1/vault/source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Where your Markdown vault lives: null when notes live in Axon only (the default) */
+		get: operations['getVaultSource'];
+		/** Name the server and folder that hold your vault, and get a one-time pairing code (30 min) with the commands that use it */
+		put: operations['putVaultSource'];
+		post?: never;
+		/** Stop using the vault server and revoke its token; the notes stay in Axon, the files on the server */
+		delete: operations['deleteVaultSource'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/pair': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A vault server exchanges its one-time code for a write token (used by axon notes-sync -pair) */
+		post: operations['pairVault'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/heartbeat': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A vault server says how its last sync went (sent by notes-sync after each run and every 5 minutes) */
+		post: operations['vaultHeartbeat'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/scaffold': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add the Home note and the built-in templates where their paths are free; the folders are made by the vault server */
+		post: operations['scaffoldVault'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/install.sh': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The setup script the one-line install runs on the vault server */
+		get: operations['vaultInstallScript'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/agent': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** This Axon's own program, for a vault server of the same system and architecture */
+		get: operations['vaultAgent'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		VaultReport: {
+			host?: string;
+			notes?: number;
+			files?: number;
+			pushed?: number;
+			pulled?: number;
+			deleted?: number;
+			conflicts?: string[];
+			error?: string;
+		};
+		VaultSource: {
+			host: string;
+			dir: string;
+			scaffold: boolean;
+			/**
+			 * @description waiting: not paired yet; silent: no report for 15 minutes; failing: the last sync failed.
+			 * @enum {string}
+			 */
+			status: 'waiting' | 'connected' | 'silent' | 'failing';
+			/** Format: date-time */
+			pair_expires_at: string | null;
+			/** Format: date-time */
+			paired_at: string | null;
+			paired_host: string;
+			/** Format: date-time */
+			last_seen_at: string | null;
+			/** Format: date-time */
+			token_expires_at: string | null;
+			last_report: components['schemas']['VaultReport'];
+		};
 		EmbeddingStatus: {
 			settings: {
 				/** @enum {unknown} */
@@ -13858,6 +13992,241 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The vault server, or null. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: null | components['schemas']['VaultSource'];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example srv-secondbrain */
+					host: string;
+					/**
+					 * @description A full path, starting with / or ~/.
+					 * @example ~/SecondBrain
+					 */
+					dir: string;
+					/**
+					 * @description When the folder holds no notes yet, start it with the folder structure and templates.
+					 * @default true
+					 */
+					scaffold?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The vault server and how to set it up. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: components['schemas']['VaultSource'];
+						setup: {
+							/** @example ABCD-EFGH */
+							code: string;
+							/** Format: date-time */
+							expires_at: string;
+							/** @description One line for the server's shell: downloads axon, pairs, installs a user service. */
+							install: string;
+							/** @description The same with the axon-api image. */
+							docker: string;
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	pairVault: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					code: string;
+					/** @description The server's host name, to name the token. */
+					host?: string;
+					/** @description The folder holds no notes yet. */
+					empty?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The token, shown once, and what to create in an empty vault. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						token: string;
+						dir: string;
+						folders: string[];
+						/** @description Notes added to Axon for the first sync to write. */
+						scaffold: string[];
+						/** Format: date-time */
+						expires_at: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	vaultHeartbeat: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['VaultReport'];
+			};
+		};
+		responses: {
+			/** @description Recorded. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	scaffoldVault: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What was added. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						added: string[];
+						folders: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	vaultInstallScript: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A POSIX shell script. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/plain': string;
+				};
+			};
+		};
+	};
+	vaultAgent: {
+		parameters: {
+			query: {
+				os: string;
+				arch: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The axon executable. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/octet-stream': string;
+				};
+			};
+			404: components['responses']['Problem'];
 		};
 	};
 }

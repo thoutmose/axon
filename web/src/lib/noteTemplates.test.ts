@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import apiTemplates from '../../../api/internal/vault/templates.json';
 import {
 	builtInFiles,
 	dailyContent,
@@ -83,5 +84,13 @@ describe('vault templates', () => {
 		expect(fill(permanent.content, 'Proofs', now)).toBe(
 			templates.find((t) => t.id === 'permanent')!.content('Proofs', now)
 		);
+	});
+});
+
+// The API writes the same templates into an empty vault (EP-69): its copy
+// must follow this file. Regenerate it from builtInFiles when one changes.
+describe('the templates an empty vault starts with', () => {
+	it('match the API copy', () => {
+		expect(builtInFiles(new Date(2026, 0, 2, 3, 4))).toEqual(apiTemplates);
 	});
 });

@@ -72,6 +72,8 @@ tags:
     description: Projects on a Kanban board built on tasks (epics, issues, sub-tasks), with a WIP limit and docs from a notes folder.
   - name: roadmaps
     description: Learning roadmaps of skills with prerequisites, built by hand or imported from openly licensed curricula (OSSU, MIT).
+  - name: vault
+    description: Where the Markdown vault lives — Axon only, or also a folder on a server kept in step by notes-sync.
   - name: notes
     description: Markdown notes stored verbatim, linked by [[wikilinks]], organised by PARA folder, and synced with a Markdown vault.
 
@@ -6190,6 +6192,171 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/vault/source:
+    get:
+      tags: [vault]
+      operationId: getVaultSource
+      summary: "Where your Markdown vault lives: null when notes live in Axon only (the default)"
+      responses:
+        "200":
+          description: The vault server, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source]
+                properties:
+                  source:
+                    oneOf:
+                      - type: "null"
+                      - $ref: "#/components/schemas/VaultSource"
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [vault]
+      operationId: putVaultSource
+      summary: "Name the server and folder that hold your vault, and get a one-time pairing code (30 min) with the commands that use it"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [host, dir]
+              additionalProperties: false
+              properties:
+                host: { type: string, maxLength: 100, example: srv-secondbrain }
+                dir: { type: string, maxLength: 500, example: ~/SecondBrain, description: "A full path, starting with / or ~/." }
+                scaffold: { type: boolean, default: true, description: "When the folder holds no notes yet, start it with the folder structure and templates." }
+      responses:
+        "200":
+          description: The vault server and how to set it up.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, setup]
+                properties:
+                  source: { $ref: "#/components/schemas/VaultSource" }
+                  setup:
+                    type: object
+                    required: [code, expires_at, install, docker]
+                    properties:
+                      code: { type: string, example: ABCD-EFGH }
+                      expires_at: { type: string, format: date-time }
+                      install: { type: string, description: "One line for the server's shell: downloads axon, pairs, installs a user service." }
+                      docker: { type: string, description: "The same with the axon-api image." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [vault]
+      operationId: deleteVaultSource
+      summary: "Stop using the vault server and revoke its token; the notes stay in Axon, the files on the server"
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/vault/pair:
+    post:
+      tags: [vault]
+      operationId: pairVault
+      summary: "A vault server exchanges its one-time code for a write token (used by axon notes-sync -pair)"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              additionalProperties: false
+              properties:
+                code: { type: string }
+                host: { type: string, description: "The server's host name, to name the token." }
+                empty: { type: boolean, description: "The folder holds no notes yet." }
+      responses:
+        "200":
+          description: The token, shown once, and what to create in an empty vault.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, dir, folders, scaffold, expires_at]
+                properties:
+                  token: { type: string }
+                  dir: { type: string }
+                  folders: { type: array, items: { type: string } }
+                  scaffold: { type: array, items: { type: string }, description: "Notes added to Axon for the first sync to write." }
+                  expires_at: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/vault/heartbeat:
+    post:
+      tags: [vault]
+      operationId: vaultHeartbeat
+      summary: "A vault server says how its last sync went (sent by notes-sync after each run and every 5 minutes)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VaultReport" }
+      responses:
+        "204": { description: Recorded. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/vault/scaffold:
+    post:
+      tags: [vault]
+      operationId: scaffoldVault
+      summary: "Add the Home note and the built-in templates where their paths are free; the folders are made by the vault server"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: What was added.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [added, folders]
+                properties:
+                  added: { type: array, items: { type: string } }
+                  folders: { type: array, items: { type: string } }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/vault/install.sh:
+    get:
+      tags: [vault]
+      operationId: vaultInstallScript
+      summary: "The setup script the one-line install runs on the vault server"
+      security: []
+      responses:
+        "200":
+          description: A POSIX shell script.
+          content:
+            text/plain:
+              schema: { type: string }
+  /v1/vault/agent:
+    get:
+      tags: [vault]
+      operationId: vaultAgent
+      summary: "This Axon's own program, for a vault server of the same system and architecture"
+      security: []
+      parameters:
+        - { name: os, in: query, required: true, schema: { type: string, example: linux } }
+        - { name: arch, in: query, required: true, schema: { type: string, example: amd64 } }
+      responses:
+        "200":
+          description: The axon executable.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404": { $ref: "#/components/responses/Problem" }
+
 components:
   securitySchemes:
     session:
@@ -6318,6 +6485,32 @@ components:
               display_name: { type: string }
 
   schemas:
+    VaultReport:
+      type: object
+      additionalProperties: false
+      properties:
+        host: { type: string }
+        notes: { type: integer }
+        files: { type: integer }
+        pushed: { type: integer }
+        pulled: { type: integer }
+        deleted: { type: integer }
+        conflicts: { type: array, items: { type: string } }
+        error: { type: string }
+    VaultSource:
+      type: object
+      required: [host, dir, scaffold, status, pair_expires_at, paired_at, paired_host, last_seen_at, token_expires_at, last_report]
+      properties:
+        host: { type: string }
+        dir: { type: string }
+        scaffold: { type: boolean }
+        status: { type: string, enum: [waiting, connected, silent, failing], description: "waiting: not paired yet; silent: no report for 15 minutes; failing: the last sync failed." }
+        pair_expires_at: { type: [string, "null"], format: date-time }
+        paired_at: { type: [string, "null"], format: date-time }
+        paired_host: { type: string }
+        last_seen_at: { type: [string, "null"], format: date-time }
+        token_expires_at: { type: [string, "null"], format: date-time }
+        last_report: { $ref: "#/components/schemas/VaultReport" }
     EmbeddingStatus:
       type: object
       required: [settings, consent, indexed, notes]

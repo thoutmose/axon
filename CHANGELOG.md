@@ -2,6 +2,12 @@
 
 All notable changes to Axon. Versions follow [Semantic Versioning](https://semver.org/); the support and deprecation policy is in [doc/support.md](doc/support.md).
 
+## Unreleased
+
+### Added
+
+- **Where the vault lives** (EP-69): notes stay in the database by default; Preferences → Markdown vault names a server and folder, gives a one-line install that pairs with a one-time code, and starts an empty vault with its folders and templates. Axon shows whether the vault is in step.
+
 ## 1.0.0 (release candidate)
 
 The first release meant for someone other than its author to install, operate, upgrade, and recover. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)).

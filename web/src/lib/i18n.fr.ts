@@ -382,5 +382,44 @@ export const fr: Record<string, string> = {
 	'Axon is installed on this device.': 'Axon est installé sur cet appareil.',
 	'Install Axon on this device': 'Installer Axon sur cet appareil',
 	'Install Axon to open it like an app, even offline to capture a thought: on iPhone or iPad, Safari → Share → Add to Home Screen; in Chrome or Edge, the install icon in the address bar.':
-		'Installez Axon pour l’ouvrir comme une application, même hors ligne pour noter une idée : sur iPhone ou iPad, Safari → Partager → Sur l’écran d’accueil ; dans Chrome ou Edge, l’icône d’installation dans la barre d’adresse.'
+		'Installez Axon pour l’ouvrir comme une application, même hors ligne pour noter une idée : sur iPhone ou iPad, Safari → Partager → Sur l’écran d’accueil ; dans Chrome ou Edge, l’icône d’installation dans la barre d’adresse.',
+	// Where the vault lives (EP-69)
+	'Where your notes live': 'Où vivent vos notes',
+	'In Axon only': 'Dans Axon seulement',
+	'The default. Notes are Markdown in the database: nothing to set up, included in backups and exports.':
+		'Par défaut. Les notes sont du Markdown dans la base de données : rien à configurer, incluses dans les sauvegardes et les exports.',
+	'Also as files on a server': 'Aussi en fichiers sur un serveur',
+	'A folder of Markdown files (Obsidian, a Git repository…) on a server of yours, kept in step both ways within seconds.':
+		'Un dossier de fichiers Markdown (Obsidian, un dépôt Git…) sur l’un de vos serveurs, synchronisé dans les deux sens en quelques secondes.',
+	Server: 'Serveur',
+	'Folder on the server': 'Dossier sur le serveur',
+	'If the folder is empty, start it with the folder structure (Inbox, PARA, Zettelkasten, Daily) and the templates':
+		'Si le dossier est vide, le préparer avec l’arborescence (Inbox, PARA, Zettelkasten, journal) et les modèles',
+	'Set up this server': 'Configurer ce serveur',
+	'Pair again': 'Appairer de nouveau',
+	'Stop syncing': 'Arrêter la synchronisation',
+	Cancel: 'Annuler',
+	Copy: 'Copier',
+	'Copied.': 'Copié.',
+	'Select the command and copy it.': 'Sélectionnez la commande et copiez-la.',
+	'Check now': 'Vérifier maintenant',
+	'Waiting for the server to pair': 'En attente de l’appairage du serveur',
+	'In step': 'Synchronisé',
+	'No news from the server for 15 minutes': 'Aucune nouvelle du serveur depuis 15 minutes',
+	'The last sync failed': 'La dernière synchronisation a échoué',
+	'Last report': 'Dernier rapport',
+	'token until': 'jeton jusqu’au',
+	'Kept both versions of': 'Deux versions conservées pour',
+	'merge them, then delete the *.axon-conflict.* copy':
+		'fusionnez-les, puis supprimez la copie *.axon-conflict.*',
+	'Items as notes': 'Les éléments en notes',
+	'Your notes now live in Axon only.': 'Vos notes vivent désormais dans Axon seulement.',
+	'Stop syncing with {host}? Its token is revoked; your notes stay in Axon and the files stay on the server.':
+		'Arrêter la synchronisation avec {host} ? Son jeton est révoqué ; vos notes restent dans Axon et les fichiers sur le serveur.',
+	'On {host}, run this once. The code {code} works once, until {time}.':
+		'Sur {host}, lancez ceci une fois. Le code {code} ne sert qu’une fois, jusqu’à {time}.',
+	'It downloads axon to ~/.local/bin, pairs, syncs once, and installs a user service. Nothing runs as root. With Docker instead:':
+		'Il télécharge axon dans ~/.local/bin, appaire, synchronise une fois et installe un service utilisateur. Rien ne tourne en root. Avec Docker à la place :',
+	'Axon must be reachable from the server (on your tailnet, for example). This page shows when it is in step.':
+		'Axon doit être joignable depuis le serveur (sur votre tailnet, par exemple). Cette page indique quand tout est synchronisé.'
 };

@@ -1,0 +1,38 @@
+[
+	{
+		"path": "Templates/Fleeting note.md",
+		"content": "---\ntype: fleeting\ncreated: {{date}}\n---\n# {{title}}\n\n"
+	},
+	{
+		"path": "Templates/Literature note.md",
+		"content": "---\ntype: literature\ntitle: {{title}}\nsource: \nauthor: \ncreated: {{date}}\ntags: []\n---\n## Key ideas\n- \n\n## Quotes\n> \n\n## My thoughts\n\n"
+	},
+	{
+		"path": "Templates/Permanent note.md",
+		"content": "---\ntype: permanent\nid: {{zettel}}\ntitle: {{title}}\ncreated: {{date}}\ntags: []\n---\n## Idea\n\n\n## Why it matters\n\n\n## Related\n- [[ ]]\n"
+	},
+	{
+		"path": "Templates/Project note.md",
+		"content": "---\ntype: project\ntitle: {{title}}\nstatus: active\ncreated: {{date}}\n---\n## Outcome\n\n\n## Next actions\n- [ ] \n\n## Notes\n\n"
+	},
+	{
+		"path": "Templates/Area note.md",
+		"content": "---\ntype: area\ntitle: {{title}}\n---\n## Standard to keep\n\n\n## Notes & resources\n- \n"
+	},
+	{
+		"path": "Templates/Resource note.md",
+		"content": "---\ntype: resource\ntitle: {{title}}\ntags: []\n---\n## Summary\n\n\n## Links\n- \n"
+	},
+	{
+		"path": "Templates/Archive note.md",
+		"content": "---\ntype: archive\ntitle: {{title}}\narchived: {{date}}\n---\n## What it was\n\n\n## Outcome\n\n\n## Lessons\n- \n"
+	},
+	{
+		"path": "Templates/Meeting.md",
+		"content": "---\ntype: meeting\ndate: {{date}}\nattendees: \n---\n# {{title}}\n\n## Decisions\n- \n\n## Actions\n- [ ] \n"
+	},
+	{
+		"path": "Templates/Blank note.md",
+		"content": "# {{title}}\n\n"
+	}
+]
