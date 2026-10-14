@@ -285,6 +285,11 @@ func (w *Worker) DeliverDigest(ctx context.Context, userID uuid.UUID, doc settin
 	if d.Empty() && !force {
 		return out, nil
 	}
+	if items := d.Actionable(); len(items) > 0 {
+		if err := digest.Remember(ctx, w.db, userID, items); err != nil {
+			return out, err
+		}
+	}
 	msg := Message{Tag: kind, URL: d.URL}
 	msg.Title, msg.Body = digest.Short(d)
 	if kind == digest.Daily {

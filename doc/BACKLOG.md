@@ -119,6 +119,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-68 | Task reminders at a time | A task can carry a reminder time: pushed (and emailed when set up) then, once, from the task editor or quick add ("at 15:00", "à 15h"). Owner request: essential functionality. | SHOULD | 2 pts | EP-56 | Done |
 | EP-69 | Where the vault lives | Notes live in the database by default; a person can name a server and folder for the Markdown vault, pair it with a one-time code and one command, and an empty vault starts with its structure and templates. Owner request. | SHOULD | 5 pts | EP-36, EP-48 | Done |
 | EP-70 | Digests everywhere | Daily, weekly, and monthly digests by email, Slack, Discord, Teams, Telegram, ntfy, or a webhook: what to do, what comes next, what to learn, how the period went, illustrated, with a quote for the day. Owner request. | SHOULD | 8 pts | EP-56 | Done |
+| EP-71 | Answering the digest | Answer in Slack, Discord, or Telegram: "done 2", "I finished the passport", "add … tomorrow at 3pm", "snooze", "note", "undo"; Axon follows at once. Owner request. | SHOULD | 8 pts | EP-70 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1581,6 +1582,16 @@ Cross-cutting matrix:
 - [x] **EP-70/IS-70.03** · 2 pts · SHOULD — the weekly (day, time) and monthly (day 1–28, time) settings; the email digest as text plus HTML with the picture inline; `GET /v1/me/digest` and `/picture`; a Digest page (today, this week, this month) with "Send it to me now"; Preferences → Reminders and digests, Chat apps.
 
 **Tests.** `TestDigestsOnEveryChannel` (the digest numbered with a quote and a picture; each kind's address checked; no secret in any answer; ownership; a test to one channel; an unlinked bot refused; changing the name keeps the secret; the morning digest once to every channel taking it, Discord and Telegram with the picture, ntfy with its token; the weekly digest signed for the webhook; a failing channel recorded without stopping the others; the monthly digest; the evening nudge only where reminders are on); digest unit tests (every string in French, quotes by theme and domain, renderers escape text and keep Discord's limits, the picture is stable per day); `TestRichMail` (multipart parsed as a mail app does).
+
+### EP-71 — Answering the digest
+
+**Goal.** "The user can directly respond to the message and the answer will be analysed: with Slack, I can say during the day when I have achieved an element of my to-do list, synchronised with everything in the website" (owner, 2026-10-14). Decisions in [ADR 0030](adr/0030-answers-through-outbound-listeners.md).
+
+- [x] **EP-71/IS-71.01** · 3 pts · SHOULD — listeners that only connect out: Telegram long polling, Slack Socket Mode, Discord gateway (`internal/wsclient`, RFC 6455), one per bot, reconnecting with back-off, stopped cleanly; a chat is linked with a one-time code; only the linked person, in a private chat, is obeyed; a flood limit.
+- [x] **EP-71/IS-71.02** · 3 pts · SHOULD — commands in English and French: done by number (tasks, habits, milestones), by words or by sentence (Snowball stems; one clear match, or a numbered choice), add with a day and a time (a reminder), note, snooze, list, help, undo; longer free text becomes a fleeting note; the latest numbers are kept (`digest_items`).
+- [x] **EP-71/IS-71.03** · 2 pts · SHOULD — Preferences shows each bot's state (linked to whom, a new code) and how to create the bot; the Digest page explains the answers.
+
+**Tests.** `TestParse`, `TestResolve` (English and French commands, numbers and ranges, days, weekdays, times, "buy 2 apples" is not 2 o'clock); `TestAgainstAServer` (the WebSocket client against a standard server, large messages, close); `TestAnsweringTheDigest` (nobody obeyed before linking, a wrong or used code refused, a stranger refused, list, done, already done, undo, a habit by number, an unknown number, a sentence, a choice between close matches, no match, a repeating task, add with a day and a time, undo of an add, snooze, a note, French, a disabled channel); `TestChatListeners` (Telegram, Slack, and Discord each answer a direct message through their real protocol against fakes; group and server messages ignored; the Slack acknowledgement, the Discord identify with the DM intent, and a heartbeat); the race detector on both.
 
 ### EP-20 — Analytics & insights
 

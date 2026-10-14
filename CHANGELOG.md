@@ -8,6 +8,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 
 - **Where the vault lives** (EP-69): notes stay in the database by default; Preferences → Markdown vault names a server and folder, gives a one-line install that pairs with a one-time code, and starts an empty vault with its folders and templates. Axon shows whether the vault is in step.
 - **Digests everywhere** (EP-70): daily, weekly, and monthly digests by email (HTML with a picture drawn for the day), Slack, Discord, Microsoft Teams, Telegram, ntfy, or a signed webhook, with a quote chosen for the day; a Digest page to preview them.
+- **Answering the digest** (EP-71): in Slack, Discord, or Telegram, "done 2", a sentence such as "I finished the passport", "add … tomorrow at 3pm", "snooze", "note", and "undo" act in Axon at once; the bots connect out, so a private instance needs no public address.
 
 ## 1.0.0 (release candidate)
 

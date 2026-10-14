@@ -7,6 +7,9 @@ linters:
     - gosec
     - misspell
   settings:
+    misspell:
+      # French words in the French answers (EP-71).
+      ignore-rules: [commandes, ressemble, exemple]
     errcheck:
       # Progress output to the operator's terminal; a failed write is not actionable.
       exclude-functions:

@@ -200,7 +200,7 @@ func (b *builder) tasks(from, until time.Time) ([]openTask, error) {
 		FROM tasks t JOIN entities e ON e.id = t.id
 		WHERE e.user_id = $1 AND t.status NOT IN ('done', 'cancelled', 'someday')
 		  AND (least(t.scheduled_on, t.due_on) BETWEEN $2 AND $3 OR (t.due_on IS NOT NULL AND t.due_on BETWEEN $2 AND $3))
-		ORDER BY coalesce(t.due_on, t.scheduled_on), t.status = 'doing' DESC, e.title
+		ORDER BY coalesce(t.due_on, t.scheduled_on), t.due_on IS NULL, t.status = 'doing' DESC, e.title
 		LIMIT 200`, b.user, from, until)
 	if err != nil {
 		return nil, err
@@ -667,3 +667,25 @@ var Kinds = []string{Daily, Weekly, Monthly}
 
 // Valid reports a known kind.
 func Valid(kind string) bool { return slices.Contains(Kinds, kind) }
+
+// Remember stores the numbers of the items a person just received, so an
+// answer such as "done 2" finds them (EP-71). The latest list wins.
+func Remember(ctx context.Context, q db.Querier, userID uuid.UUID, items []Item) error {
+	if _, err := q.Exec(ctx, `DELETE FROM digest_items WHERE user_id = $1`, userID); err != nil {
+		return err
+	}
+	for _, it := range items {
+		if it.N < 1 || it.N > 100 || (it.Type != "task" && it.Type != "habit" && it.Type != "milestone") {
+			continue
+		}
+		title := it.Text
+		if len(title) > 500 {
+			title = title[:500]
+		}
+		if _, err := q.Exec(ctx, `INSERT INTO digest_items (user_id, n, entity_id, type, title) VALUES ($1, $2, $3, $4, $5)`,
+			userID, it.N, it.ID, it.Type, title); err != nil {
+			return err
+		}
+	}
+	return nil
+}
