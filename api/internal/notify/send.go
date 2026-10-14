@@ -81,8 +81,10 @@ func SendDigest(ctx context.Context, t Target, d digest.Digest, base string, sce
 		return postJSON(ctx, Client, c.WebhookURL, digest.Teams(d, base), nil)
 	case "telegram":
 		title, summary := digest.Short(d)
-		if err := telegramPhoto(ctx, c.BotToken, t.Peer, scene, "<b>"+escapeHTML(title)+"</b>\n"+escapeHTML(summary)); err != nil {
-			return err
+		if scene != nil {
+			if err := telegramPhoto(ctx, c.BotToken, t.Peer, scene, "<b>"+escapeHTML(title)+"</b>\n"+escapeHTML(summary)); err != nil {
+				return err
+			}
 		}
 		return telegramCall(ctx, c.BotToken, "sendMessage", map[string]any{
 			"chat_id": t.Peer, "text": limit(digest.Telegram(d, base), 4096), "parse_mode": "HTML", "link_preview_options": map[string]any{"is_disabled": true},

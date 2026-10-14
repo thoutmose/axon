@@ -309,14 +309,18 @@ func (w *Worker) DeliverDigest(ctx context.Context, userID uuid.UUID, doc settin
 	}
 	var scene []byte
 	sceneFor := func() []byte {
-		if scene == nil {
+		if scene == nil && d.Picture {
 			scene = digest.Scene(d)
 		}
 		return scene
 	}
 	if doc.Reminders.Email != "" && w.mail != nil {
 		title, _ := digest.Short(d)
-		err := w.mail.SendRich(doc.Reminders.Email, Rich{Subject: title, Text: digest.Text(d, w.base), HTML: digest.HTML(d, w.base, "scene"), PNG: sceneFor()})
+		cid := ""
+		if d.Picture {
+			cid = "scene"
+		}
+		err := w.mail.SendRich(doc.Reminders.Email, Rich{Subject: title, Text: digest.Text(d, w.base), HTML: digest.HTML(d, w.base, cid), PNG: sceneFor()})
 		if err != nil {
 			w.log.Warn("digest email failed", "user", userID, "err", err)
 		} else {

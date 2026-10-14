@@ -9,13 +9,15 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+
+	"github.com/thoutmose/axon/api/internal/settings"
 )
 
 func sample() Digest {
 	id := uuid.New()
 	return Digest{
 		Kind: Daily, Lang: "en", Title: "Your day", Greeting: "Good morning, Ada", Label: "Wednesday October 14",
-		Summary: "2 tasks", Theme: "focus", URL: "/today", Seed: "s",
+		Summary: "2 tasks", Theme: "focus", URL: "/today", Seed: "s", Picture: true,
 		Stats: []Stat{{Emoji: "✅", Label: "Tasks done", Value: "3"}},
 		Sections: []Section{{Key: "To do today", Emoji: "✅", Title: "To do today", More: 2, Items: []Item{
 			{N: 1, ID: id, Type: "task", Text: `Fix <script>alert(1)</script> & *bold*`, Detail: "due today", URL: "/tasks?open=" + id.String()},
@@ -129,5 +131,60 @@ func TestScene(t *testing.T) {
 	other.Theme = "reflection"
 	if bytes.Equal(a, Scene(other)) {
 		t.Fatal("themes look the same")
+	}
+}
+
+// The digest reads the template the settings store, with the same defaults
+// and the same section names.
+func TestTemplateFollowsTheSettings(t *testing.T) {
+	d, s := DefaultTemplate(), settings.Defaults().Digest
+	if !slices.Equal(d.Daily, s.Daily) || !slices.Equal(d.Weekly, s.Weekly) || !slices.Equal(d.Monthly, s.Monthly) || d.Quote != s.Quote || d.Picture != s.Picture {
+		t.Fatalf("digest %+v, settings %+v", d, s)
+	}
+	keys := map[string]bool{}
+	for _, k := range sectionKeys {
+		keys[k] = true
+	}
+	for _, list := range settings.DigestSections {
+		for _, k := range list {
+			if !keys[k] {
+				t.Errorf("settings allow %q, which no section is", k)
+			}
+		}
+	}
+	for key := range sectionKeys {
+		if words["en"][key] == "" || words["fr"][key] == "" {
+			t.Errorf("section %q has no title", key)
+		}
+	}
+}
+
+func TestArrangeOrdersDropsAndRenumbers(t *testing.T) {
+	d := Digest{Sections: []Section{
+		{Key: "To do today", Items: []Item{{N: 1, Text: "a"}, {N: 2, Text: "b"}}},
+		{Key: "Habits", Items: []Item{{N: 3, Text: "h"}}},
+		{Key: "Tech watch", Items: []Item{{Text: "news"}}},
+	}}
+	arrange(&d, []string{"watch", "habits"})
+	if len(d.Sections) != 2 || d.Sections[0].Key != "Tech watch" || d.Sections[1].Items[0].N != 1 || d.Sections[0].Items[0].N != 0 {
+		t.Fatalf("arranged = %+v", d.Sections)
+	}
+}
+
+// Without the quote and the picture, no channel shows either.
+func TestRenderersWithoutQuoteOrPicture(t *testing.T) {
+	d := sample()
+	d.Quote, d.Picture = Quote{}, false
+	for name, s := range map[string]string{"text": Text(d, ""), "markdown": Markdown(d, ""), "telegram": Telegram(d, ""), "html": HTML(d, "", "")} {
+		if strings.Contains(s, "“”") || strings.Contains(s, "> — ") || strings.Contains(s, "<blockquote") || strings.Contains(s, "cid:") {
+			t.Errorf("%s shows an empty quote or a picture:\n%s", name, s)
+		}
+	}
+	for name, v := range map[string]any{"slack": Slack(d, "", false), "discord": Discord(d, "", false), "teams": Teams(d, "")} {
+		b, _ := json.Marshal(v)
+		if bytes.Contains(b, []byte("“")) || bytes.Contains(b, []byte("attachment://")) ||
+			name == "discord" && (bytes.Contains(b, []byte(`"attachments"`)) || bytes.Contains(b, []byte(`"footer"`))) {
+			t.Errorf("%s: %s", name, b)
+		}
 	}
 }

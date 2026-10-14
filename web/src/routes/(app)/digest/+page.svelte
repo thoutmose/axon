@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
+	import DigestTemplate from '$lib/DigestTemplate.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -13,6 +14,7 @@
 	let kind = $state<Kind>('daily');
 	let digest = $state<Digest | null>(null);
 	let error = $state('');
+	let customising = $state(false);
 
 	async function load(k: Kind) {
 		error = '';
@@ -52,6 +54,8 @@
 
 <svelte:head><title>{t('Digest')} · Axon</title></svelte:head>
 
+<DigestTemplate bind:open={customising} onsaved={() => load(kind)} />
+
 <div class="page">
 	<div class="tabs" role="tablist" aria-label={t('Digest')}>
 		{#each tabs as [k, label] (k)}
@@ -71,12 +75,14 @@
 		<Status kind="loading" message="…" />
 	{:else}
 		<article class="card">
-			<img
-				src="/api/v1/me/digest/picture?kind={kind}&d={digest.date}"
-				alt=""
-				width="1200"
-				height="360"
-			/>
+			{#if digest.picture}
+				<img
+					src="/api/v1/me/digest/picture?kind={kind}&d={digest.date}"
+					alt=""
+					width="1200"
+					height="360"
+				/>
+			{/if}
 			<div class="body">
 				<p class="eyebrow">{digest.title} · {digest.label}</p>
 				<h1>{digest.greeting}</h1>
@@ -114,14 +120,17 @@
 					<p class="muted">{t('Nothing to do and nothing to report: enjoy the day.')}</p>
 				{/each}
 
-				<blockquote>
-					“{digest.quote.text}”
-					<footer>— {digest.quote.author}</footer>
-				</blockquote>
+				{#if digest.quote.text}
+					<blockquote>
+						“{digest.quote.text}”
+						<footer>— {digest.quote.author}</footer>
+					</blockquote>
+				{/if}
 			</div>
 		</article>
 		<div class="row">
 			<Button variant="secondary" onclick={send}>{t('Send it to me now')}</Button>
+			<Button variant="secondary" onclick={() => (customising = true)}>{t('Customise')}</Button>
 			<Button variant="ghost" href="/account/preferences#reminders"
 				>{t('Times and channels')}</Button
 			>

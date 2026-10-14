@@ -4184,6 +4184,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/watch/podcast': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The script of a podcast episode of the news, from your podcast settings unless the query says otherwise; read aloud by your device or a speech server. Off until you turn it on. */
+		get: operations['watchPodcast'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/vault/source': {
 		parameters: {
 			query?: never;
@@ -4393,6 +4410,31 @@ export interface components {
 			/** @enum {string} */
 			kind: 'article' | 'video' | 'podcast';
 		};
+		WatchEpisode: {
+			title: string;
+			lang: string;
+			format: string;
+			intro: string;
+			chapters: {
+				title: string;
+				/** @description What is read aloud. */
+				text: string;
+				/** Format: uuid */
+				item_id: string | null;
+				url: string;
+				source: string;
+				topic: string;
+			}[];
+			/** @description Says the episode was put together by Axon Project. */
+			outro: string;
+			words: number;
+			/** @description At 150 words a minute. */
+			minutes: number;
+			/** Format: date-time */
+			from: string;
+			/** Format: date-time */
+			to: string;
+		};
 		WatchShare: {
 			/** Format: uuid */
 			id: string;
@@ -4556,10 +4598,13 @@ export interface components {
 				  }[]
 				| null;
 			quote: {
+				/** @description Empty when the person's template leaves the quote out. */
 				text: string;
 				author: string;
 			};
 			theme: string;
+			/** @description Whether the picture goes with it (the person's template, EP-76). */
+			picture: boolean;
 			url: string;
 		};
 		VaultReport: {
@@ -5862,6 +5907,27 @@ export interface components {
 				 * @example 09:00
 				 */
 				monthly_at?: string;
+			};
+			/** @description The digest template (EP-76): each digest's sections in order, and whether the quote and the picture come along. Left out on update, it keeps its defaults. */
+			digest?: {
+				daily?: ('tasks' | 'habits' | 'coming' | 'learn' | 'watch')[];
+				weekly?: ('open' | 'week' | 'reflect' | 'watch')[];
+				monthly?: ('goals' | 'month' | 'watch')[];
+				quote?: boolean;
+				picture?: boolean;
+			};
+			/** @description The spoken tech watch (EP-76), off by default: format, language of the spoken links, length, period, and the device voice and pace. */
+			podcast?: {
+				enabled?: boolean;
+				/** @enum {unknown} */
+				format?: 'briefing' | 'digest' | 'deep';
+				/** @enum {unknown} */
+				lang?: 'en' | 'fr';
+				minutes?: number;
+				/** @enum {integer} */
+				days?: 1 | 7;
+				voice?: string;
+				rate?: number;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -15972,6 +16038,37 @@ export interface operations {
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			429: components['responses']['Problem'];
+		};
+	};
+	watchPodcast: {
+		parameters: {
+			query?: {
+				/** @description A sentence a story, a few, or by topic with more. */
+				format?: 'briefing' | 'digest' | 'deep';
+				/** @description The language of the spoken links; the news keep theirs. */
+				lang?: 'en' | 'fr';
+				minutes?: number;
+				days?: 1 | 7;
+				topic?: components['parameters']['WatchTopic'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The episode. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchEpisode'];
+				};
+			};
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	getVaultSource: {

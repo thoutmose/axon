@@ -93,6 +93,38 @@ type Doc struct {
 	Learning     Learning     `json:"learning" yaml:"learning"`
 	Reminders    Reminders    `json:"reminders" yaml:"reminders"`
 	Today        Today        `json:"today" yaml:"today"`
+	Digest       Digest       `json:"digest" yaml:"digest"`
+	Podcast      Podcast      `json:"podcast" yaml:"podcast"`
+}
+
+// Digest (EP-76) is the person's digest template: the sections of each
+// digest, in order, and whether the quote and the picture come along.
+type Digest struct {
+	Daily   []string `json:"daily" yaml:"daily"`
+	Weekly  []string `json:"weekly" yaml:"weekly"`
+	Monthly []string `json:"monthly" yaml:"monthly"`
+	Quote   bool     `json:"quote" yaml:"quote"`
+	Picture bool     `json:"picture" yaml:"picture"`
+}
+
+// DigestSections are the sections each digest can show.
+var DigestSections = map[string][]string{
+	"daily":   {"tasks", "habits", "coming", "learn", "watch"},
+	"weekly":  {"open", "week", "reflect", "watch"},
+	"monthly": {"goals", "month", "watch"},
+}
+
+// Podcast (EP-76) is the spoken tech watch, off until the person turns it
+// on: its format, the language of its spoken links, its length, the
+// period it covers, and the browser voice and pace that read it.
+type Podcast struct {
+	Enabled bool    `json:"enabled" yaml:"enabled"`
+	Format  string  `json:"format" yaml:"format"` // briefing, digest, deep
+	Lang    string  `json:"lang" yaml:"lang"`     // en, fr
+	Minutes int     `json:"minutes" yaml:"minutes"`
+	Days    int     `json:"days" yaml:"days"`   // 1 or 7
+	Voice   string  `json:"voice" yaml:"voice"` // a voice name; empty for the device's default
+	Rate    float64 `json:"rate" yaml:"rate"`   // 0.5 to 2
 }
 
 // Today (EP-63) lists the sections the Today page shows, in order.
@@ -162,7 +194,10 @@ func Defaults() Doc {
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
 		Reminders: Reminders{Morning: "08:00", Evening: "20:00", WeeklyDay: "sunday", WeeklyAt: "18:00", MonthlyDay: 1, MonthlyAt: "09:00"},
 		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
-		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
+		Digest: Digest{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
+			Monthly: []string{"goals", "month", "watch"}, Quote: true, Picture: true},
+		Podcast: Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1},
+		Focus:   Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 	}
 }
 
@@ -248,6 +283,32 @@ func (d Doc) Validate() error {
 			return FieldError{"today.sections", "lists each of " + strings.Join(TodaySections, ", ") + " at most once"}
 		}
 		seen[sec] = true
+	}
+	for kind, list := range map[string][]string{"daily": d.Digest.Daily, "weekly": d.Digest.Weekly, "monthly": d.Digest.Monthly} {
+		seen := map[string]bool{}
+		for _, sec := range list {
+			if !slices.Contains(DigestSections[kind], sec) || seen[sec] {
+				return FieldError{"digest." + kind, "lists each of " + strings.Join(DigestSections[kind], ", ") + " at most once"}
+			}
+			seen[sec] = true
+		}
+	}
+	p := d.Podcast
+	if err := oneOf("podcast.format", p.Format, "briefing", "digest", "deep"); err != nil {
+		return err
+	}
+	if err := oneOf("podcast.lang", p.Lang, "en", "fr"); err != nil {
+		return err
+	}
+	switch {
+	case p.Minutes < 3 || p.Minutes > 30:
+		return FieldError{"podcast.minutes", "is between 3 and 30"}
+	case p.Days != 1 && p.Days != 7:
+		return FieldError{"podcast.days", "is 1 or 7"}
+	case p.Rate < 0.5 || p.Rate > 2:
+		return FieldError{"podcast.rate", "is between 0.5 and 2"}
+	case len([]rune(p.Voice)) > 200:
+		return FieldError{"podcast.voice", "is up to 200 characters"}
 	}
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}

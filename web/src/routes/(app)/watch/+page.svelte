@@ -176,6 +176,7 @@
 	<nav class="row" aria-label={t('Tech watch')}>
 		<Button variant="secondary" href="/watch/sources">{t('Sources and health')}</Button>
 		<Button variant="ghost" href="/watch/graph">{t('Knowledge graph')}</Button>
+		<Button variant="ghost" href="/watch/podcast">{t('Podcast')}</Button>
 	</nav>
 </header>
 

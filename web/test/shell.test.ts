@@ -1144,6 +1144,38 @@ test('tech watch: export the view, share it with a link anyone can open, then re
 	await stranger.context().close();
 });
 
+test('tech watch: the podcast is off until turned on, then makes an episode', async () => {
+	await page.goto('/watch/podcast');
+	await expect(page.getByText('The podcast is off.', { exact: false })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Turn on the podcast' }).click();
+	await expect(page.getByRole('heading', { name: /^Tech watch, / })).toBeVisible();
+	await expect(page.getByText('No news in this period yet.')).toBeVisible();
+	await expect(page.getByLabel('Format')).toHaveValue('digest');
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Turn off' }).click();
+	await expect(page.getByText('Podcast settings saved.')).toBeVisible();
+});
+
+test('the digest follows its template: sections, quote, picture', async () => {
+	await page.goto('/digest');
+	await expect(page.locator('blockquote')).toBeVisible();
+	await page.getByRole('button', { name: 'Customise' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Customise the digests' });
+	await expect(
+		dialog.getByRole('group', { name: 'Daily digest' }).getByLabel('Tech watch', { exact: true })
+	).toBeChecked();
+	await noSeriousA11yViolations(page);
+	await dialog.getByLabel('A quote to carry').uncheck();
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Digest template saved.')).toBeVisible();
+	await expect(page.locator('blockquote')).toHaveCount(0);
+	await page.getByRole('button', { name: 'Customise' }).click();
+	await dialog.getByLabel('A quote to carry').check();
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.locator('blockquote')).toBeVisible();
+});
+
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
 	await page.goto('/today');
 	await expect(page.locator('#today-title')).toBeVisible(); // shortcuts work once the page has loaded

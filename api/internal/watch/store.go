@@ -347,15 +347,24 @@ func nextRun(ctx context.Context, q db.Querier, userID uuid.UUID, sched string, 
 	if err != nil {
 		s, _ = ParseSchedule(DefaultSchedule)
 	}
+	loc, err := userLocation(ctx, q, userID)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return s.Next(now, loc).UTC(), nil
+}
+
+// userLocation is the person's time zone, UTC if it is unknown.
+func userLocation(ctx context.Context, q db.Querier, userID uuid.UUID) (*time.Location, error) {
 	var tz string
 	if err := q.QueryRow(ctx, `SELECT timezone FROM users WHERE id = $1`, userID).Scan(&tz); err != nil {
-		return time.Time{}, err
+		return nil, err
 	}
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		loc = time.UTC
+		return time.UTC, nil
 	}
-	return s.Next(now, loc).UTC(), nil
+	return loc, nil
 }
 
 // UpdateSource changes a source's name, topics, schedule, or switches.

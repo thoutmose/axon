@@ -58,6 +58,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/watch/stats", h.stats)
 	r.Get("/v1/watch/graph", h.graph)
 	r.Get("/v1/watch/export", h.export)
+	r.Get("/v1/watch/podcast", h.podcast)
 }
 
 // SessionRoutes manage share links: they make news public, so they take a
@@ -661,4 +662,59 @@ func (h *Handlers) graph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, g)
+}
+
+// podcast serves the episode script of the period, shaped by the person's
+// podcast settings unless the query says otherwise. The podcast is off
+// until they turn it on.
+func (h *Handlers) podcast(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	var o PodcastOptions
+	var on bool
+	// The settings package depends on agents, which reads the watch: the
+	// podcast's own key is read here.
+	err := h.db.QueryRow(r.Context(), `SELECT coalesce((doc->'podcast'->>'enabled')::boolean, false), coalesce(doc->'podcast'->>'format', ''),
+		coalesce(doc->'podcast'->>'lang', ''), coalesce((doc->'podcast'->>'minutes')::int, 0), coalesce((doc->'podcast'->>'days')::int, 0)
+		FROM user_settings WHERE user_id = $1`, who.UserID).Scan(&on, &o.Format, &o.Lang, &o.Minutes, &o.Days)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		h.fail(w, err)
+		return
+	}
+	if !on {
+		httpx.Problem(w, http.StatusConflict, "The podcast is off. Turn it on in Preferences → Tech watch podcast.")
+		return
+	}
+	q := r.URL.Query()
+	for name, dst := range map[string]*string{"format": &o.Format, "lang": &o.Lang, "topic": &o.TopicID} {
+		if v := q.Get(name); v != "" {
+			*dst = v
+		}
+	}
+	for name, dst := range map[string]*int{"minutes": &o.Minutes, "days": &o.Days} {
+		if v := q.Get(name); v != "" {
+			n, err := strconv.Atoi(v)
+			if err != nil {
+				h.fail(w, InvalidError{name + " is a number."})
+				return
+			}
+			*dst = n
+		}
+	}
+	if o.TopicID != "" {
+		if _, err := uuid.Parse(o.TopicID); err != nil {
+			h.fail(w, InvalidError{"topic is an id."})
+			return
+		}
+	}
+	loc, err := userLocation(r.Context(), h.db, who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	ep, err := BuildEpisode(r.Context(), h.db, who.UserID, o, h.now(), loc)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, ep)
 }

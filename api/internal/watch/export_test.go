@@ -200,3 +200,17 @@ func TestWrapAndDescribe(t *testing.T) {
 		t.Fatal("audio makes a podcast")
 	}
 }
+
+func TestSpeakable(t *testing.T) {
+	for in, want := range map[string]string{
+		"Big news. More at https://example.org/x.": "Big news.",
+		"Is it **fast**?":                          "Is it fast?",
+		"Line one\nline two":                       "Line one line two.",
+		"See www.example.org today":                "",
+		"Done!":                                    "Done!",
+	} {
+		if got := speakable(in); got != want {
+			t.Errorf("speakable(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
