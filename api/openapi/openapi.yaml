@@ -1600,6 +1600,143 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/practice:
+    get:
+      tags: [learning]
+      operationId: listPractice
+      summary: Practice problems with their attempts, most recently tried first
+      parameters:
+        - { name: due, in: query, schema: { type: boolean }, description: "Only the problems to re-solve by today." }
+      responses:
+        "200":
+          description: Problems, and the person's today.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/PracticeProblem" } }
+                  today: { type: string, format: date }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [learning]
+      operationId: logPractice
+      summary: Log an attempt at a problem, creating it the first time (a problem with the same link is the same problem)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, platform, difficulty, outcome]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 300, example: Two Sum }
+                url: { type: string, format: uri, example: "https://leetcode.com/problems/two-sum/" }
+                platform: { enum: [leetcode, codeforces, hackerrank, advent-of-code, exercism, project-euler, overthewire, portswigger, hackthebox, tryhackme, kaggle, other] }
+                difficulty: { enum: [easy, medium, hard] }
+                topics: { type: array, maxItems: 10, items: { type: string, maxLength: 40 }, example: [arrays, hash table] }
+                language: { type: string, maxLength: 20, example: python }
+                skill_id: { type: [string, "null"], format: uuid, description: "A roadmap skill the problem practises." }
+                outcome: { enum: [solved, with_help, not_solved] }
+                minutes: { type: [integer, "null"], minimum: 1, maximum: 1440 }
+                "on": { type: string, format: date, description: "Defaults to the person's today; never a later day." }
+      responses:
+        "200":
+          description: Another attempt at a problem already logged.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PracticeProblem" }
+        "201":
+          description: A new problem with its first attempt.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PracticeProblem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/practice/stats:
+    get:
+      tags: [learning]
+      operationId: getPracticeStats
+      summary: Problems solved by difficulty, platform, topic, and week
+      responses:
+        "200":
+          description: "Solved means solved unaided at least once; weeks are the last 12, counting each problem's first unaided solve."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [problems, solved, due, by_difficulty, by_platform, topics, weeks, minutes]
+                properties:
+                  problems: { type: integer }
+                  solved: { type: integer }
+                  due: { type: integer }
+                  by_difficulty: { type: object, additionalProperties: { type: integer } }
+                  by_platform: { type: object, additionalProperties: { type: integer } }
+                  topics:
+                    type: array
+                    items:
+                      type: object
+                      required: [topic, solved, total]
+                      properties:
+                        topic: { type: string }
+                        solved: { type: integer }
+                        total: { type: integer }
+                  weeks:
+                    type: array
+                    items:
+                      type: object
+                      required: [week, solved]
+                      properties:
+                        week: { type: string, format: date }
+                        solved: { type: integer }
+                  minutes: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/practice/{id}/attempts:
+    post:
+      tags: [learning]
+      operationId: addPracticeAttempt
+      summary: Log another attempt at a problem
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outcome]
+              additionalProperties: false
+              properties:
+                outcome: { enum: [solved, with_help, not_solved] }
+                minutes: { type: [integer, "null"], minimum: 1, maximum: 1440 }
+                "on": { type: string, format: date }
+      responses:
+        "201":
+          description: The problem with its attempts.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PracticeProblem" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/practice/{id}:
+    delete:
+      tags: [learning]
+      operationId: deletePractice
+      summary: Remove a problem and its attempts
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/palaces:
     get:
       tags: [learning]
@@ -6772,6 +6909,31 @@ components:
           maxItems: 100
           items: { type: string, minLength: 1, maxLength: 200 }
           example: [Front door, Coat hook, Kitchen sink, Sofa]
+    PracticeProblem:
+      type: object
+      required: [id, title, url, platform, difficulty, topics, language, skill_id, created_at, attempts, solved, due_on]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        url: { type: [string, "null"] }
+        platform: { enum: [leetcode, codeforces, hackerrank, advent-of-code, exercism, project-euler, overthewire, portswigger, hackthebox, tryhackme, kaggle, other] }
+        difficulty: { enum: [easy, medium, hard] }
+        topics: { type: array, items: { type: string } }
+        language: { type: string }
+        skill_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
+        attempts:
+          type: array
+          items:
+            type: object
+            required: [id, "on", outcome, minutes]
+            properties:
+              id: { type: string, format: uuid }
+              "on": { type: string, format: date }
+              outcome: { enum: [solved, with_help, not_solved] }
+              minutes: { type: [integer, "null"] }
+        solved: { type: boolean, description: "Solved unaided at least once." }
+        due_on: { type: [string, "null"], format: date, description: "The day to re-solve it: tomorrow after a miss, in 3 days after help, a week after a first unaided solve (easy ones are done), then 2.5 times the last gap until it would pass 90 days." }
     Palace:
       type: object
       required: [id, title, description, loci, created_at, updated_at]

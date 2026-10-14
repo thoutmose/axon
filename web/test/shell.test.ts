@@ -989,6 +989,33 @@ test('savings pots: put money aside for a later purchase', async () => {
 	await noSeriousA11yViolations(page);
 });
 
+test('practice: paste a problem link, log how it went, and see when it comes back', async () => {
+	await page.goto('/learn/practice');
+	await page.waitForLoadState('networkidle');
+	const log = page.getByRole('region', { name: 'Log a problem' });
+	await log.getByLabel('Link').fill('https://leetcode.com/problems/valid-anagram/');
+	await expect(log.getByLabel('Title')).toHaveValue('Valid Anagram');
+	await expect(log.getByLabel('Platform')).toHaveValue('leetcode');
+	await log.getByLabel('Difficulty').selectOption('easy');
+	await log.getByLabel('Topics, separated by commas').fill('strings, hash table');
+	await log.getByLabel('How it went').selectOption('with_help');
+	await log.getByRole('button', { name: 'Log it' }).click();
+	const all = page.getByRole('region', { name: 'All problems' });
+	await expect(all.getByRole('link', { name: 'Valid Anagram' })).toBeVisible();
+	await expect(all).toContainText('Solved with help');
+	await expect(page.getByRole('region', { name: 'Your practice' })).toContainText('0 solved of 1');
+	await expect(page.getByRole('region', { name: 'Re-solve today' })).toContainText(
+		'Nothing to re-solve today.'
+	);
+	// Solved unaided, an easy problem is known.
+	await log.getByLabel('Title').fill('Bandit level 0 → 1');
+	await log.getByLabel('Platform').selectOption('overthewire');
+	await log.getByLabel('How it went').selectOption('solved');
+	await log.getByRole('button', { name: 'Log it' }).click();
+	await expect(all.getByRole('row', { name: /Bandit level 0/ })).toContainText('known');
+	await noSeriousA11yViolations(page);
+});
+
 test('analyse literature and permanent notes: topics, concepts, and a note panel', async () => {
 	await page.goto('/notes');
 	const first: string = await page.evaluate(async () => {

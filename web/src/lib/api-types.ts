@@ -1060,6 +1060,75 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/practice': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Practice problems with their attempts, most recently tried first */
+		get: operations['listPractice'];
+		put?: never;
+		/** Log an attempt at a problem, creating it the first time (a problem with the same link is the same problem) */
+		post: operations['logPractice'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/practice/stats': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Problems solved by difficulty, platform, topic, and week */
+		get: operations['getPracticeStats'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/practice/{id}/attempts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Log another attempt at a problem */
+		post: operations['addPracticeAttempt'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/practice/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a problem and its attempts */
+		delete: operations['deletePractice'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/palaces': {
 		parameters: {
 			query?: never;
@@ -3980,6 +4049,50 @@ export interface components {
 			 *     ]
 			 */
 			loci?: string[];
+		};
+		PracticeProblem: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			url: string | null;
+			/** @enum {unknown} */
+			platform:
+				| 'leetcode'
+				| 'codeforces'
+				| 'hackerrank'
+				| 'advent-of-code'
+				| 'exercism'
+				| 'project-euler'
+				| 'overthewire'
+				| 'portswigger'
+				| 'hackthebox'
+				| 'tryhackme'
+				| 'kaggle'
+				| 'other';
+			/** @enum {unknown} */
+			difficulty: 'easy' | 'medium' | 'hard';
+			topics: string[];
+			language: string;
+			/** Format: uuid */
+			skill_id: string | null;
+			/** Format: date-time */
+			created_at: string;
+			attempts: {
+				/** Format: uuid */
+				id: string;
+				/** Format: date */
+				on: string;
+				/** @enum {unknown} */
+				outcome: 'solved' | 'with_help' | 'not_solved';
+				minutes: number | null;
+			}[];
+			/** @description Solved unaided at least once. */
+			solved: boolean;
+			/**
+			 * Format: date
+			 * @description The day to re-solve it: tomorrow after a miss, in 3 days after help, a week after a first unaided solve (easy ones are done), then 2.5 times the last gap until it would pass 90 days.
+			 */
+			due_on: string | null;
 		};
 		Palace: {
 			/** Format: uuid */
@@ -7794,6 +7907,219 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listPractice: {
+		parameters: {
+			query?: {
+				/** @description Only the problems to re-solve by today. */
+				due?: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Problems, and the person's today. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['PracticeProblem'][];
+						/** Format: date */
+						today: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	logPractice: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Two Sum */
+					title: string;
+					/**
+					 * Format: uri
+					 * @example https://leetcode.com/problems/two-sum/
+					 */
+					url?: string;
+					/** @enum {unknown} */
+					platform:
+						| 'leetcode'
+						| 'codeforces'
+						| 'hackerrank'
+						| 'advent-of-code'
+						| 'exercism'
+						| 'project-euler'
+						| 'overthewire'
+						| 'portswigger'
+						| 'hackthebox'
+						| 'tryhackme'
+						| 'kaggle'
+						| 'other';
+					/** @enum {unknown} */
+					difficulty: 'easy' | 'medium' | 'hard';
+					/**
+					 * @example [
+					 *       "arrays",
+					 *       "hash table"
+					 *     ]
+					 */
+					topics?: string[];
+					/** @example python */
+					language?: string;
+					/**
+					 * Format: uuid
+					 * @description A roadmap skill the problem practises.
+					 */
+					skill_id?: string | null;
+					/** @enum {unknown} */
+					outcome: 'solved' | 'with_help' | 'not_solved';
+					minutes?: number | null;
+					/**
+					 * Format: date
+					 * @description Defaults to the person's today; never a later day.
+					 */
+					on?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Another attempt at a problem already logged. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PracticeProblem'];
+				};
+			};
+			/** @description A new problem with its first attempt. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PracticeProblem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getPracticeStats: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Solved means solved unaided at least once; weeks are the last 12, counting each problem's first unaided solve. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						problems: number;
+						solved: number;
+						due: number;
+						by_difficulty: {
+							[key: string]: number;
+						};
+						by_platform: {
+							[key: string]: number;
+						};
+						topics: {
+							topic: string;
+							solved: number;
+							total: number;
+						}[];
+						weeks: {
+							/** Format: date */
+							week: string;
+							solved: number;
+						}[];
+						minutes: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	addPracticeAttempt: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					outcome: 'solved' | 'with_help' | 'not_solved';
+					minutes?: number | null;
+					/** Format: date */
+					on?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The problem with its attempts. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PracticeProblem'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deletePractice: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	listPalaces: {
