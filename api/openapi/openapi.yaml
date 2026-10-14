@@ -72,6 +72,8 @@ tags:
     description: Projects on a Kanban board built on tasks (epics, issues, sub-tasks), with a WIP limit and docs from a notes folder.
   - name: roadmaps
     description: Learning roadmaps of skills with prerequisites, built by hand or imported from openly licensed curricula (OSSU, MIT).
+  - name: watch
+    description: Tech watch — the sources you follow on a schedule, news stored once and labelled locally, feed notes, imports, and their health.
   - name: vault
     description: Where the Markdown vault lives — Axon only, or also a folder on a server kept in step by notes-sync.
   - name: notes
@@ -6401,6 +6403,317 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
+  /v1/watch/topics:
+    get:
+      tags: [watch]
+      operationId: listWatchTopics
+      summary: "The domains you watch; their keywords label the news"
+      responses:
+        "200":
+          description: Topics.
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/WatchTopic" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [watch]
+      operationId: createWatchTopic
+      summary: "Add a topic; the last month's news are labelled again"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { $ref: "#/components/requestBodies/WatchTopicInput" }
+      responses:
+        "201": { description: Created., content: { application/json: { schema: { $ref: "#/components/schemas/WatchTopic" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/topics/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    put:
+      tags: [watch]
+      operationId: updateWatchTopic
+      summary: Change a topic's name or keywords
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { $ref: "#/components/requestBodies/WatchTopicInput" }
+      responses:
+        "200": { description: Changed., content: { application/json: { schema: { $ref: "#/components/schemas/WatchTopic" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [watch]
+      operationId: deleteWatchTopic
+      summary: Remove a topic; news keep their other labels
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/watch/sources:
+    get:
+      tags: [watch]
+      operationId: listWatchSources
+      summary: "The sources you follow, with their schedule and health"
+      responses:
+        "200":
+          description: Sources.
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/WatchSource" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [watch]
+      operationId: followWatchSource
+      summary: "Follow a feed, a site, a Medium author, a Substack, a YouTube channel, a GitHub repository…; its current news are stored"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/WatchSourceInput"
+                - type: object
+                  required: [url]
+      responses:
+        "201":
+          description: Followed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, stats]
+                properties:
+                  source: { $ref: "#/components/schemas/WatchSource" }
+                  stats: { $ref: "#/components/schemas/WatchFetchStats" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/discover:
+    post:
+      tags: [watch]
+      operationId: discoverWatchFeed
+      summary: "Find the feed behind an address, without following it"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [url], additionalProperties: false, properties: { url: { type: string } } } } }
+      responses:
+        "200":
+          description: The feed found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, title, site_url, recent, entries]
+                properties:
+                  url: { type: string }
+                  title: { type: string }
+                  site_url: { type: string }
+                  recent: { type: array, items: { type: string } }
+                  entries: { type: integer }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/sources/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    patch:
+      tags: [watch]
+      operationId: updateWatchSource
+      summary: "Change a source's name, topics, schedule (cron, in your time zone), or switches"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WatchSourceInput" } } }
+      responses:
+        "200": { description: Changed., content: { application/json: { schema: { $ref: "#/components/schemas/WatchSource" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [watch]
+      operationId: unfollowWatchSource
+      summary: "Stop following a source; its news stay unless items=delete"
+      parameters:
+        - { name: items, in: query, schema: { type: string, enum: [keep, delete], default: keep } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/watch/sources/{id}/fetch:
+    post:
+      tags: [watch]
+      operationId: fetchWatchSource
+      summary: "Fetch a source now, whatever its schedule"
+      parameters:
+        - $ref: "#/components/parameters/ID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: What it brought; error is empty when it worked.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, stats, error]
+                properties:
+                  source: { $ref: "#/components/schemas/WatchSource" }
+                  stats: { $ref: "#/components/schemas/WatchFetchStats" }
+                  error: { type: string }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/watch/import:
+    post:
+      tags: [watch]
+      operationId: importWatchSources
+      summary: "Follow sources from a normalised CSV (url,title,topics,schedule,full_text) or an OPML file (Feedly, FreshRSS, Inoreader…)"
+      parameters:
+        - { name: format, in: query, required: true, schema: { type: string, enum: [csv, opml] } }
+      requestBody:
+        required: true
+        content:
+          text/csv: { schema: { type: string } }
+          text/x-opml: { schema: { type: string } }
+      responses:
+        "200": { description: What was imported., content: { application/json: { schema: { $ref: "#/components/schemas/WatchImportResult" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/import/freshrss:
+    post:
+      tags: [watch]
+      operationId: importFreshRSS
+      summary: "Follow the subscriptions of a FreshRSS account (its Google Reader API); the password is used once and not stored"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, user, password]
+              additionalProperties: false
+              properties:
+                url: { type: string, example: "https://rss.example.org" }
+                user: { type: string }
+                password: { type: string, description: "The API password from FreshRSS: Profile → API management." }
+      responses:
+        "200": { description: What was imported., content: { application/json: { schema: { $ref: "#/components/schemas/WatchImportResult" } } } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/sources.opml:
+    get:
+      tags: [watch]
+      operationId: exportWatchOPML
+      summary: "Your sources as OPML, folders by topic, for any reader"
+      responses:
+        "200": { description: OPML 2.0., content: { text/x-opml: { schema: { type: string } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/watch/items:
+    get:
+      tags: [watch]
+      operationId: listWatchItems
+      summary: "News, newest first, each stored once however many sources carried it"
+      parameters:
+        - { $ref: "#/components/parameters/WatchStatus" }
+        - { $ref: "#/components/parameters/WatchSource" }
+        - { $ref: "#/components/parameters/WatchTopic" }
+        - { $ref: "#/components/parameters/WatchLabel" }
+        - { $ref: "#/components/parameters/WatchQuery" }
+        - { $ref: "#/components/parameters/WatchFrom" }
+        - { $ref: "#/components/parameters/WatchTo" }
+        - { name: before, in: query, description: "Paging: published before this time.", schema: { type: string } }
+        - { $ref: "#/components/parameters/WatchOutliers" }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        "200":
+          description: News.
+          content:
+            application/json:
+              schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/WatchItem" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/items/read:
+    post:
+      tags: [watch]
+      operationId: markWatchItemsRead
+      summary: "Mark every unread item matching the filters as read"
+      parameters:
+        - { $ref: "#/components/parameters/WatchSource" }
+        - { $ref: "#/components/parameters/WatchTopic" }
+        - { $ref: "#/components/parameters/WatchLabel" }
+        - { $ref: "#/components/parameters/WatchQuery" }
+        - { $ref: "#/components/parameters/WatchFrom" }
+        - { $ref: "#/components/parameters/WatchTo" }
+      responses:
+        "200": { description: How many., content: { application/json: { schema: { type: object, required: [marked], properties: { marked: { type: integer } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/items/{id}:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [watch]
+      operationId: getWatchItem
+      summary: "One item with its text, and as a feed note (Markdown)"
+      responses:
+        "200":
+          description: The item.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [item, note]
+                properties:
+                  item: { $ref: "#/components/schemas/WatchItem" }
+                  note: { type: string, description: "The feed-note template filled in." }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [watch]
+      operationId: updateWatchItem
+      summary: "Mark read, save, or archive an item, or set its labels"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                status: { type: string, enum: [unread, read, saved, archived] }
+                labels: { type: array, items: { type: string, maxLength: 60 }, maxItems: 20 }
+      responses:
+        "204": { description: Changed. }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/items/{id}/keep:
+    post:
+      tags: [watch]
+      operationId: keepWatchItem
+      summary: "Keep an item as a feed note in Feeds/, linked to it"
+      parameters:
+        - $ref: "#/components/parameters/ID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: The note., content: { application/json: { schema: { type: object, required: [note_id], properties: { note_id: { type: string, format: uuid } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/watch/stats:
+    get:
+      tags: [watch]
+      operationId: watchStats
+      summary: "The tech watch at a glance: sources by health, news by status, per day, and the labels in use"
+      responses:
+        "200": { description: The overview., content: { application/json: { schema: { $ref: "#/components/schemas/WatchStats" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/vault/source:
     get:
       tags: [vault]
@@ -6579,6 +6892,14 @@ components:
       description: Personal access token (axon_…); read or write scope.
 
   parameters:
+    WatchStatus: { name: status, in: query, schema: { type: string, enum: [unread, read, saved, archived, all] }, description: "Empty: everything but archived." }
+    WatchSource: { name: source, in: query, schema: { type: string, format: uuid } }
+    WatchTopic: { name: topic, in: query, schema: { type: string, format: uuid } }
+    WatchLabel: { name: label, in: query, schema: { type: string } }
+    WatchQuery: { name: q, in: query, description: "Words in the title or summary.", schema: { type: string } }
+    WatchFrom: { name: from, in: query, description: "Published from (2026-10-14 or RFC 3339).", schema: { type: string } }
+    WatchTo: { name: to, in: query, description: "Published before.", schema: { type: string } }
+    WatchOutliers: { name: outliers, in: query, description: "1 to include items flagged as outliers.", schema: { type: string, enum: ["0", "1"] } }
     ID:
       name: id
       in: path
@@ -6611,6 +6932,17 @@ components:
       schema: { type: string }
 
   requestBodies:
+    WatchTopicInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            additionalProperties: false
+            properties:
+              name: { type: string, maxLength: 80 }
+              keywords: { type: array, items: { type: string, maxLength: 80 }, maxItems: 50, description: "Words or phrases; thesaurus synonyms count too." }
     ChannelInput:
       required: true
       content:
@@ -6730,6 +7062,110 @@ components:
               display_name: { type: string }
 
   schemas:
+    WatchTopic:
+      type: object
+      required: [id, name, keywords]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        keywords: { type: array, items: { type: string } }
+    WatchSourceInput:
+      type: object
+      additionalProperties: false
+      properties:
+        url: { type: string, description: "To follow: a feed, a site, a Medium author, a Substack, a YouTube channel or playlist, a GitHub repository, a subreddit." }
+        title: { type: string, maxLength: 200 }
+        topic_ids: { type: array, items: { type: string, format: uuid } }
+        schedule: { type: string, example: "0 0 * * *", description: "Cron (minute hour day month weekday) in your time zone, or @daily, @hourly, @weekly; at least 15 minutes apart. Midnight by default." }
+        enabled: { type: boolean }
+        full_text: { type: boolean, description: "Read each article's page when the feed has an excerpt only." }
+    WatchSource:
+      type: object
+      required: [id, url, site_url, title, topic_ids, schedule, enabled, full_text, origin, next_fetch_at, last_fetched_at, last_ok_at, last_error, failures, created_at, items, items_week, merged, health]
+      properties:
+        id: { type: string, format: uuid }
+        url: { type: string }
+        site_url: { type: string }
+        title: { type: string }
+        topic_ids: { type: array, items: { type: string, format: uuid } }
+        schedule: { type: string }
+        enabled: { type: boolean }
+        full_text: { type: boolean }
+        origin: { type: string, enum: [manual, csv, opml, freshrss, agent] }
+        next_fetch_at: { type: string, format: date-time }
+        last_fetched_at: { type: [string, "null"], format: date-time }
+        last_ok_at: { type: [string, "null"], format: date-time }
+        last_error: { type: string }
+        failures: { type: integer }
+        created_at: { type: string, format: date-time }
+        items: { type: integer }
+        items_week: { type: integer }
+        merged: { type: integer, description: "Stories it also carried, stored once from another source." }
+        health: { type: string, enum: [ok, failing, waiting, off] }
+    WatchFetchStats:
+      type: object
+      required: [new, merged, skipped]
+      properties:
+        new: { type: integer }
+        merged: { type: integer, description: "The same story (same link, or nearly the same text) was already stored: this source was added to it." }
+        skipped: { type: integer }
+    WatchImportResult:
+      type: object
+      required: [added, existing, failed, topics_created]
+      properties:
+        added: { type: integer }
+        existing: { type: integer }
+        topics_created: { type: integer }
+        failed:
+          type: array
+          items: { type: object, required: [line, url, reason], properties: { line: { type: integer }, url: { type: string }, reason: { type: string } } }
+    WatchItem:
+      type: object
+      required: [id, source_id, source_title, url, title, author, published_at, fetched_at, summary, image, audio, lang, words, reading_minutes, keywords, labels, categories, topic_ids, score, outlier, also_in, status, note_id]
+      properties:
+        id: { type: string, format: uuid }
+        source_id: { type: [string, "null"], format: uuid }
+        source_title: { type: string }
+        url: { type: string }
+        title: { type: string }
+        author: { type: string }
+        published_at: { type: string, format: date-time }
+        fetched_at: { type: string, format: date-time }
+        summary: { type: string }
+        content: { type: string, description: "Markdown; only when one item is read." }
+        image: { type: string }
+        audio: { type: string }
+        lang: { type: string }
+        words: { type: integer }
+        reading_minutes: { type: integer }
+        keywords: { type: array, items: { type: string } }
+        labels: { type: array, items: { type: string } }
+        categories: { type: array, items: { type: string } }
+        topic_ids: { type: array, items: { type: string, format: uuid } }
+        score: { type: number }
+        outlier: { type: string, description: "Why it stands apart (too short, mostly links, shouting title), or empty." }
+        also_in: { type: array, items: { type: string } }
+        status: { type: string, enum: [unread, read, saved, archived] }
+        note_id: { type: [string, "null"], format: uuid }
+    WatchStats:
+      type: object
+      required: [sources, items, daily, labels, next_fetch_at]
+      properties:
+        sources:
+          type: object
+          required: [total, ok, failing, waiting, off]
+          properties: { total: { type: integer }, ok: { type: integer }, failing: { type: integer }, waiting: { type: integer }, off: { type: integer } }
+        items:
+          type: object
+          required: [total, unread, saved, today, week, outliers, merged]
+          properties: { total: { type: integer }, unread: { type: integer }, saved: { type: integer }, today: { type: integer }, week: { type: integer }, outliers: { type: integer }, merged: { type: integer } }
+        daily:
+          type: array
+          items: { type: object, required: [day, count], properties: { day: { type: string, format: date }, count: { type: integer } } }
+        labels:
+          type: array
+          items: { type: object, required: [label, count], properties: { label: { type: string }, count: { type: integer } } }
+        next_fetch_at: { type: [string, "null"], format: date-time }
     Channel:
       type: object
       required: [id, kind, name, target, mode, digests, reminders, enabled, linked, peer_name, link_expires_at, created_at, last_sent_at, last_error]

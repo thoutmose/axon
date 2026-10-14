@@ -50,6 +50,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
 	vaultsrv "github.com/thoutmose/axon/api/internal/vault"
+	"github.com/thoutmose/axon/api/internal/watch"
 )
 
 // Handler builds the complete API handler.
@@ -123,6 +124,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	vaultAPI := vaultsrv.NewHandlers(pool, log, cfg.BaseURL, version)
 	priv.Register("vault_source", vaultsrv.Export)
 	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
+	watchAPI := watch.NewHandlers(pool, log)
 	priv.Register("channels", notify.Export)
 	priv.Register("sign_in_identities", auth.ExportIdentities)
 	return server.New(version, pool, log, m, func(r chi.Router) {
@@ -140,6 +142,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))
 			notesAPI.Routes(r)
 			importsAPI.Routes(r)
+			watchAPI.UploadRoutes(r)
 		})
 		// Vault servers pair with a one-time code: no session, no Origin (EP-69).
 		r.Group(func(r chi.Router) {
@@ -190,6 +193,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				agentsAPI.Routes(r)
 				vaultAPI.Routes(r)
 				notifyAPI.Routes(r)
+				watchAPI.Routes(r)
 			})
 		})
 	}), nil

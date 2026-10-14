@@ -56,7 +56,8 @@ export function href(e: { id: string; type: string }): string | null {
 		roadmap: '/roadmaps/',
 		area: '/areas/',
 		resource: '/resources/',
-		media: '/media?open='
+		media: '/media?open=',
+		feed_item: '/watch?item='
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;
 }
@@ -72,5 +73,6 @@ export const typeNames: Record<string, string> = {
 	skill: 'Skill',
 	area: 'Area',
 	resource: 'Resource',
-	media: 'Media'
+	media: 'Media',
+	feed_item: 'News'
 };

@@ -1072,6 +1072,33 @@ test('the vault lives in Axon by default, and a server is set up with one comman
 	await expect(page.getByText('Your notes now live in Axon only.')).toBeVisible();
 });
 
+test('tech watch: topics, an imported source waiting for its first fetch, and an empty reader', async () => {
+	await page.goto('/watch');
+	await expect(page.getByRole('heading', { name: 'Tech watch', level: 1 })).toBeVisible();
+	await expect(page.getByText('Nothing here yet.')).toBeVisible();
+	await page.getByRole('link', { name: 'Add sources' }).click();
+	await expect(page).toHaveURL(/\/watch\/sources$/);
+	await page.getByLabel('Topic', { exact: true }).fill('Databases');
+	await page.getByLabel('Keywords').fill('Postgres, SQL');
+	await page.getByRole('button', { name: 'Add the topic' }).click();
+	await expect(page.getByText('Postgres, SQL')).toBeVisible();
+	await page.getByLabel('A CSV or OPML file').setInputFiles({
+		name: 'sources.csv',
+		mimeType: 'text/csv',
+		buffer: Buffer.from(
+			'url,title,topics,schedule,full_text\nhttps://feeds.example.org/e2e.xml,E2E feed,Databases,0 7 * * *,no\n'
+		)
+	});
+	await expect(page.getByText('1 added, 0 already followed, 0 topics created.')).toBeVisible();
+	const row = page.getByRole('row', { name: /E2E feed/ });
+	await expect(row).toContainText(/Waiting|Failing/); // the worker may have tried it already
+	await expect(row.getByRole('combobox')).toHaveValue('0 7 * * *');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.dismiss());
+	await row.getByRole('button', { name: 'Unfollow' }).click();
+	await expect(page.getByRole('row', { name: /E2E feed/ })).toHaveCount(0);
+});
+
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
 	await page.goto('/today');
 	await expect(page.locator('#today-title')).toBeVisible(); // shortcuts work once the page has loaded

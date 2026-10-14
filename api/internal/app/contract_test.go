@@ -34,7 +34,7 @@ func loadSpec(t *testing.T) {
 		openapi3filter.RegisterBodyDecoder("application/zip", openapi3filter.FileBodyDecoder)
 		openapi3filter.RegisterBodyDecoder("application/yaml", openapi3filter.FileBodyDecoder)
 		openapi3filter.RegisterBodyDecoder("text/calendar", openapi3filter.FileBodyDecoder)
-		for _, ct := range []string{"image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml", "application/pdf", "application/octet-stream"} {
+		for _, ct := range []string{"image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml", "application/pdf", "application/octet-stream", "text/csv", "text/x-opml"} {
 			openapi3filter.RegisterBodyDecoder(ct, openapi3filter.FileBodyDecoder)
 		}
 		doc, err := openapi3.NewLoader().LoadFromData(openapi.Spec)

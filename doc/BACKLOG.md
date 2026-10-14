@@ -121,6 +121,10 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-70 | Digests everywhere | Daily, weekly, and monthly digests by email, Slack, Discord, Teams, Telegram, ntfy, or a webhook: what to do, what comes next, what to learn, how the period went, illustrated, with a quote for the day. Owner request. | SHOULD | 8 pts | EP-56 | Done |
 | EP-71 | Answering the digest | Answer in Slack, Discord, or Telegram: "done 2", "I finished the passport", "add … tomorrow at 3pm", "snooze", "note", "undo"; Axon follows at once. Owner request. | SHOULD | 8 pts | EP-70 | Done |
 | EP-72 | Sign in with other accounts | Google, Microsoft, Apple, Discord, Slack, or any OpenID Connect provider, linked by their owner; never matched by email. Owner request. | SHOULD | 8 pts | EP-04 | Done |
+| EP-73 | Tech watch | Follow feeds, sites, Medium, Substack, YouTube, GitHub (by hand, CSV, OPML, FreshRSS) on a cron schedule, midnight by default; each story stored once; NLP labels; feed notes; health. Owner request. | SHOULD | 13 pts | EP-67 | Done |
+| EP-74 | Tech watch analysis & knowledge graph | Trends, story clusters, and a knowledge graph of the news with hover summaries, apart from the Zettelkasten graph. Owner request. | SHOULD | 8 pts | EP-73 | Planned |
+| EP-75 | Tech watch exports & sharing | CSV, ODS, Markdown, JSON, PDF, OPML by type, source, label, and period; share links; "from Axon Project" on each. Owner request. | SHOULD | 5 pts | EP-73 | Planned |
+| EP-76 | Podcast, agent, digest template, scenery | A podcast of the news (off by default), the Tech watch agent, the watch in the digests with a template the person can change, and illustrations. Owner request. | SHOULD | 8 pts | EP-73, EP-70 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -157,7 +161,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → … → EP-68 → EP-69 → EP-70 → EP-71 → EP-72 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → … → EP-68 → EP-69 → EP-70 → EP-71 → EP-72 → EP-73 → EP-74 → EP-75 → EP-76 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -1603,6 +1607,17 @@ Cross-cutting matrix:
 
 **Tests.** `TestProvidersFromEnv`, `TestAppleClientSecret` (the JWT verifies with the key), `TestIDTokenChecks` (issuer, audience, azp, expiry, nonce, subject, Microsoft's tenant issuer and a look-alike, safe redirects); `TestSignInWithAnotherAccount` (PKCE, state, and nonce in the authorize address; an unlinked account refused with registration closed; link; sign-in from a new browser to the asked page; another browser's state, a used state, a wrong nonce, a wrong issuer, a cancel, an off-site next; Discord's user endpoint; unlink); `TestSignUpWithAnotherAccount` (a new account, someone else's account refused, the last way in kept).
 
+### EP-73 — Tech watch
+
+**Goal.** "A database dedicated to tech watch: domains, sources, or RSS feeds defined by hand, by importing a normalised CSV, or by an AI agent; a crontab by default each midnight; new elements stored in a relational database with no duplicates or similarity; NLP labels; each news a feed note with its template; access to Medium, Substack, etc.; easy monitoring" (owner, 2026-10-14). Decisions in [ADR 0032](adr/0032-tech-watch-stores-each-story-once.md).
+
+- [x] **EP-73/IS-73.01** · 5 pts · SHOULD — RSS 2.0, RSS 1.0, Atom, JSON Feed; discovery (Medium, Substack, YouTube, GitHub, Reddit, dev.to, Hacker News, `<link rel="alternate">`, common paths); conditional GET; full text for excerpt-only feeds; cron schedules in the person's time zone (midnight by default, 15 minutes at least); back-off; four fetches at a time; 180-day retention of what nobody kept.
+- [x] **EP-73/IS-73.02** · 3 pts · SHOULD — each story once: per-source seen entries, canonical links, SimHash and Jaccard near-duplicates over ten days, an advisory lock per person; merged sources listed as "also in".
+- [x] **EP-73/IS-73.03** · 2 pts · SHOULD — labels: topics with thesaurus synonyms and distinct evidence, TextRank key phrases, feed categories, the person's own; outliers set aside; relabelling when a topic changes.
+- [x] **EP-73/IS-73.04** · 3 pts · SHOULD — imports (normalised CSV, OPML, FreshRSS's Google Reader API) and OPML export; the feed-note template and **Keep as a note** into `Feeds/`; news as entities linkable from anywhere; the reader (filters, labels, j/k, mark all read, connections) and Sources and health (overview, 30 days, per-source health, schedule presets and cron, fetch now); Prometheus metrics.
+
+**Tests.** Parser tests (RSS with content and enclosures, Atom with YouTube media groups and HTML titles, RDF, JSON Feed, garbage refused); canonical links, SimHash and Jaccard, cron (time zones, weekdays, either-day rule, too frequent refused), known feeds, alternates; analysis (topics with synonyms and distinct evidence, a passing mention refused, outliers, French); `TestTechWatch` (discovery from a blog page, follow, a duplicate refused, the same link and the same story from another source stored once, filters by status, label, words, source, topic, and period, ownership, 304 after an ETag, a failing source retried within 20 minutes, full text read from the article page, the worker, the feed note, keep as a note in `Feeds/`, labels and status, mark all read, CSV with a bad line and a bad schedule, OPML folders as topics, FreshRSS with a wrong and a right password, OPML export with attribution, the overview, schedules, topic and source removal, the retention purge); e2e "tech watch: topics, an imported source waiting for its first fetch, and an empty reader".
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -1804,6 +1819,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-10 | Owner request: added EP-22 (AI providers), EP-23 (visual refresh), EP-24 (connect everything), EP-25 (notes workspace & Second Brain), scheduled before EP-10. Split EP-10 as its text required: delivery agents moved to new EP-26. |
 | 2026-10-11 | EP-14 split as its text required: the Tutor and Resource agents moved to new EP-27; roadmap.sh import dropped for licence reasons (ADR 0013). |
 | 2026-10-11 | Owner request: EP-41 (skills assessment before the first roadmap) added after EP-30. |
+| 2026-10-14 | Owner request: the tech watch, as EP-73 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-74 (analysis and its knowledge graph), EP-75 (exports and sharing), EP-76 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-69 (where the vault lives), EP-70 (digests on every channel), EP-71 (answering the digest), EP-72 (sign in with other accounts). |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
 | 2026-10-12 | Owner request: EP-49 audit; fixes and legacy removal delivered. |
