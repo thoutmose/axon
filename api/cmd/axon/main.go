@@ -334,7 +334,7 @@ func notesSync(args []string) error {
 		}
 		fmt.Fprintf(os.Stderr, "paired: token saved to %s (expires %s)\n", *tokenFile, p.ExpiresAt)
 		if len(p.Folders) > 0 {
-			fmt.Fprintf(os.Stderr, "the vault was empty: created %d folders; Axon added %d notes (templates and Home) for the first sync\n", len(p.Folders), len(p.Scaffold))
+			fmt.Fprintf(os.Stderr, "the vault was empty: created %d folders; the first sync writes Home.md, the templates, and your notes\n", len(p.Folders))
 		}
 	}
 	token, err := os.ReadFile(*tokenFile)

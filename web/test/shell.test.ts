@@ -1000,23 +1000,76 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	await expect(page.getByText('Buy batteries while offline')).toBeVisible();
 });
 
-test('reminders: times saved, and a test says when no device can receive it', async () => {
+test('reminders: times saved, and a test says when nothing can receive it', async () => {
 	await page.goto('/account/preferences');
-	const section = page.getByRole('region', { name: 'Reminders' });
-	await section.getByLabel('Send me a morning digest and an evening nudge').check();
+	const section = page.getByRole('region', { name: 'Reminders and digests' });
+	await section.getByLabel('Send me digests and reminders').check();
 	await section.getByLabel('Morning digest at').fill('07:30');
+	await section.getByLabel('Weekly digest on').selectOption('friday');
 	await page.getByRole('button', { name: 'Save preferences' }).click();
 	await expect(page.getByText('Preferences saved.')).toBeVisible();
 	await page.reload();
-	await expect(
-		page.getByRole('region', { name: 'Reminders' }).getByLabel('Morning digest at')
-	).toHaveValue('07:30');
-	await page
-		.getByRole('region', { name: 'Reminders' })
-		.getByRole('button', { name: 'Send a test' })
-		.click();
-	await expect(page.getByText('No device or email received it')).toBeVisible();
+	const again = page.getByRole('region', { name: 'Reminders and digests' });
+	await expect(again.getByLabel('Morning digest at')).toHaveValue('07:30');
+	await expect(again.getByLabel('Weekly digest on')).toHaveValue('friday');
+	await again.getByRole('button', { name: 'Send a test' }).click();
+	await expect(page.getByText('Nothing received it')).toBeVisible();
 	await noSeriousA11yViolations(page);
+});
+
+test('the digest: numbered items, a picture drawn for the day, and a quote', async () => {
+	const origin = new URL(page.url()).origin;
+	const today = new Date().toLocaleDateString('sv');
+	await page.request.post('/api/v1/tasks', {
+		headers: { Origin: origin },
+		data: { title: 'Digest e2e task', status: 'next', due_on: today }
+	});
+	await page.goto('/digest');
+	await expect(page.getByRole('heading', { level: 1 })).toContainText('E2E');
+	await expect(page.getByRole('link', { name: 'Digest e2e task' })).toBeVisible();
+	await expect(page.locator('blockquote footer')).toContainText('—');
+	const picture = page.locator('article img');
+	await expect(picture).toBeVisible();
+	await expect
+		.poll(() => picture.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+		.toBe(1200);
+	await page.getByRole('tab', { name: 'This week' }).click();
+	await expect(page.locator('.eyebrow')).toContainText('Your week');
+	await noSeriousA11yViolations(page);
+});
+
+test('chat apps: connect a channel without showing its secret, and disconnect it', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Chat apps' });
+	await section.getByRole('button', { name: 'Add a channel' }).click();
+	await section.getByLabel('App').selectOption('ntfy');
+	await section.getByLabel('Name').fill('My phone');
+	await section.getByLabel('Topic').fill('axon-e2e-topic');
+	await section.getByLabel('Access token (optional)').fill('tk_e2e_secret');
+	await section.getByRole('button', { name: 'Connect' }).click();
+	await expect(page.getByText('Channel connected.')).toBeVisible();
+	await expect(section.getByText('ntfy.sh/axon-e2e-topic')).toBeVisible();
+	expect(await page.content()).not.toContain('tk_e2e_secret');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.accept());
+	await section.getByRole('button', { name: 'Disconnect' }).click();
+	await expect(section.getByText('ntfy.sh/axon-e2e-topic')).toHaveCount(0);
+});
+
+test('the vault lives in Axon by default, and a server is set up with one command', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Markdown vault' });
+	await expect(section.getByLabel('In Axon only')).toBeChecked();
+	await section.getByLabel('Also as files on a server').check();
+	await section.getByLabel('Server', { exact: true }).fill('srv-e2e');
+	await section.getByLabel('Folder on the server').fill('~/Vault');
+	await section.getByRole('button', { name: 'Set up this server' }).click();
+	await expect(section.locator('pre code').first()).toContainText('/api/v1/vault/install.sh');
+	await expect(section.locator('pre code').first()).toContainText('--dir');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.accept());
+	await section.getByRole('button', { name: 'Stop syncing' }).click();
+	await expect(page.getByText('Your notes now live in Axon only.')).toBeVisible();
 });
 
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {

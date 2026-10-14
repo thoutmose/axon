@@ -225,6 +225,11 @@
 	.field label {
 		font-weight: 600;
 	}
+	.field input {
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+	}
 	.check {
 		display: flex;
 		gap: var(--space-2);

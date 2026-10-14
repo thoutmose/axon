@@ -354,6 +354,12 @@
 	.field label {
 		font-weight: 600;
 	}
+	.field input,
+	.field select {
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+	}
 	.code {
 		font-family: var(--font-mono);
 		background: var(--accent-soft);

@@ -279,7 +279,10 @@ func (b *builder) daily(d *Digest) error {
 	for _, h := range hs {
 		if h.State.ScheduledToday && h.State.CheckedIn == nil {
 			it := Item{N: b.next(), ID: h.ID, Type: "habit", Text: h.Title, URL: "/habits"}
-			if h.TwoMinute != "" {
+			switch {
+			case h.Kind == "break": // a habit to break: its check-in means it was avoided
+				it.Detail = tr["to avoid today"]
+			case h.TwoMinute != "":
 				it.Detail = tr["or just"] + " " + h.TwoMinute
 			}
 			hab = append(hab, it)
