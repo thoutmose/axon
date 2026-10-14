@@ -2,7 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
+	import AgentDock from '$lib/AgentDock.svelte';
 	import Connections from '$lib/Connections.svelte';
+	import { pageAgents } from '$lib/pageAgents';
 	import WatchExport from '$lib/WatchExport.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { render } from '$lib/notes';
@@ -219,6 +221,13 @@
 	<Button variant="secondary" onclick={() => (exporting = true)}>{t('Export or share')}</Button>
 </div>
 <WatchExport bind:open={exporting} {filter} />
+<AgentDock
+	{...pageAgents.watch}
+	onapplied={() => {
+		load();
+		loadSide();
+	}}
+/>
 
 {#if stats?.labels.length && !filter.label}
 	<div class="labels" aria-label={t('Labels')}>

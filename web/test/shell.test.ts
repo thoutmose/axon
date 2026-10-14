@@ -700,7 +700,7 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 });
 
 test('themed spaces keep AA contrast in light and dark, and can be turned off', async () => {
-	test.slow(); // 24 pages, each checked by axe
+	test.slow(); // 32 pages, each checked by axe
 	for (const scheme of ['light', 'dark'] as const) {
 		await page.emulateMedia({ colorScheme: scheme });
 		for (const [path, space] of [
@@ -715,7 +715,11 @@ test('themed spaces keep AA contrast in light and dark, and can be turned off', 
 			['/tasks', 'desk'],
 			['/cards', 'library'],
 			['/focus', 'desk'],
-			['/progress', 'summit']
+			['/progress', 'summit'],
+			['/watch', 'observatory'],
+			['/watch/graph', 'constellation'],
+			['/watch/podcast', 'studio'],
+			['/digest', 'dispatch']
 		]) {
 			await page.goto(path);
 			await expect(page.locator('html')).toHaveAttribute('data-space', space);
@@ -1155,6 +1159,12 @@ test('tech watch: the podcast is off until turned on, then makes an episode', as
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Turn off' }).click();
 	await expect(page.getByText('Podcast settings saved.')).toBeVisible();
+	// The reader offers the Tech watch agent.
+	await page.goto('/watch');
+	await page.getByRole('button', { name: '✨ Ask the agent' }).click();
+	await expect(page.getByRole('region', { name: 'Agents for this page' })).toContainText(
+		/tech watch/i
+	);
 });
 
 test('the digest follows its template: sections, quote, picture', async () => {

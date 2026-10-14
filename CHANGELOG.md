@@ -14,6 +14,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **News graph** (EP-74): the concepts of your news, how strongly they go together, their communities, and what is rising, drawn apart from your notes' graph; hover a concept for a summary taken from its own news and the notes that share it.
 - **Tech watch exports and share links** (EP-75): download the news a view shows, by kind, source, topic, label, and period, as PDF, ODS, CSV, Markdown, feed notes, or JSON, each marked as coming from Axon Project; share a read-only link that expires, shows only what the sources published, and can be revoked at once.
 - **A podcast of the news and a digest template** (EP-76): turn on a spoken episode of the day's or week's best news, as a briefing, a digest, or a deep dive by topic, in English or French, read by your device's voice; choose the sections of each digest, their order, and whether the quote and picture come along; the digests now carry the tech watch.
+- **The Tech watch agent and new scenery** (EP-76): an agent that briefs you on your news, spots what is rising that no topic covers, and proposes sources and topics for you to approve; illustrated backgrounds for the tech watch, its graph, the podcast, and the digest.
 
 ## 1.0.0 (release candidate)
 

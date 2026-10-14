@@ -113,6 +113,30 @@
 }
 
 /* Dark tokens per space: the same places at night. */
+:root:not([data-spaces='off'])[data-space='observatory'] {
+	--bg: #eef2f9;
+	--accent: #1f5f7a;
+	--accent-soft: rgb(31 95 122 / 0.12);
+	--space-art: url('/spaces/observatory-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='constellation'] {
+	--bg: #efeef9;
+	--accent: #3f3f8f;
+	--accent-soft: rgb(63 63 143 / 0.12);
+	--space-art: url('/spaces/constellation-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='studio'] {
+	--bg: #f8eef3;
+	--accent: #8a2f5f;
+	--accent-soft: rgb(138 47 95 / 0.12);
+	--space-art: url('/spaces/studio-light.svg');
+}
+:root:not([data-spaces='off'])[data-space='dispatch'] {
+	--bg: #fbf3e8;
+	--accent: #9a4f17;
+	--accent-soft: rgb(154 79 23 / 0.12);
+	--space-art: url('/spaces/dispatch-light.svg');
+}
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='notebook'] {
 		--bg: #1d160e;
@@ -185,6 +209,30 @@
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='desk'] {
 		--space-art: url('/spaces/desk-dark.svg');
 	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='observatory'] {
+		--bg: #0b1222;
+		--accent: #6fcfdc;
+		--accent-soft: rgb(111 207 220 / 0.16);
+		--space-art: url('/spaces/observatory-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='constellation'] {
+		--bg: #08081a;
+		--accent: #b4b4ff;
+		--accent-soft: rgb(180 180 255 / 0.16);
+		--space-art: url('/spaces/constellation-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='studio'] {
+		--bg: #140a10;
+		--accent: #f09ac6;
+		--accent-soft: rgb(240 154 198 / 0.16);
+		--space-art: url('/spaces/studio-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='dispatch'] {
+		--bg: #120e15;
+		--accent: #f2b27a;
+		--accent-soft: rgb(242 178 122 / 0.16);
+		--space-art: url('/spaces/dispatch-dark.svg');
+	}
 }
 :root[data-theme='dark']:not([data-spaces='off'])[data-space='notebook'] {
 	--bg: #1d160e;
@@ -256,6 +304,30 @@
 }
 :root[data-theme='dark']:not([data-spaces='off'])[data-space='desk'] {
 	--space-art: url('/spaces/desk-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='observatory'] {
+	--bg: #0b1222;
+	--accent: #6fcfdc;
+	--accent-soft: rgb(111 207 220 / 0.16);
+	--space-art: url('/spaces/observatory-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='constellation'] {
+	--bg: #08081a;
+	--accent: #b4b4ff;
+	--accent-soft: rgb(180 180 255 / 0.16);
+	--space-art: url('/spaces/constellation-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='studio'] {
+	--bg: #140a10;
+	--accent: #f09ac6;
+	--accent-soft: rgb(240 154 198 / 0.16);
+	--space-art: url('/spaces/studio-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='dispatch'] {
+	--bg: #120e15;
+	--accent: #f2b27a;
+	--accent-soft: rgb(242 178 122 / 0.16);
+	--space-art: url('/spaces/dispatch-dark.svg');
 }
 
 /* Reduced transparency: plain surfaces, no artwork. */

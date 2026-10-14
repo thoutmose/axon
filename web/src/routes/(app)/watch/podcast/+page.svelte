@@ -224,10 +224,15 @@
 			{:else if episode}
 				<h2 id="episode-title">{episode.title}</h2>
 				<p class="muted small">
-					{t('{n} stories · about {m} minutes', {
-						n: episode.chapters.length,
-						m: Math.max(1, Math.round(episode.minutes))
-					})}
+					{t(
+						episode.chapters.length === 1
+							? '1 story · about {m} min'
+							: '{n} stories · about {m} min',
+						{
+							n: episode.chapters.length,
+							m: Math.max(1, Math.round(episode.minutes))
+						}
+					)}
 				</p>
 				{#if !speech}
 					<p class="small">
