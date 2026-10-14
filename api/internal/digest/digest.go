@@ -8,6 +8,8 @@ package digest
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -68,7 +70,8 @@ type Digest struct {
 	Sections []Section `json:"sections"`
 	Stats    []Stat    `json:"stats"`
 	Quote    Quote     `json:"quote"`
-	Theme    string    `json:"theme"` // the quote's theme, which also tints the picture
+	Theme    string    `json:"theme"`   // the quote's theme, which also tints the picture
+	Picture  bool      `json:"picture"` // whether the person wants the picture
 	URL      string    `json:"url"`
 	Seed     string    `json:"-"` // makes the picture the same on every channel
 }
@@ -136,12 +139,105 @@ func Build(ctx context.Context, q db.Querier, userID uuid.UUID, kind, lang strin
 	if err != nil {
 		return Digest{}, err
 	}
-	domains, err := b.domains()
+	tpl, err := b.template()
 	if err != nil {
 		return Digest{}, err
 	}
-	d.Quote = pick(d.Theme, domains, d.Seed, lang)
+	order := map[string][]string{Daily: tpl.Daily, Weekly: tpl.Weekly, Monthly: tpl.Monthly}[d.Kind]
+	if slices.Contains(order, "watch") {
+		days := map[string]int{Daily: 1, Weekly: 7, Monthly: 30}[d.Kind]
+		news, err := b.news(now.AddDate(0, 0, -days))
+		if err != nil {
+			return Digest{}, err
+		}
+		if len(news) > 0 {
+			d.Sections = append(d.Sections, b.section("Tech watch", "📰", news, 0))
+		}
+	}
+	arrange(&d, order)
+	d.Picture = tpl.Picture
+	if tpl.Quote {
+		domains, err := b.domains()
+		if err != nil {
+			return Digest{}, err
+		}
+		d.Quote = pick(d.Theme, domains, d.Seed, lang)
+	}
 	return d, nil
+}
+
+// Template is the person's digest template (EP-76), stored with their
+// settings; DefaultTemplate mirrors the settings' defaults.
+type Template struct {
+	Daily   []string `json:"daily"`
+	Weekly  []string `json:"weekly"`
+	Monthly []string `json:"monthly"`
+	Quote   bool     `json:"quote"`
+	Picture bool     `json:"picture"`
+}
+
+// DefaultTemplate is every section in its usual place, with the quote
+// and the picture.
+func DefaultTemplate() Template {
+	return Template{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
+		Monthly: []string{"goals", "month", "watch"}, Quote: true, Picture: true}
+}
+
+// sectionKeys name the sections in the template.
+var sectionKeys = map[string]string{
+	"To do today": "tasks", "Habits": "habits", "Coming up": "coming", "Learn and remember": "learn",
+	"Still open": "open", "This week": "week", "Reflect": "reflect", "Goals": "goals", "This month": "month", "Tech watch": "watch",
+}
+
+// template reads the person's template; the settings package is not
+// imported, as it depends on much of Axon.
+func (b *builder) template() (Template, error) {
+	t := DefaultTemplate()
+	var raw []byte
+	err := b.q.QueryRow(b.ctx, `SELECT doc->'digest' FROM user_settings WHERE user_id = $1`, b.user).Scan(&raw)
+	if errors.Is(err, pgx.ErrNoRows) || (err == nil && len(raw) == 0) {
+		return t, nil
+	}
+	if err != nil {
+		return t, err
+	}
+	return t, json.Unmarshal(raw, &t)
+}
+
+// arrange puts the sections in the template's order, leaving out the
+// others, and numbers the items again in reading order.
+func arrange(d *Digest, order []string) {
+	var out []Section
+	for _, key := range order {
+		for _, s := range d.Sections {
+			if sectionKeys[s.Key] == key {
+				out = append(out, s)
+			}
+		}
+	}
+	d.Sections = out
+	renumber(d)
+}
+
+// news are the period's top stories of the tech watch: unnumbered, as an
+// answer cannot act on them.
+func (b *builder) news(since time.Time) ([]Item, error) {
+	rows, err := b.q.Query(b.ctx, `SELECT id, title, source_title, cardinality(also_in) FROM watch_items
+		WHERE user_id = $1 AND published_at >= $2 AND outlier = '' AND status <> 'archived'
+		ORDER BY score DESC, cardinality(also_in) DESC, published_at DESC LIMIT 5`, b.user, since)
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, func(r pgx.CollectableRow) (Item, error) {
+		var it Item
+		var also int
+		err := r.Scan(&it.ID, &it.Text, &it.Detail, &also)
+		if also > 0 {
+			it.Detail += fmt.Sprintf(b.tr[" and %d more"], also)
+		}
+		it.Type, it.URL = "news", "/watch?item="+it.ID.String()
+		return it, err
+	})
 }
 
 type builder struct {

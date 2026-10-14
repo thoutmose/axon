@@ -205,7 +205,11 @@ func (h *Handlers) test(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	err = SendDigest(r.Context(), *target, d, h.base, digest.Scene(d))
+	var scene []byte
+	if d.Picture {
+		scene = digest.Scene(d)
+	}
+	err = SendDigest(r.Context(), *target, d, h.base, scene)
 	h.store.Sent(r.Context(), id, err, h.now())
 	if err != nil {
 		h.log.Info("channel test failed", "channel", id, "err", err)

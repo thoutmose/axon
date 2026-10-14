@@ -6861,6 +6861,22 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
         "429": { $ref: "#/components/responses/Problem" }
+  /v1/watch/podcast:
+    get:
+      tags: [watch]
+      operationId: watchPodcast
+      summary: "The script of a podcast episode of the news, from your podcast settings unless the query says otherwise; read aloud by your device or a speech server. Off until you turn it on."
+      parameters:
+        - { name: format, in: query, schema: { type: string, enum: [briefing, digest, deep] }, description: "A sentence a story, a few, or by topic with more." }
+        - { name: lang, in: query, schema: { type: string, enum: [en, fr] }, description: "The language of the spoken links; the news keep theirs." }
+        - { name: minutes, in: query, schema: { type: integer, minimum: 3, maximum: 30 } }
+        - { name: days, in: query, schema: { type: integer, enum: [1, 7] } }
+        - { $ref: "#/components/parameters/WatchTopic" }
+      responses:
+        "200": { description: The episode., content: { application/json: { schema: { $ref: "#/components/schemas/WatchEpisode" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/vault/source:
     get:
       tags: [vault]
@@ -7297,6 +7313,31 @@ components:
         status: { type: string, enum: [unread, read, saved, archived] }
         note_id: { type: [string, "null"], format: uuid }
         kind: { type: string, enum: [article, video, podcast] }
+    WatchEpisode:
+      type: object
+      required: [title, lang, format, intro, chapters, outro, words, minutes, from, to]
+      properties:
+        title: { type: string }
+        lang: { type: string }
+        format: { type: string }
+        intro: { type: string }
+        chapters:
+          type: array
+          items:
+            type: object
+            required: [title, text, item_id, url, source, topic]
+            properties:
+              title: { type: string }
+              text: { type: string, description: What is read aloud. }
+              item_id: { type: [string, "null"], format: uuid }
+              url: { type: string }
+              source: { type: string }
+              topic: { type: string }
+        outro: { type: string, description: "Says the episode was put together by Axon Project." }
+        words: { type: integer }
+        minutes: { type: number, description: At 150 words a minute. }
+        from: { type: string, format: date-time }
+        to: { type: string, format: date-time }
     WatchShare:
       type: object
       required: [id, name, description, query, expires_at, created_at, last_viewed_at, views]
@@ -7408,7 +7449,7 @@ components:
         late: { type: boolean }
     Digest:
       type: object
-      required: [kind, lang, title, greeting, date, label, summary, sections, stats, quote, theme, url]
+      required: [kind, lang, title, greeting, date, label, summary, sections, stats, quote, theme, picture, url]
       properties:
         kind: { type: string, enum: [daily, weekly, monthly] }
         lang: { type: string }
@@ -7441,9 +7482,10 @@ components:
           type: object
           required: [text, author]
           properties:
-            text: { type: string }
+            text: { type: string, description: "Empty when the person's template leaves the quote out." }
             author: { type: string }
         theme: { type: string }
+        picture: { type: boolean, description: "Whether the picture goes with it (the person's template, EP-76)." }
         url: { type: string }
     VaultReport:
       type: object
@@ -8676,6 +8718,28 @@ components:
             weekly_at: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "18:00", description: "Empty for no weekly digest." }
             monthly_day: { type: integer, minimum: 1, maximum: 28 }
             monthly_at: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "09:00", description: "Empty for no monthly digest." }
+        digest:
+          type: object
+          additionalProperties: false
+          description: "The digest template (EP-76): each digest's sections in order, and whether the quote and the picture come along. Left out on update, it keeps its defaults."
+          properties:
+            daily: { type: array, uniqueItems: true, items: { enum: [tasks, habits, coming, learn, watch] } }
+            weekly: { type: array, uniqueItems: true, items: { enum: [open, week, reflect, watch] } }
+            monthly: { type: array, uniqueItems: true, items: { enum: [goals, month, watch] } }
+            quote: { type: boolean }
+            picture: { type: boolean }
+        podcast:
+          type: object
+          additionalProperties: false
+          description: "The spoken tech watch (EP-76), off by default: format, language of the spoken links, length, period, and the device voice and pace."
+          properties:
+            enabled: { type: boolean }
+            format: { enum: [briefing, digest, deep] }
+            lang: { enum: [en, fr] }
+            minutes: { type: integer, minimum: 3, maximum: 30 }
+            days: { type: integer, enum: [1, 7] }
+            voice: { type: string, maxLength: 200 }
+            rate: { type: number, minimum: 0.5, maximum: 2 }
         keyboard:
           type: object
           required: [shortcuts, vim]

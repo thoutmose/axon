@@ -124,7 +124,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-73 | Tech watch | Follow feeds, sites, Medium, Substack, YouTube, GitHub (by hand, CSV, OPML, FreshRSS) on a cron schedule, midnight by default; each story stored once; NLP labels; feed notes; health. Owner request. | SHOULD | 13 pts | EP-67 | Done |
 | EP-74 | Tech watch analysis & knowledge graph | Concepts, NPMI links, communities, trends, and a knowledge graph of the news with hover summaries, apart from the Zettelkasten graph and bridged to it. Owner request. | SHOULD | 8 pts | EP-73 | Done |
 | EP-75 | Tech watch exports & sharing | CSV, ODS, Markdown, feed notes, JSON, PDF by kind, source, topic, label, and period; read-only share links; "from Axon Project" on each. Owner request. | SHOULD | 5 pts | EP-73 | Done |
-| EP-76 | Podcast, agent, digest template, scenery | A podcast of the news (off by default), the Tech watch agent, the watch in the digests with a template the person can change, and illustrations. Owner request. | SHOULD | 8 pts | EP-73, EP-70 | Planned |
+| EP-76 | Podcast, agent, digest template, scenery | A podcast of the news (off by default), the Tech watch agent, the watch in the digests with a template the person can change, and illustrations. Owner request. | SHOULD | 8 pts | EP-73, EP-70 | In progress (agent, scenery next) |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -1635,6 +1635,17 @@ Cross-cutting matrix:
 - [x] **EP-75/IS-75.02** · 2 pts · SHOULD — share links: made and revoked from a session only, audited, expiring, hashed; a public page and its downloads showing only what sources published, not indexed, no referrer, rate-limited; **Shared links** on Sources and health with views; links in the personal export, without tokens.
 
 **Tests.** Export unit tests (CSV header, formula guard, and attribution row; ODS stored media type, XML, dates, escaping; Markdown by day; feed-note zip with duplicate names; JSON; PDF cross-reference offsets, pages, links, WinAnsi text, a footer on every page; wrapping; the filter in words; kinds); the PDF checked with poppler and the ODS opened by LibreOffice; `TestWatchExportsAndShares` (kinds, exports with a filter, another person's empty export, a bad format, share validation, only Saved kept, a token refused, the public page and downloads without status, name, or ids, views, an unknown, expired, and revoked link, ownership); e2e "tech watch: export the view, share it with a link anyone can open, then revoke it" (a download by plain navigation, a stranger's view, accessibility).
+
+### EP-76 — Podcast, agent, digest template, scenery
+
+**Goal.** "A podcast format, disabled by default but can be activated, with the type of voice, the language, the format; an AI agent dedicated to the tech watch; illustrated backgrounds for the tech watch, analysis, knowledge graph, podcast, and digest, which should be templated but customisable" (owner, 2026-10-14). Decisions in [ADR 0035](adr/0035-podcast-and-digest-template.md).
+
+- [x] **EP-76/IS-76.01** · 3 pts · SHOULD — the podcast, off by default: an episode script from the period's best news in three formats and two languages, sized to a length, ending with Axon Project; read by the device's voices with its pace, chapters, skip, and the script as a file; settings `podcast`.
+- [x] **EP-76/IS-76.02** · 2 pts · SHOULD — the digest template (settings `digest`): sections and order per digest, the quote and the picture optional, on every channel; the tech watch's best stories in each digest; **Customise** on the Digest page.
+- [ ] **EP-76/IS-76.03** · 2 pts · SHOULD — the Tech watch agent: reads sources, news, and topics; proposes sources and topics for approval.
+- [ ] **EP-76/IS-76.04** · 1 pt · SHOULD — scenery for the tech watch, its graph, the podcast, and the digest.
+
+**Tests.** `TestSpeakable`; `TestWatchPodcast` (off until turned on, an episode of six stories with no links, a three-minute briefing within its words, a French deep dive announcing each topic once, bad options and settings refused, an empty week); `TestTemplateFollowsTheSettings`, `TestArrangeOrdersDropsAndRenumbers`, `TestRenderersWithoutQuoteOrPicture`; `TestDigestNewsAndTemplate` (news last and unnumbered in the daily and weekly digests, a template's order, numbering, no quote, no picture, bad templates refused); e2e "tech watch: the podcast is off until turned on, then makes an episode" and "the digest follows its template".
 
 ### EP-20 — Analytics & insights
 

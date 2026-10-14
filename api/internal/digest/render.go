@@ -61,7 +61,9 @@ func Text(d Digest, base string) string {
 			fmt.Fprintf(&b, "  "+d.tr("and %d more")+"\n", s.More)
 		}
 	}
-	fmt.Fprintf(&b, "\n“%s” — %s\n", d.Quote.Text, d.Quote.Author)
+	if d.Quote.Text != "" {
+		fmt.Fprintf(&b, "\n“%s” — %s\n", d.Quote.Text, d.Quote.Author)
+	}
 	if u := link(base, d.URL); u != "" {
 		fmt.Fprintf(&b, "\n%s: %s\n", d.tr("Open Axon"), u)
 	}
@@ -101,7 +103,9 @@ func Markdown(d Digest, base string) string {
 			b.WriteString(line + "\n")
 		}
 	}
-	fmt.Fprintf(&b, "\n> %s\n> — %s\n", d.Quote.Text, d.Quote.Author)
+	if d.Quote.Text != "" {
+		fmt.Fprintf(&b, "\n> %s\n> — %s\n", d.Quote.Text, d.Quote.Author)
+	}
 	return b.String()
 }
 
@@ -140,7 +144,9 @@ func Telegram(d Digest, base string) string {
 			fmt.Fprintf(&b, "<i>%s</i>\n", e(fmt.Sprintf(d.tr("and %d more"), s.More)))
 		}
 	}
-	fmt.Fprintf(&b, "\n<blockquote>%s\n— %s</blockquote>\n", e(d.Quote.Text), e(d.Quote.Author))
+	if d.Quote.Text != "" {
+		fmt.Fprintf(&b, "\n<blockquote>%s\n— %s</blockquote>\n", e(d.Quote.Text), e(d.Quote.Author))
+	}
 	if len(d.Actionable()) > 0 {
 		fmt.Fprintf(&b, "\n<i>%s</i>", e(d.tr("Reply to act")))
 	}
@@ -183,8 +189,10 @@ func Slack(d Digest, base string, replies bool) map[string]any {
 		blocks = append(blocks, map[string]any{"type": "divider"},
 			map[string]any{"type": "section", "text": map[string]any{"type": "mrkdwn", "text": "*" + s.Emoji + " " + slackEscape(s.Title) + "*\n" + strings.Join(lines, "\n")}})
 	}
-	blocks = append(blocks, map[string]any{"type": "divider"},
-		map[string]any{"type": "context", "elements": []any{map[string]any{"type": "mrkdwn", "text": "> _" + slackEscape(d.Quote.Text) + "_\n> — " + slackEscape(d.Quote.Author)}}})
+	if d.Quote.Text != "" {
+		blocks = append(blocks, map[string]any{"type": "divider"},
+			map[string]any{"type": "context", "elements": []any{map[string]any{"type": "mrkdwn", "text": "> _" + slackEscape(d.Quote.Text) + "_\n> — " + slackEscape(d.Quote.Author)}}})
+	}
 	var actions []any
 	if u := link(base, d.URL); u != "" {
 		actions = append(actions, map[string]any{"type": "button", "text": map[string]any{"type": "plain_text", "text": d.tr("Open Axon")}, "url": u})
@@ -203,8 +211,8 @@ func slackEscape(s string) string {
 	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(s)
 }
 
-// Discord is a webhook or bot message with one embed per part; the picture
-// is attached as scene.png.
+// Discord is a webhook or bot message with one embed per part; the picture,
+// when the person wants it, is attached as scene.png.
 func Discord(d Digest, base string, replies bool) map[string]any {
 	accent := Accent(d.Theme)
 	colour := int(accent.R)<<16 | int(accent.G)<<8 | int(accent.B)
@@ -212,7 +220,9 @@ func Discord(d Digest, base string, replies bool) map[string]any {
 		"title":       d.Title + " · " + d.Label,
 		"description": "**" + d.Greeting + "**\n" + d.Summary,
 		"color":       colour,
-		"image":       map[string]any{"url": "attachment://scene.png"},
+	}
+	if d.Picture {
+		head["image"] = map[string]any{"url": "attachment://scene.png"}
 	}
 	if u := link(base, d.URL); u != "" {
 		head["url"] = u
@@ -251,17 +261,25 @@ func Discord(d Digest, base string, replies bool) map[string]any {
 	if len(fields) > 0 {
 		head["fields"] = fields[:min(len(fields), 25)]
 	}
-	footer := "“" + d.Quote.Text + "” — " + d.Quote.Author
+	footer := ""
+	if d.Quote.Text != "" {
+		footer = "“" + d.Quote.Text + "” — " + d.Quote.Author
+	}
 	if replies && len(d.Actionable()) > 0 {
 		footer += "\n\n" + d.tr("Reply to act")
 	}
-	head["footer"] = map[string]any{"text": footer}
-	return map[string]any{
+	if footer = strings.TrimSpace(footer); footer != "" {
+		head["footer"] = map[string]any{"text": footer}
+	}
+	out := map[string]any{
 		"username":         "Axon",
 		"embeds":           []any{head},
 		"allowed_mentions": map[string]any{"parse": []any{}},
-		"attachments":      []any{map[string]any{"id": 0, "filename": "scene.png"}},
 	}
+	if d.Picture {
+		out["attachments"] = []any{map[string]any{"id": 0, "filename": "scene.png"}}
+	}
+	return out
 }
 
 func discordEscape(s string) string {
@@ -302,7 +320,9 @@ func Teams(d Digest, base string) map[string]any {
 			body = append(body, map[string]any{"type": "TextBlock", "text": text, "wrap": true, "spacing": "Small"})
 		}
 	}
-	body = append(body, map[string]any{"type": "TextBlock", "text": "_“" + d.Quote.Text + "”_ — " + d.Quote.Author, "wrap": true, "separator": true, "isSubtle": true})
+	if d.Quote.Text != "" {
+		body = append(body, map[string]any{"type": "TextBlock", "text": "_“" + d.Quote.Text + "”_ — " + d.Quote.Author, "wrap": true, "separator": true, "isSubtle": true})
+	}
 	card := map[string]any{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard", "version": "1.4", "body": body}
 	if u := link(base, d.URL); u != "" {
 		card["actions"] = []any{map[string]any{"type": "Action.OpenUrl", "title": d.tr("Open Axon"), "url": u}}
@@ -341,9 +361,9 @@ var emailTmpl = template.Must(template.New("email").Funcs(template.FuncMap{
 </td></tr>{{end}}
 {{if .More}}<tr><td class="muted" style="padding:8px 0;font-size:13px;color:#6b7385">{{printf $.AndMore .More}}</td></tr>{{end}}
 </table></td></tr>{{end}}
-<tr><td style="padding:24px 28px">
+{{if .D.Quote.Text}}<tr><td style="padding:24px 28px">
 <blockquote style="margin:0;padding:14px 18px;border-left:4px solid {{.Accent}};background:{{.Soft}};border-radius:8px;font-size:16px;line-height:1.5;font-style:italic">“{{.D.Quote.Text}}”<div class="muted" style="margin-top:6px;font-style:normal;font-size:13px;color:#6b7385">— {{.D.Quote.Author}}</div></blockquote>
-</td></tr>
+</td></tr>{{end}}
 {{with link .Base .D.URL}}<tr><td align="center" style="padding:0 28px 24px"><a href="{{.}}" style="display:inline-block;padding:12px 22px;border-radius:999px;background:{{$.Accent}};color:#fff;text-decoration:none;font-weight:600">{{$.Open}}</a></td></tr>{{end}}
 </table>
 <p class="muted" style="font-size:12px;color:#8a92a3;margin:16px 0 0">{{.Off}}</p>
