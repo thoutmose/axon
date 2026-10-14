@@ -6306,6 +6306,101 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /v1/auth/providers:
+    get:
+      tags: [auth]
+      operationId: listSignInProviders
+      summary: "Other accounts this Axon accepts for sign-in (Google, Microsoft, Apple, Discord, Slack, or a single sign-on)"
+      security: []
+      responses:
+        "200":
+          description: The providers the operator configured.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, name]
+                      properties:
+                        id: { type: string, enum: [google, microsoft, apple, discord, slack, oidc] }
+                        name: { type: string }
+  /v1/auth/oauth/{provider}/start:
+    get:
+      tags: [auth]
+      operationId: startProviderSignIn
+      summary: "Go to the provider to sign in, or (signed in) to link it to your account"
+      security: []
+      parameters:
+        - { name: provider, in: path, required: true, schema: { type: string } }
+        - { name: intent, in: query, schema: { type: string, enum: [signin, link], default: signin } }
+        - { name: next, in: query, description: "A path on this site to open after signing in.", schema: { type: string } }
+      responses:
+        "302": { description: "To the provider, with PKCE, a state bound to a cookie, and a nonce." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/auth/oauth/{provider}/callback:
+    get:
+      tags: [auth]
+      operationId: finishProviderSignIn
+      summary: "Where the provider sends the browser back: signs in, links, or (when registration is open) creates the account"
+      security: []
+      parameters:
+        - { name: provider, in: path, required: true, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        "302": { description: "To the page asked for, Account → Security, or the sign-in page with an error." }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/me/identities:
+    get:
+      tags: [account]
+      operationId: listIdentities
+      summary: Other accounts linked for sign-in
+      responses:
+        "200":
+          description: The linked accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, provider, email, name, created_at, last_used_at]
+                      properties:
+                        id: { type: string, format: uuid }
+                        provider: { type: string }
+                        email: { type: string }
+                        name: { type: string }
+                        created_at: { type: string, format: date-time }
+                        last_used_at: { type: [string, "null"], format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/me/identities/{id}:
+    delete:
+      tags: [account]
+      operationId: unlinkIdentity
+      summary: "Unlink an account; refused when it is the only way to sign in"
+      parameters:
+        - $ref: "#/components/parameters/ID"
+      responses:
+        "204": { description: Unlinked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
   /v1/vault/source:
     get:
       tags: [vault]

@@ -124,6 +124,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("vault_source", vaultsrv.Export)
 	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
 	priv.Register("channels", notify.Export)
+	priv.Register("sign_in_identities", auth.ExportIdentities)
 	return server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/yaml")

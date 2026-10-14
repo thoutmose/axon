@@ -3764,6 +3764,91 @@ export interface paths {
 		patch: operations['updateSkill'];
 		trace?: never;
 	};
+	'/v1/auth/providers': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Other accounts this Axon accepts for sign-in (Google, Microsoft, Apple, Discord, Slack, or a single sign-on) */
+		get: operations['listSignInProviders'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/auth/oauth/{provider}/start': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Go to the provider to sign in, or (signed in) to link it to your account */
+		get: operations['startProviderSignIn'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/auth/oauth/{provider}/callback': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Where the provider sends the browser back: signs in, links, or (when registration is open) creates the account */
+		get: operations['finishProviderSignIn'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/identities': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Other accounts linked for sign-in */
+		get: operations['listIdentities'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/identities/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Unlink an account; refused when it is the only way to sign in */
+		delete: operations['unlinkIdentity'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/vault/source': {
 		parameters: {
 			query?: never;
@@ -14409,6 +14494,144 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listSignInProviders: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The providers the operator configured. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** @enum {string} */
+							id: 'google' | 'microsoft' | 'apple' | 'discord' | 'slack' | 'oidc';
+							name: string;
+						}[];
+					};
+				};
+			};
+		};
+	};
+	startProviderSignIn: {
+		parameters: {
+			query?: {
+				intent?: 'signin' | 'link';
+				/** @description A path on this site to open after signing in. */
+				next?: string;
+			};
+			header?: never;
+			path: {
+				provider: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description To the provider, with PKCE, a state bound to a cookie, and a nonce. */
+			302: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	finishProviderSignIn: {
+		parameters: {
+			query?: {
+				code?: string;
+				state?: string;
+				error?: string;
+			};
+			header?: never;
+			path: {
+				provider: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description To the page asked for, Account → Security, or the sign-in page with an error. */
+			302: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			429: components['responses']['Problem'];
+		};
+	};
+	listIdentities: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The linked accounts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							provider: string;
+							email: string;
+							name: string;
+							/** Format: date-time */
+							created_at: string;
+							/** Format: date-time */
+							last_used_at: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	unlinkIdentity: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Unlinked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
 		};
 	};
 	getVaultSource: {

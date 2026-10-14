@@ -10,12 +10,33 @@
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 	import RecoveryCodes from '$lib/RecoveryCodes.svelte';
+	import SignInProviders from '$lib/SignInProviders.svelte';
+	import { page } from '$app/state';
+	import { t } from '$lib/i18n.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	let me = $state<Schemas['Me'] | null>(null);
 	let passkeys = $state<Schemas['Passkey'][]>([]);
 	let sessions = $state<Schemas['Session'][]>([]);
+	type Identity = {
+		id: string;
+		provider: string;
+		email: string;
+		name: string;
+		last_used_at: string | null;
+	};
+	let identities = $state<Identity[]>([]);
+	const params = page.url.searchParams;
+	const banner = params.get('welcome')
+		? t(
+				'Welcome to Axon. Add a passkey below: it is the safest way to sign in, and works if the other service is unavailable.'
+			)
+		: params.get('linked')
+			? t('Linked: you can now sign in with it.')
+			: params.get('error') === 'taken'
+				? t('That account is already linked to another Axon account.')
+				: '';
 	let error = $state('');
 	let busy = $state(false);
 	let passkeyName = $state('');
@@ -28,10 +49,11 @@
 	async function load() {
 		error = '';
 		try {
-			[me, { items: passkeys }, { items: sessions }] = await Promise.all([
+			[me, { items: passkeys }, { items: sessions }, { items: identities }] = await Promise.all([
 				api<Schemas['Me']>('/v1/me'),
 				api<{ items: Schemas['Passkey'][] }>('/v1/me/passkeys'),
-				api<{ items: Schemas['Session'][] }>('/v1/me/sessions')
+				api<{ items: Schemas['Session'][] }>('/v1/me/sessions'),
+				api<{ items: Identity[] }>('/v1/me/identities')
 			]);
 		} catch (err) {
 			error = message(err);
@@ -93,6 +115,9 @@
 		);
 	};
 
+	const unlink = (i: Identity) =>
+		run(() => api(`/v1/me/identities/${i.id}`, { method: 'DELETE' }), t('Unlinked.'));
+
 	const revoke = (s: Schemas['Session']) =>
 		run(async () => {
 			await api(`/v1/me/sessions/${s.id}`, { method: 'DELETE' });
@@ -115,6 +140,7 @@
 {:else if !me}
 	<Status kind="loading" message="Loading…" />
 {:else}
+	{#if banner}<p class="banner" role="status">{banner}</p>{/if}
 	<Section
 		id="passkeys"
 		title="Passkeys"
@@ -142,6 +168,26 @@
 			/>
 			<Button type="submit" {busy}>Add passkey</Button>
 		</form>
+	</Section>
+
+	<Section
+		id="linked"
+		title={t('Linked accounts')}
+		description={t(
+			'Sign in with another account you link here. Axon never links one by its email address.'
+		)}
+	>
+		<List items={identities} key={(i) => i.id} empty={t('No linked account.')}>
+			{#snippet row(i)}
+				<span
+					>{i.provider}
+					<span class="muted">· {i.email || i.name} · {t('last used')} {when(i.last_used_at)}</span
+					></span
+				>
+				<Button variant="danger" onclick={() => unlink(i)} disabled={busy}>{t('Unlink')}</Button>
+			{/snippet}
+		</List>
+		<SignInProviders intent="link" next="/account/security" />
 	</Section>
 
 	<Section
@@ -206,3 +252,11 @@
 		<Button variant="danger" onclick={signOutEverywhere} {busy}>Sign out everywhere</Button>
 	</Section>
 {/if}
+
+<style>
+	.banner {
+		padding: var(--space-3);
+		border-radius: var(--radius);
+		background: var(--accent-soft);
+	}
+</style>
