@@ -54,6 +54,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Patch("/v1/watch/items/{id}", h.updateItem)
 	r.Post("/v1/watch/items/{id}/keep", h.keep)
 	r.Get("/v1/watch/stats", h.stats)
+	r.Get("/v1/watch/graph", h.graph)
 }
 
 // UploadRoutes take files (CSV, OPML) larger than JSON bodies.
@@ -602,4 +603,39 @@ func Summarize(ctx context.Context, q *pgxpool.Pool, userID uuid.UUID, now time.
 		o.Labels = []LabelCount{}
 	}
 	return o, err
+}
+
+// graph serves the knowledge graph of the news: the last 30 days unless
+// from and to say otherwise.
+func (h *Handlers) graph(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	f, err := ParseFilter(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	gf := GraphFilter{To: h.now(), TopicID: f.TopicID, SourceID: f.SourceID, Fringe: r.URL.Query().Get("fringe") == "1"}
+	if f.To != nil {
+		gf.To = *f.To
+	}
+	gf.From = gf.To.AddDate(0, 0, -30)
+	if f.From != nil {
+		gf.From = *f.From
+	}
+	if !gf.From.Before(gf.To) || gf.To.Sub(gf.From) > 366*24*time.Hour {
+		h.fail(w, InvalidError{"from is before to, at most a year apart."})
+		return
+	}
+	if v := r.URL.Query().Get("min"); v != "" {
+		if gf.MinNPMI, err = strconv.ParseFloat(v, 64); err != nil || gf.MinNPMI <= 0 || gf.MinNPMI > 1 {
+			h.fail(w, InvalidError{"min is above 0 and at most 1."})
+			return
+		}
+	}
+	g, err := BuildGraph(r.Context(), h.db, who.UserID, gf)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, g)
 }

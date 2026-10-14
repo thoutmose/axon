@@ -70,3 +70,20 @@ export function describeSchedule(cron: string): string {
 
 /** The normalised CSV header, for the import help. */
 export const csvHeader = 'url,title,topics,schedule,full_text';
+
+export type WatchGraph = Schemas['WatchGraph'];
+
+/** How a concept is moving: its trend score in words. */
+export function trendWord(trend: number): 'rising' | 'fading' | 'steady' {
+	if (trend > 1.5) return 'rising';
+	if (trend < -1.5) return 'fading';
+	return 'steady';
+}
+
+/** The from and to of the last `days` days, as dates, for the graph. */
+export function lastDays(days: number, now = new Date()): { from: string; to: string } {
+	const to = new Date(now.getTime() + 86400000);
+	const from = new Date(now.getTime() - days * 86400000);
+	const day = (d: Date) => d.toISOString().slice(0, 10);
+	return { from: day(from), to: day(to) };
+}

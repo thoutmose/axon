@@ -6714,6 +6714,22 @@ paths:
       responses:
         "200": { description: The overview., content: { application/json: { schema: { $ref: "#/components/schemas/WatchStats" } } } }
         "401": { $ref: "#/components/responses/Problem" }
+  /v1/watch/graph:
+    get:
+      tags: [watch]
+      operationId: watchGraph
+      summary: "The knowledge graph of the news (not of your notes): concepts, how strongly they go together, their communities, and a summary of each"
+      parameters:
+        - { $ref: "#/components/parameters/WatchSource" }
+        - { $ref: "#/components/parameters/WatchTopic" }
+        - { name: from, in: query, description: "Published from (2026-10-14 or RFC 3339); 30 days before to by default.", schema: { type: string } }
+        - { name: to, in: query, description: "Published before; now by default.", schema: { type: string } }
+        - { name: fringe, in: query, description: "1 to keep concepts with no strong link and the news set aside as outliers.", schema: { type: string, enum: ["0", "1"] } }
+        - { name: min, in: query, description: "Weakest link kept (NPMI), above 0 and at most 1.", schema: { type: number, default: 0.15 } }
+      responses:
+        "200": { description: The graph., content: { application/json: { schema: { $ref: "#/components/schemas/WatchGraph" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/vault/source:
     get:
       tags: [vault]
@@ -7166,6 +7182,55 @@ components:
           type: array
           items: { type: object, required: [label, count], properties: { label: { type: string }, count: { type: integer } } }
         next_fetch_at: { type: [string, "null"], format: date-time }
+    WatchGraphRef:
+      type: object
+      required: [id, title]
+      properties: { id: { type: string, format: uuid }, title: { type: string } }
+    WatchGraph:
+      type: object
+      required: [nodes, edges, communities, stats]
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, kind, label, count, sources, community, rank, trend, fringe, summary, items, related, in_notes, topics, first_seen]
+            properties:
+              id: { type: string }
+              kind: { type: string, enum: [concept] }
+              label: { type: string }
+              count: { type: integer, description: "News it appears in." }
+              sources: { type: integer }
+              community: { type: integer, description: "0: no strong link (fringe)." }
+              rank: { type: number, description: "PageRank relative to the most central concept." }
+              trend: { type: number, description: "Last week against the weeks before: above 1.5 rising, below -1.5 fading." }
+              fringe: { type: boolean }
+              summary: { type: string, description: "The sentences of its news closest to what they share." }
+              items: { type: array, items: { $ref: "#/components/schemas/WatchGraphRef" } }
+              related: { type: array, items: { type: string } }
+              in_notes: { type: array, description: "Your literature and permanent notes that share the concept.", items: { $ref: "#/components/schemas/WatchGraphRef" } }
+              topics: { type: array, items: { type: string } }
+              first_seen: { type: string, format: date-time }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to, together, npmi, reason]
+            properties: { from: { type: string }, to: { type: string }, together: { type: integer }, npmi: { type: number }, reason: { type: string } }
+        communities:
+          type: array
+          items: { type: object, required: [id, label, size], properties: { id: { type: integer }, label: { type: string }, size: { type: integer } } }
+        stats:
+          type: object
+          required: [items, outliers, concepts, edges, communities, modularity, bridges]
+          properties:
+            items: { type: integer }
+            outliers: { type: integer }
+            concepts: { type: integer }
+            edges: { type: integer }
+            communities: { type: integer }
+            modularity: { type: number }
+            bridges: { type: integer }
     Channel:
       type: object
       required: [id, kind, name, target, mode, digests, reminders, enabled, linked, peer_name, link_expires_at, created_at, last_sent_at, last_error]

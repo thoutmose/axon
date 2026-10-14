@@ -598,3 +598,11 @@ func zettelEdges(docs []*analysed, links map[zpair]string, minScore float64) ([]
 
 	return adj, edges
 }
+
+// Louvain finds communities in a weighted undirected graph given as
+// adjacency maps, with the modularity of the partition (used by the tech
+// watch graph, EP-74).
+func Louvain(adj []map[int]float64) ([]int, float64) { return louvain(adj) }
+
+// PageRank is the weighted PageRank of each node.
+func PageRank(adj []map[int]float64) []float64 { return pageRank(adj) }
