@@ -123,7 +123,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-72 | Sign in with other accounts | Google, Microsoft, Apple, Discord, Slack, or any OpenID Connect provider, linked by their owner; never matched by email. Owner request. | SHOULD | 8 pts | EP-04 | Done |
 | EP-73 | Tech watch | Follow feeds, sites, Medium, Substack, YouTube, GitHub (by hand, CSV, OPML, FreshRSS) on a cron schedule, midnight by default; each story stored once; NLP labels; feed notes; health. Owner request. | SHOULD | 13 pts | EP-67 | Done |
 | EP-74 | Tech watch analysis & knowledge graph | Concepts, NPMI links, communities, trends, and a knowledge graph of the news with hover summaries, apart from the Zettelkasten graph and bridged to it. Owner request. | SHOULD | 8 pts | EP-73 | Done |
-| EP-75 | Tech watch exports & sharing | CSV, ODS, Markdown, JSON, PDF, OPML by type, source, label, and period; share links; "from Axon Project" on each. Owner request. | SHOULD | 5 pts | EP-73 | Planned |
+| EP-75 | Tech watch exports & sharing | CSV, ODS, Markdown, feed notes, JSON, PDF by kind, source, topic, label, and period; read-only share links; "from Axon Project" on each. Owner request. | SHOULD | 5 pts | EP-73 | Done |
 | EP-76 | Podcast, agent, digest template, scenery | A podcast of the news (off by default), the Tech watch agent, the watch in the digests with a template the person can change, and illustrations. Owner request. | SHOULD | 8 pts | EP-73, EP-70 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
@@ -1626,6 +1626,15 @@ Cross-cutting matrix:
 - [x] **EP-74/IS-74.02** · 3 pts · SHOULD — the **News graph** page: a night-sky constellation apart from the notes' graph; hover or focus a star for its summary, news count, sources, trend, related concepts, and notes; select it to keep it with its news and notes; rising concepts; community legend; a table view; French.
 
 **Tests.** `TestWatchGraph` (two threads of news make two communities; "linux kernel" and "memory safety" together, "pgvector" apart; a hover summary that names its concept; a bridge to a permanent note; no trend without history; another person sees nothing; a bad period and a bad strength refused); `trendWord` and `lastDays`; e2e "tech watch" opens the News graph (empty state, accessibility).
+
+### EP-75 — Tech watch exports & sharing
+
+**Goal.** "Export the news by types, sources, labels (applied by the NLP), period; share them with other people; export them (PDF, ODS, CSV, MD, etc.) with an explicit mention that they come from Axon Project" (owner, 2026-10-14). Decisions in [ADR 0034](adr/0034-watch-exports-and-share-links.md).
+
+- [x] **EP-75/IS-75.01** · 3 pts · SHOULD — `GET /v1/watch/export` in CSV (formula-safe), ODS, Markdown, a zip of feed notes, JSON, and PDF, each with the attribution, its date, and the filter in words; a kind filter (article, video, podcast) in the reader and the API; **Export or share** in the reader, with a period.
+- [x] **EP-75/IS-75.02** · 2 pts · SHOULD — share links: made and revoked from a session only, audited, expiring, hashed; a public page and its downloads showing only what sources published, not indexed, no referrer, rate-limited; **Shared links** on Sources and health with views; links in the personal export, without tokens.
+
+**Tests.** Export unit tests (CSV header, formula guard, and attribution row; ODS stored media type, XML, dates, escaping; Markdown by day; feed-note zip with duplicate names; JSON; PDF cross-reference offsets, pages, links, WinAnsi text, a footer on every page; wrapping; the filter in words; kinds); the PDF checked with poppler and the ODS opened by LibreOffice; `TestWatchExportsAndShares` (kinds, exports with a filter, another person's empty export, a bad format, share validation, only Saved kept, a token refused, the public page and downloads without status, name, or ids, views, an unknown, expired, and revoked link, ownership); e2e "tech watch: export the view, share it with a link anyone can open, then revoke it" (a download by plain navigation, a stranger's view, accessibility).
 
 ### EP-20 — Analytics & insights
 

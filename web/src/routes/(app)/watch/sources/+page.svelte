@@ -9,6 +9,7 @@
 		ago,
 		csvHeader,
 		describeSchedule,
+		type WatchShare,
 		type WatchSource,
 		type WatchStats,
 		type WatchTopic
@@ -33,6 +34,28 @@
 		}
 	}
 	load();
+
+	// --- share links (EP-75) ---
+	let shares = $state<WatchShare[]>([]);
+	async function loadShares() {
+		try {
+			({ items: shares } = await api<{ items: WatchShare[] }>('/v1/watch/shares'));
+		} catch {
+			// The page works without them.
+		}
+	}
+	loadShares();
+	async function revoke(s: WatchShare) {
+		if (!confirm(t('Revoke “{name}”? The link stops working at once.', { name: s.name }))) return;
+		try {
+			await api(`/v1/watch/shares/${s.id}`, { method: 'DELETE' });
+			shares = shares.filter((x) => x.id !== s.id);
+			toast(t('Link revoked.'));
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+	const expired = (s: WatchShare) => new Date(s.expires_at) < new Date();
 
 	// --- follow ---
 	const presets: [string, string][] = [
@@ -529,6 +552,51 @@
 			</tbody>
 		</table>
 	</div>
+</Section>
+
+<Section id="shares" title={t('Shared links')}>
+	<p class="muted small">
+		{t(
+			'Read-only links to a selection of your news, made from the reader with Export or share. Revoke one and it stops working at once.'
+		)}
+	</p>
+	{#if shares.length}
+		<div class="table">
+			<table>
+				<thead>
+					<tr>
+						<th>{t('Name')}</th>
+						<th>{t('News')}</th>
+						<th>{t('Expires')}</th>
+						<th>{t('Views')}</th>
+						<th><span class="sr-only">{t('Actions')}</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each shares as s (s.id)}
+						<tr>
+							<td><strong>{s.name}</strong></td>
+							<td class="small">{s.description}</td>
+							<td class="small" class:bad={expired(s)}>
+								{expired(s) ? t('Expired') : new Date(s.expires_at).toLocaleDateString()}
+							</td>
+							<td class="small">
+								{s.views}
+								{#if s.last_viewed_at}<div class="muted">{ago(s.last_viewed_at)}</div>{/if}
+							</td>
+							<td>
+								<Button variant="ghost" onclick={() => revoke(s)}
+									>{t('Revoke')}<span class="sr-only"> {s.name}</span></Button
+								>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	{:else}
+		<p class="muted small">{t('No links yet.')}</p>
+	{/if}
 </Section>
 
 <style>

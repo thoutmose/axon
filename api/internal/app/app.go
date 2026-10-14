@@ -154,10 +154,12 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			authn.Routes(r)
 			vaultAPI.PublicRoutes(r)
 			dashboardAPI.PublicRoutes(r) // the feed URL's token is its credential
+			watchAPI.PublicRoutes(r)     // so is a shared page's
 			r.Group(func(r chi.Router) {
 				r.Use(authn.RequireSession)
 				priv.Routes(r)
 				dashboardAPI.FeedRoutes(r)
+				watchAPI.SessionRoutes(r)
 				agentsAPI.SessionRoutes(r)
 				settingsAPI.Routes(r)
 				avatarsAPI.Routes(r)

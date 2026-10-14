@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
+	import WatchExport from '$lib/WatchExport.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { render } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
@@ -31,6 +32,7 @@
 	let more = $state(false);
 	let open = $state<{ item: WatchItem; note: string } | null>(null);
 	let labelsText = $state('');
+	let exporting = $state(false);
 
 	async function load(append = false) {
 		loading = true;
@@ -60,7 +62,7 @@
 		}
 	}
 	$effect(() => {
-		(void filter.status, filter.topic, filter.label, filter.q, filter.outliers);
+		(void filter.status, filter.topic, filter.label, filter.q, filter.outliers, filter.kind);
 		load();
 	});
 	loadSide();
@@ -194,6 +196,12 @@
 		placeholder={t('Search the news')}
 		bind:value={filter.q}
 	/>
+	<select aria-label={t('Kind')} bind:value={filter.kind}>
+		<option value="">{t('All kinds')}</option>
+		<option value="article">{t('Articles')}</option>
+		<option value="video">{t('Videos')}</option>
+		<option value="podcast">{t('Podcasts')}</option>
+	</select>
 	<select aria-label={t('Topic')} bind:value={filter.topic}>
 		<option value="">{t('All topics')}</option>
 		{#each topics as tp (tp.id)}<option value={tp.id}>{tp.name}</option>{/each}
@@ -207,7 +215,9 @@
 		><input type="checkbox" bind:checked={filter.outliers} />{t('Outliers')}</label
 	>
 	<Button variant="ghost" onclick={readAll}>{t('Mark all read')}</Button>
+	<Button variant="secondary" onclick={() => (exporting = true)}>{t('Export or share')}</Button>
 </div>
+<WatchExport bind:open={exporting} {filter} />
 
 {#if stats?.labels.length && !filter.label}
 	<div class="labels" aria-label={t('Labels')}>

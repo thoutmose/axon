@@ -7,6 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -55,6 +57,22 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/watch/items/{id}/keep", h.keep)
 	r.Get("/v1/watch/stats", h.stats)
 	r.Get("/v1/watch/graph", h.graph)
+	r.Get("/v1/watch/export", h.export)
+}
+
+// SessionRoutes manage share links: they make news public, so they take a
+// signed-in session, not an API token, and are audited.
+func (h *Handlers) SessionRoutes(r chi.Router) {
+	r.Get("/v1/watch/shares", h.shares)
+	r.Post("/v1/watch/shares", h.createShare)
+	r.Delete("/v1/watch/shares/{id}", h.deleteShare)
+}
+
+// PublicRoutes serve share links, authenticated by their token, with a
+// budget of their own per address.
+func (h *Handlers) PublicRoutes(r chi.Router) {
+	r.With(auth.RateLimit(2*time.Second, 30, "Too many requests for shared news. Wait a minute and try again.")).
+		Get("/v1/shared/watch/{token}", h.sharedPage)
 }
 
 // UploadRoutes take files (CSV, OPML) larger than JSON bodies.
@@ -375,9 +393,14 @@ func (h *Handlers) opml(w http.ResponseWriter, r *http.Request) {
 // --- items ---
 
 // ParseFilter reads the filter from a query string.
-func ParseFilter(r *http.Request) (Filter, error) {
-	q := r.URL.Query()
-	f := Filter{Status: q.Get("status"), TopicID: q.Get("topic"), Label: q.Get("label"), Query: q.Get("q"), Outliers: q.Get("outliers") == "1"}
+func ParseFilter(r *http.Request) (Filter, error) { return FilterFrom(r.URL.Query()) }
+
+// FilterFrom reads the filter from query values.
+func FilterFrom(q url.Values) (Filter, error) {
+	f := Filter{Status: q.Get("status"), TopicID: q.Get("topic"), Label: q.Get("label"), Query: q.Get("q"), Outliers: q.Get("outliers") == "1", Kind: q.Get("kind")}
+	if f.Kind != "" && !slices.Contains(Kinds, f.Kind) {
+		return f, InvalidError{"kind is article, video, or podcast."}
+	}
 	if f.Status != "" && f.Status != "all" && !strings.Contains(strings.Join(Statuses, " "), f.Status) {
 		return f, InvalidError{"status is unread, read, saved, archived, or all."}
 	}

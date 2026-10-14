@@ -4115,6 +4115,75 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/watch/export': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Download the news a filter selects (by kind, source, topic, label, words, status, and period), each export saying it comes from Axon Project */
+		get: operations['exportWatch'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/shares': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your links to a selection of the news */
+		get: operations['listWatchShares'];
+		put?: never;
+		/** Share a selection of the news with a read-only link (signed-in session only; audited) */
+		post: operations['createWatchShare'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/shares/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Revoke a link at once */
+		delete: operations['deleteWatchShare'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/shared/watch/{token}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A shared selection of news, for anyone with the link: what the sources published, never the owner's status or notes */
+		get: operations['getSharedWatch'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/vault/source': {
 		parameters: {
 			query?: never;
@@ -4321,6 +4390,23 @@ export interface components {
 			status: 'unread' | 'read' | 'saved' | 'archived';
 			/** Format: uuid */
 			note_id: string | null;
+			/** @enum {string} */
+			kind: 'article' | 'video' | 'podcast';
+		};
+		WatchShare: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @description The filter, in words. */
+			description: string;
+			query: string;
+			/** Format: date-time */
+			expires_at: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_viewed_at: string | null;
+			views: number;
 		};
 		WatchStats: {
 			sources: {
@@ -6280,6 +6366,9 @@ export interface components {
 		WatchFrom: string;
 		/** @description Published before. */
 		WatchTo: string;
+		/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+		WatchKind: 'article' | 'video' | 'podcast';
+		WatchFormat: 'csv' | 'ods' | 'md' | 'zip' | 'json' | 'pdf';
 		/** @description 1 to include items flagged as outliers. */
 		WatchOutliers: '0' | '1';
 		ID: string;
@@ -15480,6 +15569,8 @@ export interface operations {
 			query?: {
 				/** @description Empty: everything but archived. */
 				status?: components['parameters']['WatchStatus'];
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				kind?: components['parameters']['WatchKind'];
 				source?: components['parameters']['WatchSource'];
 				topic?: components['parameters']['WatchTopic'];
 				label?: components['parameters']['WatchLabel'];
@@ -15692,6 +15783,195 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	exportWatch: {
+		parameters: {
+			query: {
+				format: components['parameters']['WatchFormat'];
+				/** @description Empty: everything but archived. */
+				status?: components['parameters']['WatchStatus'];
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				kind?: components['parameters']['WatchKind'];
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				label?: components['parameters']['WatchLabel'];
+				/** @description Words in the title or summary. */
+				q?: components['parameters']['WatchQuery'];
+				/** @description Published from (2026-10-14 or RFC 3339). */
+				from?: components['parameters']['WatchFrom'];
+				/** @description Published before. */
+				to?: components['parameters']['WatchTo'];
+				/** @description 1 to include items flagged as outliers. */
+				outliers?: components['parameters']['WatchOutliers'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The file: CSV, OpenDocument spreadsheet, Markdown, a zip of feed notes, JSON, or PDF; at most 5,000 news, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/csv': string;
+					'application/vnd.oasis.opendocument.spreadsheet': string;
+					'text/markdown': string;
+					'application/zip': string;
+					'application/json': Record<string, never>;
+					'application/pdf': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listWatchShares: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Links, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['WatchShare'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createWatchShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Who or what it is for. */
+					name: string;
+					/** @description The filter as a query string, e.g. label=ai&from=2026-10-01. Only status, kind, source, topic, label, q, from, and to are kept. */
+					query?: string;
+					/**
+					 * @description How long the link lives.
+					 * @default 30
+					 */
+					days?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. The path holds the link's secret and is not shown again. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						share: components['schemas']['WatchShare'];
+						/** @description /shared/watch/<token> on this server. */
+						path: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWatchShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Revoked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getSharedWatch: {
+		parameters: {
+			query?: {
+				/** @description A download instead of the page's data. */
+				format?: 'csv' | 'ods' | 'md' | 'zip' | 'json' | 'pdf';
+			};
+			header?: never;
+			path: {
+				/** @description The secret part of the link. */
+				token: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The page's data (the newest 200 news), or the file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						name?: string;
+						description?: string;
+						count?: number;
+						/** Format: date-time */
+						generated_at?: string;
+						/** Format: date-time */
+						expires_at?: string;
+						attribution?: string;
+						items?: {
+							title: string;
+							url: string;
+							source_title: string;
+							author: string;
+							/** Format: date-time */
+							published_at: string;
+							summary: string;
+							/** @enum {string} */
+							kind: 'article' | 'video' | 'podcast';
+							labels: string[];
+							reading_minutes: number;
+						}[];
+					};
+					'text/csv': string;
+					'application/vnd.oasis.opendocument.spreadsheet': string;
+					'text/markdown': string;
+					'application/zip': string;
+					'application/pdf': string;
+				};
+			};
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
 		};
 	};
 	getVaultSource: {

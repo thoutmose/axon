@@ -1104,6 +1104,46 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	await noSeriousA11yViolations(page);
 });
 
+test('tech watch: export the view, share it with a link anyone can open, then revoke it', async ({
+	browser
+}) => {
+	await page.goto('/watch');
+	await page.getByRole('button', { name: 'Export or share' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Export or share' });
+	await expect(dialog.getByRole('link', { name: 'PDF' })).toHaveAttribute(
+		'href',
+		'/api/v1/watch/export?status=unread&format=pdf'
+	);
+	await noSeriousA11yViolations(page);
+	// A download is a plain navigation: the session cookie, no Origin header.
+	const csv = await page.request.get('/api/v1/watch/export?format=csv');
+	expect(csv.headers()['content-disposition']).toMatch(/^attachment; filename="axon-tech-watch-/);
+	expect(await csv.text()).toContain('Exported from Axon Project');
+	await dialog.getByLabel('Name').fill('E2E team');
+	await dialog.getByRole('button', { name: 'Create the link' }).click();
+	const link = await dialog.getByLabel('Link').inputValue();
+	expect(link).toMatch(/^http:\/\/localhost:3000\/shared\/watch\/[\w-]{43}$/);
+	await dialog.getByRole('button', { name: 'Close' }).click();
+
+	// Someone without an account opens it.
+	const stranger = await (await browser.newContext()).newPage();
+	await stranger.goto(link);
+	await expect(stranger.getByRole('heading', { name: 'E2E team', level: 1 })).toBeVisible();
+	await expect(stranger.getByRole('link', { name: 'Shared from Axon Project' })).toBeVisible();
+	await expect(stranger.getByText('Nothing in this selection yet.')).toBeVisible();
+	await noSeriousA11yViolations(stranger);
+
+	await page.goto('/watch/sources');
+	const row = page.getByRole('row', { name: /E2E team/ });
+	await expect(row).toContainText('All news'); // not the Unread tab: it would empty as you read
+	page.once('dialog', (d) => d.accept());
+	await row.getByRole('button', { name: 'Revoke E2E team' }).click();
+	await expect(page.getByText('Link revoked.')).toBeVisible();
+	await stranger.reload();
+	await expect(stranger.getByText(/does not exist, has expired, or was revoked/)).toBeVisible();
+	await stranger.context().close();
+});
+
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {
 	await page.goto('/today');
 	await expect(page.locator('#today-title')).toBeVisible(); // shortcuts work once the page has loaded
