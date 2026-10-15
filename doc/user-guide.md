@@ -8,6 +8,10 @@ Axon keeps your notes, tasks, goals, habits, learning, focus, money, media, heal
 - **Say what you want Axon for.** A new account is asked first, on Today: tasks and projects, notes, learning, goals and habits, health, money, media, or a shared home. The menu and Today then show just those pages; the others stay one link or search away. Change it under **Preferences → Pages in the menu**, or choose **Show me everything**.
 - **Try the demo** (when offered) opens a shared account with sample data that resets every night.
 
+## Search
+
+**Search**, in the menu bar (or Ctrl+K, or /), finds your tasks, notes, goals, habits, news, and the rest by their words, and notes close in meaning when search by meaning is set up; type a page's name to open it. Arrow keys choose, Enter opens.
+
 ## Today
 
 Your day at a glance: overdue and today's tasks, your inbox, active goals, recent notes, habits to check in, and focus time. Below, the dashboard compares this period with the previous one, charts daily activity and the year, lists what needs attention, and draws the network of your hard and soft skills. Every number opens the items behind it. Use the **daily check-in** to note how the day went.

@@ -1083,6 +1083,24 @@ test('decisions: record a forecast, review one that is due, and see the calibrat
 	await noSeriousA11yViolations(page);
 });
 
+test('search from the menu bar finds content and every page', async () => {
+	await page.goto('/today');
+	await page.request.post('/api/v1/tasks', {
+		headers: { Origin: new URL(page.url()).origin },
+		data: { title: 'Renew the passport photo' }
+	});
+	await page.getByRole('banner').getByRole('button', { name: 'Search' }).click();
+	const search = page.getByRole('dialog', { name: 'Command center' });
+	await search.getByRole('combobox').fill('passport');
+	await search.getByRole('option', { name: /Renew the passport photo/ }).click();
+	await expect(page).toHaveURL(/\/tasks/);
+	await page.keyboard.press('Control+k');
+	await search.getByRole('combobox').fill('decisions');
+	await page.keyboard.press('Enter');
+	await expect(page).toHaveURL(/\/decisions$/);
+	await expect(page.getByRole('heading', { level: 1, name: 'Decisions' })).toBeVisible();
+});
+
 test('analyse literature and permanent notes: topics, concepts, and a note panel', async () => {
 	await page.goto('/notes');
 	const first: string = await page.evaluate(async () => {

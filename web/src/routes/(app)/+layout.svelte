@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CaptureDialog from '$lib/CaptureDialog.svelte';
 	import CommandPalette from '$lib/CommandPalette.svelte';
+	import { searching } from '$lib/search.svelte';
 	import { capturing } from '$lib/capture.svelte';
 
 	import { onMount } from 'svelte';
@@ -29,7 +30,6 @@
 			})
 			.catch(() => {});
 	});
-	let palette = $state(false);
 	let help = $state(false);
 	let shortcuts = $state(true);
 	let pendingG = false;
@@ -40,11 +40,11 @@
 		// Ctrl/Cmd+K opens the command center from anywhere, even while typing.
 		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
 			e.preventDefault();
-			palette = !palette;
+			searching.open = !searching.open;
 			return;
 		}
 		if (!shortcuts || typing(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
-		if (capturing.open || palette) return; // they have inputs; the help dialog does not
+		if (capturing.open || searching.open) return; // they have inputs; the help dialog does not
 		if (pendingG) {
 			pendingG = false;
 			clearTimeout(gTimer);
@@ -63,7 +63,7 @@
 				break;
 			case '/':
 				e.preventDefault();
-				palette = true;
+				searching.open = true;
 				break;
 			case '?':
 				e.preventDefault();
@@ -87,7 +87,7 @@
 {/if}
 {@render children()}
 <CaptureDialog bind:open={capturing.open} oncaptured={() => capturing.count++} />
-<CommandPalette bind:open={palette} />
+<CommandPalette bind:open={searching.open} />
 <ShortcutsHelp bind:open={help} />
 
 <style>

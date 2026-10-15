@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Search in the menu bar** (EP-115): a Search field next to Account opens the command center, which now opens every page as well as finding your items and notes.
 - **A decision journal** (EP-114): write a decision down with what you expect and how likely it is; on its review day, say what happened and what you learned; Axon scores your forecasts (Brier score, a reliability chart, over- or under-confidence), and a forecast cannot be changed once made.
 - **The Tech watch agent and new scenery** (EP-113): an agent that briefs you on your news, spots what is rising that no topic covers, and proposes sources and topics for you to approve; illustrated backgrounds for the tech watch, its graph, the podcast, and the digest.
 - **A podcast of the news and a digest template** (EP-113): turn on a spoken episode of the day's or week's best news, as a briefing, a digest, or a deep dive by topic, in English or French, read by your device's voice; choose the sections of each digest, their order, and whether the quote and picture come along; the digests now carry the tech watch.
