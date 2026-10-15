@@ -53,6 +53,8 @@ Designed with James Clear's *Atomic Habits*:
 - To break a habit, invert the laws: make it invisible, unattractive, difficult, unsatisfying.
 - Check in with the full or the two-minute version. Missing a day is normal; never miss twice is a kindness, not a rule. The **scorecard** lists your current habits as helpful, neutral, or harmful.
 
+**Protocols for health, after Andrew Huberman** lists the habits he recommends on the Huberman Lab podcast. Open one to read what to do and why, how strong the evidence is (strong, some, or his advice not tested by any study), the studies behind it, and a caution where one is due; **Make it a habit** fills in the form for you to adjust. They are information, not medical advice.
+
 ## Learn: Roadmaps and flashcards
 
 - Start with the **assessment**: your situation, job, goals, and current level. It places you on roadmaps.

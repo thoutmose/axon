@@ -3493,5 +3493,92 @@ export const fr: Record<string, string> = {
 		'Sert à estimer la caféine restante au coucher, et le dernier café qui préserve votre sommeil.',
 	'Coffee and tea today': 'Café et thé aujourd’hui',
 	'Too late for a coffee: one now would still be in you at {bedtime}.':
-		'Trop tard pour un café : il serait encore là à {bedtime}.'
+		'Trop tard pour un café : il serait encore là à {bedtime}.',
+	'A coffee drunk 8.8 hours before bed or later shortens and lightens sleep, even when you fall asleep easily.':
+		'Un café bu 8,8 heures ou moins avant le coucher raccourcit et allège le sommeil, même quand on s’endort facilement.',
+	'A lamp on a timer': 'Une lampe sur minuterie',
+	'A regular schedule keeps the body clock steady; irregular sleep goes with later, poorer sleep.':
+		'Des horaires réguliers stabilisent l’horloge interne ; un sommeil irrégulier va avec un sommeil plus tardif et moins bon.',
+	'A shorter, lighter night': 'Une nuit plus courte et plus légère',
+	'About 11 minutes a week in total of cold water, in two to four short sessions: a cold shower or a cold bath you can stay in safely.':
+		'Environ 11 minutes d’eau froide par semaine au total, en deux à quatre courtes séances : une douche froide ou un bain froid où vous restez en sécurité.',
+	'About 150 to 180 minutes a week of easy cardio you can talk through, and strength training two or three times a week.':
+		'Environ 150 à 180 minutes par semaine d’endurance douce, à un rythme où l’on peut parler, et du renforcement musculaire deux ou trois fois par semaine.',
+	'After I get up': 'Après m’être levé',
+	'After my morning shower': 'Après ma douche du matin',
+	'After my morning sunlight': 'Après ma lumière du matin',
+	'Breathe in through the nose, take a second short breath in on top, then breathe out slowly through the mouth. Repeat for 5 minutes.':
+		'Inspirez par le nez, ajoutez une seconde courte inspiration, puis expirez lentement par la bouche. Recommencez pendant 5 minutes.',
+	'Bright light in the morning sets the body clock earlier, so you get sleepy earlier at night and wake more easily.':
+		'Une lumière vive le matin avance l’horloge interne : on a sommeil plus tôt le soir et on se réveille plus facilement.',
+	'Choose decaf after 14:00': 'Choisir un déca après 14 h',
+	'Cold shower': 'Douche froide',
+	'Cyclic sighing': 'Soupir cyclique',
+	'Deep relaxation can restore some energy after a short night; a small study found more dopamine during yoga nidra.':
+		'Une relaxation profonde peut rendre un peu d’énergie après une nuit courte ; une petite étude a mesuré plus de dopamine pendant le yoga nidra.',
+	'Deliberate cold': 'Froid volontaire',
+	'Dim the lights after 21:00': 'Baisser les lumières après 21 h',
+	'Dim the lights in the evening': 'Baisser les lumières le soir',
+	'Drink a glass of water first': 'Boire d’abord un verre d’eau',
+	'Filled in. Adjust it to your life, then create it.':
+		'Rempli. Adaptez-le à votre vie, puis créez-le.',
+	'Five minutes of cyclic sighing': 'Cinq minutes de soupir cyclique',
+	'Get up at the same time on weekdays and weekends, within about an hour.':
+		'Levez-vous à la même heure en semaine et le week-end, à une heure près.',
+	'Habits the neuroscientist recommends on the Huberman Lab podcast, with the studies behind them and how strong they are. For information, not medical advice.':
+		'Les habitudes que le neuroscientifique recommande dans le podcast Huberman Lab, avec les études qui les fondent et leur solidité. À titre d’information, pas un avis médical.',
+	'Have your first caffeine 90 to 120 minutes after waking.':
+		'Prenez votre première caféine 90 à 120 minutes après le réveil.',
+	'His advice, not tested': 'Son conseil, non testé',
+	'Huberman suggests it to avoid an afternoon slump. It is his advice: studies have not tested it directly, and many people feel no difference.':
+		'Huberman le conseille pour éviter le coup de barre de l’après-midi. C’est son conseil : aucune étude ne l’a testé directement, et beaucoup ne sentent aucune différence.',
+	'I am in charge of my energy': 'Je gère mon énergie',
+	'I am someone who does hard things': 'Je fais des choses difficiles',
+	'I am someone who recovers well': 'Je récupère bien',
+	'I am someone who sleeps well': 'Je dors bien',
+	'In a one-month trial, daily cyclic sighing lifted mood and lowered breathing rate more than mindfulness meditation.':
+		'Dans un essai d’un mois, le soupir cyclique quotidien a davantage amélioré l’humeur et ralenti la respiration que la méditation de pleine conscience.',
+	'In the 2 to 3 hours before bed, use low, warm lamps rather than bright overhead light, and dim screens.':
+		'Dans les 2 à 3 heures avant le coucher, préférez des lampes basses et chaudes au plafonnier, et baissez la luminosité des écrans.',
+	'It is what the WHO recommends: at least 150 minutes of moderate activity and two days of muscle strengthening a week.':
+		'C’est ce que recommande l’OMS : au moins 150 minutes d’activité modérée et deux jours de renforcement musculaire par semaine.',
+	'Last coffee 9 hours before bed': 'Dernier café 9 heures avant le coucher',
+	'Lie down and breathe for two minutes': 'S’allonger et respirer deux minutes',
+	'Lie down for 10 to 20 minutes with a guided yoga nidra or body-scan recording.':
+		'Allongez-vous 10 à 20 minutes avec un enregistrement guidé de yoga nidra ou de scan corporel.',
+	'Make it a habit': 'En faire une habitude',
+	'Morning sunlight': 'Lumière du matin',
+	'No coffee after the cut-off': 'Pas de café après l’heure limite',
+	'Non-sleep deep rest': 'Repos profond éveillé',
+	'Not with a heart condition or high blood pressure without a doctor’s advice; never alone in open water.':
+		'Pas en cas de maladie cardiaque ou d’hypertension sans avis médical ; jamais seul en eau libre.',
+	'One alarm, across the room': 'Un seul réveil, à l’autre bout de la pièce',
+	'Ordinary room light before bed delays and shortens the release of melatonin, the hormone of the night.':
+		'La lumière ordinaire d’une pièce avant le coucher retarde et raccourcit la sécrétion de mélatonine, l’hormone de la nuit.',
+	'Protocols for health, after Andrew Huberman': 'Protocoles santé, d’après Andrew Huberman',
+	'Put on my running shoes': 'Mettre mes chaussures de course',
+	'Sit up when the alarm rings': 'M’asseoir quand le réveil sonne',
+	'Some evidence': 'Quelques preuves',
+	'Sources:': 'Sources :',
+	'Step outside with my first drink': 'Sortir avec ma première boisson',
+	'Stop caffeine about 9 hours before bedtime; the Coffee and tea card tells you until when.':
+		'Arrêtez la caféine environ 9 heures avant le coucher ; la carte Café et thé vous dit jusqu’à quand.',
+	'Strong evidence': 'Preuves solides',
+	'Switch off the ceiling light': 'Éteindre le plafonnier',
+	'Switch to herbal tea after lunch': 'Passer à la tisane après le déjeuner',
+	'Thirty seconds of cold at the end': 'Trente secondes de froid à la fin',
+	'Three slow sighs': 'Trois soupirs lents',
+	'Wait 90 minutes before coffee': 'Attendre 90 minutes avant le café',
+	'Wait 90 minutes before the first coffee': 'Attendre 90 minutes avant le premier café',
+	'Wake at the same time every day': 'Se lever à la même heure chaque jour',
+	'Wake at the same time': 'Se lever à la même heure',
+	'Winter swimmers who did about this much had more active brown fat and burned more energy in the cold.':
+		'Les nageurs d’hiver qui en faisaient à peu près autant avaient une graisse brune plus active et brûlaient plus d’énergie au froid.',
+	'With a heart condition or after a long break, start slowly and ask a doctor.':
+		'En cas de maladie cardiaque ou après un long arrêt, commencez doucement et demandez à un médecin.',
+	'Within an hour of waking, spend 5 to 10 minutes outside in daylight (10 to 20 when it is cloudy), without sunglasses. Never look straight at the sun.':
+		'Dans l’heure qui suit le réveil, passez 5 à 10 minutes dehors à la lumière du jour (10 à 20 par temps couvert), sans lunettes de soleil. Ne regardez jamais le soleil en face.',
+	'Zone 2 cardio and strength': 'Endurance en zone 2 et renforcement',
+	'Zone 2 cardio': 'Endurance en zone 2',
+	'outside, on the balcony or a short walk': 'dehors, sur le balcon ou en marchant un peu'
 };
