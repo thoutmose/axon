@@ -2216,6 +2216,27 @@ test('progress rewards are opt-in, explain every point, and reflect every area',
 	await expect(page.getByRole('link', { name: /^Level \d+ · \d+-day run/ })).toBeVisible();
 });
 
+test('the owner invites someone with a link that says who invites them', async ({ browser }) => {
+	await page.goto('/account');
+	const invites = page.getByRole('region', { name: 'Invitations' });
+	await invites.getByLabel('For whom (a note for you)').fill('For Sam');
+	await invites.getByLabel('Also into my household').check();
+	await invites.getByRole('button', { name: 'Create a link' }).click();
+	const link = await invites.getByLabel('Invitation link').inputValue();
+	expect(link).toContain('/register?invite=');
+	await expect(invites.getByRole('listitem').filter({ hasText: 'For Sam' })).toContainText(
+		'Waiting'
+	);
+	await noSeriousA11yViolations(page);
+
+	const guest = await (await browser.newContext()).newPage();
+	await guest.goto(link.replace(/^https?:\/\/[^/]+/, origin));
+	await expect(guest.getByRole('note')).toContainText(
+		'E2E Owner invites you to their Axon, and to their household.'
+	);
+	await guest.context().close();
+});
+
 test('sign out, then sign back in with the passkey', async () => {
 	await page.goto('/account');
 	await Promise.all([

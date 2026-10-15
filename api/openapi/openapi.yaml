@@ -150,6 +150,82 @@ paths:
                   totp_available: { type: boolean }
                   demo_available: { type: boolean, description: "The server offers the shared demo account (AXON_DEMO=1)." }
                   demo_session: { type: boolean, description: The caller is signed into the demo account. }
+  /v1/auth/invite:
+    get:
+      tags: [auth]
+      operationId: getInvite
+      summary: Who invites the holder of an invitation link
+      security: []
+      parameters:
+        - { name: token, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: A usable invitation.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [inviter, household]
+                properties:
+                  inviter: { type: string }
+                  household: { type: boolean, description: "Signing up with it joins the inviter's household." }
+        "404": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+  /v1/invites:
+    get:
+      tags: [account]
+      operationId: listInvites
+      summary: The owner's invitations, newest first
+      responses:
+        "200":
+          description: Invitations, without their links.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Invite" } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [account]
+      operationId: createInvite
+      summary: Invite one person, with a link used once (owner only)
+      description: "Only the first account of this Axon can invite. The link carries 256 random bits, shown once; only their SHA-256 is stored."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                note: { type: string, maxLength: 200, example: For Sam }
+                household: { type: boolean, description: "Bring the person into the owner's household." }
+                days: { type: integer, minimum: 1, maximum: 30, default: 7 }
+      responses:
+        "201":
+          description: The invitation, with its link.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Invite" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/invites/{id}:
+    delete:
+      tags: [account]
+      operationId: revokeInvite
+      summary: Revoke an unused invitation; a used one stays as a record
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Revoked. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/auth/register/begin:
     post:
       tags: [auth]
@@ -170,6 +246,7 @@ paths:
                   type: string
                   maxLength: 64
                   description: The browser's IANA time zone, such as Europe/Paris. The account starts in it; one the server does not know leaves UTC.
+                invite: { type: string, maxLength: 100, description: "The token of an invitation link (EP-120): lets this person register when registration is closed; spent when the account is created." }
       responses:
         "200": { $ref: "#/components/responses/WebAuthnOptions" }
         "400": { $ref: "#/components/responses/Problem" }
@@ -8563,6 +8640,18 @@ components:
         skill_id: { type: [string, "null"], format: uuid }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    Invite:
+      type: object
+      required: [id, note, household, expires_at, created_at, used_at, used_by_name]
+      properties:
+        id: { type: string, format: uuid }
+        note: { type: string }
+        household: { type: boolean }
+        expires_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        used_at: { type: [string, "null"], format: date-time }
+        used_by_name: { type: [string, "null"] }
+        url: { type: string, description: "The link, only in the answer that creates it." }
     Decision:
       type: object
       required: [id, title, context, choice, expected, probability, decided_on, review_on, happened, outcome, lessons, reviewed_on, due, created_at]

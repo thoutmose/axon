@@ -31,6 +31,7 @@ func (s *Service) Routes(r chi.Router) {
 		r.Post("/v1/auth/login/finish", s.loginFinish)
 		r.Post("/v1/auth/recovery", s.recoveryLogin)
 		r.Post("/v1/auth/demo", s.demoLogin)
+		r.Get("/v1/auth/invite", s.inviteInfo)
 	})
 	// Each start stores a state row: limited on its own, more loosely than
 	// passkey attempts. The callback needs that state's cookie.
@@ -56,6 +57,9 @@ func (s *Service) Routes(r chi.Router) {
 		r.With(NotDemo).Post("/v1/me/totp/disable", s.totpDisable)
 		r.Get("/v1/me/audit", s.listAudit)
 		r.Get("/v1/me/identities", s.listIdentities)
+		r.Get("/v1/invites", s.listInvites)
+		r.With(NotDemo).Post("/v1/invites", s.createInvite)
+		r.With(NotDemo).Delete("/v1/invites/{id}", s.revokeInvite)
 		r.Delete("/v1/me/identities/{id}", s.unlinkIdentity)
 	})
 }
@@ -119,6 +123,7 @@ func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		DisplayName string `json:"display_name"`
 		Timezone    string `json:"timezone"` // the browser's; one this server does not know is left out
+		Invite      string `json:"invite"`   // a link's token, when registration is closed (EP-120)
 	}
 	if err := httpx.Decode(r, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
@@ -137,7 +142,16 @@ func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	if !open {
+	var invite []byte
+	if body.Invite != "" {
+		if _, _, err := pendingInvite(r.Context(), s.db, body.Invite); err == nil {
+			invite = hashInvite(body.Invite)
+		} else if !errors.Is(err, errNotFound) {
+			s.fail(w, r, err)
+			return
+		}
+	}
+	if !open && invite == nil {
 		httpx.Problem(w, http.StatusForbidden, "Registration is closed on this Axon.")
 		return
 	}
@@ -147,7 +161,7 @@ func (s *Service) registerBegin(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
-	if err := s.saveCeremony(r.Context(), w, "register", ceremony{DisplayName: name, Timezone: body.Timezone, Session: *session}); err != nil {
+	if err := s.saveCeremony(r.Context(), w, "register", ceremony{DisplayName: name, Timezone: body.Timezone, Invite: invite, Session: *session}); err != nil {
 		s.fail(w, r, err)
 		return
 	}
@@ -162,12 +176,16 @@ func (s *Service) registerFinish(w http.ResponseWriter, r *http.Request) {
 		if _, err := tx.Exec(r.Context(), `SELECT pg_advisory_xact_lock(7364001)`); err != nil {
 			return err
 		}
-		if open, err := s.registrationOpen(r.Context(), tx); err != nil || !open {
-			return errors.Join(err, errRegistrationClosed)
+		open, err := s.registrationOpen(r.Context(), tx)
+		if err != nil {
+			return err
 		}
 		c, err := s.takeCeremony(r.Context(), tx, w, r, "register")
 		if err != nil {
 			return err
+		}
+		if !open && c.Invite == nil {
+			return errRegistrationClosed
 		}
 		userID, err := uuid.FromBytes(c.Session.UserID)
 		if err != nil {
@@ -184,6 +202,11 @@ func (s *Service) registerFinish(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := insertPasskey(r, tx, u.ID, "First passkey", cred); err != nil {
 			return err
+		}
+		if c.Invite != nil { // spent once, here, or the account is not created
+			if err := useInvite(r.Context(), tx, c.Invite, u.ID); err != nil {
+				return err
+			}
 		}
 		if codes, err = issueRecoveryCodes(r.Context(), tx, u.ID); err != nil {
 			return err

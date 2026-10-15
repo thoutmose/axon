@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
+	import Invitations from '$lib/Invitations.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Section from '$lib/ui/Section.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -177,6 +178,7 @@
 		</ul>
 		<Button variant="secondary" onclick={signOut} {busy}>{t('Sign out')}</Button>
 	</Section>
+	<Invitations />
 {:else if error}
 	<Status kind="error" message={error} retry={load} />
 {:else}

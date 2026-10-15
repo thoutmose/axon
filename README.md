@@ -92,6 +92,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Coffee and tea: caffeine against EFSA's daily limit, what is left at bedtime, and the last coffee that keeps your sleep intact, set to your bedtime and metabolism.
 - ✅ Andrew Huberman's health protocols on Habits, each with its studies, an honest grade of the evidence, and a habit in one click.
 - ✅ A collection on Progress: a trophy per roadmap skill, a card per habit, and milestones, raised from bronze to silver to gold.
+- ✅ Invitations: the owner brings someone in with a link used once, even while registration is closed, and into the household.
 - ✅ Certifications: planned, booked, passed, or failed, with the exam countdown, cost against the plan, credential, and expiry with a renewal warning; exams and expiries on the calendar. The roadmap plans its nine exams.
 - ✅ Study hours against the plan: focus time on a roadmap, this week day by day beside the plan's block and over 12 weeks against its weekly target, by skill and project.
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
@@ -395,7 +396,7 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_BASE_URL` | Yes | `https://axon.example` | Canonical URL and callback origin. |
 | `DATABASE_URL` | Yes | `postgres://...` | PostgreSQL connection; store as a secret. |
 | `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
-| `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register; `open` allows anyone who can reach Axon. |
+| `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register, and others only with the owner's invitation link; `open` allows anyone who can reach Axon. |
 | `AXON_DEMO` | No | `1` | Offer a shared demo account with sample data, reset every night, and show the one-minute teaser on the home page. |
 | `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
 | `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
