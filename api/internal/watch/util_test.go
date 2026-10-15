@@ -14,6 +14,13 @@ func TestCanonical(t *testing.T) {
 		"https://medium.com/@ada/post-1?source=rss----1":    "https://medium.com/@ada/post-1",
 		"https://example.substack.com/p/x?utm_medium=email": "https://example.substack.com/p/x",
 		"https://example.com:443/x?fbclid=1":                "https://example.com/x",
+		// YouTube in all its forms is one video, without its share tracking (EP-123).
+		"https://youtu.be/dQw4w9WgXcQ?si=Ab12":                                 "https://youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://m.youtube.com/watch?v=dQw4w9WgXcQ&feature=share&pp=yg":        "https://youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://www.youtube.com/shorts/abcDEF12345?feature=share":             "https://youtube.com/watch?v=abcDEF12345",
+		"https://youtu.be/dQw4w9WgXcQ?t=42":                                    "https://youtube.com/watch?t=42&v=dQw4w9WgXcQ",
+		"https://www.linkedin.com/posts/x?trk=public_post&rcm=ACoAA":           "https://linkedin.com/posts/x",
+		"https://example.com/x?mibextid=Zb&__twitter_impression=true&gs_lcp=1": "https://example.com/x",
 	} {
 		if got := Canonical(in); got != want {
 			t.Errorf("Canonical(%q) = %q, want %q", in, got, want)
@@ -21,6 +28,25 @@ func TestCanonical(t *testing.T) {
 	}
 	if string(URLHash("https://example.com/x?utm_source=a")) != string(URLHash("http://www.example.com/x/")) {
 		t.Fatal("the same page hashes differently")
+	}
+}
+
+func TestCleanLinksAndVideoID(t *testing.T) {
+	md := "See [the talk](https://youtu.be/dQw4w9WgXcQ?si=x) and https://example.com/a?utm_source=rss&id=3."
+	if got := CleanLinks(md); got != "See [the talk](https://youtube.com/watch?v=dQw4w9WgXcQ) and https://example.com/a?id=3." {
+		t.Fatalf("CleanLinks = %q", got)
+	}
+	for in, want := range map[string]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PL1": "dQw4w9WgXcQ",
+		"https://youtu.be/dQw4w9WgXcQ":                         "dQw4w9WgXcQ",
+		"https://youtube.com/shorts/abcDEF12345":               "abcDEF12345",
+		"https://www.youtube.com/embed/abcDEF12345":            "abcDEF12345",
+		"https://example.com/watch?v=dQw4w9WgXcQ":              "",
+		"https://youtube.com/watch?v=short":                    "",
+	} {
+		if got := VideoID(in); got != want {
+			t.Errorf("VideoID(%q) = %q, want %q", in, got, want)
+		}
 	}
 }
 

@@ -15,6 +15,7 @@ import (
 
 	"github.com/kljensen/snowball/english"
 	"github.com/kljensen/snowball/french"
+	"github.com/kljensen/snowball/spanish"
 )
 
 var (
@@ -34,7 +35,7 @@ func Clean(md string) string {
 	return markup.ReplaceAllString(s, " ")
 }
 
-var stopwords, enStop, frStop = map[string]bool{}, map[string]bool{}, map[string]bool{}
+var stopwords, enStop, frStop, esStop = map[string]bool{}, map[string]bool{}, map[string]bool{}, map[string]bool{}
 
 func init() {
 	for _, w := range strings.Fields(`a about above after again against all also am an and any are as at be because been
@@ -52,13 +53,22 @@ func init() {
 		sont était sans entre leur cela ceci dont où quand mieux alors encore`) {
 		stopwords[w], frStop[w] = true, true
 	}
+	// Spanish (EP-123), without words that are also English ones (era, solo, han, sin…).
+	for _, w := range strings.Fields(`el la los las un una unos unas del al de en y que por para con como pero más muy sus su este esta estos
+		estas ese esa eso entre cuando también porque sobre desde hasta donde mientras cada otro otra otros otras puede pueden
+		ser está están fue son hay tiene tienen hace hacen sido había nos les lo le mismo misma ya aún sino según durante sin
+		todo toda todos todas nuestro nuestra vuestro mucho muchos poco pocos algunos algunas aquí allí así bien tan`) {
+		if !enStop[w] && w != "sin" {
+			stopwords[w], esStop[w] = true, true
+		}
+	}
 	loadThesaurus()
 }
 
-// Language guesses whether a text is French or English from its function
-// words ("fr" or "en"; English when unsure).
+// Language guesses whether a text is English, French, or Spanish from its
+// function words ("en", "fr", or "es"; English when unsure).
 func Language(text string) string {
-	en, fr := 0, 0
+	en, fr, es := 0, 0, 0
 	for _, f := range strings.FieldsFunc(strings.ToLower(text), func(r rune) bool { return !unicode.IsLetter(r) && r != '\'' }) {
 		if i := strings.LastIndex(f, "'"); i >= 0 {
 			f = f[i+1:]
@@ -69,8 +79,14 @@ func Language(text string) string {
 		if frStop[f] {
 			fr++
 		}
+		if esStop[f] {
+			es++
+		}
 	}
-	if fr > en {
+	switch {
+	case es > en && es > fr:
+		return "es"
+	case fr > en:
 		return "fr"
 	}
 	return "en"
@@ -78,8 +94,11 @@ func Language(text string) string {
 
 // StemIn reduces a word with the Snowball stemmer for its language.
 func StemIn(w, lang string) string {
-	if lang == "fr" {
+	switch lang {
+	case "fr":
 		return french.Stem(w, false)
+	case "es":
+		return spanish.Stem(w, false)
 	}
 	return english.Stem(w, false)
 }

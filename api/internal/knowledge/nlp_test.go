@@ -2,6 +2,7 @@ package knowledge
 
 import (
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -79,5 +80,21 @@ func TestWordNetSynonyms(t *testing.T) {
 	}
 	if Synonyms(Stem("note"), Stem("bill")) {
 		t.Error("a rare sense linked note to bill")
+	}
+}
+
+// Transcripts and news come in more than one language (EP-123): Spanish is
+// recognised and stemmed too, and English stays English.
+func TestSpanish(t *testing.T) {
+	es := "Las bases de datos distribuidas replican los datos entre varios servidores para que el sistema siga funcionando cuando uno falla."
+	if Language(es) != "es" {
+		t.Fatalf("Language = %q", Language(es))
+	}
+	stems, _ := TokensIn("bases distribuidas replicando", "es")
+	if strings.Join(stems, " ") != "bas distribu replic" {
+		t.Fatalf("stems = %v", stems)
+	}
+	if Language("The solo developer shipped a new era of tools for the Han dynasty museum.") != "en" {
+		t.Fatal("English read as Spanish")
 	}
 }

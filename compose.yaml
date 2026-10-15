@@ -40,6 +40,9 @@ services:
       AXON_SMTP_URL: ${AXON_SMTP_URL:-} # reminder emails (EP-56): smtp://user:pass@host:587 or smtps://…:465
       AXON_SMTP_FROM: ${AXON_SMTP_FROM:-} # the sender address of reminder emails
       AXON_CALENDAR_PRIVATE: ${AXON_CALENDAR_PRIVATE:-} # "1": followed calendars may be on your own network (EP-58)
+      AXON_WHISPER_URL: ${AXON_WHISPER_URL:-} # your Whisper server (OpenAI transcription API), for videos without captions (EP-123)
+      AXON_WHISPER_MODEL: ${AXON_WHISPER_MODEL:-}
+      AXON_WHISPER_TOKEN: ${AXON_WHISPER_TOKEN:-}
     security_opt: [no-new-privileges:true] # no setuid escalation inside the container
     cap_drop: [ALL] # needs no Linux capability
     depends_on:

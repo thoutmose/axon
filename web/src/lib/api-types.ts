@@ -4566,6 +4566,26 @@ export interface paths {
 		patch: operations['updateWatchItem'];
 		trace?: never;
 	};
+	'/v1/watch/items/{id}/transcript': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Read a YouTube video's words now, and analyse the item again with them
+		 * @description From YouTube's captions (the author's in the spoken language, else the automatic ones), else, when the operator set AXON_WHISPER_URL, from the video's audio transcribed by that Whisper server. A video read once is not asked for again. Refused to the shared demo.
+		 */
+		post: operations['transcribeWatchItem'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/watch/items/{id}/keep': {
 		parameters: {
 			query?: never;
@@ -4911,6 +4931,13 @@ export interface components {
 			note_id: string | null;
 			/** @enum {string} */
 			kind: 'article' | 'video' | 'podcast';
+			/**
+			 * @description Where a video's words came from (EP-123); empty without a transcript.
+			 * @enum {unknown}
+			 */
+			transcript_source: '' | 'captions' | 'auto_captions' | 'whisper';
+			/** @description The transcript's language, as YouTube or Whisper gave it. */
+			transcript_lang: string;
 		};
 		WatchEpisode: {
 			title: string;
@@ -17934,6 +17961,33 @@ export interface operations {
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	transcribeWatchItem: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The item, with its transcript in its content. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchItem'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
 		};
 	};
 	keepWatchItem: {

@@ -3671,5 +3671,12 @@ export const fr: Record<string, string> = {
 	'Full screen': 'Plein écran',
 	'Scroll or pinch to zoom, drag to move.':
 		'Faites défiler ou pincez pour zoomer, glissez pour déplacer.',
-	Zoom: 'Zoom'
+	Zoom: 'Zoom',
+	'Its words join the analysis and the graph.': 'Ses mots rejoignent l’analyse et le graphe.',
+	'Read the transcript': 'Lire la transcription',
+	'Transcript added.': 'Transcription ajoutée.',
+	'Transcript {source}': 'Transcription {source}',
+	'from the author’s captions': 'tirée des sous-titres de l’auteur',
+	'from YouTube’s automatic captions': 'tirée des sous-titres automatiques de YouTube',
+	'transcribed by Whisper': 'faite par Whisper'
 };

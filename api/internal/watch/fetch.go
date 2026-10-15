@@ -89,6 +89,10 @@ func (w *Worker) Step(ctx context.Context, now time.Time) error {
 		}()
 	}
 	wg.Wait()
+	// A few videos get their words (EP-123).
+	if err := TranscribePending(ctx, w.DB, WhisperFromEnv(), PendingTranscripts); err != nil {
+		return err
+	}
 	if now.Sub(w.lastPurge) > 24*time.Hour {
 		w.lastPurge = now
 		if n, err := Purge(ctx, w.DB, now.Add(-Retention)); err != nil {

@@ -202,7 +202,7 @@ func find(stems []string, has func(string) bool) []string {
 func outlier(e Entry, text string, words int) string {
 	links := len(linkRe.FindAllString(e.Content+e.Summary, -1))
 	switch {
-	case words < 25 && e.Audio == "" && !strings.Contains(e.URL, "youtube.com"):
+	case words < 25 && e.Audio == "" && VideoID(e.URL) == "":
 		return "too short"
 	case words > 0 && links*8 > words:
 		return "mostly links"
