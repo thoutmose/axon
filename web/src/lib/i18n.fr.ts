@@ -3678,5 +3678,19 @@ export const fr: Record<string, string> = {
 	'Transcript {source}': 'Transcription {source}',
 	'from the author’s captions': 'tirée des sous-titres de l’auteur',
 	'from YouTube’s automatic captions': 'tirée des sous-titres automatiques de YouTube',
-	'transcribed by Whisper': 'faite par Whisper'
+	'transcribed by Whisper': 'faite par Whisper',
+	'API token': 'Jeton d’API',
+	'Connected to {url} · {n} shows': 'Connecté à {url} · {n} émissions',
+	'Connected: {n} shows in your tech watch.': 'Connecté : {n} émissions dans votre veille.',
+	'Follow the podcasts your Audiobookshelf server downloads in the tech watch: each show is a source, each episode news with its notes, and, when Axon is set up with a Whisper server, its words. The token is sealed and never shown again.':
+		'Suivez dans la veille les podcasts que votre serveur Audiobookshelf télécharge : chaque émission est une source, chaque épisode une actualité avec ses notes, et, quand Axon dispose d’un serveur Whisper, ses paroles. Le jeton est scellé et n’est plus jamais affiché.',
+	'New API token (empty keeps the saved one)': 'Nouveau jeton d’API (vide garde celui enregistré)',
+	'Podcasts from Audiobookshelf': 'Podcasts d’Audiobookshelf',
+	'Podcasts you download with Audiobookshelf can follow here too:':
+		'Les podcasts que vous téléchargez avec Audiobookshelf peuvent aussi être suivis ici :',
+	'Stop following your Audiobookshelf podcasts? Their episodes stay in the tech watch.':
+		'Ne plus suivre vos podcasts Audiobookshelf ? Leurs épisodes restent dans la veille.',
+	'Sync now': 'Synchroniser',
+	'synced {date}': 'synchronisé le {date}',
+	'{n} new episodes.': '{n} nouveaux épisodes.'
 };

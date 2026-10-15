@@ -1370,6 +1370,15 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	await expect(page.getByText('Buy batteries while offline')).toBeVisible();
 });
 
+test('podcasts from Audiobookshelf are set up in Preferences, with a token never shown again', async () => {
+	await page.goto('/account/preferences#audiobookshelf');
+	const abs = page.getByRole('region', { name: 'Podcasts from Audiobookshelf' });
+	await expect(abs.getByLabel('Address')).toBeVisible();
+	await expect(abs.getByLabel('API token')).toHaveAttribute('type', 'password');
+	await expect(abs.getByRole('button', { name: 'Connect' })).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('reminders: times saved, and a test says when nothing can receive it', async () => {
 	await page.goto('/account/preferences');
 	const section = page.getByRole('region', { name: 'Reminders and digests' });

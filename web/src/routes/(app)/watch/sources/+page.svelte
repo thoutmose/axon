@@ -262,6 +262,10 @@
 
 <p><a href="/watch">← {t('Tech watch')}</a></p>
 <h1>{t('Sources and health')}</h1>
+<p class="muted">
+	{t('Podcasts you download with Audiobookshelf can follow here too:')}
+	<a href="/account/preferences#audiobookshelf">{t('Podcasts from Audiobookshelf')}</a>
+</p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />

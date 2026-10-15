@@ -54,30 +54,27 @@ func CleanLinks(text string) string {
 			trail = l[len(l)-1:] + trail
 			l = l[:len(l)-1]
 		}
-		return Canonical(l) + trail
+		return Clean(l) + trail
 	})
 }
 
-// Canonical normalises a link so the same article is recognised from any
-// feed: lower-case host without "www.", no tracking parameters (utm_*,
-// fbclid…), no fragment, sorted query, no trailing slash, http as https.
-func Canonical(raw string) string {
+// Clean drops a link's trackers (utm_*, fbclid…) and fragment, and turns
+// every form of a YouTube link into one; its scheme, host, and port stay,
+// so it still leads where it led (a server on the LAN over http).
+func Clean(raw string) string {
 	u, err := url.Parse(strings.TrimSpace(raw))
 	if err != nil || u.Host == "" {
 		return strings.TrimSpace(raw)
 	}
 	if id := VideoID(raw); id != "" { // every form of a YouTube link, one video
 		q := u.Query()
-		u.Host, u.Path = "youtube.com", "/watch"
+		u.Scheme, u.Host, u.Path = "https", "youtube.com", "/watch"
 		keep := url.Values{"v": {id}}
 		if t := q.Get("t"); t != "" {
 			keep.Set("t", t)
 		}
 		u.RawQuery = keep.Encode()
 	}
-	u.Scheme = "https"
-	u.Host = strings.TrimPrefix(strings.ToLower(u.Host), "www.")
-	u.Host = strings.TrimSuffix(strings.TrimSuffix(u.Host, ":443"), ":80")
 	u.Fragment, u.User = "", nil
 	q := u.Query()
 	for k := range q {
@@ -87,6 +84,20 @@ func Canonical(raw string) string {
 		}
 	}
 	u.RawQuery = q.Encode() // sorted by key
+	return u.String()
+}
+
+// Canonical normalises a link so the same article is recognised from any
+// feed: Clean, then lower-case host without "www.", no trailing slash, and
+// http as https.
+func Canonical(raw string) string {
+	u, err := url.Parse(Clean(raw))
+	if err != nil || u.Host == "" {
+		return strings.TrimSpace(raw)
+	}
+	u.Scheme = "https"
+	u.Host = strings.TrimPrefix(strings.ToLower(u.Host), "www.")
+	u.Host = strings.TrimSuffix(strings.TrimSuffix(u.Host, ":443"), ":80")
 	if u.Path != "/" {
 		u.Path = strings.TrimSuffix(path.Clean("/"+u.Path), "/")
 	}

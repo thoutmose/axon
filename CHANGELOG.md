@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Podcasts from Audiobookshelf** (EP-124): connect your Audiobookshelf in Preferences and every podcast it downloads follows in the tech watch, each episode with its notes and, with a Whisper server, its words read from your own copy.
 - **YouTube in the tech watch** (EP-123): videos get their words from YouTube's captions, or from your own Whisper server when they have none, and those words join their analysis, topics, and the news graph; Spanish is understood beside English and French; links lose their tracking (`si`, `fbclid`, `utm_*`…), and every form of a YouTube link is one video.
 - **A practical knowledge graph** (EP-122): both graphs zoom and pan with the wheel, a drag, or a pinch, fit, go full screen, find a node by name, and place their labels without overlap.
 - **Share as a picture** (EP-121): share your level, a card of your collection, a goal, or a habit's run as a picture made on your device, through the share sheet, a download, a copy, or a post on X, LinkedIn, or Bluesky.

@@ -14,6 +14,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/ankisync"
+	"github.com/thoutmose/axon/api/internal/audiobookshelf"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/avatars"
 	"github.com/thoutmose/axon/api/internal/budget"
@@ -138,6 +139,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("vault_source", vaultsrv.Export)
 	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
 	watchAPI := watch.NewHandlers(pool, log)
+	absAPI := audiobookshelf.NewStore(pool, log, sealer)
 	priv.Register("channels", notify.Export)
 	priv.Register("sign_in_identities", auth.ExportIdentities)
 	// What the API says to people, in their language (EP-87), on every route.
@@ -215,6 +217,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				vaultAPI.Routes(r)
 				notifyAPI.Routes(r)
 				watchAPI.Routes(r)
+				absAPI.Routes(r)
 			})
 		})
 	})), nil
