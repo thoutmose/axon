@@ -99,6 +99,15 @@ type Doc struct {
 	Menu         Menu         `json:"menu" yaml:"menu"`
 	Digest       Digest       `json:"digest" yaml:"digest"`
 	Podcast      Podcast      `json:"podcast" yaml:"podcast"`
+	Caffeine     Caffeine     `json:"caffeine" yaml:"caffeine"`
+}
+
+// Caffeine (EP-117): when the person goes to bed, and how fast they clear
+// caffeine (its half-life: fast 3 h, average 5 h, slow 7 h; slower in
+// pregnancy or with oral contraceptives, faster for smokers).
+type Caffeine struct {
+	Bedtime    string `json:"bedtime" yaml:"bedtime"`       // "23:00"
+	Metabolism string `json:"metabolism" yaml:"metabolism"` // fast, average, slow
 }
 
 // Digest (EP-113) is the person's digest template: the sections of each
@@ -154,7 +163,7 @@ type Today struct {
 }
 
 // TodaySections are the sections Today can show.
-var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "journal", "water", "overview"}
+var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "journal", "water", "caffeine", "overview"}
 
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them
@@ -219,7 +228,8 @@ func Defaults() Doc {
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 		Digest: Digest{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
 			Monthly: []string{"goals", "month", "watch"}, Quote: true, Picture: true},
-		Podcast: Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1},
+		Podcast:  Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1},
+		Caffeine: Caffeine{Bedtime: "23:00", Metabolism: "average"},
 	}
 }
 
@@ -289,7 +299,7 @@ func (d Doc) Validate() error {
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
 	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening},
-		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}} {
+		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}, {"caffeine.bedtime", d.Caffeine.Bedtime}} {
 		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
 			return FieldError{t.path, "is a time like 08:00, or empty for none"}
 		}
@@ -322,6 +332,12 @@ func (d Doc) Validate() error {
 			}
 			seen[sec] = true
 		}
+	}
+	if d.Caffeine.Bedtime == "" {
+		return FieldError{"caffeine.bedtime", "is a time like 23:00"}
+	}
+	if err := oneOf("caffeine.metabolism", d.Caffeine.Metabolism, "fast", "average", "slow"); err != nil {
+		return err
 	}
 	p := d.Podcast
 	if err := oneOf("podcast.format", p.Format, "briefing", "digest", "deep"); err != nil {

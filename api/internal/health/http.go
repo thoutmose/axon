@@ -57,6 +57,9 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/health/water", h.water)
 	r.Post("/v1/health/water", h.addWater)
 	r.Delete("/v1/health/water/{id}", h.deleteWater)
+	r.Get("/v1/health/caffeine", h.caffeine)
+	r.Post("/v1/health/caffeine", h.addCaffeine)
+	r.Delete("/v1/health/caffeine/{id}", h.deleteCaffeine)
 	r.Put("/v1/health/profile", h.putProfile)
 	r.Get("/v1/health/workouts", h.workouts)
 	r.Post("/v1/health/workouts", h.createWorkout)
@@ -448,6 +451,62 @@ func (h *Handlers) deleteWater(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err == nil {
 		err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error { return DeleteWater(r.Context(), tx, user, id) })
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) caffeine(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	loc, _ := clock.Zone(r.Context(), h.db, user) // UTC when it cannot be read
+	day, ok := h.dateOr(w, r.URL.Query().Get("date"), clock.Day(h.now(), loc))
+	if !ok {
+		return
+	}
+	d, err := CaffeineOn(r.Context(), h.db, user, day, loc, h.now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, d)
+}
+
+func (h *Handlers) addCaffeine(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	var in CaffeineInput
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var e CaffeineEntry
+	err := pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) (err error) {
+		e, err = AddCaffeine(r.Context(), tx, user, in, h.now())
+		return err
+	})
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusCreated, e)
+}
+
+func (h *Handlers) deleteCaffeine(w http.ResponseWriter, r *http.Request) {
+	user, ok := h.guard(w, r, Consent)
+	if !ok {
+		return
+	}
+	id, err := pathID(r)
+	if err == nil {
+		err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error { return DeleteCaffeine(r.Context(), tx, user, id) })
 	}
 	if err != nil {
 		h.fail(w, err)

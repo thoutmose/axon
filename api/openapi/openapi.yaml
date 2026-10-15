@@ -5542,6 +5542,92 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/health/caffeine:
+    get:
+      tags: [health]
+      operationId: getCaffeine
+      summary: Caffeine taken on a day, against the limit and the night after it
+      description: "Caffeine halves every half-life (3, 5, or 7 hours by the person's metabolism setting). The limit is EFSA's: 400 mg a day, 200 mg when pregnant or breastfeeding. The cut-off is the last moment a coffee (107 mg) still leaves no more than about 32 mg at bedtime: what it leaves 8.8 hours later, the gap that keeps sleep intact (Gardiner et al., 2023)."
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date }, description: "Defaults to the person's today." }
+      responses:
+        "200":
+          description: The day.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [date, total_mg, limit_mg, entries, now_mg, bedtime, at_bedtime_mg, bedtime_mg, cutoff, half_life_hours, week, drinks]
+                properties:
+                  date: { type: string, format: date }
+                  total_mg: { type: integer }
+                  limit_mg: { type: integer }
+                  entries: { type: array, items: { $ref: "#/components/schemas/CaffeineEntry" } }
+                  now_mg: { type: number, description: "Left in the body now." }
+                  bedtime: { type: string, format: date-time }
+                  at_bedtime_mg: { type: number, description: "Left at bedtime, from this day and the two before." }
+                  bedtime_mg: { type: number, description: "The threshold for sleep." }
+                  cutoff: { type: [string, "null"], format: date-time, description: "The last coffee that keeps sleep intact; null when even one now is too much." }
+                  half_life_hours: { type: number }
+                  week:
+                    type: array
+                    items:
+                      type: object
+                      required: [date, total_mg]
+                      properties:
+                        date: { type: string, format: date }
+                        total_mg: { type: integer }
+                  drinks:
+                    type: array
+                    description: "The drinks offered, with their usual caffeine per serving (USDA FoodData Central, EFSA)."
+                    items:
+                      type: object
+                      required: [kind, mg, ml]
+                      properties:
+                        kind: { enum: [espresso, coffee, instant, tea, green_tea, matcha, cola, energy, decaf, other] }
+                        mg: { type: integer }
+                        ml: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [health]
+      operationId: addCaffeine
+      summary: Log a coffee, a tea, or another drink with caffeine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind]
+              additionalProperties: false
+              properties:
+                kind: { enum: [espresso, coffee, instant, tea, green_tea, matcha, cola, energy, decaf, other] }
+                mg: { type: [integer, "null"], minimum: 1, maximum: 1000, description: "Its caffeine, when not the usual; required for other." }
+                at: { type: [string, "null"], format: date-time, description: "When, in the last 30 days; now when absent." }
+      responses:
+        "201":
+          description: The drink.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CaffeineEntry" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/health/caffeine/{id}:
+    delete:
+      tags: [health]
+      operationId: deleteCaffeine
+      summary: Remove a drink with caffeine
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
   /v1/health/needs:
     get:
       tags: [wellbeing]
@@ -9147,6 +9233,14 @@ components:
         protein_g: { type: number }
         carbs_g: { type: number }
         fat_g: { type: number }
+    CaffeineEntry:
+      type: object
+      required: [id, at, kind, mg]
+      properties:
+        id: { type: string, format: uuid }
+        at: { type: string, format: date-time }
+        kind: { enum: [espresso, coffee, instant, tea, green_tea, matcha, cola, energy, decaf, other] }
+        mg: { type: integer }
     WaterEntry:
       type: object
       required: [id, drunk_on, ml, created_at]
@@ -9642,7 +9736,7 @@ components:
               type: array
               maxItems: 12
               uniqueItems: true
-              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, water, overview] }
+              items: { enum: [kpis, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, water, caffeine, overview] }
         menu:
           type: object
           required: [hidden, chosen]
@@ -9679,6 +9773,13 @@ components:
             monthly: { type: array, uniqueItems: true, items: { enum: [goals, month, watch] } }
             quote: { type: boolean }
             picture: { type: boolean }
+        caffeine:
+          type: object
+          additionalProperties: false
+          description: "Coffee and tea (EP-117): bedtime, for the caffeine left then and the cut-off, and how fast the person clears caffeine (half-life fast 3 h, average 5 h, slow 7 h)."
+          properties:
+            bedtime: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$", example: "23:00" }
+            metabolism: { enum: [fast, average, slow] }
         podcast:
           type: object
           additionalProperties: false

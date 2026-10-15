@@ -924,6 +924,17 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(water).toContainText('0.25 of 2 L');
 	await noSeriousA11yViolations(page);
 
+	// Coffee and tea (EP-117): a coffee and an espresso against the 400 mg limit, then one removed.
+	const coffee = page.getByRole('region', { name: 'Coffee and tea', exact: true });
+	await coffee.getByRole('button', { name: 'Add Coffee, 95 mg' }).click();
+	await expect(coffee).toContainText('95 of 400 mg of caffeine');
+	await coffee.getByRole('button', { name: 'Add Espresso, 63 mg' }).click();
+	await expect(coffee).toContainText('158 of 400 mg of caffeine');
+	await expect(coffee.getByRole('status')).toContainText(/until|past|no more caffeine/);
+	await coffee.getByRole('button', { name: /^Remove Espresso at / }).click();
+	await expect(coffee).toContainText('95 of 400 mg of caffeine');
+	await noSeriousA11yViolations(page);
+
 	// A photo of a meal (EP-89): nothing is sent before the person allows it.
 	const sent: string[] = [];
 	page.on('request', (r) => r.url().includes('/food/estimate') && sent.push(r.url()));

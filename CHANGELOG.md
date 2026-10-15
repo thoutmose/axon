@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Coffee and tea** (EP-117): log each coffee or tea in one tap; see the day against EFSA's limit (400 mg, 200 mg when pregnant or breastfeeding), the caffeine left at bedtime, and the last time a coffee keeps your sleep intact (Gardiner et al., 2023), set to your bedtime and metabolism.
 - **Checked items stay** (EP-116): a task or habit checked off stays in its list, crossed out, until the next day; uncheck it to put it back. Habits can be checked off on Today.
 - **Search in the menu bar** (EP-115): a Search field next to Account opens the command center, which now opens every page as well as finding your items and notes.
 - **A decision journal** (EP-114): write a decision down with what you expect and how likely it is; on its review day, say what happened and what you learned; Axon scores your forecasts (Brier score, a reliability chart, over- or under-confidence), and a forecast cannot be changed once made.

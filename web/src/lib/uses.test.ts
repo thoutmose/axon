@@ -27,6 +27,7 @@ describe('planFor', () => {
 			'calendar',
 			'journal',
 			'water',
+			'caffeine',
 			'overview'
 		]);
 	});

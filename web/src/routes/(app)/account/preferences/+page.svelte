@@ -30,6 +30,7 @@
 	};
 	type Settings = Schemas['Settings'] & {
 		keyboard: { shortcuts: boolean; vim: boolean };
+		caffeine: { bedtime: string; metabolism: 'fast' | 'average' | 'slow' };
 		focus: Focus;
 		gamification: { enabled: boolean };
 		vault: { mirror: boolean; folder: string; health: boolean };
@@ -146,7 +147,8 @@
 				today: loaded.today ?? {
 					sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']
 				},
-				menu: loaded.menu ?? { hidden: [], chosen: false }
+				menu: loaded.menu ?? { hidden: [], chosen: false },
+				caffeine: { bedtime: '23:00', metabolism: 'average', ...loaded.caffeine }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			wip = s.templates.project.wip_limit?.toString() ?? '';
@@ -166,7 +168,8 @@
 			learning: saved.learning ?? learningDefaults,
 			reminders: { ...remindersDefaults, ...saved.reminders },
 			today: saved.today ?? s!.today,
-			menu: saved.menu ?? s!.menu
+			menu: saved.menu ?? s!.menu,
+			caffeine: { bedtime: '23:00', metabolism: 'average', ...saved.caffeine }
 		};
 		setHidden(s.menu.hidden);
 		setLocale(saved.language);
@@ -480,6 +483,30 @@
 					'Each item is a note with its fields in the front matter and its text in sections. Edit either side and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into Archive/ archives it. Health logs also need the health consent and are removed from the vault if you withdraw it.'
 				)}
 				<a href="/notes/templates">{t('See the templates')}</a>
+			</p>
+		</Section>
+
+		<Section id="caffeine" title={t('Coffee and tea')}>
+			<div class="grid">
+				<div class="field">
+					<label for="bedtime">{t('Usual bedtime')}</label>
+					<input id="bedtime" type="time" bind:value={s.caffeine.bedtime} required />
+				</div>
+				<div class="field">
+					<label for="metabolism">{t('How fast you clear caffeine')}</label>
+					<select id="metabolism" bind:value={s.caffeine.metabolism}>
+						<option value="fast">{t('Fast (half-life about 3 h, for example smokers)')}</option>
+						<option value="average">{t('Average (about 5 h)')}</option>
+						<option value="slow"
+							>{t('Slow (about 7 h, for example in pregnancy or with the pill)')}</option
+						>
+					</select>
+				</div>
+			</div>
+			<p class="muted small">
+				{t(
+					'Used to tell how much caffeine is left at bedtime, and the last coffee that keeps your sleep intact.'
+				)}
 			</p>
 		</Section>
 

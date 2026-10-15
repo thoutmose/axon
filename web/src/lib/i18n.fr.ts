@@ -3446,5 +3446,52 @@ export const fr: Record<string, string> = {
 	'Well calibrated: things happen about as often as you say.':
 		'Bien calibré : les choses arrivent à peu près aussi souvent que vous le dites.',
 	'Ctrl K': 'Ctrl K',
-	'Reopen {title}': 'Rouvrir {title}'
+	'Reopen {title}': 'Rouvrir {title}',
+	Espresso: 'Expresso',
+	Coffee: 'Café',
+	'Instant coffee': 'Café soluble',
+	'Black tea': 'Thé noir',
+	'Green tea': 'Thé vert',
+	Matcha: 'Matcha',
+	Cola: 'Cola',
+	'Energy drink': 'Boisson énergisante',
+	Decaf: 'Déca',
+	'Coffee and tea': 'Café et thé',
+	'Caffeine is health data: turn on health logging on the':
+		'La caféine est une donnée de santé : activez le suivi santé sur la page',
+	'{mg} of {limit} mg of caffeine': '{mg} sur {limit} mg de caféine',
+	'Caffeine today against the daily limit': 'Caféine du jour par rapport à la limite quotidienne',
+	'Over the {limit} mg a day that is safe for you: no more caffeine today.':
+		'Au-delà des {limit} mg par jour sans risque pour vous : plus de caféine aujourd’hui.',
+	'A coffee is still fine until {time}, to sleep well at {bedtime}.':
+		'Un café est encore possible jusqu’à {time}, pour bien dormir à {bedtime}.',
+	'It is past {time}: a coffee now would still be in you at {bedtime}.':
+		'Il est plus de {time} : un café maintenant serait encore là à {bedtime}.',
+	'About {mg} mg will still be in you at {bedtime}: no more caffeine today.':
+		'Environ {mg} mg seront encore là à {bedtime} : plus de caféine aujourd’hui.',
+	'In your body now: about {now} mg · at bedtime: about {bed} mg':
+		'Dans votre corps maintenant : environ {now} mg · au coucher : environ {bed} mg',
+	'Add {drink}, {mg} mg': 'Ajouter {drink}, {mg} mg',
+	'Caffeine of another drink, in mg': 'Caféine d’une autre boisson, en mg',
+	mg: 'mg',
+	'{mg} mg': '{mg} mg',
+	'Caffeine this day': 'Caféine de ce jour',
+	'{time} · {drink} · {mg} mg': '{time} · {drink} · {mg} mg',
+	'Remove {drink} at {time}': 'Supprimer {drink} de {time}',
+	'The last seven days, against the daily limit':
+		'Les sept derniers jours, par rapport à la limite quotidienne',
+	'{date}: {mg} mg': '{date} : {mg} mg',
+	'Caffeine halves about every {hours} hours. Limits from EFSA (2015); the sleep cut-off from Gardiner et al. (2023). For information, not medical advice.':
+		'La caféine diminue de moitié environ toutes les {hours} heures. Limites de l’EFSA (2015) ; l’heure limite pour le sommeil d’après Gardiner et al. (2023). À titre d’information, pas un avis médical.',
+	'Bedtime and metabolism': 'Coucher et métabolisme',
+	'Usual bedtime': 'Heure du coucher habituelle',
+	'How fast you clear caffeine': 'Vitesse d’élimination de la caféine',
+	'Fast (half-life about 3 h, for example smokers)':
+		'Rapide (demi-vie d’environ 3 h, par exemple chez les fumeurs)',
+	'Average (about 5 h)': 'Moyenne (environ 5 h)',
+	'Slow (about 7 h, for example in pregnancy or with the pill)':
+		'Lente (environ 7 h, par exemple pendant la grossesse ou sous pilule)',
+	'Used to tell how much caffeine is left at bedtime, and the last coffee that keeps your sleep intact.':
+		'Sert à estimer la caféine restante au coucher, et le dernier café qui préserve votre sommeil.',
+	'Coffee and tea today': 'Café et thé aujourd’hui'
 };

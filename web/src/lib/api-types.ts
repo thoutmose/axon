@@ -3289,6 +3289,44 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/health/caffeine': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Caffeine taken on a day, against the limit and the night after it
+		 * @description Caffeine halves every half-life (3, 5, or 7 hours by the person's metabolism setting). The limit is EFSA's: 400 mg a day, 200 mg when pregnant or breastfeeding. The cut-off is the last moment a coffee (107 mg) still leaves no more than about 32 mg at bedtime: what it leaves 8.8 hours later, the gap that keeps sleep intact (Gardiner et al., 2023).
+		 */
+		get: operations['getCaffeine'];
+		put?: never;
+		/** Log a coffee, a tea, or another drink with caffeine */
+		post: operations['addCaffeine'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/health/caffeine/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a drink with caffeine */
+		delete: operations['deleteCaffeine'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/health/needs': {
 		parameters: {
 			query?: never;
@@ -5963,6 +6001,25 @@ export interface components {
 			carbs_g: number;
 			fat_g: number;
 		};
+		CaffeineEntry: {
+			/** Format: uuid */
+			id: string;
+			/** Format: date-time */
+			at: string;
+			/** @enum {unknown} */
+			kind:
+				| 'espresso'
+				| 'coffee'
+				| 'instant'
+				| 'tea'
+				| 'green_tea'
+				| 'matcha'
+				| 'cola'
+				| 'energy'
+				| 'decaf'
+				| 'other';
+			mg: number;
+		};
 		WaterEntry: {
 			/** Format: uuid */
 			id: string;
@@ -6496,6 +6553,7 @@ export interface components {
 					| 'household'
 					| 'journal'
 					| 'water'
+					| 'caffeine'
 					| 'overview'
 				)[];
 			};
@@ -6560,6 +6618,13 @@ export interface components {
 				monthly?: ('goals' | 'month' | 'watch')[];
 				quote?: boolean;
 				picture?: boolean;
+			};
+			/** @description Coffee and tea (EP-117): bedtime, for the caffeine left then and the cut-off, and how fast the person clears caffeine (half-life fast 3 h, average 5 h, slow 7 h). */
+			caffeine?: {
+				/** @example 23:00 */
+				bedtime?: string;
+				/** @enum {unknown} */
+				metabolism?: 'fast' | 'average' | 'slow';
 			};
 			/** @description The spoken tech watch (EP-113), off by default: format, language of the spoken links, length, period, and the device voice and pace. */
 			podcast?: {
@@ -14654,6 +14719,145 @@ export interface operations {
 		};
 	};
 	deleteWater: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getCaffeine: {
+		parameters: {
+			query?: {
+				/** @description Defaults to the person's today. */
+				date?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The day. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: date */
+						date: string;
+						total_mg: number;
+						limit_mg: number;
+						entries: components['schemas']['CaffeineEntry'][];
+						/** @description Left in the body now. */
+						now_mg: number;
+						/** Format: date-time */
+						bedtime: string;
+						/** @description Left at bedtime, from this day and the two before. */
+						at_bedtime_mg: number;
+						/** @description The threshold for sleep. */
+						bedtime_mg: number;
+						/**
+						 * Format: date-time
+						 * @description The last coffee that keeps sleep intact; null when even one now is too much.
+						 */
+						cutoff: string | null;
+						half_life_hours: number;
+						week: {
+							/** Format: date */
+							date: string;
+							total_mg: number;
+						}[];
+						/** @description The drinks offered, with their usual caffeine per serving (USDA FoodData Central, EFSA). */
+						drinks: {
+							/** @enum {unknown} */
+							kind:
+								| 'espresso'
+								| 'coffee'
+								| 'instant'
+								| 'tea'
+								| 'green_tea'
+								| 'matcha'
+								| 'cola'
+								| 'energy'
+								| 'decaf'
+								| 'other';
+							mg: number;
+							ml: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	addCaffeine: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {unknown} */
+					kind:
+						| 'espresso'
+						| 'coffee'
+						| 'instant'
+						| 'tea'
+						| 'green_tea'
+						| 'matcha'
+						| 'cola'
+						| 'energy'
+						| 'decaf'
+						| 'other';
+					/** @description Its caffeine, when not the usual; required for other. */
+					mg?: number | null;
+					/**
+					 * Format: date-time
+					 * @description When, in the last 30 days; now when absent.
+					 */
+					at?: string | null;
+				};
+			};
+		};
+		responses: {
+			/** @description The drink. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['CaffeineEntry'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteCaffeine: {
 		parameters: {
 			query?: never;
 			header?: never;

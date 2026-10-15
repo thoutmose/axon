@@ -2,6 +2,7 @@
 	import Welcome from '$lib/Welcome.svelte';
 	import Scenery from '$lib/ui/Scenery.svelte';
 	import WaterCard from '$lib/WaterCard.svelte';
+	import CaffeineCard from '$lib/CaffeineCard.svelte';
 	import JournalToday from '$lib/JournalToday.svelte';
 	import { localDate, appLocale } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
@@ -44,6 +45,7 @@
 		household: t('Household'),
 		journal: t('How are you today?'),
 		water: t('Water today'),
+		caffeine: t('Coffee and tea today'),
 		overview: t('Your progress')
 	});
 	const all = $derived(Object.keys(labels));
@@ -466,6 +468,8 @@
 					<JournalToday />
 				{:else if id === 'water'}
 					<WaterCard />
+				{:else if id === 'caffeine'}
+					<CaffeineCard />
 				{:else if id === 'household'}
 					<section class="card" aria-labelledby="household-title">
 						<h2 id="household-title">{t('Household')}</h2>

@@ -225,5 +225,16 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"food_entries": food, "workouts": workouts, "profile": profile, "water_entries": water}, nil
+	crows, err := q.Query(ctx, `SELECT id, drunk_at, kind, mg FROM caffeine_entries WHERE user_id = $1 ORDER BY drunk_at`, userID)
+	if err != nil {
+		return nil, err
+	}
+	caffeine, err := pgx.CollectRows(crows, pgx.RowToStructByPos[CaffeineEntry])
+	if err != nil {
+		return nil, err
+	}
+	if caffeine == nil {
+		caffeine = []CaffeineEntry{}
+	}
+	return map[string]any{"food_entries": food, "workouts": workouts, "profile": profile, "water_entries": water, "caffeine_entries": caffeine}, nil
 }
