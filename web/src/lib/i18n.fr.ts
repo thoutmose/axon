@@ -3614,5 +3614,26 @@ export const fr: Record<string, string> = {
 	'{n} more hours of focus on it for {tier}':
 		'Encore {n} heures de concentration dessus pour {tier}',
 	'{n} more reviews for {tier}': 'Encore {n} révisions pour {tier}',
-	'{n} more solved for {tier}': 'Encore {n} résolus pour {tier}'
+	'{n} more solved for {tier}': 'Encore {n} résolus pour {tier}',
+	'1 day': '1 jour',
+	'Also into my household': 'Aussi dans mon foyer',
+	'Create a link': 'Créer un lien',
+	'For Sam': 'Pour Sam',
+	'For whom (a note for you)': 'Pour qui (une note pour vous)',
+	'Invitation link': 'Lien d’invitation',
+	Invitation: 'Invitation',
+	Invitations: 'Invitations',
+	'Invite one person to this Axon with a link used once, even while registration is closed. Send it privately: anyone with it can create the account.':
+		'Invitez une personne sur cet Axon avec un lien à usage unique, même quand les inscriptions sont fermées. Envoyez-le en privé : quiconque l’a peut créer le compte.',
+	'Join me on Axon': 'Rejoins-moi sur Axon',
+	'Revoke {note}': 'Révoquer {note}',
+	'Share…': 'Partager…',
+	'The link is shown only now.': 'Le lien n’est affiché que maintenant.',
+	'Used by {name} on {date}': 'Utilisé par {name} le {date}',
+	'Valid for': 'Valable',
+	'Waiting, until {date}': 'En attente, jusqu’au {date}',
+	'with the household': 'avec le foyer',
+	'{name} invites you to their Axon, and to their household.':
+		'{name} vous invite sur son Axon, et dans son foyer.',
+	'{name} invites you to their Axon.': '{name} vous invite sur son Axon.'
 };

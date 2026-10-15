@@ -92,6 +92,7 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 - ✅ Café et thé : la caféine face à la limite quotidienne de l'EFSA, ce qu'il en reste au coucher, et le dernier café qui préserve votre sommeil, selon votre heure de coucher et votre métabolisme.
 - ✅ Les protocoles santé d'Andrew Huberman dans Habitudes, chacun avec ses études, une note honnête des preuves, et une habitude en un clic.
 - ✅ Une collection dans Progression : un trophée par compétence de la feuille de route, une carte par habitude, et des jalons, du bronze à l'argent puis à l'or.
+- ✅ Invitations : le propriétaire fait entrer quelqu'un avec un lien à usage unique, même inscriptions fermées, et dans son foyer.
 - ✅ Les certifications : prévues, réservées, obtenues ou échouées, avec le compte à rebours de l’examen, le coût face au plan, le certificat et l’expiration avec un rappel de renouvellement ; examens et expirations dans l’agenda. Le parcours prévoit ses neuf examens.
 - ✅ Les heures d’étude face au plan : le temps de concentration sur un parcours, cette semaine jour par jour à côté du bloc prévu et sur 12 semaines face à l’objectif hebdomadaire, par compétence et par projet.
 - ✅ Des cartes mémoire illustrées à consulter, ajouter, modifier et supprimer, révisées avec FSRS-5 (le planificateur d’Anki, vérifié sur son implémentation de référence), des tests d’entraînement, et un agent Enseignant qui rédige des questions de récupération à partir de vos notes de lecture et permanentes, soumises à votre approbation.

@@ -72,6 +72,61 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/auth/invite': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Who invites the holder of an invitation link */
+		get: operations['getInvite'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/invites': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The owner's invitations, newest first */
+		get: operations['listInvites'];
+		put?: never;
+		/**
+		 * Invite one person, with a link used once (owner only)
+		 * @description Only the first account of this Axon can invite. The link carries 256 random bits, shown once; only their SHA-256 is stored.
+		 */
+		post: operations['createInvite'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/invites/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Revoke an unused invitation; a used one stays as a record */
+		delete: operations['revokeInvite'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/auth/register/begin': {
 		parameters: {
 			query?: never;
@@ -5245,6 +5300,21 @@ export interface components {
 			/** Format: date-time */
 			updated_at: string;
 		};
+		Invite: {
+			/** Format: uuid */
+			id: string;
+			note: string;
+			household: boolean;
+			/** Format: date-time */
+			expires_at: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			used_at: string | null;
+			used_by_name: string | null;
+			/** @description The link, only in the answer that creates it. */
+			url?: string;
+		};
 		Decision: {
 			/** Format: uuid */
 			id: string;
@@ -7346,6 +7416,116 @@ export interface operations {
 			};
 		};
 	};
+	getInvite: {
+		parameters: {
+			query: {
+				token: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A usable invitation. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						inviter: string;
+						/** @description Signing up with it joins the inviter's household. */
+						household: boolean;
+					};
+				};
+			};
+			404: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	listInvites: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Invitations, without their links. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Invite'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createInvite: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example For Sam */
+					note?: string;
+					/** @description Bring the person into the owner's household. */
+					household?: boolean;
+					/** @default 7 */
+					days?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The invitation, with its link. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Invite'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	revokeInvite: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Revoked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
 	registerBegin: {
 		parameters: {
 			query?: never;
@@ -7359,6 +7539,8 @@ export interface operations {
 					display_name: components['schemas']['Name'];
 					/** @description The browser's IANA time zone, such as Europe/Paris. The account starts in it; one the server does not know leaves UTC. */
 					timezone?: string;
+					/** @description The token of an invitation link (EP-120): lets this person register when registration is closed; spent when the account is created. */
+					invite?: string;
 				};
 			};
 		};

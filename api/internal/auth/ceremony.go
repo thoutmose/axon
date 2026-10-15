@@ -23,6 +23,7 @@ type ceremony struct {
 	UserID      *uuid.UUID
 	DisplayName string // register: the new account's name; add_passkey: the passkey's name
 	Timezone    string // register: the browser's time zone, when it sent a valid one
+	Invite      []byte // register: the hash of the invitation it uses, if any (EP-120)
 	Session     webauthn.SessionData
 }
 
@@ -32,12 +33,13 @@ type ceremony struct {
 type stored struct {
 	webauthn.SessionData
 	Timezone string `json:"axon_timezone,omitempty"`
+	Invite   []byte `json:"axon_invite,omitempty"`
 }
 
 // saveCeremony stores the challenge server-side and points a short-lived cookie at it.
 func (s *Service) saveCeremony(ctx context.Context, w http.ResponseWriter, kind string, c ceremony) error {
 	id := uuid.Must(uuid.NewV7())
-	data, err := json.Marshal(stored{c.Session, c.Timezone})
+	data, err := json.Marshal(stored{c.Session, c.Timezone, c.Invite})
 	if err != nil {
 		return err
 	}
@@ -86,7 +88,7 @@ func (s *Service) takeCeremony(ctx context.Context, q db.Querier, w http.Respons
 	if err := json.Unmarshal(data, &st); err != nil {
 		return ceremony{}, err
 	}
-	c.Session, c.Timezone = st.SessionData, st.Timezone
+	c.Session, c.Timezone, c.Invite = st.SessionData, st.Timezone, st.Invite
 	return c, nil
 }
 

@@ -168,6 +168,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-117 | Coffee and tea | Caffeine against EFSA's daily limit and what is left at bedtime, with the last coffee that keeps sleep intact (Gardiner et al., 2023). | SHOULD | 5 pts | EP-101 | Done |
 | EP-118 | Huberman's protocols | Andrew Huberman's health habits with what to do, why, how strong the evidence is, their studies, cautions, and a habit in one click. | COULD | 3 pts | EP-22, EP-117 | Done |
 | EP-119 | The collection | Cards to collect, raised from bronze to gold: a trophy per roadmap skill, a card per habit, and milestones for problems, focus, reviews, the streak, and decisions. | COULD | 5 pts | EP-15, EP-95 | Done |
+| EP-120 | Invitations | The owner invites one person at a time with a link used once, even while registration is closed, optionally into the household. | SHOULD | 3 pts | EP-03, EP-37 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -204,7 +205,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2092,6 +2093,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** `TestBestRun` (rest days, two-minute versions, days off the schedule), the tier steps and the longest run (written first); `TestCollection` (off, a habit kept 7 days, a hard problem, locked cards, the total); the names and next steps; an e2e check on Progress, with axe.
 
+### EP-120 — Invitations
+
+**Goal.** "Functionalities to invite." Registration closes after the first account unless the operator opens it, so a partner could not even join the owner's household. An invitation lets the owner bring in one person at a time, without opening registration to everyone.
+
+- [x] **EP-120/IS-120.01** · 2 pts · SHOULD — Migration `00063` adds `invites` (the creator, the SHA-256 of a 256-bit token, a note, whether it brings the person into the household, expiry, when and by whom it was used). `POST /v1/invites` (the owner, the first account, only; not the demo; 1 to 30 days) answers once with the link `/register?invite=…`; `GET /v1/invites` lists them without links; `DELETE` revokes an unused one, a used one staying as a record. `GET /v1/auth/invite` (rate-limited with sign-in) tells the holder who invites them. Registration accepts the token when registration is closed; the token's hash travels in the WebAuthn ceremony, and the invitation is spent with a conditional update in the transaction that creates the account, so one link makes one account, and the person joins the owner's household when it says so.
+- [x] **EP-120/IS-120.02** · 1 pt · SHOULD — Account → Invitations, for the owner: a note, how long, whether into the household; the link shown once with Copy and the device's Share; the list with who used each, and Revoke. The registration page says who invites the person.
+
+**Tests.** `TestInvitations` (registration closed to strangers; validation; who invites; signing up with the link joins the household; used once; a member cannot invite; the list; revoked links open nothing; a used one cannot be revoked); `TestEveryForeignKeyIsIndexed`; an e2e test that creates a link and opens it in another browser, with axe.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2298,7 +2308,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
-| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-124; EP-115 to EP-119 delivered. |
+| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-120 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
