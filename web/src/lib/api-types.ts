@@ -5428,6 +5428,11 @@ export interface components {
 			occurrence_on: string | null;
 			/** Format: date-time */
 			completed_at: string | null;
+			/**
+			 * @description The list it was in when it was done or cancelled, so it stays there crossed out until the next day and Undo puts it back (EP-116).
+			 * @enum {string|null}
+			 */
+			done_from: 'inbox' | 'next' | 'doing' | 'waiting' | 'someday' | null;
 			/** Format: date-time */
 			remind_at: string | null;
 			/** Format: date-time */
@@ -8160,6 +8165,8 @@ export interface operations {
 						/** Format: date */
 						today: string;
 						next_cursor: string | null;
+						/** @description The tasks of this view done or cancelled today, in the person's time zone, crossed out until tomorrow (EP-116). On the first page; absent for the done and overdue views. */
+						done_today?: components['schemas']['Task'][];
 					};
 				};
 			};
@@ -12804,6 +12811,8 @@ export interface operations {
 						}[];
 						/** @description The first of today's tasks, overdue first. */
 						tasks: components['schemas']['Task'][];
+						/** @description Today's tasks done or cancelled today, crossed out until tomorrow (EP-116). */
+						done_today: components['schemas']['Task'][];
 						goals: components['schemas']['Goal'][];
 						/** @description Open milestones of active goals due in the next 14 days. */
 						milestones: {

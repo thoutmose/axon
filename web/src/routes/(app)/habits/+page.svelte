@@ -140,7 +140,11 @@
 	{:else}
 		<ul class="habits">
 			{#each habits as h (h.id)}
-				<li class="card" class:quiet={!h.state.scheduled_today}>
+				<li
+					class="card"
+					class:quiet={!h.state.scheduled_today}
+					class:checked={!!h.state.checked_in}
+				>
 					<div class="top">
 						<a href="/habits/{h.id}" class="title">{h.title}</a>
 						<span class="muted small">{scheduleLabel(h.days)}</span>
@@ -413,6 +417,11 @@
 {/if}
 
 <style>
+	/* Checked today: crossed out, until tomorrow (EP-116). */
+	.checked .title {
+		color: var(--muted);
+		text-decoration: line-through;
+	}
 	.hint,
 	.small {
 		font-size: var(--text-sm);

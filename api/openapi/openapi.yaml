@@ -839,6 +839,7 @@ paths:
                   items: { type: array, items: { $ref: "#/components/schemas/Task" } }
                   today: { type: string, format: date }
                   next_cursor: { type: [string, "null"] }
+                  done_today: { type: array, items: { $ref: "#/components/schemas/Task" }, description: "The tasks of this view done or cancelled today, in the person's time zone, crossed out until tomorrow (EP-116). On the first page; absent for the done and overdue views." }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
     post:
@@ -4114,7 +4115,7 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [today, kpis, tasks, goals, milestones, notes, checked_in, totals]
+                required: [today, kpis, tasks, done_today, goals, milestones, notes, checked_in, totals]
                 properties:
                   today: { type: string, format: date }
                   kpis:
@@ -4128,6 +4129,7 @@ paths:
                         value: { type: integer }
                         definition: { type: string }
                   tasks: { type: array, maxItems: 10, description: "The first of today's tasks, overdue first.", items: { $ref: "#/components/schemas/Task" } }
+                  done_today: { type: array, description: "Today's tasks done or cancelled today, crossed out until tomorrow (EP-116).", items: { $ref: "#/components/schemas/Task" } }
                   goals: { type: array, maxItems: 5, items: { $ref: "#/components/schemas/Goal" } }
                   milestones:
                     type: array
@@ -8631,7 +8633,7 @@ components:
         created_at: { type: string, format: date-time }
     Task:
       type: object
-      required: [id, title, notes, status, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, remind_at, created_at, updated_at]
+      required: [id, title, notes, status, context, scheduled_on, due_on, recurrence, series_id, occurrence_on, completed_at, done_from, remind_at, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -8644,6 +8646,7 @@ components:
         series_id: { type: [string, "null"], format: uuid }
         occurrence_on: { type: [string, "null"], format: date }
         completed_at: { type: [string, "null"], format: date-time }
+        done_from: { type: [string, "null"], enum: [inbox, next, doing, waiting, someday, null], description: "The list it was in when it was done or cancelled, so it stays there crossed out until the next day and Undo puts it back (EP-116)." }
         remind_at: { type: [string, "null"], format: date-time }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
