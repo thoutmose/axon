@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"math/rand/v2"
 	"time"
 
 	"github.com/google/uuid"
@@ -110,13 +111,40 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 				return plan, err
 			}
 		}
-		if i < 6 {
-			if _, err := cards.Review(ctx, tx, user, card.ID, fsrs.Good, nil, now.Add(-96*time.Hour)); err != nil {
+		if i < 10 {
+			if err := reviewHistory(ctx, tx, user, card.ID, now, uint64(i)); err != nil {
 				return plan, err
 			}
 		}
 	}
 	return plan, nil
+}
+
+// reviewHistory reviews a card for the last two months, at or after each
+// due date, so recall calibration has predictions to compare (EP-77). A
+// review a little late is a little more often forgotten, as in life; the
+// draws come from a fixed seed, so the demo is the same every night.
+func reviewHistory(ctx context.Context, tx pgx.Tx, user, card uuid.UUID, now time.Time, seed uint64) error {
+	r := rand.New(rand.NewPCG(2026, 600+seed)) //nolint:gosec // reproducible demo data, not security
+	at, late := now.AddDate(0, 0, -60).Add(time.Duration(seed)*time.Hour), 0.0
+	for at.Before(now.Add(-2 * time.Hour)) {
+		rating := fsrs.Good
+		switch x := r.Float64(); {
+		case x < 0.05+0.2*late:
+			rating = fsrs.Again
+		case x < 0.2:
+			rating = fsrs.Hard
+		case x > 0.92:
+			rating = fsrs.Easy
+		}
+		c, err := cards.Review(ctx, tx, user, card, rating, nil, at)
+		if err != nil {
+			return err
+		}
+		late = r.Float64() * 0.8
+		at = c.Due.Add(time.Duration(late * float64(c.Due.Sub(at))))
+	}
+	return nil
 }
 
 // logicCards are the first flashcards of MIT 6.042J: front, back, and the
