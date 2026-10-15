@@ -366,6 +366,21 @@
 {/if}
 
 <style>
+	.card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+	.link {
+		background: none;
+		border: 0;
+		color: var(--accent);
+		cursor: pointer;
+		font: inherit;
+		padding: 0;
+	}
 	.hint,
 	.small {
 		font-size: var(--text-sm);
