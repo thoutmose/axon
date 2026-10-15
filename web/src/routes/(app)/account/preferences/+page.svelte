@@ -2,6 +2,8 @@
 	import { install, promptInstall } from '$lib/install.svelte';
 	import { disablePush, enablePush } from '$lib/reminders';
 	import EmbeddingSettings from '$lib/EmbeddingSettings.svelte';
+	import VaultServer from '$lib/VaultServer.svelte';
+	import ChannelSettings from '$lib/ChannelSettings.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
@@ -32,11 +34,30 @@
 		gamification: { enabled: boolean };
 		vault: { mirror: boolean; folder: string; health: boolean };
 		learning: { new_per_day: number; retention: number; interleave: boolean; type_answer: boolean };
-		reminders: { enabled: boolean; morning: string; evening: string; email: string };
+		reminders: {
+			enabled: boolean;
+			morning: string;
+			evening: string;
+			email: string;
+			weekly_day:
+				'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+			weekly_at: string;
+			monthly_day: number;
+			monthly_at: string;
+		};
 		today: { sections: string[] };
 		menu: { hidden: string[]; chosen: boolean };
 	};
-	const remindersDefaults = { enabled: false, morning: '08:00', evening: '20:00', email: '' };
+	const remindersDefaults: Settings['reminders'] = {
+		enabled: false,
+		morning: '08:00',
+		evening: '20:00',
+		email: '',
+		weekly_day: 'sunday',
+		weekly_at: '18:00',
+		monthly_day: 1,
+		monthly_at: '09:00'
+	};
 	type ReminderStatus = {
 		public_key: string;
 		email: boolean;
@@ -67,14 +88,15 @@
 	}
 	async function testReminder() {
 		try {
-			const r = await api<{ devices: number; email: boolean }>('/v1/me/reminders/test', {
-				method: 'POST'
-			});
+			const r = await api<{ devices: number; email: boolean; channels: number }>(
+				'/v1/me/reminders/test',
+				{ method: 'POST' }
+			);
 			toast(
 				t('Sent to {devices} device(s){email}.', {
 					devices: String(r.devices),
 					email: r.email ? t(' and by email') : ''
-				})
+				}) + (r.channels ? ' ' + t('Also to {n} channel(s).', { n: r.channels }) : '')
 			);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -120,7 +142,7 @@
 				gamification: loaded.gamification ?? { enabled: false },
 				vault: loaded.vault ?? { mirror: true, folder: t('Axon'), health: false },
 				learning: loaded.learning ?? learningDefaults,
-				reminders: loaded.reminders ?? remindersDefaults,
+				reminders: { ...remindersDefaults, ...loaded.reminders },
 				today: loaded.today ?? {
 					sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']
 				},
@@ -142,7 +164,7 @@
 			gamification: saved.gamification ?? { enabled: false },
 			vault: saved.vault ?? { mirror: true, folder: t('Axon'), health: false },
 			learning: saved.learning ?? learningDefaults,
-			reminders: saved.reminders ?? remindersDefaults,
+			reminders: { ...remindersDefaults, ...saved.reminders },
 			today: saved.today ?? s!.today,
 			menu: saved.menu ?? s!.menu
 		};
@@ -339,10 +361,10 @@
 			{/if}
 		</Section>
 
-		<Section id="reminders" title={t('Reminders')}>
+		<Section id="reminders" title={t('Reminders and digests')}>
 			<label class="check"
 				><input type="checkbox" bind:checked={s.reminders.enabled} />
-				{t('Send me a morning digest and an evening nudge')}</label
+				{t('Send me digests and reminders')}</label
 			>
 			<div class="grid">
 				<div class="field">
@@ -353,11 +375,38 @@
 					<label for="rem-evening">{t('Evening nudge at')}</label>
 					<input id="rem-evening" type="time" bind:value={s.reminders.evening} />
 				</div>
+				<div class="field">
+					<label for="rem-weekly-day">{t('Weekly digest on')}</label>
+					<select id="rem-weekly-day" bind:value={s.reminders.weekly_day}>
+						{#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as d (d)}
+							<option value={d}>{t(d[0].toUpperCase() + d.slice(1))}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="field">
+					<label for="rem-weekly-at">{t('at')}</label>
+					<input id="rem-weekly-at" type="time" bind:value={s.reminders.weekly_at} />
+				</div>
+				<div class="field">
+					<label for="rem-monthly-day">{t('Monthly digest on day')}</label>
+					<input
+						id="rem-monthly-day"
+						type="number"
+						min="1"
+						max="28"
+						bind:value={s.reminders.monthly_day}
+					/>
+				</div>
+				<div class="field">
+					<label for="rem-monthly-at">{t('at')}</label>
+					<input id="rem-monthly-at" type="time" bind:value={s.reminders.monthly_at} />
+				</div>
 			</div>
 			<p class="muted small">
 				{t(
-					'The digest says what today holds: tasks, cards to review, notes to recall, habits. The nudge names the habits still open, with their two-minute version. Nothing is sent on days with nothing to say. Clear a time to skip it.'
+					'The daily digest says what today holds and what comes next: tasks, milestones, habits, cards to review, notes to recall, with a line to carry and a picture of the day. The weekly and monthly ones look back and ahead. The nudge names the habits still open. Nothing is sent on days with nothing to say. Clear a time to skip it.'
 				)}
+				<a href="/digest">{t('See your digest')}</a>
 			</p>
 			{#if reminderStatus}
 				<h3 class="sub">{t('Devices')}</h3>
@@ -399,11 +448,17 @@
 			{/if}
 		</Section>
 
+		<Section id="channels" title={t('Chat apps')}>
+			<ChannelSettings />
+		</Section>
+
 		<Section id="meaning" title={t('Search by meaning')}>
 			<EmbeddingSettings />
 		</Section>
 
 		<Section id="vault" title={t('Markdown vault')}>
+			<VaultServer />
+			<h3 class="sub">{t('Items as notes')}</h3>
 			<label class="check"
 				><input type="checkbox" bind:checked={s.vault.mirror} />
 				{t(

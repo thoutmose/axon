@@ -8,6 +8,7 @@ How Axon runs on its servers. Host configuration (SSH, Docker, monitoring, logs)
 |---|---|---|
 | Staging | `srv-staging` | https://srv-staging.tail781d53.ts.net |
 | Production | `srv-prod` | https://srv-prod.tail781d53.ts.net |
+| Dev (a branch under review) | `srv-dev` (or `AXON_DEV_HOST`) | https://srv-dev.tail781d53.ts.net |
 
 Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the API (with its background workers), web, PostgreSQL 16 + pgvector, the Anki bridge, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
 
@@ -41,6 +42,8 @@ deploy/deploy.sh prod
 ```
 
 The script refuses to deploy a commit without a green `ci` run on GitHub, and refuses a production version that staging is not serving. Deploy from `main`: pull request runs leave out the image build, vulnerability scan, and SBOM to save Actions minutes, and skip documentation-only changes entirely. After migrating it runs `axon integrity`, which fails the deployment if any entity lacks its domain row or has an unregistered type. It then builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
+
+A branch under review goes to dev, from its checkout: `deploy/deploy.sh dev`. While CI cannot run (GitHub Actions minutes spent until 1 November 2026), `deploy/deploy.sh dev --skip-ci` deploys without it; the flag is refused for staging and production, whose rules do not change. Dev reads `deploy/env/dev.settings.env`, and staging's secrets until `deploy/env/dev.env.age` exists. Dev's backup key is not authorized on `srv-services`, so its off-site copies fail until `deploy/setup-offsite.sh` covers it.
 
 ## Roll back
 
@@ -114,6 +117,20 @@ rm axon-instance.tar.gz
 ```
 
 Drill on 2026-10-11 (local stack, demo data, 47 tables): export, `docker compose down -v`, a fresh install, and import took 42 seconds. Integrity was ok, the demo account signed in with its notes, and a second import was refused. `internal/instance` runs the same drill in the integration tests, with an older-schema archive, a wrong key, and a damaged table.
+
+## Tech watch (EP-110)
+
+A worker in the API fetches each person's sources when their schedule comes (cron in the person's time zone, midnight by default), four at a time, with `If-None-Match`/`If-Modified-Since`. It needs outbound HTTPS to the sites people follow; sources on a private network need `AXON_CALENDAR_PRIVATE=1`. A failing source shows its error in **Tech watch → Sources and health** and is retried after 15 minutes, then up to 8 hours. Metrics on the metrics port: `axon_watch_fetches_total{result="ok|not_modified|error"}`, `axon_watch_items_total{outcome="new|merged|skipped"}`, `axon_watch_fetch_seconds`. A rising error rate in Grafana usually means one site changed its feed; logs say `tech watch fetch failed` with the source id. News nobody saved, kept, or linked are purged after 180 days. The shared demo fetches nothing. Share links (EP-112) are served at `/api/v1/shared/watch/{token}` without a session, rate-limited per address (30 at once, then one every 2 seconds); creating and revoking one is in the audit log as `watch_share.created` and `watch_share.revoked`.
+
+## Digests and chat channels (EP-107)
+
+People choose times and channels in Account → Preferences → Reminders and digests; nothing needs configuring on the server beyond what reminders use (`AXON_SMTP_URL`/`AXON_SMTP_FROM` for email, `AXON_ENCRYPTION_KEY` so channel secrets are sealed). The API calls the chat services' own hosts (`hooks.slack.com`, `slack.com`, `discord.com`, `*.webhook.office.com` or `*.logic.azure.com`, `api.telegram.org`) and the ntfy servers and webhooks people chose (public addresses only, unless `AXON_CALENDAR_PRIVATE=1`), so the server needs outbound HTTPS to them. A channel that fails shows its last error in Preferences; the logs say `digest to a channel failed` with the channel id.
+
+Answers (EP-108) come through connections the API opens itself: Telegram long polling (`api.telegram.org`), Slack Socket Mode (`slack.com`, then a WebSocket to `wss-primary.slack.com`), and the Discord gateway (`gateway.discord.gg`). No inbound port is needed. Each bot has one listener, refreshed every 30 seconds; a lost connection is retried with back-off (logs: `chat listener stopped; reconnecting`). The demo instance starts none.
+
+## Vault server set up from Axon (EP-106)
+
+Notes live in the database unless a person names a vault server. To name one: Account → Preferences → Markdown vault → **Also as files on a server**, enter the host and folder, **Set up this server**, and run the line shown on that server within 30 minutes. It downloads `axon` from this Axon (same OS and architecture only; otherwise use the Docker command shown), pairs with the one-time code, saves a write token to `~/.config/axon/vault-token` (0600), syncs once, and installs the user service `axon-vault` (`systemctl --user status axon-vault`; `sudo loginctl enable-linger <user>` keeps it running after logout). An empty folder gets the inbox, PARA, Zettelkasten, daily, template, and attachment folders, `Home.md`, and the templates. Preferences shows whether the vault is in step (a report at least every 5 minutes), silent, or failing. **Stop syncing** revokes the token. For fleet hosts, the fleet repository runs the same `notes-sync -pair` command (ADR 0004).
 
 ## Live notes sync with SecondBrain (EP-36)
 

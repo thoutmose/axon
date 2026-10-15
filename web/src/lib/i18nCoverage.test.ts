@@ -25,6 +25,10 @@ const templates = import.meta.glob('/src/**/*.svelte', {
 /** Names, units, and symbols that read the same in both languages. */
 const same = new Set([
 	'Axon',
+	'FreshRSS',
+	'OK',
+	'srv-secondbrain',
+	'~/SecondBrain',
 	'OSSU',
 	'roadmap.sh',
 	'GitHub',

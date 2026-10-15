@@ -12,6 +12,14 @@ describe('spaceFor', () => {
 		expect(spaceFor('/focus')).toBe('desk');
 		expect(spaceFor('/progress')).toBe('summit');
 	});
+	it('gives the tech watch, its graph, its podcast, and the digest their own', () => {
+		expect(spaceFor('/watch')).toBe('signal');
+		expect(spaceFor('/watch/sources')).toBe('signal');
+		expect(spaceFor('/watch/graph')).toBe('constellation');
+		expect(spaceFor('/watch/podcast')).toBe('studio');
+		expect(spaceFor('/digest')).toBe('dispatch');
+		expect(spaceFor('/watchlist')).toBeNull();
+	});
 	it('leaves pages with their own scenery alone', () => {
 		expect(spaceFor('/today')).toBeNull();
 		expect(spaceFor('/')).toBeNull();

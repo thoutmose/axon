@@ -316,6 +316,104 @@ def automata(bg_hi, bg_lo, metal, alpha):
     g.append('</g>')
     return svg(''.join(b + g), d)
 
+# --- Signal (tech watch): a radio dish listening to signals ---
+def signal(bg_hi, bg_lo, ink, signal, alpha):
+    d = grain('g', 0.7, 0.06, (0.1, 0.15, 0.3)) + f'<radialGradient id="p" cx="70%" cy="20%" r="90%"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></radialGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>', f'<rect width="{W}" height="{H}" filter="url(#g)"/>']
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha:.2f}" stroke-linecap="round">']
+    # the dish (bottom right): a parabola on a mount, its feed, its struts
+    cx, cy = 1290, 760
+    g.append(f'<path d="M{cx-190} {cy-150} Q{cx-20} {cy+90} {cx+170} {cy-170}" stroke-width="2.4"/>')
+    g.append(f'<path d="M{cx-190} {cy-150} L{cx+170} {cy-170}" stroke-width="1" stroke-dasharray="4 6"/>')
+    g.append(f'<path d="M{cx-12} {cy-25} L{cx+40} {cy-210} M{cx-120} {cy-110} L{cx+40} {cy-210} M{cx+110} {cy-125} L{cx+40} {cy-210}" stroke-width="1.2"/>')
+    g.append(f'<circle cx="{cx+40}" cy="{cy-210}" r="9" stroke-width="1.6"/>')
+    g.append(f'<path d="M{cx-12} {cy-25} L{cx-60} {cy+180} M{cx-12} {cy-25} L{cx+50} {cy+180} M{cx-90} {cy+180} L{cx+90} {cy+180}" stroke-width="2"/>')
+    # signals arriving: arcs from the top left
+    for k in range(9):
+        r = 120 + k * 95
+        g.append(f'<path d="M{f(160+r*math.cos(math.radians(10)))} {f(120+r*math.sin(math.radians(10)))} A{r} {r} 0 0 1 {f(160+r*math.cos(math.radians(80)))} {f(120+r*math.sin(math.radians(80)))}" '
+                 f'stroke="{signal}" stroke-width="{1.4-k*0.1:.2f}" stroke-dasharray="{3+k} {6+k}"/>')
+    # a waveform across the middle: the news as a signal
+    pts = []
+    for x in range(0, W + 1, 8):
+        y = 520 + 40 * math.sin(x / 70) * math.exp(-((x - 700) / 520) ** 2) + random.uniform(-4, 4)
+        pts.append(f'{x} {f(y)}')
+    g.append(f'<path d="M{" L".join(pts)}" stroke="{signal}" stroke-width="1.2"/>')
+    g.append('</g>')
+    # points of data: small dots scattered like received packets
+    dots = [f'<circle cx="{random.randint(40, W-40)}" cy="{random.randint(40, 460)}" r="{random.choice([1.2, 1.6, 2.2])}" fill="{signal}" fill-opacity="{alpha*1.4:.2f}"/>' for _ in range(70)]
+    return svg(''.join(b + g + dots), d)
+
+# --- Constellation (news graph): a star chart with its grid ---
+def constellation(bg_hi, bg_lo, ink, star, alpha):
+    d = f'<radialGradient id="p" cx="50%" cy="40%" r="85%"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></radialGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>']
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha:.2f}">']
+    cx, cy = 800, 520
+    for r in (180, 330, 480, 630, 780):
+        g.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" stroke-width=".7" stroke-dasharray="2 7"/>')
+    for k in range(12):
+        a = math.pi * k / 6
+        g.append(f'<line x1="{cx}" y1="{cy}" x2="{f(cx+900*math.cos(a))}" y2="{f(cy+900*math.sin(a))}" stroke-width=".5"/>')
+    g.append(f'<path d="M0 {cy+160} Q{cx} {cy-260} {W} {cy+120}" stroke-width="1" stroke-dasharray="10 8"/>')  # the ecliptic
+    g.append('</g>')
+    # constellations: a few groups of stars joined by lines
+    groups = []
+    for gx, gy in [(260, 230), (1270, 210), (1180, 780), (360, 760), (820, 330)]:
+        pts = [(gx + random.randint(-150, 150), gy + random.randint(-110, 110)) for _ in range(random.randint(4, 6))]
+        pts.sort()
+        groups.append(f'<path d="M{" L".join(f"{x} {y}" for x, y in pts)}" fill="none" stroke="{star}" stroke-opacity="{alpha*1.6:.2f}" stroke-width="1"/>')
+        for x, y in pts:
+            groups.append(f'<circle cx="{x}" cy="{y}" r="{random.choice([2.5, 3.2, 4])}" fill="{star}" fill-opacity="{min(1, alpha*3):.2f}"/>')
+    field = [f'<circle cx="{random.randint(0, W)}" cy="{random.randint(0, H)}" r="{random.choice([0.8, 1.1, 1.5])}" fill="{star}" fill-opacity="{alpha*1.8:.2f}"/>' for _ in range(160)]
+    return svg(''.join(b + g + field + groups), d)
+
+# --- Studio (podcast): a waveform, a microphone, sound rings ---
+def studio(bg_hi, bg_lo, ink, wave, alpha):
+    d = grain('g', 0.75, 0.05, (0.25, 0.1, 0.2)) + f'<linearGradient id="p" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></linearGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>', f'<rect width="{W}" height="{H}" filter="url(#g)"/>']
+    g = []
+    # the waveform: rounded bars along the bottom third
+    for i, x in enumerate(range(40, W - 30, 22)):
+        h = 18 + 150 * abs(math.sin(i / 5.3) * math.sin(i / 2.1 + 1)) * (0.4 + 0.6 * math.exp(-((x - 1100) / 600) ** 2))
+        g.append(f'<rect x="{x}" y="{f(760-h/2)}" width="9" height="{f(h)}" rx="4.5" fill="{wave}" fill-opacity="{alpha:.2f}"/>')
+    # a microphone (top right) and its rings
+    mx, my = 1300, 300
+    g.append(f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha*1.5:.2f}" stroke-linecap="round">')
+    g.append(f'<rect x="{mx-46}" y="{my-120}" width="92" height="170" rx="46" stroke-width="2.4"/>')
+    for k in range(5):
+        g.append(f'<line x1="{mx-46}" y1="{my-80+k*24}" x2="{mx+46}" y2="{my-80+k*24}" stroke-width=".8"/>')
+    g.append(f'<path d="M{mx-80} {my+10} Q{mx-80} {my+110} {mx} {my+110} Q{mx+80} {my+110} {mx+80} {my+10}" stroke-width="2"/>')
+    g.append(f'<path d="M{mx} {my+110} L{mx} {my+190} M{mx-60} {my+190} L{mx+60} {my+190}" stroke-width="2"/>')
+    for k in range(4):
+        r = 170 + k * 70
+        g.append(f'<path d="M{f(mx-r*0.8)} {f(my-r*0.6)} A{r} {r} 0 0 0 {f(mx-r*0.8)} {f(my+r*0.6)}" stroke-width="1.2" stroke-dasharray="{4+k*2} {8+k*2}"/>')
+    g.append('</g>')
+    return svg(''.join(b + g), d)
+
+# --- Dispatch (digest): paper planes on their routes at sunrise ---
+def dispatch(bg_hi, bg_lo, sun, ink, alpha):
+    d = f'<linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></linearGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>']
+    # the sun rising behind the horizon (bottom left), its rays
+    sx, sy = 300, 1000
+    b.append(f'<circle cx="{sx}" cy="{sy}" r="260" fill="{sun}" fill-opacity="{alpha*0.9:.2f}"/>')
+    for k in range(13):
+        a = math.pi + math.pi * k / 12
+        b.append(f'<line x1="{f(sx+300*math.cos(a))}" y1="{f(sy+300*math.sin(a))}" x2="{f(sx+620*math.cos(a))}" y2="{f(sy+620*math.sin(a))}" stroke="{sun}" stroke-opacity="{alpha*0.8:.2f}" stroke-width="3" stroke-linecap="round"/>')
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha:.2f}" stroke-linecap="round" stroke-linejoin="round">']
+    planes = [(520, 640, 1, 1.0), (980, 330, -1, 1.3), (1360, 560, 1, 0.9), (760, 180, 1, 0.7)]
+    for px, py, flip, sc in planes:
+        # the route: a dashed loop behind each plane
+        g.append(f'<path d="M{f(px-flip*360*sc)} {f(py+160*sc)} C{f(px-flip*240*sc)} {f(py-60*sc)} {f(px-flip*140*sc)} {f(py+120*sc)} {f(px-flip*40*sc)} {f(py+10*sc)}" stroke-width="1.4" stroke-dasharray="6 9"/>')
+        tip = (px + flip * 70 * sc, py - 30 * sc)
+        g.append(f'<path d="M{f(px-flip*40*sc)} {f(py+10*sc)} L{f(tip[0])} {f(tip[1])} L{f(px-flip*20*sc)} {f(py+40*sc)} Z M{f(tip[0])} {f(tip[1])} L{f(px)} {f(py+18*sc)} L{f(px-flip*20*sc)} {f(py+40*sc)}" stroke-width="2"/>')
+    # an envelope (top left)
+    ex, ey = 140, 150
+    g.append(f'<rect x="{ex}" y="{ey}" width="190" height="120" rx="6" stroke-width="2"/><path d="M{ex} {ey} L{ex+95} {ey+70} L{ex+190} {ey}" stroke-width="2"/>')
+    g.append('</g>')
+    return svg(''.join(b + g), d)
+
 art = {
   'notebook-light': notebook('#5b3a1a', '#f7ecd2', '#e9d4a8', 0.30),
   'notebook-dark': notebook('#d9b77c', '#2b2318', '#1a140d', 0.22),
@@ -343,6 +441,14 @@ art = {
   'lighthouse-dark': lighthouse('#0f1a2a', '#08101c', '#2c4a68', '#9fb4c8', '#c8d4e0', '#ffd27a', 0.28),
   'automata-light': automata('#f4efe6', '#e6dccb', '#6b5434', 0.26),
   'automata-dark': automata('#1c1712', '#0f0c09', '#d4b483', 0.24),
+  'signal-light': signal('#f1f5fb', '#e3eaf5', '#2c4a6e', '#1f7a8c', 0.30),
+  'signal-dark': signal('#13203a', '#080d19', '#9fb8dc', '#4fc3d0', 0.30),
+  'constellation-light': constellation('#f2f1fa', '#e2e0f2', '#4a4a8a', '#3b3b7a', 0.22),
+  'constellation-dark': constellation('#141433', '#05050f', '#8f8fd8', '#e8e8ff', 0.30),
+  'studio-light': studio('#fbf3f6', '#f0e2ea', '#6a2e4f', '#b0447a', 0.22),
+  'studio-dark': studio('#22121c', '#0f070c', '#e2a8c6', '#e06aa4', 0.28),
+  'dispatch-light': dispatch('#fdf6ec', '#f4e6d2', '#f2a65a', '#7a4a20', 0.30),
+  'dispatch-dark': dispatch('#1d1622', '#0d0a10', '#e07a3a', '#e8c9a0', 0.26),
 }
 for name, s in art.items():
     open(os.path.join(out, name + '.svg'), 'w').write(s)

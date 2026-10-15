@@ -124,7 +124,8 @@ func snapshot(t *testing.T) string {
 		(SELECT string_agg(t.status || coalesce(t.context, '') || coalesce(t.due_on::text, '') || e.title, ',' ORDER BY t.id) FROM tasks t JOIN entities e ON e.id = t.id),
 		(SELECT count(*) FROM milestones),
 		(SELECT string_agg(two_minute, ',' ORDER BY id) FROM habits),
-		(SELECT string_agg(md5(coalesce(image, ''::bytea)) || mnemonic, ',' ORDER BY id) FROM cards))`).Scan(&s)
+		(SELECT string_agg(md5(coalesce(image, ''::bytea)) || mnemonic, ',' ORDER BY id) FROM cards),
+		(SELECT count(*) FROM watch_sources), (SELECT count(*) FROM watch_topics))`).Scan(&s)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,21 +250,23 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/flashcards", []byte(`{"front":"Why warm up?","back":"Warm muscles stretch further."}`)), &card)
 
 	inputs := map[string]struct{ agent, input string }{
-		"update_task":         {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
-		"create_task":         {"task-manager", `{"title":"Buy a yoga mat","reason":"Helps stretching."}`},
-		"add_milestone":       {"goals", `{"goal_id":"` + g.ID + `","title":"Reach my shins","reason":"Halfway."}`},
-		"link_task_to_goal":   {"goals", `{"task_id":"` + task.ID + `","goal_id":"` + g.ID + `","reason":"Stretching moves it."}`},
-		"remember":            {"goals", `{"fact":"Prefers morning routines","reason":"Stated today."}`},
-		"create_habit":        {"habits", `{"title":"Floss one tooth","two_minute":"Floss one tooth","stack_after":"After I brush","reason":"Tiny start."}`},
-		"update_habit":        {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
-		"draft_issue":         {"side-projects", `{"repo_id":"` + repo.ID + `","title":"Add tests","details":"Start with main.go.","reason":"Missing."}`},
-		"post_review_comment": {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
-		"draft_roadmap":       {"tutor", `{"title":"Yoga","skills":[{"title":"Sun salutation","url":"https://en.wikipedia.org/wiki/Sun_Salutation"}],"reason":"Asked."}`},
-		"illustrate_cards":    {"teacher", `{"cards":[{"card_id":"` + card.ID + `","illustration":"<svg viewBox='0 0 40 20'><rect width='40' height='20' fill='#88c'/></svg>","mnemonic":"A rubber band warming by a fire."}],"reason":"Dual coding."}`},
-		"propose_cards":       {"teacher", `{"cards":[{"front":"Stretch why?","back":"Flexibility.","note_id":"` + studyNote.ID + `"}],"reason":"Basics."}`},
-		"suggest_media":       {"media", `{"kind":"book","title":"Stretching","creators":"Bob Anderson","year":1980,"reason":"Like your stretching notes."}`},
-		"suggest_resources":   {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
-		"draft_meal_plan":     {"chef", `{"title":"Stretch week","markdown":"## Monday\n- Porridge (15 min)","reason":"Asked."}`},
+		"update_task":          {"task-manager", `{"id":"` + task.ID + `","due_on":"2027-01-01","reason":"You said January."}`},
+		"create_task":          {"task-manager", `{"title":"Buy a yoga mat","reason":"Helps stretching."}`},
+		"add_milestone":        {"goals", `{"goal_id":"` + g.ID + `","title":"Reach my shins","reason":"Halfway."}`},
+		"link_task_to_goal":    {"goals", `{"task_id":"` + task.ID + `","goal_id":"` + g.ID + `","reason":"Stretching moves it."}`},
+		"remember":             {"goals", `{"fact":"Prefers morning routines","reason":"Stated today."}`},
+		"create_habit":         {"habits", `{"title":"Floss one tooth","two_minute":"Floss one tooth","stack_after":"After I brush","reason":"Tiny start."}`},
+		"update_habit":         {"habits", `{"id":"` + habit.ID + `","two_minute":"Read one line","reason":"Smaller restart."}`},
+		"draft_issue":          {"side-projects", `{"repo_id":"` + repo.ID + `","title":"Add tests","details":"Start with main.go.","reason":"Missing."}`},
+		"post_review_comment":  {"code-review", `{"repo_id":"` + repo.ID + `","number":7,"body":"Looks good.","reason":"Review."}`},
+		"draft_roadmap":        {"tutor", `{"title":"Yoga","skills":[{"title":"Sun salutation","url":"https://en.wikipedia.org/wiki/Sun_Salutation"}],"reason":"Asked."}`},
+		"illustrate_cards":     {"teacher", `{"cards":[{"card_id":"` + card.ID + `","illustration":"<svg viewBox='0 0 40 20'><rect width='40' height='20' fill='#88c'/></svg>","mnemonic":"A rubber band warming by a fire."}],"reason":"Dual coding."}`},
+		"propose_cards":        {"teacher", `{"cards":[{"front":"Stretch why?","back":"Flexibility.","note_id":"` + studyNote.ID + `"}],"reason":"Basics."}`},
+		"suggest_media":        {"media", `{"kind":"book","title":"Stretching","creators":"Bob Anderson","year":1980,"reason":"Like your stretching notes."}`},
+		"suggest_resources":    {"resource", `{"roadmap_id":"` + rm.ID + `","resources":[{"title":"Stretching","url":"https://en.wikipedia.org/wiki/Stretching","description":"Site · Wikipedia · free"}],"reason":"Basics."}`},
+		"draft_meal_plan":      {"chef", `{"title":"Stretch week","markdown":"## Monday\n- Porridge (15 min)","reason":"Asked."}`},
+		"suggest_watch_source": {"tech-watch", `{"url":"https://go.dev/blog/feed.atom","title":"The Go Blog","topics":["Go"],"reason":"Release notes from the source."}`},
+		"suggest_watch_topic":  {"tech-watch", `{"name":"Databases","keywords":["Postgres","SQLite"],"reason":"Half your news is about them."}`},
 	}
 	// The chef runs only with the health consents.
 	for _, c := range []string{"health_data", "health_ai"} {

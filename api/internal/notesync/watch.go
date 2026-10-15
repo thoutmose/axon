@@ -19,9 +19,19 @@ import (
 // names, sizes, and modification times) or Axon's notes change (a cheap
 // version check), at most once per interval. Each sync is the same
 // conflict-safe Run as a one-off sync. Errors back off up to a minute.
+// After each run, and every few minutes when nothing changes, it tells
+// Axon how the vault is doing (EP-106).
 func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Logger, onRun func(Report)) error {
 	c := client{cfg: cfg}
 	var lastLocal, lastRemote string
+	var last Report
+	var lastBeat time.Time
+	beat := func(rep Report, err error) {
+		if herr := Heartbeat(ctx, cfg, rep, err); herr != nil && ctx.Err() == nil {
+			log.Warn("notes sync: cannot report to Axon", "err", herr)
+		}
+		lastBeat = time.Now()
+	}
 	wait := interval
 	for {
 		local, lerr := fingerprint(cfg.Dir)
@@ -35,10 +45,13 @@ func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Lo
 			rep, err := Run(ctx, cfg)
 			if err != nil {
 				log.Warn("notes sync failed; retrying", "err", err)
+				beat(last, err)
 				wait = min(2*wait, time.Minute)
 				break
 			}
 			wait = interval
+			last = rep
+			beat(rep, nil)
 			if onRun != nil && (rep.Pushed+rep.Pulled+rep.Deleted > 0 || len(rep.Conflicts) > 0) {
 				onRun(rep)
 			}
@@ -46,6 +59,8 @@ func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Lo
 			// side while it ran is then seen next time. Our own writes cost one
 			// extra run that finds nothing to do.
 			lastLocal, lastRemote = local, remote
+		case time.Since(lastBeat) > HeartbeatEvery:
+			beat(last, nil)
 		}
 		select {
 		case <-ctx.Done():
@@ -54,6 +69,9 @@ func Watch(ctx context.Context, cfg Config, interval time.Duration, log *slog.Lo
 		}
 	}
 }
+
+// HeartbeatEvery is how often a quiet vault still says it is there.
+const HeartbeatEvery = 5 * time.Minute
 
 // fingerprint summarises the vault's notes and attachments without reading them.
 func fingerprint(dir string) (string, error) {

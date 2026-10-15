@@ -12,7 +12,11 @@ export type Space =
 	| 'diary'
 	| 'observatory'
 	| 'lighthouse'
-	| 'automata';
+	| 'automata'
+	| 'signal'
+	| 'constellation'
+	| 'studio'
+	| 'dispatch';
 
 const byPath: [string, Space][] = [
 	['/notes', 'notebook'],
@@ -36,7 +40,13 @@ const byPath: [string, Space][] = [
 	['/journal', 'diary'],
 	['/insights', 'observatory'],
 	['/review', 'lighthouse'],
-	['/agents', 'automata']
+	['/agents', 'automata'],
+	// The tech watch (EP-113): its analysis and podcast before the reader,
+	// as the first match wins.
+	['/watch/graph', 'constellation'],
+	['/watch/podcast', 'studio'],
+	['/watch', 'signal'],
+	['/digest', 'dispatch']
 ];
 
 /** The space for a page, or null for pages with their own scenery or none. */
@@ -116,5 +126,25 @@ export const spaceInfo: Record<Space, { title: string; about: string }> = {
 		title: 'Clockwork automata',
 		about:
 			'Gears and the cams that remember each letter, after Jaquet-Droz’s automaton The Writer (1770s) and the clockwork of Hugo: agents that work for you, and wait for your approval.'
+	},
+	signal: {
+		title: 'A radio dish',
+		about:
+			'A dish listening to the sky and a waveform of what it hears, after the radio telescopes of Jodrell Bank and the film Contact: the news, caught as signals.'
+	},
+	constellation: {
+		title: 'A star chart',
+		about:
+			'Constellations joined by thin lines over a celestial grid, after the star atlases of Johannes Hevelius (1690): concepts linked by how often they shine together.'
+	},
+	studio: {
+		title: 'A radio studio',
+		about:
+			'A ribbon microphone and the waveform of a voice, after the broadcast studios of the 1940s: the news, read to you.'
+	},
+	dispatch: {
+		title: 'Paper planes at sunrise',
+		about:
+			'Paper planes on their routes at dawn, after the airmail of Saint-Exupéry’s Night Flight (1931): your digest, sent out each morning.'
 	}
 };

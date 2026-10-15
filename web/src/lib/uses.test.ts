@@ -4,9 +4,18 @@ import { PAGES, planFor } from './uses';
 describe('planFor', () => {
 	it('keeps the pages of the chosen uses and the reflecting ones', () => {
 		const { hidden } = planFor(['tasks', 'health']);
-		for (const p of ['tasks', 'projects', 'calendar', 'focus', 'health', 'journal', 'review'])
+		for (const p of [
+			'tasks',
+			'projects',
+			'calendar',
+			'focus',
+			'health',
+			'journal',
+			'digest',
+			'review'
+		])
 			expect(hidden).not.toContain(p);
-		for (const p of ['notes', 'budget', 'media', 'household', 'learn', 'goals'])
+		for (const p of ['notes', 'watch', 'budget', 'media', 'household', 'learn', 'goals'])
 			expect(hidden).toContain(p);
 	});
 
@@ -27,6 +36,7 @@ describe('planFor', () => {
 			'tasks',
 			'notes',
 			'learning',
+			'watch',
 			'goals',
 			'health',
 			'money',
@@ -34,6 +44,6 @@ describe('planFor', () => {
 			'home'
 		]);
 		expect(all.hidden).toEqual([]);
-		expect(PAGES.length).toBe(19);
+		expect(PAGES.length).toBe(21);
 	});
 });

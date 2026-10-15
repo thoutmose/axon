@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-webauthn/webauthn/protocol"
@@ -29,11 +30,12 @@ const (
 
 // Config comes from the environment (see .env.example).
 type Config struct {
-	BaseURL          string // AXON_BASE_URL, e.g. https://srv-prod.tail781d53.ts.net
-	RPID             string // WEBAUTHN_RP_ID
-	EncryptionKey    string // AXON_ENCRYPTION_KEY; TOTP is unavailable without it
-	OpenRegistration bool   // AXON_REGISTRATION=open; otherwise only the first account can register
-	Demo             bool   // AXON_DEMO=1: anyone who can reach Axon may sign into the demo account
+	BaseURL          string     // AXON_BASE_URL, e.g. https://srv-prod.tail781d53.ts.net
+	RPID             string     // WEBAUTHN_RP_ID
+	EncryptionKey    string     // AXON_ENCRYPTION_KEY; TOTP is unavailable without it
+	OpenRegistration bool       // AXON_REGISTRATION=open; otherwise only the first account can register
+	Demo             bool       // AXON_DEMO=1: anyone who can reach Axon may sign into the demo account
+	Providers        []Provider // sign in with Google, Microsoft, Apple, Discord, Slack, or OIDC (EP-109)
 }
 
 // Service holds the auth dependencies.
@@ -47,6 +49,9 @@ type Service struct {
 	openReg      bool
 	demo         bool
 	signInLimit  *limiter
+	oauthLimit   *limiter
+	providers    []Provider
+	base         string // AXON_BASE_URL without a trailing slash
 }
 
 // New validates cfg and builds the service.
@@ -73,6 +78,9 @@ func New(cfg Config, pool *pgxpool.Pool, log *slog.Logger) (*Service, error) {
 		openReg:      cfg.OpenRegistration,
 		demo:         cfg.Demo,
 		signInLimit:  newLimiter(6*time.Second, 10), // 10 at once, then one every 6 s
+		oauthLimit:   newLimiter(2*time.Second, 30),
+		providers:    cfg.Providers,
+		base:         strings.TrimRight(cfg.BaseURL, "/"),
 	}
 	if cfg.EncryptionKey != "" {
 		if s.sealer, err = NewSealer(cfg.EncryptionKey); err != nil {

@@ -9,6 +9,7 @@ export const PAGES = [
 	'calendar',
 	'focus',
 	'notes',
+	'watch',
 	'areas',
 	'resources',
 	'archive',
@@ -20,6 +21,7 @@ export const PAGES = [
 	'budget',
 	'household',
 	'journal',
+	'digest',
 	'review',
 	'insights',
 	'agents'
@@ -32,6 +34,7 @@ export const pageLabels: Record<(typeof PAGES)[number], string> = {
 	calendar: 'Calendar',
 	focus: 'Focus',
 	notes: 'Notes',
+	watch: 'Tech watch',
 	areas: 'Areas',
 	resources: 'Resources',
 	archive: 'Archive',
@@ -43,6 +46,7 @@ export const pageLabels: Record<(typeof PAGES)[number], string> = {
 	budget: 'Budget',
 	household: 'Household',
 	journal: 'Journal',
+	digest: 'Digest',
 	review: 'Weekly review',
 	insights: 'Insights',
 	agents: 'Agents'
@@ -64,8 +68,8 @@ const SECTIONS = [
 	'overview'
 ];
 
-/** Reflecting is for everyone: the weekly review, insights, and agents stay. */
-const ALWAYS = ['review', 'insights', 'agents'];
+/** Reflecting is for everyone: the digest, the weekly review, insights, and agents stay. */
+const ALWAYS = ['digest', 'review', 'insights', 'agents'];
 
 export const USES: { id: string; label: string; pages: string[]; sections: string[] }[] = [
 	{
@@ -81,6 +85,7 @@ export const USES: { id: string; label: string; pages: string[]; sections: strin
 		sections: ['notes']
 	},
 	{ id: 'learning', label: 'Learning', pages: ['learn'], sections: ['learning'] },
+	{ id: 'watch', label: 'A tech watch', pages: ['watch'], sections: [] },
 	{
 		id: 'goals',
 		label: 'Goals and habits',

@@ -51,7 +51,8 @@ const icons: Record<string, [string, string]> = {
 	roadmap: ['🧭', '⌖'],
 	skill: ['🎓', '◆'],
 	area: ['🧱', '▣'],
-	resource: ['📚', '❏']
+	resource: ['📚', '❏'],
+	feed_item: ['📰', '▤']
 };
 
 /** The icon for an entity type in the chosen icon theme ("" for none). */
