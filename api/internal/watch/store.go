@@ -538,8 +538,8 @@ func Ingest(ctx context.Context, tx pgx.Tx, userID uuid.UUID, src Source, entrie
 		_, err = tx.Exec(ctx, `INSERT INTO watch_items (id, user_id, source_id, source_title, guid, url, url_hash, title, author, published_at, fetched_at,
 			summary, content, image, audio, lang, words, simhash, terms, keywords, labels, categories, topic_ids, score, outlier)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23::uuid[], $24, $25)`,
-			id, userID, src.ID, src.Title, cut(e.GUID, 2000), cut(e.URL, 2000), URLHash(e.URL), cut(e.Title, 500), cut(e.Author, 200), published, now,
-			cut(a.Summary, 5000), cut(a.Markdown, 200000), cut(e.Image, 2000), cut(e.Audio, 2000), a.Lang, a.Words, int64(a.SimHash), //nolint:gosec // the same 64 bits
+			id, userID, src.ID, src.Title, cut(e.GUID, 2000), cut(Canonical(e.URL), 2000), URLHash(e.URL), cut(e.Title, 500), cut(e.Author, 200), published, now,
+			cut(CleanLinks(a.Summary), 5000), cut(CleanLinks(a.Markdown), 200000), cut(e.Image, 2000), cut(e.Audio, 2000), a.Lang, a.Words, int64(a.SimHash), //nolint:gosec // the same 64 bits
 			nonNil(a.Terms), nonNil(a.Keywords), nonNil(a.Labels), nonNil(cleanAll(e.Categories)), nonNil(a.Topics), a.Score, a.Outlier)
 		if err != nil {
 			return st, fmt.Errorf("store %q: %w", e.URL, err)

@@ -74,7 +74,7 @@ func seedWatch(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) er
 	}
 	// Some news read, some saved, one kept as a note.
 	item := func(url string) (id uuid.UUID, err error) {
-		err = tx.QueryRow(ctx, `SELECT id FROM watch_items WHERE user_id = $1 AND url = $2`, user, url).Scan(&id)
+		err = tx.QueryRow(ctx, `SELECT id FROM watch_items WHERE user_id = $1 AND url_hash = $2`, user, watch.URLHash(url)).Scan(&id)
 		return id, err
 	}
 	for url, status := range map[string]string{

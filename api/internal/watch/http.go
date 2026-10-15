@@ -56,6 +56,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/watch/items/{id}", h.item)
 	r.Patch("/v1/watch/items/{id}", h.updateItem)
 	r.Post("/v1/watch/items/{id}/keep", h.keep)
+	r.With(auth.NotDemo).Post("/v1/watch/items/{id}/transcript", h.transcript)
 	r.Get("/v1/watch/stats", h.stats)
 	r.Get("/v1/watch/graph", h.graph)
 	r.Get("/v1/watch/export", h.export)
@@ -530,6 +531,27 @@ func (h *Handlers) keep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"note_id": note})
+}
+
+// transcript reads a video's words now, rather than at the next fetch (EP-123).
+func (h *Handlers) transcript(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, ok := idParam(w, r)
+	if !ok {
+		return
+	}
+	it, err := Transcribe(r.Context(), h.db, who.UserID, id, WhisperFromEnv())
+	switch {
+	case errors.Is(err, ErrNoTranscript):
+		httpx.Problem(w, http.StatusUnprocessableEntity, "This video has no captions, and no Whisper server is set up to transcribe it.")
+	case err != nil && !errors.As(err, new(ValidationError)) && !errors.Is(err, ErrNotFound):
+		h.log.Warn("transcript failed", "item", id, "err", err)
+		httpx.Problem(w, http.StatusBadGateway, "YouTube or the Whisper server did not answer. Try again later.")
+	case err != nil:
+		h.fail(w, err)
+	default:
+		httpx.JSON(w, http.StatusOK, it)
+	}
 }
 
 // --- monitoring ---

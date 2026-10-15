@@ -122,6 +122,28 @@
 			toast(message(err), 'error');
 		}
 	}
+	// A video's words (EP-123): read now rather than at the next fetch.
+	let transcribing = $state(false);
+	async function transcribe() {
+		if (!open) return;
+		transcribing = true;
+		try {
+			const it = await api<typeof open.item>(`/v1/watch/items/${open.item.id}/transcript`, {
+				method: 'POST'
+			});
+			open.item = { ...open.item, ...it };
+			toast(t('Transcript added.'));
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			transcribing = false;
+		}
+	}
+	const transcriptNames: Record<string, string> = {
+		captions: 'from the author’s captions',
+		auto_captions: 'from YouTube’s automatic captions',
+		whisper: 'transcribed by Whisper'
+	};
 	async function readAll() {
 		try {
 			const { status: _s, ...rest } = filter;
@@ -328,6 +350,21 @@
 			{/if}
 			{#if open.item.keywords.length}
 				<p class="small muted">{t('Key points')}: {open.item.keywords.join(' · ')}</p>
+			{/if}
+			{#if open.item.kind === 'video'}
+				<p class="small">
+					{#if open.item.transcript_source}
+						{t('Transcript {source}', {
+							source: t(transcriptNames[open.item.transcript_source])
+						})}{#if open.item.transcript_lang}
+							· {open.item.transcript_lang}{/if}
+					{:else}
+						<Button variant="ghost" busy={transcribing} onclick={transcribe}
+							>{t('Read the transcript')}</Button
+						>
+						<span class="muted">{t('Its words join the analysis and the graph.')}</span>
+					{/if}
+				</p>
 			{/if}
 			<div class="content">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- render() escapes everything it does not produce -->

@@ -171,6 +171,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-120 | Invitations | The owner invites one person at a time with a link used once, even while registration is closed, optionally into the household. | SHOULD | 3 pts | EP-03, EP-37 | Done |
 | EP-121 | Share as a picture | A picture of a level, a card of the collection, a goal, or a habit's run, drawn on the device, to share, download, copy, or post on X, LinkedIn, or Bluesky. | COULD | 3 pts | EP-119 | Done |
 | EP-122 | A practical knowledge graph | Both graphs (the news and the notes) pan, zoom, fit, find a node, go full screen, and place labels without overlap. | SHOULD | 3 pts | EP-47, EP-111 | Done |
+| EP-123 | YouTube in the tech watch | Videos' words from their captions, else the operator's Whisper server, in their analysis and graph; Spanish too; links without tracking. | SHOULD | 8 pts | EP-110, EP-111 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -207,7 +208,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2120,6 +2121,17 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** Zooming about a point, fitting, centring, and label placement (written first); an e2e step on the notes' graph that finds a note, zooms, and fits, with axe.
 
+### EP-123 — YouTube in the tech watch
+
+**Goal.** "Like the tech watch, but with YouTube channels, and advanced NLP analysis following the subtitles (you can generate them), with the title and metadata, in more than one natural language, and with links cleaned." The owner chose: YouTube's captions first, then their own Whisper server.
+
+- [x] **EP-123/IS-123.01** · 2 pts · SHOULD — Links: every form of a YouTube link (`youtu.be`, `m.`, `/shorts/`, `/embed/`, `/live/`) is one video, `youtube.com/watch?v=…` (with `t` kept), and the trackers of YouTube's share button, Facebook, LinkedIn, X, Google, and Microsoft ads are dropped, from each item's link and from the links in its text. A YouTube link of any form is a video, never set aside as too short.
+- [x] **EP-123/IS-123.02** · 4 pts · SHOULD — Transcripts: after each round the worker reads three untried videos; Axon asks YouTube's player (as its Android app does) for the captions, takes the author's in the spoken language, else any of the author's, else the automatic ones, and reads them (both caption formats); with none, and `AXON_WHISPER_URL` set, the smallest audio stream (at most 60 MB, 3 hours) goes to that OpenAI-compatible server. The words join the item's text under "Transcript", and the item is analysed again: language, terms, key phrases, topics, labels, score. Migration `00064` records the source, language, and attempt, so a video is tried once; `POST /v1/watch/items/{id}/transcript` tries now (not in the demo). Only the text is kept.
+- [x] **EP-123/IS-123.03** · 1 pt · SHOULD — More than one language: Spanish is recognised beside English and French, by its function words (without those that are English words too), and stemmed with Snowball; Whisper's language names become codes.
+- [x] **EP-123/IS-123.04** · 1 pt · SHOULD — The reader says where a video's transcript came from and its language, or offers **Read the transcript**.
+
+**Tests.** Canonical links and video ids, links in a text (written first); both caption formats; the track choice; a fake YouTube and Whisper (captions, none, the smallest audio, the token, the language); `TestWatchVideoTranscript` (a `youtu.be` link cleaned and kept as a video, captions that bring a topic, YouTube asked once); Spanish detection and stems, English left alone.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2326,7 +2338,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
-| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-122 delivered. |
+| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-123 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |
