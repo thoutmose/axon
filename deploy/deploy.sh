@@ -3,22 +3,40 @@
 #
 #   deploy/deploy.sh staging|prod             build, copy, migrate, start, smoke-test
 #   deploy/deploy.sh staging|prod --rollback  restart the previously deployed version
+#   deploy/deploy.sh dev [--skip-ci|--rollback]
+#                     the same on srv-dev (or AXON_DEV_HOST), for a branch under
+#                     review; --skip-ci deploys without a green CI run, on dev only
 #
 # Needs Docker, age, the private key in ~/.config/axon/age.key (or AXON_AGE_KEY),
 # and SSH access to the host. See doc/operations.md.
 set -euo pipefail
 
-usage() { echo "usage: $0 staging|prod [--rollback]" >&2; exit 2; }
+usage() { echo "usage: $0 staging|prod [--rollback] | dev [--skip-ci|--rollback]" >&2; exit 2; }
 
 case "${1:-}" in
   prod) host=srv-prod ;;
   staging) host=srv-staging ;;
+  dev) host=${AXON_DEV_HOST:-srv-dev} ;;
   *) usage ;;
 esac
 env=$1
+flag=${2:-}
+[[ $# -le 2 ]] || usage
+case "$flag" in
+  '' | --rollback) ;;
+  --skip-ci) [[ "$env" == dev ]] || { echo "--skip-ci is for dev only: staging and production need a green CI run" >&2; exit 2; } ;;
+  *) usage ;;
+esac
 remote_dir=/opt/axon
 key=${AXON_AGE_KEY:-$HOME/.config/axon/age.key}
 cd "$(dirname "$0")/.."
+
+# dev has its own secrets once deploy/env/dev.env.age exists, staging's until then.
+secrets=deploy/env/$env.env.age
+if [[ "$env" == dev && ! -f "$secrets" ]]; then
+  secrets=deploy/env/staging.env.age
+  echo "dev: no deploy/env/dev.env.age yet, using staging's secrets"
+fi
 
 remote() { ssh "$host" "cd $remote_dir && $1"; }
 
@@ -28,15 +46,13 @@ smoke_test() {
   echo "$env ($host) is serving $(remote 'curl -fsS http://127.0.0.1:3000/api/healthz')"
 }
 
-if [[ "${2:-}" == "--rollback" ]]; then
+if [[ "$flag" == "--rollback" ]]; then
   previous=$(remote 'cat previous-version')
   echo "rolling back $env to $previous (database migrations are not reverted)"
   remote "sed -i 's/^AXON_VERSION=.*/AXON_VERSION=$previous/' .env && docker compose up -d --wait api web"
   smoke_test
   exit 0
 fi
-[[ $# -eq 1 ]] || usage
-
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "commit your changes first: a deployment must match a commit" >&2
   exit 1
@@ -45,11 +61,15 @@ version=$(git rev-parse --short HEAD)
 
 # Promotion rules: CI must have passed for this commit, and production only
 # receives a version that staging is already serving.
-ci=$(gh run list --commit "$(git rev-parse HEAD)" --workflow ci --json status,conclusion \
-  --jq '[.[] | select(.status == "completed")][0].conclusion // "missing"')
-if [[ "$ci" != "success" ]]; then
-  echo "CI for $version is '$ci': push the commit and wait for a green CI run" >&2
-  exit 1
+if [[ "$flag" == "--skip-ci" ]]; then
+  echo "dev: deploying $version without checking CI"
+else
+  ci=$(gh run list --commit "$(git rev-parse HEAD)" --workflow ci --json status,conclusion \
+    --jq '[.[] | select(.status == "completed")][0].conclusion // "missing"')
+  if [[ "$ci" != "success" ]]; then
+    echo "CI for $version is '$ci': push the commit and wait for a green CI run" >&2
+    exit 1
+  fi
 fi
 if [[ "$env" == prod ]]; then
   staging=$(ssh srv-staging 'curl -fsS http://127.0.0.1:3000/api/healthz' | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')
@@ -75,7 +95,7 @@ remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@
 # Backup metrics file for node_exporter's textfile collector (directory owned by root).
 ssh "$host" 'f=/var/lib/prometheus/node-exporter/axon_backup.prom; [ -f $f ] || sudo install -o "$(id -un)" -m 0644 /dev/null $f'
 {
-  age --decrypt -i "$key" "deploy/env/$env.env.age"
+  age --decrypt -i "$key" "$secrets"
   # Non-secret settings, reviewed in the open (they must not repeat a secret's name).
   grep -v '^\s*\(#\|$\)' "deploy/env/$env.settings.env"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"

@@ -127,8 +127,9 @@ var wordnetText string
 
 // groups maps a stem to its synonym groups, and words keeps a readable word per stem.
 var (
-	groups = map[string][]int{}
-	words  = map[string]string{}
+	groups  = map[string][]int{}
+	words   = map[string]string{}
+	members = map[int][]string{} // group → stems
 )
 
 func loadThesaurus() {
@@ -149,6 +150,7 @@ func loadThesaurus() {
 					s := StemIn(w, lang)
 					if !slices.Contains(groups[s], n) {
 						groups[s] = append(groups[s], n)
+						members[n] = append(members[n], s)
 					}
 					if _, ok := words[s]; !ok {
 						words[s] = w
@@ -159,6 +161,19 @@ func loadThesaurus() {
 	}
 	add(thesaurusText, "en", "fr") // Axon's own list mixes English and French
 	add(wordnetText, "en")
+}
+
+// SynonymsOf lists the stems that share a thesaurus group with stem.
+func SynonymsOf(stem string) []string {
+	var out []string
+	for _, g := range groups[stem] {
+		for _, s := range members[g] {
+			if s != stem && !slices.Contains(out, s) {
+				out = append(out, s)
+			}
+		}
+	}
+	return out
 }
 
 // Synonyms reports whether two different stems share a thesaurus group.

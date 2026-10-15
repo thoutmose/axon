@@ -36,6 +36,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
+	"github.com/thoutmose/axon/api/internal/watch"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".
@@ -102,15 +103,21 @@ func serve() error {
 	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	registerPoolStats(reg, pool)
 	metrics := server.NewMetrics(reg, version, pool)
+	watch.RegisterMetrics(reg)
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
+	providers, err := auth.ProvidersFromEnv(os.Getenv)
+	if err != nil {
+		return err
+	}
 	cfg := auth.Config{
 		BaseURL:          os.Getenv("AXON_BASE_URL"),
 		RPID:             os.Getenv("WEBAUTHN_RP_ID"),
 		EncryptionKey:    os.Getenv("AXON_ENCRYPTION_KEY"),
 		OpenRegistration: os.Getenv("AXON_REGISTRATION") == "open",
 		Demo:             demoEnabled(),
+		Providers:        providers,
 	}
 	handler, err := app.Handler(version, cfg, pool, log, metrics, provider(log))
 	if err != nil {
@@ -128,6 +135,10 @@ func serve() error {
 	if err != nil {
 		return err
 	}
+	listeners, err := app.Replies(cfg, pool, log)
+	if err != nil {
+		return err
+	}
 	if demoEnabled() {
 		go keepDemo(ctx, pool, log)
 	}
@@ -137,6 +148,8 @@ func serve() error {
 		go reminders.Run(ctx)
 		go cals.Run(ctx)
 		go index.Run(ctx)
+		go listeners.Run(ctx)
+		go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
 	}
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
@@ -306,14 +319,31 @@ func notesSync(args []string) error {
 	useGit := fs.Bool("git", false, "git pull before and commit + push after")
 	watch := fs.Bool("watch", false, "keep running: sync whenever the vault or Axon changes (implies -two-way)")
 	interval := fs.Duration("interval", 2*time.Second, "with -watch: how often to check for changes")
+	pairCode := fs.String("pair", "", "while -token-file does not exist: pair with this one-time code from Axon and save the token there")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *dir == "" || *url == "" || *tokenFile == "" {
-		return errors.New("usage: axon notes-sync -dir DIR -url URL -token-file FILE [-two-way] [-git | -watch [-interval 2s]]")
+		return errors.New("usage: axon notes-sync -dir DIR -url URL -token-file FILE [-pair CODE] [-two-way] [-git | -watch [-interval 2s]]")
 	}
 	if *watch && *useGit {
 		return errors.New("-watch keeps files in step continuously; commit them with your own schedule instead of -git")
+	}
+	if _, err := os.Stat(*tokenFile); errors.Is(err, os.ErrNotExist) && *pairCode != "" {
+		if err := os.MkdirAll(*dir, 0o700); err != nil {
+			return err
+		}
+		cfg := notesync.Config{Dir: *dir, URL: *url, HTTP: &http.Client{Timeout: time.Minute}}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		p, err := notesync.Pair(ctx, &cfg, *pairCode, *tokenFile)
+		cancel()
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "paired: token saved to %s (expires %s)\n", *tokenFile, p.ExpiresAt)
+		if len(p.Folders) > 0 {
+			fmt.Fprintf(os.Stderr, "the vault was empty: created %d folders; the first sync writes Home.md, the templates, and your notes\n", len(p.Folders))
+		}
 	}
 	token, err := os.ReadFile(*tokenFile)
 	if err != nil {
@@ -354,10 +384,14 @@ func notesSync(args []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	rep, err := notesync.Run(ctx, notesync.Config{
+	cfg := notesync.Config{
 		Dir: *dir, URL: *url, Token: strings.TrimSpace(string(token)), StatePath: *statePath, TwoWay: *twoWay,
 		HTTP: &http.Client{Timeout: time.Minute},
-	})
+	}
+	rep, err := notesync.Run(ctx, cfg)
+	if herr := notesync.Heartbeat(ctx, cfg, rep, err); herr != nil {
+		fmt.Fprintln(os.Stderr, "could not report to Axon:", herr)
+	}
 	if err != nil {
 		return err
 	}

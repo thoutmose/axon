@@ -44,6 +44,7 @@ type Config struct {
 // Report summarizes a run.
 type Report struct {
 	Pushed, Pulled, Deleted, Unchanged int
+	Notes, Files                       int // in step after the run
 	Conflicts                          []string
 	Skipped                            []string // files Axon would not take: not what their name says, or no room
 }
@@ -194,6 +195,7 @@ func Run(ctx context.Context, cfg Config) (Report, error) {
 		_ = saveState(cfg.StatePath, st)
 		return rep, err
 	}
+	rep.Notes, rep.Files = len(st.Hashes), len(st.Files)
 	return rep, saveState(cfg.StatePath, st)
 }
 
@@ -334,7 +336,9 @@ func (c client) send(ctx context.Context, method, p, contentType string, body io
 	if err != nil {
 		return 0, nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.cfg.Token)
+	if c.cfg.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.cfg.Token)
+	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}

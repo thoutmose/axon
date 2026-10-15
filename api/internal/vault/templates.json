@@ -1,0 +1,94 @@
+[
+	{
+		"path": "Templates/Fleeting note.md",
+		"content": "---\ntype: fleeting\ncreated: {{date}}\n---\n# {{title}}\n\n"
+	},
+	{
+		"path": "Templates/literature.md",
+		"content": "---\ntype: literature\ntitle: {{title}}\ncreated: {{created}}\nstatus: draft\nsource_type: book | article | paper | video | course | podcast | website\nauthor:\nurl:\nproject:\narea:\nroadmap:\ntags:\n---\n> Literature note: what the source says, **in my own words**. Retrieval tests\n> are scheduled from `created` (30 min, 1 d, 3 d, 1 w, 1 m, 3 m).\n\n## Summary (own words, no copy-paste)\n\n## Key ideas\n\n-\n\n## Concrete examples\n<!-- At least one example from the source + one of my own. -->\n-\n\n## Visual (dual coding)\n<!-- Diagram, sketch, table or mermaid. <leader>zp pastes an image. -->\n\n## Elaboration — how and why?\n\n- Why is this true?\n- How does it connect to what I already know? [[ ]]\n\n## Quotes worth keeping (with page/timestamp)\n\n-\n\n## Permanent notes to extract\n\n- [ ]\n"
+	},
+	{
+		"path": "Templates/permanent.md",
+		"content": "---\ntype: permanent\ntitle: {{title}}\ncreated: {{created}}\nstatus: draft\nproject:\narea:\nroadmap:\ntags:\n---\n> One idea per note, written so that future-me understands it without context.\n\n## Idea\n\n## Why it matters / how it works (elaboration)\n\n## Concrete example\n\n## Visual (dual coding)\n\n## Links (and *why* each link)\n\n- [[ ]] — because\n\n## Sources\n\n- [[ ]] (literature note)\n"
+	},
+	{
+		"path": "Templates/project.md",
+		"content": "---\ntype: project\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\ndeadline:\narea:\ngoal:\nroadmap:\n---\n> PARA **Project**: a short-term effort with a clear outcome and a deadline.\n\n## Outcome (what does \"done\" look like?)\n\n## Next actions\n\nTasks live in the kanban: `+{{slug}}` (filter with `<leader>zf` → `+{{slug}}`).\n\n## Resources & notes\n\n-\n\n## Log\n\n- {{date}} created\n"
+	},
+	{
+		"path": "Templates/area.md",
+		"content": "---\ntype: area\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\n---\n> PARA **Area**: an ongoing responsibility with a standard to maintain (no end\n> date).\n\n## Standard to maintain\n\n## Active projects\n\n- [[ ]]\n\n## Habits supporting this area\n\n- [[ ]]\n\n## Notes & resources\n\n-\n"
+	},
+	{
+		"path": "Templates/resource.md",
+		"content": "---\ntype: resource\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\ntags:\n---\n> PARA **Resource**: a topic of ongoing interest; useful later.\n\n## Why I keep this\n\n## Links, references, literature notes\n\n- [[ ]]\n"
+	},
+	{
+		"path": "Templates/Archive note.md",
+		"content": "---\ntype: archive\ntitle: {{title}}\narchived: {{date}}\n---\n## What it was\n\n\n## Outcome\n\n\n## Lessons\n- \n"
+	},
+	{
+		"path": "Templates/daily.md",
+		"content": "---\ntype: daily\ntitle: {{title}}\ncreated: {{created}}\n---\n## Top 3 (from the kanban: `<leader>zf` → `@day` / `today`)\n\n- [ ]\n- [ ]\n- [ ]\n\n## Retrieval tests due (open the board: `<leader>zr`)\n\n{{reviews}}\n\n## Habits (`<leader>zh` to check in)\n\n## Learned today → notes written\n\n- [[ ]]\n\n## Journal\n"
+	},
+	{
+		"path": "Templates/weekly.md",
+		"content": "---\ntype: weekly\ntitle: {{title}}\ncreated: {{created}}\n---\n## GTD weekly review\n\n- [ ] Empty 0-Inbox/inbox.md (clarify → task, note, or trash)\n- [ ] Review kanban: Next / Doing / Waiting (`<leader>zk`)\n- [ ] Review projects (1-Projects): each has a next action?\n- [ ] Review tracker (`<leader>zg`): habits streaks, milestones due\n- [ ] Clear review board (`<leader>zr`)\n- [ ] Ask the AI coach (`<leader>zi` → Weekly coach)\n\n## This week's tasks (@week)\n\n- [ ]\n\n## Wins / lessons\n"
+	},
+	{
+		"path": "Templates/monthly.md",
+		"content": "---\ntype: monthly\ntitle: {{title}}\ncreated: {{created}}\n---\n## Goals & milestones review\n\n- [ ] Update goal statuses and milestone dates (`<leader>zg`, `s` to set status)\n- [ ] Roadmap progress: which phase am I in? adjust plan?\n- [ ] Archive finished projects (`<leader>zA`)\n\n## This month's tasks (@month)\n\n- [ ]\n\n## What I learned (link permanent notes)\n\n- [[ ]]\n"
+	},
+	{
+		"path": "Templates/roadmap.md",
+		"content": "---\ntype: roadmap\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\nsource: ai | roadmap.sh | ossu | manual\ngoal:\nhours_per_week:\nbudget:\nstart: {{date}}\ntarget_end:\n---\n## Why / end goal\n\n## Constraints\n\n- Time: h/day, h/week\n- Budget:\n- Current level / prerequisites:\n- Preferred formats:\n\n## Phases\n\n### Phase 1 —\n\n- Milestone: [[ ]]\n- Topics:\n- Resources (best first):\n- Practice project:\n- Exit check (how I prove I know it):\n\n## Habits\n\n- [[ ]]\n\n## Learning method\n\n- Each resource → literature notes → permanent notes → spaced tests (board:\n  `<leader>zr`)\n- Interleave 2–3 topics per week; keep a concrete project running.\n\n## Progress log\n\n- {{date}} roadmap created\n"
+	},
+	{
+		"path": "Templates/goal.md",
+		"content": "---\ntype: goal\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\ndue:\narea:\nroadmap:\n---\n## Outcome (specific & measurable)\n\n## Why it matters\n\n## Milestones\n\nMilestones link here with `goal: \"[[{{slug}}]]\"`; progress is shown in\n`<leader>zg`.\n\n## Habits that drive it\n\n- [[ ]]\n\n## Review notes\n\n-\n"
+	},
+	{
+		"path": "Templates/milestone.md",
+		"content": "---\ntype: milestone\ntitle: {{title}}\ncreated: {{created}}\nstatus: todo\ndue:\ngoal: {{goal}}\nroadmap:\n---\n## Definition of done\n\n- [ ]\n\n## Evidence / deliverable (project, exam, write-up, demo)\n\n## Resources\n\n-\n"
+	},
+	{
+		"path": "Templates/habit.md",
+		"content": "---\ntype: habit\ntitle: {{title}}\ncreated: {{created}}\nstatus: active\nfrequency: daily\ngoal: {{goal}}\nroadmap:\n---\n## Cue → routine → reward\n\n- Cue (when/where):\n- Routine (smallest version, ≤2 min to start):\n- Reward:\n\n## Why (link to goal / identity)\n\n## Log\n<!-- One line per check-in: `- YYYY-MM-DD` (<leader>zh toggles today). -->\n"
+	},
+	{
+		"path": "Templates/media.md",
+		"content": "---\ntype: media\nkind: {{kind}}\ntitle: {{title}}\ncreator: {{creator}}\nyear: {{year}}\ncreated: {{created}}\nstatus: {{status}}\nprogress:\nrating:\nstarted: {{started}}\nfinished: {{finished}}\nurl: {{url}}\n---\n> Media tracker (book, movie, series, course, podcast, game). Status: want →\n> doing → done (or dropped). Takeaways worth keeping → literature note.\n\n## Why I want it\n\n## Notes & takeaways\n\n## Quotes\n"
+	},
+	{
+		"path": "Templates/test-5w.md",
+		"content": "---\ntype: test\nstage: 5w\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> Retrieval practice, 30 min–1 h after writing. **Do not open the note.** Answer\n> from memory, then `<leader>zrs` to submit for AI review.\n\n## Questions\n<!-- The AI replaces these generic questions with ones specific to the note. -->\n1. **What** is the core idea?\n2. **Why** is it true / why does it matter?\n3. **Who** proposed it, uses it, or is affected by it?\n4. **When** does it apply (and when does it not)?\n5. **Where** does it show up (domain, example, context)?\n6. **How** does it work, step by step?\n\n## My answers\n\n1.\n2.\n3.\n4.\n5.\n6.\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/test-blank.md",
+		"content": "---\ntype: test\nstage: blank\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> 1 day later. **Do not open the note.** Write *everything* you remember: ideas,\n> examples, a sketch/diagram, links to other ideas. Then `<leader>zrs`.\n\n## My answers\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/test-cards.md",
+		"content": "---\ntype: test\nstage: cards\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> 3 days later. Each `###` heading is the **front**; the text under it is the\n> **back** (images allowed: `![[diagram.png]]`).\n> Fix or add cards, then `<leader>zrs` (AI checks accuracy) and `<leader>zrx` to\n> export to Anki.\n\n## Cards\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/test-cloze.md",
+		"content": "---\ntype: test\nstage: cloze\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> 1 week later. **Do not open the note.** Fill each `____`, then `<leader>zrs`.\n\n## Questions\n\n## My answers\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/test-monthly.md",
+		"content": "---\ntype: test\nstage: monthly\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> 1 month later. Questions mix this note with related notes (interleaving):\n> recall, application to a new case, compare/contrast, concrete examples. **No\n> notes open.** Then `<leader>zrs`.\n\n## Questions\n\n## My answers\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/test-feynman.md",
+		"content": "---\ntype: test\nstage: feynman\ntitle: {{title}}\nnote: \"[[{{note}}]]\"\nnote_path: {{note_path}}\nstatus: todo\ncreated: {{created}}\nanswered:\nreviewed:\nscore:\n---\n> 3 months later. **Do not open the note.**\n>\n> 1. Explain the idea in plain words to a 12-year-old (no jargon).\n> 2. Give one concrete analogy and one real example.\n> 3. Draw/describe a simple diagram.\n> 4. Mark where you got stuck: those are your gaps.\n> Then `<leader>zrs`.\n\n## My answers\n\n### Plain explanation\n\n### Analogy & example\n\n### Diagram\n\n### Where I got stuck\n\n## AI review\n"
+	},
+	{
+		"path": "Templates/Meeting.md",
+		"content": "---\ntype: meeting\ndate: {{date}}\nattendees: \n---\n# {{title}}\n\n## Decisions\n- \n\n## Actions\n- [ ] \n"
+	},
+	{
+		"path": "Templates/Blank note.md",
+		"content": "# {{title}}\n\n"
+	}
+]

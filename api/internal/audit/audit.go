@@ -33,6 +33,11 @@ const (
 	TokenRevoked        = "token.revoked"
 	CalendarFeedCreated = "calendar_feed.created"
 	CalendarFeedRevoked = "calendar_feed.revoked"
+	SignInProvider      = "signin.provider"
+	IdentityLinked      = "identity.linked"
+	IdentityUnlinked    = "identity.unlinked"
+	WatchShareCreated   = "watch_share.created"
+	WatchShareRevoked   = "watch_share.revoked"
 )
 
 // Event is one audit log entry.

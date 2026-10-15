@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,18 +39,22 @@ import (
 	"github.com/thoutmose/axon/api/internal/media"
 	_ "github.com/thoutmose/axon/api/internal/mirror" // registers the vault mirror hooks (EP-48)
 	"github.com/thoutmose/axon/api/internal/notes"
+	"github.com/thoutmose/axon/api/internal/notify"
 	"github.com/thoutmose/axon/api/internal/para"
 	"github.com/thoutmose/axon/api/internal/practice"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/progress"
 	"github.com/thoutmose/axon/api/internal/projects"
 	"github.com/thoutmose/axon/api/internal/reminders"
+	"github.com/thoutmose/axon/api/internal/replies"
 	"github.com/thoutmose/axon/api/internal/repos"
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 	"github.com/thoutmose/axon/api/internal/semantic"
 	"github.com/thoutmose/axon/api/internal/server"
 	"github.com/thoutmose/axon/api/internal/settings"
 	"github.com/thoutmose/axon/api/internal/tasks"
+	vaultsrv "github.com/thoutmose/axon/api/internal/vault"
+	"github.com/thoutmose/axon/api/internal/watch"
 )
 
 // Handler builds the complete API handler.
@@ -126,6 +131,12 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("anki_account", ankiAPI.Export)
 	priv.Register("card_reviews", cards.ExportReviews)
 	priv.RegisterFiles("account", avatars.Files)
+	vaultAPI := vaultsrv.NewHandlers(pool, log, cfg.BaseURL, version)
+	priv.Register("vault_source", vaultsrv.Export)
+	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
+	watchAPI := watch.NewHandlers(pool, log)
+	priv.Register("channels", notify.Export)
+	priv.Register("sign_in_identities", auth.ExportIdentities)
 	// What the API says to people, in their language (EP-87), on every route.
 	return l10n.Middleware(server.New(version, pool, log, m, func(r chi.Router) {
 		r.Get("/v1/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
@@ -143,20 +154,31 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 			r.Use(limitBody(50<<20), authn.SameOrigin, authn.Require, idem.Middleware(pool, log))
 			notesAPI.Routes(r)
 			importsAPI.Routes(r)
+			watchAPI.UploadRoutes(r)
+		})
+		// Vault servers pair with a one-time code: no session, no Origin (EP-106).
+		r.Group(func(r chi.Router) {
+			r.Use(limitBody(httpx.MaxBody), authn.Throttle)
+			vaultAPI.PairRoute(r)
 		})
 		r.Group(func(r chi.Router) {
 			r.Use(limitBody(httpx.MaxBody), authn.SameOrigin)
 			authn.Routes(r)
+			vaultAPI.PublicRoutes(r)
 			dashboardAPI.PublicRoutes(r) // the feed URL's token is its credential
+			watchAPI.PublicRoutes(r)     // so is a shared page's
 			r.Group(func(r chi.Router) {
 				r.Use(authn.RequireSession)
 				priv.Routes(r)
 				dashboardAPI.FeedRoutes(r)
+				watchAPI.SessionRoutes(r)
 				agentsAPI.SessionRoutes(r)
 				settingsAPI.Routes(r)
 				avatarsAPI.Routes(r)
 				ankiAPI.Routes(r)
 				reposAPI.Routes(r)
+				vaultAPI.SessionRoutes(r)
+				notifyAPI.SessionRoutes(r)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(authn.Require, idem.Middleware(pool, log))
@@ -186,6 +208,9 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 				dashboardAPI.Routes(r)
 				insightsAPI.Routes(r)
 				agentsAPI.Routes(r)
+				vaultAPI.Routes(r)
+				notifyAPI.Routes(r)
+				watchAPI.Routes(r)
 			})
 		})
 	})), nil
@@ -235,7 +260,7 @@ func Reminders(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*reminder
 	if contact == "" {
 		contact = cfg.BaseURL
 	}
-	return reminders.NewWorker(pool, log, sealer, mailer, contact), nil
+	return reminders.NewWorker(pool, log, sealer, mailer, contact, cfg.BaseURL), nil
 }
 
 func limitBody(n int64) func(http.Handler) http.Handler {
@@ -245,4 +270,21 @@ func limitBody(n int64) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// Replies returns the listeners that read answers to digests in chat apps
+// (EP-108); the process runs them.
+func Replies(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*replies.Manager, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	return &replies.Manager{
+		Handler: replies.Handler{DB: pool, Base: cfg.BaseURL, Now: time.Now},
+		Store:   notify.NewStore(pool, sealer),
+		Log:     log,
+	}, nil
 }

@@ -44,6 +44,7 @@
 			label: t('Think'),
 			links: [
 				{ href: '/notes', label: t('Notes') },
+				{ href: '/watch', label: t('Tech watch') },
 				{ href: '/areas', label: t('Areas') },
 				{ href: '/resources', label: t('Resources') },
 				{ href: '/archive', label: t('Archive') }
@@ -73,6 +74,7 @@
 			label: t('Reflect'),
 			links: [
 				{ href: '/journal', label: t('Journal') },
+				{ href: '/digest', label: t('Digest') },
 				{ href: '/review', label: t('Weekly review') },
 				{ href: '/insights', label: t('Insights') },
 				{ href: '/agents', label: t('Agents') }

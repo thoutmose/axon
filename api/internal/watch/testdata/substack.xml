@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+<channel><title><![CDATA[Platformer &amp; Co]]></title><link>https://example.substack.com</link>
+<atom:link href="https://example.substack.com/feed" rel="self" type="application/rss+xml"/>
+<item><title><![CDATA[Why Postgres keeps winning]]></title><description><![CDATA[A short teaser.]]></description>
+<link>https://example.substack.com/p/why-postgres?utm_source=rss</link><guid isPermaLink="false">https://example.substack.com/p/why-postgres</guid>
+<dc:creator><![CDATA[Ada Writer]]></dc:creator><pubDate>Tue, 13 Oct 2026 08:00:00 GMT</pubDate>
+<enclosure url="https://cdn.example/cover.jpg" length="0" type="image/jpeg"/>
+<content:encoded><![CDATA[<p>Postgres <b>keeps</b> winning because of extensions.</p>]]></content:encoded></item>
+<item><title>Second</title><link>https://example.substack.com/p/second</link><pubDate>Mon, 12 Oct 2026 08:00:00 +0200</pubDate><category>Databases</category><category>  </category></item>
+</channel></rss>

@@ -97,6 +97,38 @@ type Doc struct {
 	Reminders    Reminders    `json:"reminders" yaml:"reminders"`
 	Today        Today        `json:"today" yaml:"today"`
 	Menu         Menu         `json:"menu" yaml:"menu"`
+	Digest       Digest       `json:"digest" yaml:"digest"`
+	Podcast      Podcast      `json:"podcast" yaml:"podcast"`
+}
+
+// Digest (EP-113) is the person's digest template: the sections of each
+// digest, in order, and whether the quote and the picture come along.
+type Digest struct {
+	Daily   []string `json:"daily" yaml:"daily"`
+	Weekly  []string `json:"weekly" yaml:"weekly"`
+	Monthly []string `json:"monthly" yaml:"monthly"`
+	Quote   bool     `json:"quote" yaml:"quote"`
+	Picture bool     `json:"picture" yaml:"picture"`
+}
+
+// DigestSections are the sections each digest can show.
+var DigestSections = map[string][]string{
+	"daily":   {"tasks", "habits", "coming", "learn", "watch"},
+	"weekly":  {"open", "week", "reflect", "watch"},
+	"monthly": {"goals", "month", "watch"},
+}
+
+// Podcast (EP-113) is the spoken tech watch, off until the person turns it
+// on: its format, the language of its spoken links, its length, the
+// period it covers, and the browser voice and pace that read it.
+type Podcast struct {
+	Enabled bool    `json:"enabled" yaml:"enabled"`
+	Format  string  `json:"format" yaml:"format"` // briefing, digest, deep
+	Lang    string  `json:"lang" yaml:"lang"`     // en, fr
+	Minutes int     `json:"minutes" yaml:"minutes"`
+	Days    int     `json:"days" yaml:"days"`   // 1 or 7
+	Voice   string  `json:"voice" yaml:"voice"` // a voice name; empty for the device's default
+	Rate    float64 `json:"rate" yaml:"rate"`   // 0.5 to 2
 }
 
 // Sceneries are the landscapes under the sky: nature, the earth from
@@ -113,8 +145,8 @@ type Menu struct {
 }
 
 // MenuPages are the pages the menu can leave out (Today always stays).
-var MenuPages = []string{"tasks", "projects", "calendar", "focus", "notes", "areas", "resources", "archive",
-	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "review", "insights", "agents"}
+var MenuPages = []string{"tasks", "projects", "calendar", "focus", "notes", "watch", "areas", "resources", "archive",
+	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "digest", "review", "insights", "agents"}
 
 // Today (EP-63) lists the sections the Today page shows, in order.
 type Today struct {
@@ -127,12 +159,23 @@ var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "l
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them
 // on for, and emailed to Email when set and the instance can send mail.
+//
+// The weekly and monthly digests (EP-107) go out on WeeklyDay at WeeklyAt
+// and on day MonthlyDay of the month at MonthlyAt; an empty time skips
+// them. Digests also reach the chat channels the person connected.
 type Reminders struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"`
-	Morning string `json:"morning" yaml:"morning"`
-	Evening string `json:"evening" yaml:"evening"`
-	Email   string `json:"email" yaml:"email"`
+	Enabled    bool   `json:"enabled" yaml:"enabled"`
+	Morning    string `json:"morning" yaml:"morning"`
+	Evening    string `json:"evening" yaml:"evening"`
+	Email      string `json:"email" yaml:"email"`
+	WeeklyDay  string `json:"weekly_day" yaml:"weekly_day"`   // monday … sunday
+	WeeklyAt   string `json:"weekly_at" yaml:"weekly_at"`     // "18:00", or empty for none
+	MonthlyDay int    `json:"monthly_day" yaml:"monthly_day"` // 1–28
+	MonthlyAt  string `json:"monthly_at" yaml:"monthly_at"`   // "09:00", or empty for none
 }
+
+// Weekdays name the days a weekly digest can go out.
+var Weekdays = []string{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
 // Learning tunes the review engine (EP-52); package cards reads the same
 // keys. NewPerDay paces new cards, Retention is the chance FSRS aims for
@@ -170,10 +213,13 @@ func Defaults() Doc {
 		Keyboard:  Keyboard{Shortcuts: true},
 		Vault:     Vault{Mirror: true, Folder: "Axon"},
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
-		Reminders: Reminders{Morning: "08:00", Evening: "20:00"},
+		Reminders: Reminders{Morning: "08:00", Evening: "20:00", WeeklyDay: "sunday", WeeklyAt: "18:00", MonthlyDay: 1, MonthlyAt: "09:00"},
 		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
 		Menu:      Menu{Hidden: []string{}},
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
+		Digest: Digest{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
+			Monthly: []string{"goals", "month", "watch"}, Quote: true, Picture: true},
+		Podcast: Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1},
 	}
 }
 
@@ -242,10 +288,17 @@ func (d Doc) Validate() error {
 	case d.Learning.Retention < 0.7 || d.Learning.Retention > 0.97:
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
-	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening}} {
+	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening},
+		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}} {
 		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
 			return FieldError{t.path, "is a time like 08:00, or empty for none"}
 		}
+	}
+	if err := oneOf("reminders.weekly_day", d.Reminders.WeeklyDay, Weekdays...); err != nil {
+		return err
+	}
+	if d.Reminders.MonthlyDay < 1 || d.Reminders.MonthlyDay > 28 {
+		return FieldError{"reminders.monthly_day", "is a day between 1 and 28, so every month has it"}
 	}
 	seen := map[string]bool{}
 	for _, sec := range d.Today.Sections {
@@ -260,6 +313,32 @@ func (d Doc) Validate() error {
 			return FieldError{"menu.hidden", "lists each of " + strings.Join(MenuPages, ", ") + " at most once"}
 		}
 		seen[p] = true
+	}
+	for kind, list := range map[string][]string{"daily": d.Digest.Daily, "weekly": d.Digest.Weekly, "monthly": d.Digest.Monthly} {
+		seen := map[string]bool{}
+		for _, sec := range list {
+			if !slices.Contains(DigestSections[kind], sec) || seen[sec] {
+				return FieldError{"digest." + kind, "lists each of " + strings.Join(DigestSections[kind], ", ") + " at most once"}
+			}
+			seen[sec] = true
+		}
+	}
+	p := d.Podcast
+	if err := oneOf("podcast.format", p.Format, "briefing", "digest", "deep"); err != nil {
+		return err
+	}
+	if err := oneOf("podcast.lang", p.Lang, "en", "fr"); err != nil {
+		return err
+	}
+	switch {
+	case p.Minutes < 3 || p.Minutes > 30:
+		return FieldError{"podcast.minutes", "is between 3 and 30"}
+	case p.Days != 1 && p.Days != 7:
+		return FieldError{"podcast.days", "is 1 or 7"}
+	case p.Rate < 0.5 || p.Rate > 2:
+		return FieldError{"podcast.rate", "is between 0.5 and 2"}
+	case len([]rune(p.Voice)) > 200:
+		return FieldError{"podcast.voice", "is up to 200 characters"}
 	}
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // limiter allows each client IP a small burst of sign-in attempts, refilled
@@ -17,10 +18,19 @@ type limiter struct {
 	clients map[string]*rate.Limiter
 	every   time.Duration
 	burst   int
+	msg     string
 }
 
 func newLimiter(every time.Duration, burst int) *limiter {
-	return &limiter{clients: map[string]*rate.Limiter{}, every: every, burst: burst}
+	return &limiter{clients: map[string]*rate.Limiter{}, every: every, burst: burst, msg: l10n.Mark("Too many sign-in attempts. Wait a minute and try again.")}
+}
+
+// RateLimit limits another anonymous route per client IP, with its own
+// budget: burst requests at once, then one every `every`.
+func RateLimit(every time.Duration, burst int, msg string) func(http.Handler) http.Handler {
+	l := newLimiter(every, burst)
+	l.msg = msg
+	return l.middleware
 }
 
 func (l *limiter) allow(ip string) bool {
@@ -41,9 +51,13 @@ func (l *limiter) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !l.allow(httpx.ClientIP(r)) {
 			w.Header().Set("Retry-After", "60")
-			httpx.Problem(w, http.StatusTooManyRequests, "Too many sign-in attempts. Wait a minute and try again.")
+			httpx.Problem(w, http.StatusTooManyRequests, l.msg)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
 }
+
+// Throttle applies the sign-in limit to other routes that take a secret
+// from an anonymous caller, such as a vault pairing code.
+func (s *Service) Throttle(next http.Handler) http.Handler { return s.signInLimit.middleware(next) }

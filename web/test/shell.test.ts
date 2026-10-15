@@ -803,7 +803,7 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 });
 
 test('themed spaces keep AA contrast in light and dark, and can be turned off', async () => {
-	test.slow(); // 24 pages, each checked by axe
+	test.slow(); // 32 pages, each checked by axe
 	for (const scheme of ['light', 'dark'] as const) {
 		await page.emulateMedia({ colorScheme: scheme });
 		for (const [path, space] of [
@@ -818,7 +818,11 @@ test('themed spaces keep AA contrast in light and dark, and can be turned off', 
 			['/tasks', 'desk'],
 			['/cards', 'library'],
 			['/focus', 'desk'],
-			['/progress', 'summit']
+			['/progress', 'summit'],
+			['/watch', 'signal'],
+			['/watch/graph', 'constellation'],
+			['/watch/podcast', 'studio'],
+			['/digest', 'dispatch']
 		]) {
 			await page.goto(path);
 			await expect(page.locator('html')).toHaveAttribute('data-space', space);
@@ -1233,30 +1237,194 @@ test('installable, and a capture made offline is kept on the device and sent lat
 	await expect(page.getByText('Task: Buy batteries while offline')).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// The page open when the connection comes back sends what waits (its "online" listener);
+	// navigating away at that moment would race the toast.
 	await page.context().setOffline(false);
-	await page.goto('/today');
 	await expect(page.getByText('1 capture kept offline was sent.')).toBeVisible();
 	await page.goto('/tasks?view=inbox');
 	await expect(page.getByText('Buy batteries while offline')).toBeVisible();
 });
 
-test('reminders: times saved, and a test says when no device can receive it', async () => {
+test('reminders: times saved, and a test says when nothing can receive it', async () => {
 	await page.goto('/account/preferences');
-	const section = page.getByRole('region', { name: 'Reminders' });
-	await section.getByLabel('Send me a morning digest and an evening nudge').check();
+	const section = page.getByRole('region', { name: 'Reminders and digests' });
+	await section.getByLabel('Send me digests and reminders').check();
 	await section.getByLabel('Morning digest at').fill('07:30');
+	await section.getByLabel('Weekly digest on').selectOption('friday');
 	await page.getByRole('button', { name: 'Save preferences' }).click();
 	await expect(page.getByText('Preferences saved.')).toBeVisible();
 	await page.reload();
-	await expect(
-		page.getByRole('region', { name: 'Reminders' }).getByLabel('Morning digest at')
-	).toHaveValue('07:30');
-	await page
-		.getByRole('region', { name: 'Reminders' })
-		.getByRole('button', { name: 'Send a test' })
-		.click();
-	await expect(page.getByText('No device or email received it')).toBeVisible();
+	const again = page.getByRole('region', { name: 'Reminders and digests' });
+	await expect(again.getByLabel('Morning digest at')).toHaveValue('07:30');
+	await expect(again.getByLabel('Weekly digest on')).toHaveValue('friday');
+	await again.getByRole('button', { name: 'Send a test' }).click();
+	await expect(page.getByText('Nothing received it')).toBeVisible();
 	await noSeriousA11yViolations(page);
+});
+
+test('the digest: numbered items, a picture drawn for the day, and a quote', async () => {
+	const origin = new URL(page.url()).origin;
+	// Due before anything the demo seeds, so it is among the numbered items however many there are.
+	await page.request.post('/api/v1/tasks', {
+		headers: { Origin: origin },
+		data: { title: 'Digest e2e task', status: 'next', due_on: '2020-01-01' }
+	});
+	await page.goto('/digest');
+	await expect(page.getByRole('heading', { level: 1 })).toContainText('E2E');
+	await expect(page.getByRole('link', { name: 'Digest e2e task' })).toBeVisible();
+	await expect(page.locator('blockquote footer')).toContainText('—');
+	const picture = page.locator('article img');
+	await expect(picture).toBeVisible();
+	await expect
+		.poll(() => picture.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+		.toBe(1200);
+	await page.getByRole('tab', { name: 'This week' }).click();
+	await expect(page.locator('.eyebrow')).toContainText('Your week');
+	await noSeriousA11yViolations(page);
+});
+
+test('chat apps: connect a channel without showing its secret, and disconnect it', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Chat apps' });
+	await section.getByRole('button', { name: 'Add a channel' }).click();
+	await section.getByLabel('App').selectOption('ntfy');
+	await section.getByLabel('Name').fill('My phone');
+	await section.getByLabel('Topic').fill('axon-e2e-topic');
+	await section.getByLabel('Access token (optional)').fill('tk_e2e_secret');
+	await section.getByRole('button', { name: 'Connect' }).click();
+	await expect(page.getByText('Channel connected.')).toBeVisible();
+	await expect(section.getByText('ntfy.sh/axon-e2e-topic')).toBeVisible();
+	expect(await page.content()).not.toContain('tk_e2e_secret');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.accept());
+	await section.getByRole('button', { name: 'Disconnect' }).click();
+	await expect(section.getByText('ntfy.sh/axon-e2e-topic')).toHaveCount(0);
+});
+
+test('the vault lives in Axon by default, and a server is set up with one command', async () => {
+	await page.goto('/account/preferences');
+	const section = page.getByRole('region', { name: 'Markdown vault' });
+	await expect(section.getByLabel('In Axon only')).toBeChecked();
+	await section.getByLabel('Also as files on a server').check();
+	await section.getByLabel('Server', { exact: true }).fill('srv-e2e');
+	await section.getByLabel('Folder on the server').fill('~/Vault');
+	await section.getByRole('button', { name: 'Set up this server' }).click();
+	await expect(section.locator('pre code').first()).toContainText('/api/v1/vault/install.sh');
+	await expect(section.locator('pre code').first()).toContainText('--dir');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.accept());
+	await section.getByRole('button', { name: 'Stop syncing' }).click();
+	await expect(page.getByText('Your notes now live in Axon only.')).toBeVisible();
+});
+
+test('tech watch: topics, an imported source waiting for its first fetch, and an empty reader', async () => {
+	await page.goto('/watch');
+	await expect(page.getByRole('heading', { name: 'Tech watch', level: 1 })).toBeVisible();
+	await expect(page.getByText('Nothing here yet.')).toBeVisible();
+	await page.getByRole('link', { name: 'Add sources' }).click();
+	await expect(page).toHaveURL(/\/watch\/sources$/);
+	await page.getByLabel('Topic', { exact: true }).fill('Databases');
+	await page.getByLabel('Keywords').fill('Postgres, SQL');
+	await page.getByRole('button', { name: 'Add the topic' }).click();
+	await expect(page.getByText('Postgres, SQL')).toBeVisible();
+	await page.getByLabel('A CSV or OPML file').setInputFiles({
+		name: 'sources.csv',
+		mimeType: 'text/csv',
+		buffer: (globalThis as unknown as { Buffer: { from(s: string): never } }).Buffer.from(
+			'url,title,topics,schedule,full_text\nhttps://feeds.example.org/e2e.xml,E2E feed,Databases,0 7 * * *,no\n'
+		)
+	});
+	await expect(page.getByText('1 added, 0 already followed, 0 topics created.')).toBeVisible();
+	const row = page.getByRole('row', { name: /E2E feed/ });
+	await expect(row).toContainText(/Waiting|Failing/); // the worker may have tried it already
+	await expect(row.getByRole('combobox')).toHaveValue('0 7 * * *');
+	await noSeriousA11yViolations(page);
+	page.once('dialog', (d) => d.dismiss());
+	await row.getByRole('button', { name: 'Unfollow' }).click();
+	await expect(page.getByRole('row', { name: /E2E feed/ })).toHaveCount(0);
+	// The news graph is its own page, apart from the notes' graph.
+	await page.goto('/watch/graph');
+	await expect(page.getByRole('heading', { name: 'News graph', level: 1 })).toBeVisible();
+	await expect(page.getByText(/Not enough news in this period/)).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
+test('tech watch: export the view, share it with a link anyone can open, then revoke it', async ({
+	browser
+}) => {
+	await page.goto('/watch');
+	await page.getByRole('button', { name: 'Export or share' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Export or share' });
+	await expect(dialog.getByRole('link', { name: 'PDF' })).toHaveAttribute(
+		'href',
+		'/api/v1/watch/export?status=unread&format=pdf'
+	);
+	await noSeriousA11yViolations(page);
+	// A download is a plain navigation: the session cookie, no Origin header.
+	const csv = await page.request.get('/api/v1/watch/export?format=csv');
+	expect(csv.headers()['content-disposition']).toMatch(/^attachment; filename="axon-tech-watch-/);
+	expect(await csv.text()).toContain('Exported from Axon Project');
+	await dialog.getByLabel('Name').fill('E2E team');
+	await dialog.getByRole('button', { name: 'Create the link' }).click();
+	const link = await dialog.getByLabel('Link').inputValue();
+	expect(link).toMatch(/^http:\/\/localhost:3000\/shared\/watch\/[\w-]{43}$/);
+	await dialog.getByRole('button', { name: 'Close' }).click();
+
+	// Someone without an account opens it.
+	const stranger = await (await browser.newContext()).newPage();
+	await stranger.goto(link);
+	await expect(stranger.getByRole('heading', { name: 'E2E team', level: 1 })).toBeVisible();
+	await expect(stranger.getByRole('link', { name: 'Shared from Axon Project' })).toBeVisible();
+	await expect(stranger.getByText('Nothing in this selection yet.')).toBeVisible();
+	await noSeriousA11yViolations(stranger);
+
+	await page.goto('/watch/sources');
+	const row = page.getByRole('row', { name: /E2E team/ });
+	await expect(row).toContainText('All news'); // not the Unread tab: it would empty as you read
+	page.once('dialog', (d) => d.accept());
+	await row.getByRole('button', { name: 'Revoke E2E team' }).click();
+	await expect(page.getByText('Link revoked.')).toBeVisible();
+	await stranger.reload();
+	await expect(stranger.getByText(/does not exist, has expired, or was revoked/)).toBeVisible();
+	await stranger.context().close();
+});
+
+test('tech watch: the podcast is off until turned on, then makes an episode', async () => {
+	await page.goto('/watch/podcast');
+	await expect(page.getByText('The podcast is off.', { exact: false })).toBeVisible();
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Turn on the podcast' }).click();
+	await expect(page.getByRole('heading', { name: /^Tech watch, / })).toBeVisible();
+	await expect(page.getByText('No news in this period yet.')).toBeVisible();
+	await expect(page.getByLabel('Format')).toHaveValue('digest');
+	await noSeriousA11yViolations(page);
+	await page.getByRole('button', { name: 'Turn off' }).click();
+	await expect(page.getByText('Podcast settings saved.')).toBeVisible();
+	// The reader offers the Tech watch agent.
+	await page.goto('/watch');
+	await page.getByRole('button', { name: '✨ Ask the agent' }).click();
+	await expect(page.getByRole('region', { name: 'Agents for this page' })).toContainText(
+		/tech watch/i
+	);
+});
+
+test('the digest follows its template: sections, quote, picture', async () => {
+	await page.goto('/digest');
+	await expect(page.locator('blockquote')).toBeVisible();
+	await page.getByRole('button', { name: 'Customise' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Customise the digests' });
+	await expect(
+		dialog.getByRole('group', { name: 'Daily digest' }).getByLabel('Tech watch', { exact: true })
+	).toBeChecked();
+	await noSeriousA11yViolations(page);
+	await dialog.getByLabel('A quote to carry').uncheck();
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Digest template saved.')).toBeVisible();
+	await expect(page.locator('blockquote')).toHaveCount(0);
+	await page.getByRole('button', { name: 'Customise' }).click();
+	await dialog.getByLabel('A quote to carry').check();
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	await expect(page.locator('blockquote')).toBeVisible();
 });
 
 test('quick add: one line becomes a task with a context and a day, a book, a habit, or a card', async () => {

@@ -1305,8 +1305,114 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/** Send today's digest now (or a short hello when nothing is due) to your devices and email */
+		/** Send a digest now, even with nothing due, to your devices, your email, and your channels */
 		post: operations['testReminders'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Chat apps that receive your digests and reminders: Slack, Discord, Teams, Telegram, ntfy, or a webhook */
+		get: operations['listChannels'];
+		put?: never;
+		/** Connect a channel; a bot gets a one-time code to send it from your chat, to link it */
+		post: operations['createChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Change a channel; secrets left empty keep their value */
+		put: operations['updateChannel'];
+		post?: never;
+		/** Disconnect a channel */
+		delete: operations['deleteChannel'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}/link': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A new one-time code to link a bot to your chat (30 minutes) */
+		post: operations['relinkChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/channels/{id}/test': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Send today's digest to this channel now */
+		post: operations['testChannel'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/digest': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your daily, weekly, or monthly digest as it would go out now */
+		get: operations['getDigest'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/digest/picture': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The digest's illustration: a landscape drawn for the day and its theme */
+		get: operations['getDigestPicture'];
+		put?: never;
+		post?: never;
 		delete?: never;
 		options?: never;
 		head?: never;
@@ -3977,10 +4083,879 @@ export interface paths {
 		patch: operations['updateSkill'];
 		trace?: never;
 	};
+	'/v1/auth/providers': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Other accounts this Axon accepts for sign-in (Google, Microsoft, Apple, Discord, Slack, or a single sign-on) */
+		get: operations['listSignInProviders'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/auth/oauth/{provider}/start': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Go to the provider to sign in, or (signed in) to link it to your account */
+		get: operations['startProviderSignIn'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/auth/oauth/{provider}/callback': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Where the provider sends the browser back: signs in, links, or (when registration is open) creates the account */
+		get: operations['finishProviderSignIn'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/identities': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Other accounts linked for sign-in */
+		get: operations['listIdentities'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/identities/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Unlink an account; refused when it is the only way to sign in */
+		delete: operations['unlinkIdentity'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/topics': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The domains you watch; their keywords label the news */
+		get: operations['listWatchTopics'];
+		put?: never;
+		/** Add a topic; the last month's news are labelled again */
+		post: operations['createWatchTopic'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/topics/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Change a topic's name or keywords */
+		put: operations['updateWatchTopic'];
+		post?: never;
+		/** Remove a topic; news keep their other labels */
+		delete: operations['deleteWatchTopic'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The sources you follow, with their schedule and health */
+		get: operations['listWatchSources'];
+		put?: never;
+		/** Follow a feed, a site, a Medium author, a Substack, a YouTube channel, a GitHub repository…; its current news are stored */
+		post: operations['followWatchSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/discover': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Find the feed behind an address, without following it */
+		post: operations['discoverWatchFeed'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/sources/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Stop following a source; its news stay unless items=delete */
+		delete: operations['unfollowWatchSource'];
+		options?: never;
+		head?: never;
+		/** Change a source's name, topics, schedule (cron, in your time zone), or switches */
+		patch: operations['updateWatchSource'];
+		trace?: never;
+	};
+	'/v1/watch/sources/{id}/fetch': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Fetch a source now, whatever its schedule */
+		post: operations['fetchWatchSource'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Follow sources from a normalised CSV (url,title,topics,schedule,full_text) or an OPML file (Feedly, FreshRSS, Inoreader…) */
+		post: operations['importWatchSources'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/import/freshrss': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Follow the subscriptions of a FreshRSS account (its Google Reader API); the password is used once and not stored */
+		post: operations['importFreshRSS'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/sources.opml': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your sources as OPML, folders by topic, for any reader */
+		get: operations['exportWatchOPML'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/items': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** News, newest first, each stored once however many sources carried it */
+		get: operations['listWatchItems'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/items/read': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Mark every unread item matching the filters as read */
+		post: operations['markWatchItemsRead'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/items/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** One item with its text, and as a feed note (Markdown) */
+		get: operations['getWatchItem'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		/** Mark read, save, or archive an item, or set its labels */
+		patch: operations['updateWatchItem'];
+		trace?: never;
+	};
+	'/v1/watch/items/{id}/keep': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Keep an item as a feed note in Feeds/, linked to it */
+		post: operations['keepWatchItem'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/stats': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The tech watch at a glance: sources by health, news by status, per day, and the labels in use */
+		get: operations['watchStats'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/graph': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The knowledge graph of the news (not of your notes): concepts, how strongly they go together, their communities, and a summary of each */
+		get: operations['watchGraph'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/export': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Download the news a filter selects (by kind, source, topic, label, words, status, and period), each export saying it comes from Axon Project */
+		get: operations['exportWatch'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/shares': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your links to a selection of the news */
+		get: operations['listWatchShares'];
+		put?: never;
+		/** Share a selection of the news with a read-only link (signed-in session only; audited) */
+		post: operations['createWatchShare'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/shares/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Revoke a link at once */
+		delete: operations['deleteWatchShare'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/shared/watch/{token}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** A shared selection of news, for anyone with the link: what the sources published, never the owner's status or notes */
+		get: operations['getSharedWatch'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/podcast': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The script of a podcast episode of the news, from your podcast settings unless the query says otherwise; read aloud by your device or a speech server. Off until you turn it on. */
+		get: operations['watchPodcast'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Where your Markdown vault lives: null when notes live in Axon only (the default) */
+		get: operations['getVaultSource'];
+		/** Name the server and folder that hold your vault, and get a one-time pairing code (30 min) with the commands that use it */
+		put: operations['putVaultSource'];
+		post?: never;
+		/** Stop using the vault server and revoke its token; the notes stay in Axon, the files on the server */
+		delete: operations['deleteVaultSource'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/pair': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A vault server exchanges its one-time code for a write token (used by axon notes-sync -pair) */
+		post: operations['pairVault'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/heartbeat': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** A vault server says how its last sync went (sent by notes-sync after each run and every 5 minutes) */
+		post: operations['vaultHeartbeat'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/scaffold': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Add the Home note and the built-in templates where their paths are free; the folders are made by the vault server */
+		post: operations['scaffoldVault'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/install.sh': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** The setup script the one-line install runs on the vault server */
+		get: operations['vaultInstallScript'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/vault/agent': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** This Axon's own program, for a vault server of the same system and architecture */
+		get: operations['vaultAgent'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		WatchTopic: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			keywords: string[];
+		};
+		WatchSourceInput: {
+			/** @description To follow: a feed, a site, a Medium author, a Substack, a YouTube channel or playlist, a GitHub repository, a subreddit. */
+			url?: string;
+			title?: string;
+			topic_ids?: string[];
+			/**
+			 * @description Cron (minute hour day month weekday) in your time zone, or @daily, @hourly, @weekly; at least 15 minutes apart. Midnight by default.
+			 * @example 0 0 * * *
+			 */
+			schedule?: string;
+			enabled?: boolean;
+			/** @description Read each article's page when the feed has an excerpt only. */
+			full_text?: boolean;
+		};
+		WatchSource: {
+			/** Format: uuid */
+			id: string;
+			url: string;
+			site_url: string;
+			title: string;
+			topic_ids: string[];
+			schedule: string;
+			enabled: boolean;
+			full_text: boolean;
+			/** @enum {string} */
+			origin: 'manual' | 'csv' | 'opml' | 'freshrss' | 'agent';
+			/** Format: date-time */
+			next_fetch_at: string;
+			/** Format: date-time */
+			last_fetched_at: string | null;
+			/** Format: date-time */
+			last_ok_at: string | null;
+			last_error: string;
+			failures: number;
+			/** Format: date-time */
+			created_at: string;
+			items: number;
+			items_week: number;
+			/** @description Stories it also carried, stored once from another source. */
+			merged: number;
+			/** @enum {string} */
+			health: 'ok' | 'failing' | 'waiting' | 'off';
+		};
+		WatchFetchStats: {
+			new: number;
+			/** @description The same story (same link, or nearly the same text) was already stored: this source was added to it. */
+			merged: number;
+			skipped: number;
+		};
+		WatchImportResult: {
+			added: number;
+			existing: number;
+			topics_created: number;
+			failed: {
+				line: number;
+				url: string;
+				reason: string;
+			}[];
+		};
+		WatchItem: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			source_id: string | null;
+			source_title: string;
+			url: string;
+			title: string;
+			author: string;
+			/** Format: date-time */
+			published_at: string;
+			/** Format: date-time */
+			fetched_at: string;
+			summary: string;
+			/** @description Markdown; only when one item is read. */
+			content?: string;
+			image: string;
+			audio: string;
+			lang: string;
+			words: number;
+			reading_minutes: number;
+			keywords: string[];
+			labels: string[];
+			categories: string[];
+			topic_ids: string[];
+			score: number;
+			/** @description Why it stands apart (too short, mostly links, shouting title), or empty. */
+			outlier: string;
+			also_in: string[];
+			/** @enum {string} */
+			status: 'unread' | 'read' | 'saved' | 'archived';
+			/** Format: uuid */
+			note_id: string | null;
+			/** @enum {string} */
+			kind: 'article' | 'video' | 'podcast';
+		};
+		WatchEpisode: {
+			title: string;
+			lang: string;
+			format: string;
+			intro: string;
+			chapters: {
+				title: string;
+				/** @description What is read aloud. */
+				text: string;
+				/** Format: uuid */
+				item_id: string | null;
+				url: string;
+				source: string;
+				topic: string;
+			}[];
+			/** @description Says the episode was put together by Axon Project. */
+			outro: string;
+			words: number;
+			/** @description At 150 words a minute. */
+			minutes: number;
+			/** Format: date-time */
+			from: string;
+			/** Format: date-time */
+			to: string;
+		};
+		WatchShare: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			/** @description The filter, in words. */
+			description: string;
+			query: string;
+			/** Format: date-time */
+			expires_at: string;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_viewed_at: string | null;
+			views: number;
+		};
+		WatchStats: {
+			sources: {
+				total: number;
+				ok: number;
+				failing: number;
+				waiting: number;
+				off: number;
+			};
+			items: {
+				total: number;
+				unread: number;
+				saved: number;
+				today: number;
+				week: number;
+				outliers: number;
+				merged: number;
+			};
+			daily: {
+				/** Format: date */
+				day: string;
+				count: number;
+			}[];
+			labels: {
+				label: string;
+				count: number;
+			}[];
+			/** Format: date-time */
+			next_fetch_at: string | null;
+		};
+		WatchGraphRef: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+		};
+		WatchGraph: {
+			nodes: {
+				id: string;
+				/** @enum {string} */
+				kind: 'concept';
+				label: string;
+				/** @description News it appears in. */
+				count: number;
+				sources: number;
+				/** @description 0: no strong link (fringe). */
+				community: number;
+				/** @description PageRank relative to the most central concept. */
+				rank: number;
+				/** @description Last week against the weeks before: above 1.5 rising, below -1.5 fading. */
+				trend: number;
+				fringe: boolean;
+				/** @description The sentences of its news closest to what they share. */
+				summary: string;
+				items: components['schemas']['WatchGraphRef'][];
+				related: string[];
+				/** @description Your literature and permanent notes that share the concept. */
+				in_notes: components['schemas']['WatchGraphRef'][];
+				topics: string[];
+				/** Format: date-time */
+				first_seen: string;
+			}[];
+			edges: {
+				from: string;
+				to: string;
+				together: number;
+				npmi: number;
+				reason: string;
+			}[];
+			communities: {
+				id: number;
+				label: string;
+				size: number;
+			}[];
+			stats: {
+				items: number;
+				outliers: number;
+				concepts: number;
+				edges: number;
+				communities: number;
+				modularity: number;
+				bridges: number;
+			};
+		};
+		Channel: {
+			/** Format: uuid */
+			id: string;
+			/** @enum {string} */
+			kind: 'slack' | 'discord' | 'teams' | 'telegram' | 'ntfy' | 'webhook';
+			name: string;
+			/** @description Where it posts, without the secret part. */
+			target: string;
+			/**
+			 * @description bot: also reads your answers once linked (Slack, Discord, Telegram).
+			 * @enum {string}
+			 */
+			mode: 'webhook' | 'bot';
+			digests: ('daily' | 'weekly' | 'monthly')[];
+			/** @description Task reminders and the evening nudge too. */
+			reminders: boolean;
+			enabled: boolean;
+			linked: boolean;
+			/** @description Who the bot answers, once linked. */
+			peer_name: string;
+			/** Format: date-time */
+			link_expires_at: string | null;
+			/** Format: date-time */
+			created_at: string;
+			/** Format: date-time */
+			last_sent_at: string | null;
+			last_error: string;
+		};
+		DigestItem: {
+			/** @description The number to answer with ("done 2"). */
+			n?: number;
+			/** Format: uuid */
+			id: string;
+			type: string;
+			text: string;
+			detail?: string;
+			url: string;
+			late?: boolean;
+		};
+		Digest: {
+			/** @enum {string} */
+			kind: 'daily' | 'weekly' | 'monthly';
+			lang: string;
+			title: string;
+			greeting: string;
+			/** Format: date */
+			date: string;
+			label: string;
+			summary: string;
+			sections:
+				| {
+						key: string;
+						emoji: string;
+						title: string;
+						items: components['schemas']['DigestItem'][];
+						more?: number;
+				  }[]
+				| null;
+			stats:
+				| {
+						emoji: string;
+						label: string;
+						value: string;
+				  }[]
+				| null;
+			quote: {
+				/** @description Empty when the person's template leaves the quote out. */
+				text: string;
+				author: string;
+			};
+			theme: string;
+			/** @description Whether the picture goes with it (the person's template, EP-113). */
+			picture: boolean;
+			url: string;
+		};
+		VaultReport: {
+			host?: string;
+			notes?: number;
+			files?: number;
+			pushed?: number;
+			pulled?: number;
+			deleted?: number;
+			conflicts?: string[];
+			error?: string;
+		};
+		VaultSource: {
+			host: string;
+			dir: string;
+			scaffold: boolean;
+			/**
+			 * @description waiting: not paired yet; silent: no report for 15 minutes; failing: the last sync failed.
+			 * @enum {string}
+			 */
+			status: 'waiting' | 'connected' | 'silent' | 'failing';
+			/** Format: date-time */
+			pair_expires_at: string | null;
+			/** Format: date-time */
+			paired_at: string | null;
+			paired_host: string;
+			/** Format: date-time */
+			last_seen_at: string | null;
+			/** Format: date-time */
+			token_expires_at: string | null;
+			last_report: components['schemas']['VaultReport'];
+		};
 		EmbeddingStatus: {
 			settings: {
 				/** @enum {unknown} */
@@ -5434,6 +6409,7 @@ export interface components {
 					| 'calendar'
 					| 'focus'
 					| 'notes'
+					| 'watch'
 					| 'areas'
 					| 'resources'
 					| 'archive'
@@ -5445,13 +6421,14 @@ export interface components {
 					| 'budget'
 					| 'household'
 					| 'journal'
+					| 'digest'
 					| 'review'
 					| 'insights'
 					| 'agents'
 				)[];
 				chosen: boolean;
 			};
-			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
+			/** @description Reminders: a morning digest and an evening nudge at local times (empty for none), and weekly and monthly digests, pushed to the devices turned on for them, and emailed when email is set and the instance can send mail. Off by default. */
 			reminders?: {
 				enabled: boolean;
 				/** @example 08:00 */
@@ -5459,6 +6436,44 @@ export interface components {
 				/** @example 20:00 */
 				evening: string;
 				email: string;
+				/**
+				 * @description The day of the weekly digest (EP-107).
+				 * @enum {string}
+				 */
+				weekly_day?:
+					'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+				/**
+				 * @description Empty for no weekly digest.
+				 * @example 18:00
+				 */
+				weekly_at?: string;
+				monthly_day?: number;
+				/**
+				 * @description Empty for no monthly digest.
+				 * @example 09:00
+				 */
+				monthly_at?: string;
+			};
+			/** @description The digest template (EP-113): each digest's sections in order, and whether the quote and the picture come along. Left out on update, it keeps its defaults. */
+			digest?: {
+				daily?: ('tasks' | 'habits' | 'coming' | 'learn' | 'watch')[];
+				weekly?: ('open' | 'week' | 'reflect' | 'watch')[];
+				monthly?: ('goals' | 'month' | 'watch')[];
+				quote?: boolean;
+				picture?: boolean;
+			};
+			/** @description The spoken tech watch (EP-113), off by default: format, language of the spoken links, length, period, and the device voice and pace. */
+			podcast?: {
+				enabled?: boolean;
+				/** @enum {unknown} */
+				format?: 'briefing' | 'digest' | 'deep';
+				/** @enum {unknown} */
+				lang?: 'en' | 'fr';
+				minutes?: number;
+				/** @enum {integer} */
+				days?: 1 | 7;
+				voice?: string;
+				rate?: number;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -5881,6 +6896,19 @@ export interface components {
 				};
 			};
 		};
+		/** @description The channel, and for a bot not linked yet the code to send it. */
+		ChannelSaved: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				'application/json': {
+					channel: components['schemas']['Channel'];
+					/** @example ABCD-EFGH */
+					link_code?: string;
+				};
+			};
+		};
 		/** @description RFC 9457 problem document. */
 		Problem: {
 			headers: {
@@ -5951,6 +6979,22 @@ export interface components {
 		};
 	};
 	parameters: {
+		/** @description Empty: everything but archived. */
+		WatchStatus: 'unread' | 'read' | 'saved' | 'archived' | 'all';
+		WatchSource: string;
+		WatchTopic: string;
+		WatchLabel: string;
+		/** @description Words in the title or summary. */
+		WatchQuery: string;
+		/** @description Published from (2026-10-14 or RFC 3339). */
+		WatchFrom: string;
+		/** @description Published before. */
+		WatchTo: string;
+		/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+		WatchKind: 'article' | 'video' | 'podcast';
+		WatchFormat: 'csv' | 'ods' | 'md' | 'zip' | 'json' | 'pdf';
+		/** @description 1 to include items flagged as outliers. */
+		WatchOutliers: '0' | '1';
 		ID: string;
 		/** @description next_cursor from the previous page. */
 		After: string;
@@ -5961,6 +7005,40 @@ export interface components {
 		IdempotencyKey: string;
 	};
 	requestBodies: {
+		WatchTopicInput: {
+			content: {
+				'application/json': {
+					name: string;
+					/** @description Words or phrases; thesaurus synonyms count too. */
+					keywords?: string[];
+				};
+			};
+		};
+		ChannelInput: {
+			content: {
+				'application/json': {
+					/**
+					 * @description Required to create; a channel keeps its kind.
+					 * @enum {string}
+					 */
+					kind?: 'slack' | 'discord' | 'teams' | 'telegram' | 'ntfy' | 'webhook';
+					name: string;
+					/** @description Write-only. Slack: webhook_url, or bot_token (xoxb-) and app_token (xapp-). Discord: webhook_url or bot_token. Teams: webhook_url. Telegram: bot_token. ntfy: server, topic, token. Webhook: webhook_url, secret. */
+					config?: {
+						webhook_url?: string;
+						bot_token?: string;
+						app_token?: string;
+						server?: string;
+						topic?: string;
+						token?: string;
+						secret?: string;
+					};
+					digests?: ('daily' | 'weekly' | 'monthly')[];
+					reminders?: boolean;
+					enabled?: boolean;
+				};
+			};
+		};
 		/** @description The browser's PublicKeyCredential, JSON-encoded (WebAuthn Level 3 toJSON()). */
 		WebAuthnCredential: {
 			content: {
@@ -8747,7 +9825,9 @@ export interface operations {
 	};
 	testReminders: {
 		parameters: {
-			query?: never;
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
 			header?: {
 				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
 				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
@@ -8757,27 +9837,209 @@ export interface operations {
 		};
 		requestBody?: never;
 		responses: {
-			/** @description What was sent, and where. */
+			/** @description Where it went. */
 			200: {
 				headers: {
 					[name: string]: unknown;
 				};
 				content: {
 					'application/json': {
-						message: {
-							title: string;
-							body: string;
-							url: string;
-							tag: string;
-						};
 						devices: number;
 						email: boolean;
+						channels: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listChannels: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The channels, without their secrets. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Channel'][];
 					};
 				};
 			};
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
+		};
+	};
+	createChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['ChannelInput'];
+		responses: {
+			201: components['responses']['ChannelSaved'];
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	updateChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['ChannelInput'];
+		responses: {
+			200: components['responses']['ChannelSaved'];
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	relinkChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The code. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** @example ABCD-EFGH */
+						link_code: string;
+						/** Format: date-time */
+						expires_at: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	testChannel: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sent. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+		};
+	};
+	getDigest: {
+		parameters: {
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The digest. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Digest'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+		};
+	};
+	getDigestPicture: {
+		parameters: {
+			query?: {
+				kind?: 'daily' | 'weekly' | 'monthly';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A 1200 × 360 PNG. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'image/png': string;
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
 		};
 	};
 	listCalendarSources: {
@@ -15258,6 +16520,1192 @@ export interface operations {
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listSignInProviders: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The providers the operator configured. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** @enum {string} */
+							id: 'google' | 'microsoft' | 'apple' | 'discord' | 'slack' | 'oidc';
+							name: string;
+						}[];
+					};
+				};
+			};
+		};
+	};
+	startProviderSignIn: {
+		parameters: {
+			query?: {
+				intent?: 'signin' | 'link';
+				/** @description A path on this site to open after signing in. */
+				next?: string;
+			};
+			header?: never;
+			path: {
+				provider: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description To the provider, with PKCE, a state bound to a cookie, and a nonce. */
+			302: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	finishProviderSignIn: {
+		parameters: {
+			query?: {
+				code?: string;
+				state?: string;
+				error?: string;
+			};
+			header?: never;
+			path: {
+				provider: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description To the page asked for, Account → Security, or the sign-in page with an error. */
+			302: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			429: components['responses']['Problem'];
+		};
+	};
+	listIdentities: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The linked accounts. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: {
+							/** Format: uuid */
+							id: string;
+							provider: string;
+							email: string;
+							name: string;
+							/** Format: date-time */
+							created_at: string;
+							/** Format: date-time */
+							last_used_at: string | null;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	unlinkIdentity: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Unlinked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	listWatchTopics: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Topics. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['WatchTopic'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	createWatchTopic: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['WatchTopicInput'];
+		responses: {
+			/** @description Created. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchTopic'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	updateWatchTopic: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: components['requestBodies']['WatchTopicInput'];
+		responses: {
+			/** @description Changed. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchTopic'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWatchTopic: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	listWatchSources: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Sources. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['WatchSource'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	followWatchSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WatchSourceInput'] & Record<string, never>;
+			};
+		};
+		responses: {
+			/** @description Followed. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: components['schemas']['WatchSource'];
+						stats: components['schemas']['WatchFetchStats'];
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	discoverWatchFeed: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					url: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The feed found. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						url: string;
+						title: string;
+						site_url: string;
+						recent: string[];
+						entries: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	unfollowWatchSource: {
+		parameters: {
+			query?: {
+				items?: 'keep' | 'delete';
+			};
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateWatchSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WatchSourceInput'];
+			};
+		};
+		responses: {
+			/** @description Changed. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchSource'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	fetchWatchSource: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What it brought; error is empty when it worked. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: components['schemas']['WatchSource'];
+						stats: components['schemas']['WatchFetchStats'];
+						error: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	importWatchSources: {
+		parameters: {
+			query: {
+				format: 'csv' | 'opml';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'text/csv': string;
+				'text/x-opml': string;
+			};
+		};
+		responses: {
+			/** @description What was imported. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchImportResult'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	importFreshRSS: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example https://rss.example.org */
+					url: string;
+					user: string;
+					/** @description The API password from FreshRSS: Profile → API management. */
+					password: string;
+				};
+			};
+		};
+		responses: {
+			/** @description What was imported. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchImportResult'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	exportWatchOPML: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OPML 2.0. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/x-opml': string;
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	listWatchItems: {
+		parameters: {
+			query?: {
+				/** @description Empty: everything but archived. */
+				status?: components['parameters']['WatchStatus'];
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				kind?: components['parameters']['WatchKind'];
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				label?: components['parameters']['WatchLabel'];
+				/** @description Words in the title or summary. */
+				q?: components['parameters']['WatchQuery'];
+				/** @description Published from (2026-10-14 or RFC 3339). */
+				from?: components['parameters']['WatchFrom'];
+				/** @description Published before. */
+				to?: components['parameters']['WatchTo'];
+				/** @description Paging: published before this time. */
+				before?: string;
+				/** @description 1 to include items flagged as outliers. */
+				outliers?: components['parameters']['WatchOutliers'];
+				limit?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description News. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['WatchItem'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	markWatchItemsRead: {
+		parameters: {
+			query?: {
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				label?: components['parameters']['WatchLabel'];
+				/** @description Words in the title or summary. */
+				q?: components['parameters']['WatchQuery'];
+				/** @description Published from (2026-10-14 or RFC 3339). */
+				from?: components['parameters']['WatchFrom'];
+				/** @description Published before. */
+				to?: components['parameters']['WatchTo'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						marked: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getWatchItem: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The item. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						item: components['schemas']['WatchItem'];
+						/** @description The feed-note template filled in. */
+						note: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateWatchItem: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {string} */
+					status?: 'unread' | 'read' | 'saved' | 'archived';
+					labels?: string[];
+				};
+			};
+		};
+		responses: {
+			/** @description Changed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	keepWatchItem: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The note. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						/** Format: uuid */
+						note_id: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	watchStats: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The overview. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchStats'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	watchGraph: {
+		parameters: {
+			query?: {
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				/** @description Published from (2026-10-14 or RFC 3339); 30 days before to by default. */
+				from?: string;
+				/** @description Published before; now by default. */
+				to?: string;
+				/** @description 1 to keep concepts with no strong link and the news set aside as outliers. */
+				fringe?: '0' | '1';
+				/** @description Weakest link kept (NPMI), above 0 and at most 1. */
+				min?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The graph. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchGraph'];
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	exportWatch: {
+		parameters: {
+			query: {
+				format: components['parameters']['WatchFormat'];
+				/** @description Empty: everything but archived. */
+				status?: components['parameters']['WatchStatus'];
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				kind?: components['parameters']['WatchKind'];
+				source?: components['parameters']['WatchSource'];
+				topic?: components['parameters']['WatchTopic'];
+				label?: components['parameters']['WatchLabel'];
+				/** @description Words in the title or summary. */
+				q?: components['parameters']['WatchQuery'];
+				/** @description Published from (2026-10-14 or RFC 3339). */
+				from?: components['parameters']['WatchFrom'];
+				/** @description Published before. */
+				to?: components['parameters']['WatchTo'];
+				/** @description 1 to include items flagged as outliers. */
+				outliers?: components['parameters']['WatchOutliers'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The file: CSV, OpenDocument spreadsheet, Markdown, a zip of feed notes, JSON, or PDF; at most 5,000 news, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/csv': string;
+					'application/vnd.oasis.opendocument.spreadsheet': string;
+					'text/markdown': string;
+					'application/zip': string;
+					'application/json': Record<string, never>;
+					'application/pdf': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	listWatchShares: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Links, newest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['WatchShare'][];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	createWatchShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Who or what it is for. */
+					name: string;
+					/** @description The filter as a query string, e.g. label=ai&from=2026-10-01. Only status, kind, source, topic, label, q, from, and to are kept. */
+					query?: string;
+					/**
+					 * @description How long the link lives.
+					 * @default 30
+					 */
+					days?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description Created. The path holds the link's secret and is not shown again. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						share: components['schemas']['WatchShare'];
+						/** @description /shared/watch/<token> on this server. */
+						path: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteWatchShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Revoked. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getSharedWatch: {
+		parameters: {
+			query?: {
+				/** @description A download instead of the page's data. */
+				format?: 'csv' | 'ods' | 'md' | 'zip' | 'json' | 'pdf';
+			};
+			header?: never;
+			path: {
+				/** @description The secret part of the link. */
+				token: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The page's data (the newest 200 news), or the file. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						name?: string;
+						description?: string;
+						count?: number;
+						/** Format: date-time */
+						generated_at?: string;
+						/** Format: date-time */
+						expires_at?: string;
+						attribution?: string;
+						items?: {
+							title: string;
+							url: string;
+							source_title: string;
+							author: string;
+							/** Format: date-time */
+							published_at: string;
+							summary: string;
+							/** @enum {string} */
+							kind: 'article' | 'video' | 'podcast';
+							labels: string[];
+							reading_minutes: number;
+						}[];
+					};
+					'text/csv': string;
+					'application/vnd.oasis.opendocument.spreadsheet': string;
+					'text/markdown': string;
+					'application/zip': string;
+					'application/pdf': string;
+				};
+			};
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	watchPodcast: {
+		parameters: {
+			query?: {
+				/** @description A sentence a story, a few, or by topic with more. */
+				format?: 'briefing' | 'digest' | 'deep';
+				/** @description The language of the spoken links; the news keep theirs. */
+				lang?: 'en' | 'fr';
+				minutes?: number;
+				days?: 1 | 7;
+				topic?: components['parameters']['WatchTopic'];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The episode. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WatchEpisode'];
+				};
+			};
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The vault server, or null. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: null | components['schemas']['VaultSource'];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+		};
+	};
+	putVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example srv-secondbrain */
+					host: string;
+					/**
+					 * @description A full path, starting with / or ~/.
+					 * @example ~/SecondBrain
+					 */
+					dir: string;
+					/**
+					 * @description When the folder holds no notes yet, start it with the folder structure and templates.
+					 * @default true
+					 */
+					scaffold?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The vault server and how to set it up. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						source: components['schemas']['VaultSource'];
+						setup: {
+							/** @example ABCD-EFGH */
+							code: string;
+							/** Format: date-time */
+							expires_at: string;
+							/** @description One line for the server's shell: downloads axon, pairs, installs a user service. */
+							install: string;
+							/** @description The same with the axon-api image. */
+							docker: string;
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	deleteVaultSource: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	pairVault: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					code: string;
+					/** @description The server's host name, to name the token. */
+					host?: string;
+					/** @description The folder holds no notes yet. */
+					empty?: boolean;
+				};
+			};
+		};
+		responses: {
+			/** @description The token, shown once, and what to create in an empty vault. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						token: string;
+						dir: string;
+						folders: string[];
+						/** @description Notes added to Axon for the first sync to write. */
+						scaffold: string[];
+						/** Format: date-time */
+						expires_at: string;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			429: components['responses']['Problem'];
+		};
+	};
+	vaultHeartbeat: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['VaultReport'];
+			};
+		};
+		responses: {
+			/** @description Recorded. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	scaffoldVault: {
+		parameters: {
+			query?: never;
+			header?: {
+				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
+				'Idempotency-Key'?: components['parameters']['IdempotencyKey'];
+			};
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What was added. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						added: string[];
+						folders: string[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	vaultInstallScript: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description A POSIX shell script. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'text/plain': string;
+				};
+			};
+		};
+	};
+	vaultAgent: {
+		parameters: {
+			query: {
+				os: string;
+				arch: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The axon executable. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/octet-stream': string;
+				};
+			};
+			404: components['responses']['Problem'];
 		};
 	};
 }
