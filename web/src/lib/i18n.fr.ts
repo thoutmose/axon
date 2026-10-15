@@ -3465,8 +3465,6 @@ export const fr: Record<string, string> = {
 		'Au-delà des {limit} mg par jour sans risque pour vous : plus de caféine aujourd’hui.',
 	'A coffee is still fine until {time}, to sleep well at {bedtime}.':
 		'Un café est encore possible jusqu’à {time}, pour bien dormir à {bedtime}.',
-	'It is past {time}: a coffee now would still be in you at {bedtime}.':
-		'Il est plus de {time} : un café maintenant serait encore là à {bedtime}.',
 	'About {mg} mg will still be in you at {bedtime}: no more caffeine today.':
 		'Environ {mg} mg seront encore là à {bedtime} : plus de caféine aujourd’hui.',
 	'In your body now: about {now} mg · at bedtime: about {bed} mg':
@@ -3493,5 +3491,7 @@ export const fr: Record<string, string> = {
 		'Lente (environ 7 h, par exemple pendant la grossesse ou sous pilule)',
 	'Used to tell how much caffeine is left at bedtime, and the last coffee that keeps your sleep intact.':
 		'Sert à estimer la caféine restante au coucher, et le dernier café qui préserve votre sommeil.',
-	'Coffee and tea today': 'Café et thé aujourd’hui'
+	'Coffee and tea today': 'Café et thé aujourd’hui',
+	'Too late for a coffee: one now would still be in you at {bedtime}.':
+		'Trop tard pour un café : il serait encore là à {bedtime}.'
 };
