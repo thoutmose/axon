@@ -164,6 +164,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-113 | Podcast, agent, digest template, scenery | A podcast of the news (off by default), the Tech watch agent, the watch in the digests with a template the person can change, and illustrations. Owner request. | SHOULD | 8 pts | EP-110, EP-107 | Done |
 | EP-114 | Decision journal | Decisions with the outcome expected and its chance, reviewed on their day and scored (Brier score, reliability), so a person learns how far to trust their own forecasts. | SHOULD | 5 pts | EP-91 | Done |
 | EP-115 | Search in the menu bar | A search field in the menu bar opens the command center, which finds content and every page of the menu. | SHOULD | 2 pts | EP-62 | Done |
+| EP-116 | Checked items stay | A task or habit checked off stays where it is, crossed out, until the next day; unchecking puts it back. | SHOULD | 3 pts | EP-07, EP-22 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -200,7 +201,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2051,6 +2052,15 @@ Cross-cutting matrix:
 
 **Tests.** Every page of the menu is offered and exists as a route (vitest); an e2e test that searches from the menu bar, opens a task, then a page with Ctrl+K.
 
+### EP-116 — Checked items stay
+
+**Goal.** A task checked off vanished from its list at once, and habits could not be checked off on Today. The owner chose: a checked item stays where it is, crossed out, with Undo, and leaves the list the next day, so the day's work stays in sight.
+
+- [x] **EP-116/IS-116.01** · 2 pts · SHOULD — Migration `00061` adds `tasks.done_from`, the list a task was in when it was done or cancelled, cleared when it is reopened. Each task view (all, inbox, next, doing, waiting, someday, today, week, month) returns, on its first page, `done_today`: its tasks done or cancelled today in the person's time zone; the dashboard returns today's. Reopening puts a task back in `done_from`.
+- [x] **EP-116/IS-116.02** · 1 pt · SHOULD — Tasks and Today show those tasks crossed out and checked, and unchecking reopens them in their list; Today's habits get a checkbox, and a habit checked in today is crossed out on Today and on Habits, with Undo.
+
+**Tests.** `TestTasksDoneTodayStayInTheirList` (each view, the dashboard, a task done days ago left out, Undo back to its list); an e2e test that checks off a task, reloads, sees it on Today, and unchecks it there, with axe.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2257,7 +2267,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
-| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-124; EP-115 delivered. |
+| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-124; EP-115 and EP-116 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |

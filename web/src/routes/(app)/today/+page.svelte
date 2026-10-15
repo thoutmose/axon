@@ -167,6 +167,36 @@
 		}
 	}
 
+	// A task done today stays, crossed out, until tomorrow (EP-116); unchecking
+	// it puts it back in the list it came from.
+	async function reopen(task: Task) {
+		try {
+			const { etag } = await apiResponse<Schemas['Task']>(`/v1/tasks/${task.id}`);
+			await api(`/v1/tasks/${task.id}`, {
+				method: 'PATCH',
+				headers: { 'If-Match': etag },
+				body: { status: task.done_from ?? 'next' }
+			});
+			toast(t('Reopened.'));
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	async function habitDone(h: Habit, done: boolean) {
+		try {
+			await api(`/v1/habits/${h.id}/checkins/${h.state.today}`, {
+				method: done ? 'PUT' : 'DELETE',
+				body: done ? { status: 'done' } : undefined
+			});
+			const r = await api<{ items: Habit[] }>('/v1/habits?status=active');
+			habits = r.items.filter((x) => x.state.scheduled_today);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
 	async function checkIn() {
 		if (!d) return;
 		try {
@@ -275,10 +305,21 @@
 				{#if id === 'tasks'}
 					<section class="card" aria-labelledby="tasks-title">
 						<h2 id="tasks-title">{t("Today's tasks")}</h2>
-						{#if d.tasks.length === 0}
+						{#if d.tasks.length === 0 && d.done_today.length === 0}
 							<p class="muted">{t('Nothing due or planned for today.')}</p>
 						{:else}
 							<ul class="rows">
+								{#each d.done_today as doneTask (doneTask.id)}
+									<li class="done">
+										<input
+											type="checkbox"
+											checked
+											onchange={() => reopen(doneTask)}
+											aria-label={t('Reopen {title}', { title: doneTask.title })}
+										/>
+										<span class="grow">{doneTask.title}</span>
+									</li>
+								{/each}
 								{#each d.tasks as dayTask (dayTask.id)}
 									<li>
 										<input
@@ -374,7 +415,15 @@
 						{:else}
 							<ul class="rows">
 								{#each habits as h (h.id)}
-									<li>
+									<li class:done={!!h.state.checked_in}>
+										<input
+											type="checkbox"
+											checked={!!h.state.checked_in}
+											onchange={(e) => habitDone(h, e.currentTarget.checked)}
+											aria-label={h.state.checked_in
+												? t("Undo today's check-in for {title}", { title: h.title })
+												: t('Done: {title}', { title: h.title })}
+										/>
 										<a class="grow" href="/habits">{h.title}</a>
 										<span class="small muted"
 											>{h.state.checked_in
@@ -478,6 +527,10 @@
 </Dialog>
 
 <style>
+	.rows li.done .grow {
+		color: var(--muted);
+		text-decoration: line-through;
+	}
 	.customise {
 		display: flex;
 		justify-content: flex-end;

@@ -1101,6 +1101,31 @@ test('search from the menu bar finds content and every page', async () => {
 	await expect(page.getByRole('heading', { level: 1, name: 'Decisions' })).toBeVisible();
 });
 
+test('a task checked off stays crossed out in its list until tomorrow, and unchecking puts it back', async () => {
+	await page.goto('/today');
+	const today = await page.evaluate(() => new Date().toLocaleDateString('sv'));
+	await page.request.post('/api/v1/tasks', {
+		headers: { Origin: new URL(page.url()).origin },
+		data: { title: 'Water the plants', status: 'next', scheduled_on: today }
+	});
+	await page.goto('/tasks?view=next');
+	await page.getByLabel('Complete Water the plants').check();
+	const title = page.getByRole('button', { name: 'Water the plants' });
+	await expect(title).toHaveCSS('text-decoration-line', 'line-through');
+	await page.reload();
+	await expect(page.getByLabel('Complete Water the plants')).toBeChecked();
+
+	// Today shows it done too; unchecking it there puts it back in Next.
+	await page.goto('/today');
+	await expect(page.getByLabel('Reopen Water the plants')).toBeChecked();
+	await noSeriousA11yViolations(page);
+	await page.getByLabel('Reopen Water the plants').uncheck();
+	await expect(page.getByLabel('Reopen Water the plants')).toHaveCount(0);
+	await page.goto('/tasks?view=next');
+	await expect(page.getByLabel('Complete Water the plants')).not.toBeChecked();
+	await expect(title).not.toHaveCSS('text-decoration-line', 'line-through');
+});
+
 test('analyse literature and permanent notes: topics, concepts, and a note panel', async () => {
 	await page.goto('/notes');
 	const first: string = await page.evaluate(async () => {

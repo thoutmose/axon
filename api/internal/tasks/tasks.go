@@ -69,19 +69,20 @@ type Task struct {
 	SeriesID     *uuid.UUID `json:"series_id"`
 	OccurrenceOn *Date      `json:"occurrence_on"`
 	CompletedAt  *time.Time `json:"completed_at"`
+	DoneFrom     *string    `json:"done_from"` // the list it was in when done or cancelled (EP-116)
 	RemindAt     *time.Time `json:"remind_at"` // a reminder is sent then, once (EP-68)
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 const columns = `t.id, e.title, t.notes, t.status, t.context, t.scheduled_on, t.due_on, t.recurrence,
-	t.series_id, t.occurrence_on, t.completed_at, e.created_at, t.updated_at, t.remind_at`
+	t.series_id, t.occurrence_on, t.completed_at, e.created_at, t.updated_at, t.remind_at, t.done_from`
 
 func scan(row pgx.Row) (Task, error) {
 	var t Task
 	var scheduled, due, occurrence *time.Time
 	err := row.Scan(&t.ID, &t.Title, &t.Notes, &t.Status, &t.Context, &scheduled, &due, &t.Recurrence,
-		&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt)
+		&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt, &t.DoneFrom)
 	t.ScheduledOn, t.DueOn, t.OccurrenceOn = datePtr(scheduled), datePtr(due), datePtr(occurrence)
 	return t, err
 }
@@ -111,6 +112,27 @@ func DueBy(ctx context.Context, q db.Querier, userID uuid.UUID, day time.Time, l
 	}
 	return out, err
 }
+
+// DoneToday lists the tasks done or cancelled today, in the person's time
+// zone, that match where (a predicate on t using $2 for today, never user
+// input): they stay in their list, crossed out, until the next day (EP-116).
+func DoneToday(ctx context.Context, q db.Querier, userID uuid.UUID, day time.Time, tz, where string, context *string) ([]Task, error) {
+	rows, err := q.Query(ctx, `SELECT `+columns+` FROM tasks t JOIN entities e ON e.id = t.id
+		WHERE e.user_id = $1 AND t.status IN ('done', 'cancelled') AND (t.completed_at AT TIME ZONE $3)::date = $2
+		AND ($4::text IS NULL OR t.context = $4) AND `+where+`
+		ORDER BY t.completed_at, t.id LIMIT 100`, userID, day, tz, context)
+	if err != nil {
+		return nil, err
+	}
+	out, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Task, error) { return scan(row) })
+	if out == nil {
+		out = []Task{}
+	}
+	return out, err
+}
+
+// DueToday is the predicate of Today's tasks for DoneToday.
+const DueToday = `(t.scheduled_on <= $2 OR t.due_on <= $2)`
 
 // Fields are the editable parts of a task. Nil means "not provided"; for the
 // nullable fields, Clear* removes the value.
@@ -279,13 +301,13 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	}
 
 	finished := func(s string) bool { return s == "done" || s == "cancelled" }
-	completedAt := cur.CompletedAt
+	completedAt, doneFrom := cur.CompletedAt, cur.DoneFrom
 	switch {
 	case finished(next.Status) && !finished(cur.Status):
 		now := time.Now()
-		completedAt = &now
+		completedAt, doneFrom = &now, &cur.Status
 	case !finished(next.Status):
-		completedAt = nil
+		completedAt, doneFrom = nil, nil
 	}
 	if next.Recurrence != nil && next.ScheduledOn == nil && next.DueOn == nil {
 		return Task{}, ValidationError{"A recurring task needs a scheduled or due date."}
@@ -301,11 +323,11 @@ func Update(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, actor graph.Ac
 	}
 	// A new reminder time means a new reminder.
 	_, err = tx.Exec(ctx, `UPDATE tasks SET status = $2, notes = $3, context = $4, scheduled_on = $5, due_on = $6,
-		recurrence = $7, series_id = $8, occurrence_on = $9, completed_at = $10,
+		recurrence = $7, series_id = $8, occurrence_on = $9, completed_at = $10, done_from = $12,
 		reminded_at = CASE WHEN remind_at IS DISTINCT FROM $11 THEN NULL ELSE reminded_at END, remind_at = $11,
 		updated_at = clock_timestamp() WHERE id = $1`,
 		id, next.Status, next.Notes, next.Context, unwrap(next.ScheduledOn), unwrap(next.DueOn), next.Recurrence,
-		series, occurrence, completedAt, next.RemindAt)
+		series, occurrence, completedAt, next.RemindAt, doneFrom)
 	if err != nil {
 		return Task{}, err
 	}

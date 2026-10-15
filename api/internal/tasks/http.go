@@ -283,22 +283,27 @@ func (h *Handlers) delete(w http.ResponseWriter, r *http.Request) {
 type view struct {
 	where string // SQL predicate on t (tasks) using $today, never user input
 	done  bool   // ordered by completion time, newest first
+	// the tasks done today that stay in the list, crossed out (EP-116);
+	// empty for none
+	doneToday string
 }
 
 const open = `t.status NOT IN ('done', 'cancelled')`
 
 var views = map[string]view{
-	"all":     {where: open},
-	"inbox":   {where: `t.status = 'inbox'`},
-	"next":    {where: `t.status = 'next'`},
-	"doing":   {where: `t.status = 'doing'`},
-	"waiting": {where: `t.status = 'waiting'`},
-	"someday": {where: `t.status = 'someday'`},
-	"today":   {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on <= $2 OR t.due_on <= $2)`},
+	"all":     {where: open, doneToday: `true`},
+	"inbox":   {where: `t.status = 'inbox'`, doneToday: `t.done_from = 'inbox'`},
+	"next":    {where: `t.status = 'next'`, doneToday: `t.done_from = 'next'`},
+	"doing":   {where: `t.status = 'doing'`, doneToday: `t.done_from = 'doing'`},
+	"waiting": {where: `t.status = 'waiting'`, doneToday: `t.done_from = 'waiting'`},
+	"someday": {where: `t.status = 'someday'`, doneToday: `t.done_from = 'someday'`},
+	"today":   {where: open + ` AND t.status <> 'someday' AND ` + DueToday, doneToday: DueToday},
 	"overdue": {where: open + ` AND t.status <> 'someday' AND t.due_on < $2`},
-	"week":    {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 6 OR t.due_on BETWEEN $2 AND $2 + 6)`},
-	"month":   {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 30 OR t.due_on BETWEEN $2 AND $2 + 30)`},
-	"done":    {where: `t.status IN ('done', 'cancelled')`, done: true},
+	"week": {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 6 OR t.due_on BETWEEN $2 AND $2 + 6)`,
+		doneToday: `(t.scheduled_on BETWEEN $2 AND $2 + 6 OR t.due_on BETWEEN $2 AND $2 + 6)`},
+	"month": {where: open + ` AND t.status <> 'someday' AND (t.scheduled_on BETWEEN $2 AND $2 + 30 OR t.due_on BETWEEN $2 AND $2 + 30)`,
+		doneToday: `(t.scheduled_on BETWEEN $2 AND $2 + 30 OR t.due_on BETWEEN $2 AND $2 + 30)`},
+	"done": {where: `t.status IN ('done', 'cancelled')`, done: true},
 }
 
 func (h *Handlers) today(r *http.Request, userID uuid.UUID) (time.Time, error) {
@@ -327,7 +332,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	if c := q.Get("context"); c != "" {
 		context = &c
 	}
-	today, err := h.today(r, who.UserID)
+	today, loc, err := clock.Today(r.Context(), h.db, who.UserID, h.now())
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -369,7 +374,7 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		var scheduled, due, occurrence *time.Time
 		var key string // the sort key as PostgreSQL text, which parses back losslessly
 		err := row.Scan(&t.ID, &t.Title, &t.Notes, &t.Status, &t.Context, &scheduled, &due, &t.Recurrence,
-			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt, &key)
+			&t.SeriesID, &occurrence, &t.CompletedAt, &t.CreatedAt, &t.UpdatedAt, &t.RemindAt, &t.DoneFrom, &key)
 		t.ScheduledOn, t.DueOn, t.OccurrenceOn = datePtr(scheduled), datePtr(due), datePtr(occurrence)
 		keys = append(keys, key)
 		return t, err
@@ -384,6 +389,13 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(items) == limit {
 		out["next_cursor"] = base64.RawURLEncoding.EncodeToString([]byte(keys[len(keys)-1] + "|" + items[len(items)-1].ID.String()))
+	}
+	// The tasks done today, on the first page only (EP-116).
+	if v.doneToday != "" && afterID == nil {
+		if out["done_today"], err = DoneToday(r.Context(), h.db, who.UserID, today, loc.String(), v.doneToday, context); err != nil {
+			h.fail(w, err)
+			return
+		}
 	}
 	httpx.JSON(w, http.StatusOK, out)
 }

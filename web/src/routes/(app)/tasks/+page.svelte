@@ -75,6 +75,9 @@
 	let quick = $state('');
 	let editing = $state<string | null>(null);
 	let checkedIn = $state(false);
+	// Tasks done today stay in their list, crossed out, until tomorrow (EP-116).
+	let doneToday = $state<Task[]>([]);
+	const rows = $derived([...(tasks ?? []), ...doneToday]);
 
 	async function load(more = false) {
 		error = '';
@@ -103,10 +106,14 @@
 				return;
 			}
 			columns = null;
-			const res = await api<{ items: Task[]; today: string; next_cursor: string | null }>(
-				`/v1/tasks?${params}`
-			);
+			const res = await api<{
+				items: Task[];
+				today: string;
+				next_cursor: string | null;
+				done_today?: Task[];
+			}>(`/v1/tasks?${params}`);
 			tasks = more && tasks ? [...tasks, ...res.items] : res.items;
+			if (!more) doneToday = res.done_today ?? [];
 			cursor = res.next_cursor;
 			today = res.today;
 			contexts = (await api<{ items: { context: string; open: number }[] }>('/v1/contexts')).items;
@@ -158,7 +165,7 @@
 			await api(`/v1/tasks/${task.id}`, {
 				method: 'PATCH',
 				headers: { 'If-Match': etag },
-				body: { status: done ? 'done' : 'next' }
+				body: { status: done ? 'done' : (task.done_from ?? 'next') }
 			});
 			toast(
 				done
@@ -305,7 +312,7 @@
 	{/if}
 {:else if !tasks}
 	<Status kind="loading" message={t('Loading tasks…')} />
-{:else if tasks.length === 0}
+{:else if rows.length === 0}
 	<Status kind="empty" message={empty[view] ?? t('Nothing here.')} />
 {:else}
 	<div class="select-bar">
@@ -380,7 +387,7 @@
 		</div>
 	{/if}
 	<ul class="tasks">
-		{#each tasks as row (row.id)}
+		{#each rows as row (row.id)}
 			<li
 				class:done={row.status === 'done' || row.status === 'cancelled'}
 				class:picked={picked.includes(row.id)}

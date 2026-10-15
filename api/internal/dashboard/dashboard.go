@@ -106,7 +106,7 @@ type milestoneSummary struct {
 func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
 	ctx := r.Context()
-	day, err := today(ctx, h.db, who.UserID, h.now())
+	day, loc, err := clock.Today(ctx, h.db, who.UserID, h.now())
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -134,6 +134,7 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 		Today      tasks.Date         `json:"today"`
 		KPIs       []KPI              `json:"kpis"`
 		Tasks      []tasks.Task       `json:"tasks"`
+		DoneToday  []tasks.Task       `json:"done_today"` // crossed out until tomorrow (EP-116)
 		Goals      []goals.Goal       `json:"goals"`
 		Milestones []milestoneSummary `json:"milestones"`
 		Notes      []noteSummary      `json:"notes"`
@@ -146,6 +147,10 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	// Today's tasks: the same set as the "today" count.
 	if out.Tasks, err = tasks.DueBy(ctx, h.db, who.UserID, day, 10); err != nil {
+		h.fail(w, err)
+		return
+	}
+	if out.DoneToday, err = tasks.DoneToday(ctx, h.db, who.UserID, day, loc.String(), tasks.DueToday, nil); err != nil {
 		h.fail(w, err)
 		return
 	}

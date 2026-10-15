@@ -18,6 +18,8 @@ Your day at a glance: overdue and today's tasks, your inbox, active goals, recen
 
 ## Capture and do: Tasks
 
+A task you check off stays in its list, crossed out, until the next day, so you see what you did; uncheck it to put it back where it was. The same goes for habits on Today and on Habits.
+
 - Press `n` anywhere to capture a task. It lands in the **inbox**.
 - Tasks open on a **GTD board**: inbox, next, waiting, someday. Clarify each inbox item, give it a context (`@phone`) and a date, or move it to someday. **Kanban** (to do, doing, done) is one click away.
 - Tasks can repeat (every Saturday, the first of the month) and belong to projects and goals.
