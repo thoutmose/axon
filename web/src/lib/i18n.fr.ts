@@ -3664,5 +3664,12 @@ export const fr: Record<string, string> = {
 	'{percent}% of the way to “{goal}”. #Axon': '{percent} % du chemin vers « {goal} ». #Axon',
 	'{tier} on Axon': '{tier} sur Axon',
 	'{tier}: {name}. {what} #Axon': '{tier} : {name}. {what} #Axon',
-	'{xp} points, and a run of {days} days.': '{xp} points, et une série de {days} jours.'
+	'{xp} points, and a run of {days} days.': '{xp} points, et une série de {days} jours.',
+	'Find in the graph': 'Chercher dans le graphe',
+	'Find in the graph…': 'Chercher dans le graphe…',
+	Fit: 'Ajuster',
+	'Full screen': 'Plein écran',
+	'Scroll or pinch to zoom, drag to move.':
+		'Faites défiler ou pincez pour zoomer, glissez pour déplacer.',
+	Zoom: 'Zoom'
 };
