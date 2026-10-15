@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **A decision journal** (EP-114): write a decision down with what you expect and how likely it is; on its review day, say what happened and what you learned; Axon scores your forecasts (Brier score, a reliability chart, over- or under-confidence), and a forecast cannot be changed once made.
 - **The Tech watch agent and new scenery** (EP-113): an agent that briefs you on your news, spots what is rising that no topic covers, and proposes sources and topics for you to approve; illustrated backgrounds for the tech watch, its graph, the podcast, and the digest.
 - **A podcast of the news and a digest template** (EP-113): turn on a spoken episode of the day's or week's best news, as a briefing, a digest, or a deep dive by topic, in English or French, read by your device's voice; choose the sections of each digest, their order, and whether the quote and picture come along; the digests now carry the tech watch.
 - **Tech watch exports and share links** (EP-112): download the news a view shows, by kind, source, topic, label, and period, as PDF, ODS, CSV, Markdown, feed notes, or JSON, each marked as coming from Axon Project; share a read-only link that expires, shows only what the sources published, and can be revoked at once.

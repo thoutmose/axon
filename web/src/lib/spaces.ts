@@ -12,6 +12,7 @@ export type Space =
 	| 'diary'
 	| 'observatory'
 	| 'lighthouse'
+	| 'crossroads'
 	| 'automata'
 	| 'signal'
 	| 'constellation'
@@ -40,6 +41,7 @@ const byPath: [string, Space][] = [
 	['/journal', 'diary'],
 	['/insights', 'observatory'],
 	['/review', 'lighthouse'],
+	['/decisions', 'crossroads'],
 	['/agents', 'automata'],
 	// The tech watch (EP-113): its analysis and podcast before the reader,
 	// as the first match wins.
@@ -121,6 +123,11 @@ export const spaceInfo: Record<Space, { title: string; about: string }> = {
 		title: 'A lighthouse',
 		about:
 			'A beam sweeping the sea from a headland, after Edward Hopper’s lighthouses on the Maine coast: once a week, look back and set the course.'
+	},
+	crossroads: {
+		title: 'Two roads in a wood',
+		about:
+			'A signpost where a road forks in an autumn wood, after Robert Frost’s The Road Not Taken (1916): write down the way you chose, and come back to see where it led.'
 	},
 	automata: {
 		title: 'Clockwork automata',

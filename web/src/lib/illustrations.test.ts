@@ -11,6 +11,7 @@ describe('illustrations', () => {
 		expect(spaceFor('/journal')).toBe('diary');
 		expect(spaceFor('/insights')).toBe('observatory');
 		expect(spaceFor('/review')).toBe('lighthouse');
+		expect(spaceFor('/decisions')).toBe('crossroads');
 		expect(spaceFor('/agents/runs')).toBe('automata');
 	});
 

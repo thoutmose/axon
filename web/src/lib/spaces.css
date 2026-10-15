@@ -124,6 +124,10 @@
 	--bg: #ecf2f6;
 	--space-art: url('/spaces/lighthouse-light.svg');
 }
+:root:not([data-spaces='off'])[data-space='crossroads'] {
+	--bg: #f8f1e0;
+	--space-art: url('/spaces/crossroads-light.svg');
+}
 :root:not([data-spaces='off'])[data-space='automata'] {
 	--bg: #f2ece2;
 	--space-art: url('/spaces/automata-light.svg');
@@ -237,6 +241,10 @@
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='lighthouse'] {
 		--bg: #0c1522;
 		--space-art: url('/spaces/lighthouse-dark.svg');
+	}
+	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='crossroads'] {
+		--bg: #17130c;
+		--space-art: url('/spaces/crossroads-dark.svg');
 	}
 	:root:not([data-theme='light']):not([data-spaces='off'])[data-space='automata'] {
 		--bg: #16120e;
@@ -424,6 +432,10 @@
 :root[data-theme='dark']:not([data-spaces='off'])[data-space='lighthouse'] {
 	--bg: #0c1522;
 	--space-art: url('/spaces/lighthouse-dark.svg');
+}
+:root[data-theme='dark']:not([data-spaces='off'])[data-space='crossroads'] {
+	--bg: #17130c;
+	--space-art: url('/spaces/crossroads-dark.svg');
 }
 :root[data-theme='dark']:not([data-spaces='off'])[data-space='automata'] {
 	--bg: #16120e;

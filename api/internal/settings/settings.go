@@ -146,7 +146,7 @@ type Menu struct {
 
 // MenuPages are the pages the menu can leave out (Today always stays).
 var MenuPages = []string{"tasks", "projects", "calendar", "focus", "notes", "watch", "areas", "resources", "archive",
-	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "digest", "review", "insights", "agents"}
+	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "digest", "review", "decisions", "insights", "agents"}
 
 // Today (EP-63) lists the sections the Today page shows, in order.
 type Today struct {

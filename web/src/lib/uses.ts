@@ -23,6 +23,7 @@ export const PAGES = [
 	'journal',
 	'digest',
 	'review',
+	'decisions',
 	'insights',
 	'agents'
 ] as const;
@@ -48,6 +49,7 @@ export const pageLabels: Record<(typeof PAGES)[number], string> = {
 	journal: 'Journal',
 	digest: 'Digest',
 	review: 'Weekly review',
+	decisions: 'Decisions',
 	insights: 'Insights',
 	agents: 'Agents'
 };
@@ -68,8 +70,8 @@ const SECTIONS = [
 	'overview'
 ];
 
-/** Reflecting is for everyone: the digest, the weekly review, insights, and agents stay. */
-const ALWAYS = ['digest', 'review', 'insights', 'agents'];
+/** Reflecting is for everyone: the digest, the weekly review, decisions, insights, and agents stay. */
+const ALWAYS = ['digest', 'review', 'decisions', 'insights', 'agents'];
 
 export const USES: { id: string; label: string; pages: string[]; sections: string[] }[] = [
 	{
