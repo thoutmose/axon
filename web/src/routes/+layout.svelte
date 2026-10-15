@@ -76,6 +76,7 @@
 				{ href: '/journal', label: t('Journal') },
 				{ href: '/digest', label: t('Digest') },
 				{ href: '/review', label: t('Weekly review') },
+				{ href: '/decisions', label: t('Decisions') },
 				{ href: '/insights', label: t('Insights') },
 				{ href: '/agents', label: t('Agents') }
 			]
@@ -145,19 +146,27 @@
 			.catch(() => {});
 		// Captures kept offline go out as soon as Axon answers again.
 		loadOutbox();
-		const send = () =>
+		// The "online" event can come a moment before the network works: what
+		// still waits is tried again after 1, 2, 4, and 8 seconds.
+		let retry = 0;
+		const send = (attempt = 0) =>
 			flush().then((n) => {
 				if (n)
 					toast(
 						`${n} ${n === 1 ? 'capture' : 'captures'} kept offline ${n === 1 ? 'was' : 'were'} sent.`
 					);
+				clearTimeout(retry);
+				if (outbox.items.length && navigator.onLine && attempt < 4)
+					retry = window.setTimeout(() => send(attempt + 1), 1000 * 2 ** attempt);
 			});
+		const online = () => send();
 		send();
-		addEventListener('online', send);
+		addEventListener('online', online);
 		const stop = watchConnection();
 		const stopInstall = watchInstall();
 		return () => {
-			removeEventListener('online', send);
+			removeEventListener('online', online);
+			clearTimeout(retry);
 			stopSky();
 			stop();
 			stopInstall();
