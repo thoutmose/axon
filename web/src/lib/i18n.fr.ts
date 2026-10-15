@@ -3635,5 +3635,34 @@ export const fr: Record<string, string> = {
 	'with the household': 'avec le foyer',
 	'{name} invites you to their Axon, and to their household.':
 		'{name} vous invite sur son Axon, et dans son foyer.',
-	'{name} invites you to their Axon.': '{name} vous invite sur son Axon.'
+	'{name} invites you to their Axon.': '{name} vous invite sur son Axon.',
+	'A goal I am working on': 'Un objectif sur lequel je travaille',
+	'A skill of my Top-5% engineering roadmap.':
+		'Une compétence de ma feuille de route Top 5 % en ingénierie.',
+	'Copy the picture': 'Copier l’image',
+	'Download the picture': 'Télécharger l’image',
+	'Kept {n} scheduled days in a row.': '{n} jours prévus tenus d’affilée.',
+	'Level {level} on Axon, with a {days}-day run. #Axon':
+		'Niveau {level} sur Axon, avec une série de {days} jours. #Axon',
+	'Made with Axon, my life OS': 'Fait avec Axon, mon OS de vie',
+	'My progress on Axon': 'Ma progression sur Axon',
+	'Picture copied.': 'Image copiée.',
+	'Post it, then attach the picture:': 'Publiez-le, puis joignez l’image :',
+	'Post on {network}': 'Publier sur {network}',
+	'The picture is made on this device; nothing is sent until you share it.':
+		'L’image est faite sur cet appareil ; rien n’est envoyé avant que vous la partagiez.',
+	'This browser cannot copy pictures; download it instead.':
+		'Ce navigateur ne peut pas copier d’images ; téléchargez-la plutôt.',
+	'{n} active days in a row.': '{n} jours actifs d’affilée.',
+	'{n} days in a row: {habit}. #Axon': '{n} jours d’affilée : {habit}. #Axon',
+	'{n} days': '{n} jours',
+	'{n} decisions reviewed against what happened.':
+		'{n} décisions confrontées à ce qui s’est passé.',
+	'{n} flashcard reviews.': '{n} révisions de cartes.',
+	'{n} hours of deep focus.': '{n} heures de concentration profonde.',
+	'{n} problems solved unaided.': '{n} problèmes résolus seul.',
+	'{percent}% of the way to “{goal}”. #Axon': '{percent} % du chemin vers « {goal} ». #Axon',
+	'{tier} on Axon': '{tier} sur Axon',
+	'{tier}: {name}. {what} #Axon': '{tier} : {name}. {what} #Axon',
+	'{xp} points, and a {days}-day run.': '{xp} points, et une série de {days} jours.'
 };

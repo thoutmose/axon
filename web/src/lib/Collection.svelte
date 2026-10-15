@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, message } from '$lib/api';
-	import { cardName, groups, nextStep, type Card } from '$lib/collection';
+	import { achievement, cardName, groups, nextStep, type Card } from '$lib/collection';
+	import ShareButton from '$lib/ShareButton.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import Status from '$lib/ui/Status.svelte';
 
@@ -67,6 +68,21 @@
 							></progress>
 						{/if}
 						<span class="how">{nextStep(k)}</span>
+						{#if k.tier}
+							<ShareButton
+								spec={{
+									title: t('{tier} on Axon', { tier: tierName(k.tier) }),
+									value: cardName(k),
+									caption: achievement(k),
+									kind: k.tier
+								}}
+								text={t('{tier}: {name}. {what} #Axon', {
+									tier: tierName(k.tier),
+									name: cardName(k),
+									what: achievement(k)
+								})}
+							/>
+						{/if}
 					</li>
 				{/each}
 			</ul>

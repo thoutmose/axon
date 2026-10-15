@@ -70,3 +70,24 @@ export function groups(cards: Card[]) {
 		}
 	].filter((g) => g.cards.length);
 }
+
+/** What an earned card stands for, in a sentence (to share it, EP-121). */
+export function achievement(c: Card): string {
+	const n = Math.floor(c.value);
+	switch (c.family) {
+		case 'skill':
+			return t('A skill of my Top-5% engineering roadmap.');
+		case 'habit':
+			return t('Kept {n} scheduled days in a row.', { n });
+		case 'practice':
+			return t('{n} problems solved unaided.', { n });
+		case 'focus':
+			return t('{n} hours of deep focus.', { n });
+		case 'reviews':
+			return t('{n} flashcard reviews.', { n });
+		case 'streak':
+			return t('{n} active days in a row.', { n });
+		default:
+			return t('{n} decisions reviewed against what happened.', { n });
+	}
+}

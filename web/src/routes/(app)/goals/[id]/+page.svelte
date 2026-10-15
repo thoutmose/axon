@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ShareButton from '$lib/ShareButton.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
@@ -208,6 +209,20 @@
 	<section class="card" aria-labelledby="progress-title">
 		<h2 id="progress-title">{t('Progress')}</h2>
 		<ProgressBar progress={goal.progress} label={t('Progress')} />
+		{#if goal.progress.percent !== null}
+			<ShareButton
+				spec={{
+					title: t('A goal I am working on'),
+					value: `${goal.progress.percent}%`,
+					caption: goal.title,
+					kind: 'accent'
+				}}
+				text={t('{percent}% of the way to “{goal}”. #Axon', {
+					percent: goal.progress.percent,
+					goal: goal.title
+				})}
+			/>
+		{/if}
 		{#if explanation && explanation.method !== 'none'}
 			<details>
 				<summary>{t('How is this worked out?')}</summary>

@@ -169,6 +169,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-118 | Huberman's protocols | Andrew Huberman's health habits with what to do, why, how strong the evidence is, their studies, cautions, and a habit in one click. | COULD | 3 pts | EP-22, EP-117 | Done |
 | EP-119 | The collection | Cards to collect, raised from bronze to gold: a trophy per roadmap skill, a card per habit, and milestones for problems, focus, reviews, the streak, and decisions. | COULD | 5 pts | EP-15, EP-95 | Done |
 | EP-120 | Invitations | The owner invites one person at a time with a link used once, even while registration is closed, optionally into the household. | SHOULD | 3 pts | EP-03, EP-37 | Done |
+| EP-121 | Share as a picture | A picture of a level, a card of the collection, a goal, or a habit's run, drawn on the device, to share, download, copy, or post on X, LinkedIn, or Bluesky. | COULD | 3 pts | EP-119 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -205,7 +206,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2102,6 +2103,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** `TestInvitations` (registration closed to strangers; validation; who invites; signing up with the link joins the household; used once; a member cannot invite; the list; revoked links open nothing; a used one cannot be revoked); `TestEveryForeignKeyIsIndexed`; an e2e test that creates a link and opens it in another browser, with axe.
 
+### EP-121 — Share as a picture
+
+**Goal.** "Easily share an element, take a 'screenshot' and send it on social networks." A picture travels where a link to a private Axon cannot: it is drawn on the person's device, at the size social networks show (1200 × 630), and nothing leaves until they share it.
+
+- [x] **EP-121/IS-121.01** · 3 pts · COULD — A Share button on the level (Progress), on each card earned in the collection, on a goal's progress, and on a habit's run: a dialog with the picture (a title, the big figure, a sentence, "Made with Axon", in the card's metal), the device's share sheet with the picture where it can share files, Download, Copy, and links that open a post with the words on X, LinkedIn, and Bluesky (the picture to attach). The text is wrapped to the picture's width; one dialog per button, with its own ids.
+
+**Tests.** Wrapping to a width with an ellipsis, and the posting links (written first); what an earned card stands for; an e2e step that opens the level's picture and its X link, with axe.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2308,7 +2317,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
-| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-120 delivered. |
+| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-121 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |

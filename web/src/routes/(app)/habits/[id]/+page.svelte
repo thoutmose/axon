@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ShareButton from '$lib/ShareButton.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { deleted } from '$lib/undo';
 	import { page } from '$app/state';
@@ -129,6 +130,17 @@
 	<p class="muted">
 		{scheduleLabel(habit.days) + (habit.status !== 'active' ? ` · ${t(habit.status)}` : '')}
 	</p>
+	{#if habit.state.streak > 0}
+		<ShareButton
+			spec={{
+				title: habit.title,
+				value: t('{n} days', { n: habit.state.streak }),
+				caption: t('Kept {n} scheduled days in a row.', { n: habit.state.streak }),
+				kind: 'accent'
+			}}
+			text={t('{n} days in a row: {habit}. #Axon', { n: habit.state.streak, habit: habit.title })}
+		/>
+	{/if}
 
 	<section class="card" aria-labelledby="history-title">
 		<h2 id="history-title">{t('Last four weeks')}</h2>
