@@ -3,6 +3,7 @@
 	import AgentDock from '$lib/AgentDock.svelte';
 	import DailyNeeds from '$lib/DailyNeeds.svelte';
 	import WaterCard from '$lib/WaterCard.svelte';
+	import CaffeineCard from '$lib/CaffeineCard.svelte';
 	import MealPhoto from '$lib/MealPhoto.svelte';
 	import MealPlanner from '$lib/MealPlanner.svelte';
 	import { pageAgents } from '$lib/pageAgents';
@@ -306,6 +307,7 @@
 			</section>
 			<DailyNeeds totals={date === today ? day.totals : null} />
 			<WaterCard {date} />
+			<CaffeineCard {date} />
 			<MealPlanner onplan={(request) => dock?.start('chef', request)} />
 
 			{#each meals as m (m)}

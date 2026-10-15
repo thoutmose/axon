@@ -415,13 +415,14 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			uuid.Must(uuid.NewV7()), user, now.AddDate(0, 0, -8))
 	}
 
-	// Progress rewards on, with a freeze in stock, music for focus, and the
-	// tech watch podcast, so the demo shows them.
+	// Progress rewards on, with a freeze in stock, music for focus, the tech
+	// watch podcast, and Today with its health cards, so the demo shows them.
 	if s.err == nil {
 		doc := settings.Defaults()
 		doc.Gamification.Enabled = true
 		doc.Focus.Sound = "music"
 		doc.Podcast.Enabled = true
+		doc.Today.Sections = []string{"kpis", "tasks", "habits", "milestones", "goals", "journal", "water", "caffeine", "notes", "overview"}
 		s.err = settings.Put(ctx, tx, user, doc)
 	}
 	if s.err == nil {
@@ -474,6 +475,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		return err
 	}
 	if err := seedWater(ctx, tx, user, s.today); err != nil {
+		return err
+	}
+	if err := seedCaffeine(ctx, tx, user, now); err != nil {
 		return err
 	}
 	if err := seedHistory(ctx, tx, user, now); err != nil {
@@ -614,6 +618,40 @@ func seedHistory(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) 
 
 // seedWater gives the demo a month of drinks (EP-101): glasses and bottles
 // through the day, more on some days than others, and today's started.
+// seedCaffeine gives the demo a week of coffee and tea (EP-117): a coffee
+// in the morning, often an espresso after lunch, a tea in the afternoon, a
+// late one now and then; today, the morning coffee.
+func seedCaffeine(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
+	paris, err := time.LoadLocation("Europe/Paris")
+	if err != nil {
+		return err
+	}
+	r := rand.New(rand.NewPCG(2026, 117)) //nolint:gosec // reproducible demo data, not security
+	add := func(at time.Time, kind string, mg int) error {
+		_, err := tx.Exec(ctx, `INSERT INTO caffeine_entries (id, user_id, drunk_at, kind, mg) VALUES ($1, $2, $3, $4, $5)`,
+			uuid.Must(uuid.NewV7()), user, at, kind, mg)
+		return err
+	}
+	local := now.In(paris)
+	for back := 6; back >= 1; back-- {
+		day := time.Date(local.Year(), local.Month(), local.Day()-back, 0, 0, 0, 0, paris)
+		drinks := [][3]any{{8, "coffee", 95}, {13, "espresso", 63}, {16, "tea", 47}}
+		if r.IntN(3) == 0 {
+			drinks = append(drinks, [3]any{18, "espresso", 63}) // a late one
+		}
+		for _, d := range drinks {
+			if r.IntN(5) == 0 && d[1] != "coffee" {
+				continue
+			}
+			at := day.Add(time.Duration(d[0].(int))*time.Hour + time.Duration(r.IntN(40))*time.Minute)
+			if err := add(at, d[1].(string), d[2].(int)); err != nil {
+				return err
+			}
+		}
+	}
+	return add(now.Add(-30*time.Minute), "coffee", 95)
+}
+
 func seedWater(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time) error {
 	r := rand.New(rand.NewPCG(2026, 101)) //nolint:gosec // reproducible demo data, not security
 	for back := 30; back >= 0; back-- {

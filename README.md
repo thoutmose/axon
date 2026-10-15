@@ -89,6 +89,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 ### 📚 Learning and media
 - ✅ A practice log for problems, wargame levels, and labs (LeetCode, Codeforces, Advent of Code, OverTheWire, PortSwigger, Kaggle…): paste a link, mark each attempt solved unaided, with help, or not, and re-solve at growing intervals; solved by difficulty, topic, and week.
 - ✅ A decision journal: write down a choice, what you expect, and how likely it is; review it on its day and see how well calibrated your forecasts are (Brier score, reliability chart).
+- ✅ Coffee and tea: caffeine against EFSA's daily limit, what is left at bedtime, and the last coffee that keeps your sleep intact, set to your bedtime and metabolism.
 - ✅ Certifications: planned, booked, passed, or failed, with the exam countdown, cost against the plan, credential, and expiry with a renewal warning; exams and expiries on the calendar. The roadmap plans its nine exams.
 - ✅ Study hours against the plan: focus time on a roadmap, this week day by day beside the plan's block and over 12 weeks against its weekly target, by skill and project.
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.

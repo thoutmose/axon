@@ -67,6 +67,7 @@ const SECTIONS = [
 	'household',
 	'journal',
 	'water',
+	'caffeine',
 	'overview'
 ];
 
@@ -98,7 +99,7 @@ export const USES: { id: string; label: string; pages: string[]; sections: strin
 		id: 'health',
 		label: 'Health and well-being',
 		pages: ['health', 'journal'],
-		sections: ['journal', 'water']
+		sections: ['journal', 'water', 'caffeine']
 	},
 	{ id: 'money', label: 'Money', pages: ['budget'], sections: [] },
 	{ id: 'media', label: 'Films, series, and books', pages: ['media'], sections: [] },
