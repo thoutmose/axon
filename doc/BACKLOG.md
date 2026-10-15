@@ -173,6 +173,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-122 | A practical knowledge graph | Both graphs (the news and the notes) pan, zoom, fit, find a node, go full screen, and place labels without overlap. | SHOULD | 3 pts | EP-47, EP-111 | Done |
 | EP-123 | YouTube in the tech watch | Videos' words from their captions, else the operator's Whisper server, in their analysis and graph; Spanish too; links without tracking. | SHOULD | 8 pts | EP-110, EP-111 | Done |
 | EP-124 | Podcasts from Audiobookshelf | The person's Audiobookshelf, connected in Preferences, brings each podcast into the tech watch, each episode with its notes and, with Whisper, its words from their own copy. | SHOULD | 5 pts | EP-110, EP-123 | Done |
+| EP-125 | A trailer and a gallery | An Apple-style trailer drawn frame by frame with a composed soundtrack, replacing the recorded tour, and a README gallery of today's Axon. | COULD | 3 pts | EP-84 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -209,7 +210,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2143,6 +2144,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** The client against a fake server (podcast libraries only, shows, episodes as entries, the audio by a checked guid, a wrong token); `TestAudiobookshelf` (a private address refused, a wrong token, connected and synced without showing the token, a second sync, an episode transcribed from the person's copy, disconnected with the episodes kept); `TestClean`; an e2e check of the Preferences section, with axe.
 
+### EP-125 — A trailer and a gallery
+
+**Goal.** "Improve the README files, add a screenshots gallery, and update the trailer with a really better one, like Apple presents a new product. The music should be less robotic, more dynamic, more aesthetic." The EP-84 teaser recorded a live tour (scrolling in real time, a jerky picture) over the focus timer's simple oscillators.
+
+- [x] **EP-125/IS-125.01** · 2 pts · COULD — `make teaser` now runs `scripts/trailer/make-trailer.sh`: `shots.mjs` takes fourteen screenshots of the demo in the light theme (the visitor's banner hidden in that capture only); `trailer.html` draws the film for any instant (`render(t)`), so `render.mjs` captures 30 frames a second with no live scrolling: a title on black, the name, ten features (a headline beside, or above, the page in a floating window that tilts and pushes in), a grid of nine pages, "Private by design", and the end card, in Inter (SIL OFL, used to make the film only). The soundtrack is composed for it in the browser: detuned pads through a filter that opens section by section, a reverb, a piano motif, bass, soft drums from the first feature, a side-chained pulse, a rise into the full part, and a last chord (D major, I–V–vi–IV, 96 BPM, −15.7 LUFS). 63 seconds, captions in English and French, 1280 × 720, about 5 MB in WebM and MP4, and a poster.
+- [x] **EP-125/IS-125.02** · 1 pt · COULD — The README (English and French) opens its screenshots with the trailer's poster linked to the film, then a gallery of twelve pages of today's Axon (Today, tasks, notes, Learn, the roadmap, Focus, the tech watch and its graph, health, decisions, the collection, habits), described for screen readers.
+
+**Tests.** Rendered and measured: loudness and true peak (EBU R128), the spectrogram's sections, preview frames of each kind of scene; `make check` (shellcheck on the script).
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2349,7 +2359,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
-| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-124 delivered. |
+| 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
 | 2026-10-12 | Owner requests: EP-50 (diagrams), then EP-51 pictures in notes, EP-52 learning and memory engine, EP-53 agents on every page, and EP-54 to EP-62 for the twelve proposed features. |

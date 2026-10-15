@@ -1,0 +1,504 @@
+<!doctype html>
+<!--
+  Axon's trailer (EP-125), drawn frame by frame: render(t) sets every
+  element for the moment t, so the film is smooth and the same each time;
+  composeTrack(seconds) writes its soundtrack, composed here. render.mjs
+  drives it; nothing here is served by Axon.
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			@font-face {
+				font-family: 'Inter';
+				src: url('fonts/InterVariable.woff2') format('woff2');
+				font-weight: 100 900;
+			}
+			html,
+			body {
+				margin: 0;
+				background: #05060a;
+				overflow: hidden;
+			}
+			#stage {
+				position: relative;
+				width: 1920px;
+				height: 1080px;
+				overflow: hidden;
+				font-family: 'Inter', sans-serif;
+				color: #f5f5f7;
+				background: #05060a;
+			}
+			.glow {
+				position: absolute;
+				inset: -20%;
+				pointer-events: none;
+			}
+			.layer {
+				position: absolute;
+				inset: 0;
+				opacity: 0;
+			}
+			.title {
+				position: absolute;
+				left: 0;
+				right: 0;
+				text-align: center;
+				font-weight: 700;
+				letter-spacing: -0.035em;
+				line-height: 1.02;
+			}
+			.sub {
+				position: absolute;
+				left: 0;
+				right: 0;
+				text-align: center;
+				color: #a1a1aa;
+				font-weight: 500;
+				font-size: 40px;
+				letter-spacing: -0.01em;
+			}
+			.window {
+				position: absolute;
+				border-radius: 22px;
+				overflow: hidden;
+				background: #fff;
+				box-shadow:
+					0 50px 120px -30px rgb(0 0 0 / 0.85),
+					0 0 0 1px rgb(255 255 255 / 0.08);
+			}
+			.window .bar {
+				height: 34px;
+				background: #ececef;
+				display: flex;
+				align-items: center;
+				gap: 9px;
+				padding-left: 16px;
+			}
+			.window .bar i {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background: #d4d4d8;
+			}
+			.window img {
+				display: block;
+				width: 100%;
+			}
+			.gradient {
+				background: linear-gradient(120deg, #a5b4fc, #f0abfc 45%, #fcd34d);
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="stage"><div class="glow" id="glow"></div></div>
+		<script>
+			// --- The story: each scene, its words in English and French, its shot. ---
+			const features = [
+				['today', 'Your day, at a glance.', 'Tasks, habits, and goals in one view.', 'Votre journée, d’un coup d’œil.', 'Tâches, habitudes et objectifs, au même endroit.'],
+				['tasks', 'Do what matters.', 'GTD and Kanban, without the clutter.', 'Faites ce qui compte.', 'GTD et Kanban, sans le désordre.'],
+				['notes', 'Think in connections.', 'A Zettelkasten graph of your notes.', 'Pensez en liens.', 'Le graphe Zettelkasten de vos notes.'],
+				['learn', 'Remember for good.', 'Spaced repetition that measures your memory.', 'Retenez pour de bon.', 'La répétition espacée qui mesure votre mémoire.'],
+				['roadmap', 'Grow, skill by skill.', 'A roadmap with its schedule and its trophies.', 'Progressez, compétence par compétence.', 'Une feuille de route, son planning et ses trophées.'],
+				['focus', 'Deep work.', 'Pomodoro, with music made for it.', 'Le travail profond.', 'Pomodoro, avec une musique faite pour.'],
+				['graph', 'Watch your field.', 'News, videos, and podcasts, read and connected.', 'Suivez votre domaine.', 'Articles, vidéos et podcasts, lus et reliés.'],
+				['health', 'Feel better.', 'Water, coffee, sleep, and what helps you.', 'Sentez-vous mieux.', 'L’eau, le café, le sommeil, et ce qui vous aide.'],
+				['decisions', 'Decide better.', 'Forecasts, scored against what happened.', 'Décidez mieux.', 'Des prévisions confrontées à ce qui s’est passé.'],
+				['collection', 'Collect your progress.', 'Trophies, from bronze to gold.', 'Collectionnez vos progrès.', 'Des trophées, du bronze à l’or.']
+			];
+			const SCENE = 4.2;
+			const T = { hook: 0, logo: 3.5, features: 7, grid: 7 + features.length * SCENE };
+			T.privacy = T.grid + 5;
+			T.end = T.privacy + 4;
+			const DURATION = T.end + 5;
+			// Captions, for the video's text tracks.
+			const captions = [
+				{ from: 0, to: T.logo, en: 'Your life. Organised.', fr: 'Votre vie. Organisée.' },
+				{ from: T.logo, to: T.features, en: 'Axon, the self-hosted life OS.', fr: 'Axon, l’OS de vie auto-hébergé.' },
+				...features.map((f, i) => ({
+					from: T.features + i * SCENE,
+					to: T.features + (i + 1) * SCENE,
+					en: `${f[1]} ${f[2]}`,
+					fr: `${f[3]} ${f[4]}`
+				})),
+				{ from: T.grid, to: T.privacy, en: 'Everything. In one place.', fr: 'Tout. Au même endroit.' },
+				{ from: T.privacy, to: T.end, en: 'Private by design. On your server.', fr: 'Privé par conception. Sur votre serveur.' },
+				{ from: T.end, to: DURATION, en: 'Axon. Open source. Try the demo.', fr: 'Axon. Open source. Essayez la démo.' }
+			];
+
+			// --- Building blocks. ---
+			const stage = document.getElementById('stage');
+			const el = (html) => {
+				const d = document.createElement('div');
+				d.innerHTML = html.trim();
+				return stage.appendChild(d.firstChild);
+			};
+			const layer = () => el('<div class="layer"></div>');
+			const windowOf = (shot, parent) => {
+				const w = document.createElement('div');
+				w.className = 'window';
+				w.innerHTML = `<div class="bar"><i></i><i></i><i></i></div><div class="crop"><img src="shots/${shot}.jpg" alt=""></div>`;
+				parent.appendChild(w);
+				return w;
+			};
+			const clamp = (x) => Math.max(0, Math.min(1, x));
+			const ease = (x) => 1 - Math.pow(1 - clamp(x), 3); // out-cubic
+			const smooth = (x) => 0.5 - Math.cos(Math.PI * clamp(x)) / 2;
+			// Fades in over a, holds, fades out over b, within [from, to].
+			const envelope = (t, from, to, a = 0.6, b = 0.5) =>
+				t < from || t > to ? 0 : Math.min(ease((t - from) / a), ease((to - t) / b));
+			// A word that rises and sharpens into place.
+			const reveal = (node, t, at, dy = 30) => {
+				const p = ease((t - at) / 0.8);
+				node.style.opacity = p;
+				node.style.transform = `translateY(${(1 - p) * dy}px)`;
+				node.style.filter = `blur(${(1 - p) * 12}px)`;
+			};
+
+			// Hook.
+			const hook = layer();
+			const life = el('<div class="title" style="top:430px;font-size:150px">Your life.</div>');
+			const organised = el('<div class="title gradient" style="top:600px;font-size:150px">Organised.</div>');
+			hook.append(life, organised);
+			// Logo.
+			const logo = layer();
+			logo.innerHTML = `
+				<svg viewBox="0 0 64 64" width="190" height="190" style="position:absolute;left:865px;top:250px">
+					<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5b4fc"/><stop offset=".5" stop-color="#f0abfc"/><stop offset="1" stop-color="#fcd34d"/></linearGradient></defs>
+					<circle cx="32" cy="32" r="29" fill="none" stroke="url(#g)" stroke-width="3"/>
+					<path d="M18 42 L32 18 L46 42 M23 34 H41" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+				<div class="title" style="top:470px;font-size:190px">Axon</div>
+				<div class="sub" style="top:700px">The self-hosted life OS.</div>`;
+			// Features: the headline left and the window right, or the window under the headline.
+			const scenes = features.map(([shot, title, sub], i) => {
+				const l = layer();
+				const side = i % 2 === 0;
+				const h = el(
+					`<div class="title" style="font-size:${side ? 92 : 104}px;${side ? 'text-align:left;left:130px;right:auto;width:640px;top:390px' : 'top:110px'}">${title}</div>`
+				);
+				const s = el(
+					`<div class="sub" style="${side ? 'text-align:left;left:132px;right:auto;width:600px;top:' + (title.length > 18 ? 610 : 520) + 'px' : 'top:250px'}">${sub}</div>`
+				);
+				l.append(h, s);
+				// The shots were taken scrolled to what they show: whole, sized to the frame.
+				const w = windowOf(shot, l);
+				Object.assign(w.style, side ? { left: '820px', top: '215px', width: '1000px' } : { left: '440px', top: '335px', width: '1040px' });
+				return { l, h, s, w, side };
+			});
+			// Grid.
+			const grid = layer();
+			const gridTitle = el('<div class="title" style="top:70px;font-size:96px">Everything. <span class="gradient">In one place.</span></div>');
+			grid.append(gridTitle);
+			const tiles = ['today', 'tasks', 'notes', 'learn', 'graph', 'decisions', 'health', 'collection', 'roadmap'].map((shot, i) => {
+				const w = windowOf(shot, grid);
+				w.querySelector('.bar').style.height = '16px';
+				w.querySelector('.crop').style.cssText = 'height:230px;overflow:hidden';
+				Object.assign(w.style, { width: '470px', borderRadius: '12px' });
+				return { w, i };
+			});
+			// Privacy.
+			const privacy = layer();
+			privacy.innerHTML = `
+				<svg viewBox="0 0 64 64" width="150" height="150" style="position:absolute;left:885px;top:250px" fill="none" stroke="#f5f5f7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="14" y="28" width="36" height="28" rx="6"/><path d="M22 28v-8a10 10 0 0 1 20 0v8"/><circle cx="32" cy="42" r="3"/>
+				</svg>
+				<div class="title" style="top:460px;font-size:120px">Private by design.</div>
+				<div class="sub" style="top:640px">On your server. Your data never leaves it.</div>`;
+			// End card.
+			const end = layer();
+			end.innerHTML = `
+				<div class="title gradient" style="top:330px;font-size:230px">Axon</div>
+				<div class="sub" style="top:640px;color:#f5f5f7;font-size:52px">Open source. Try the demo.</div>
+				<div class="sub" style="top:730px;font-size:32px">github.com/thoutmose/axon</div>`;
+
+			const hues = [250, 200, 290, 30, 160, 340, 220, 120, 10, 45];
+			const glow = document.getElementById('glow');
+
+			// --- The film at time t. ---
+			window.render = (t) => {
+				hook.style.opacity = envelope(t, 0, T.logo, 0.01, 0.5);
+				reveal(life, t, 0.3);
+				reveal(organised, t, 1.5);
+				const lo = envelope(t, T.logo, T.features);
+				logo.style.opacity = lo;
+				logo.style.transform = `scale(${1.04 - 0.04 * ease((t - T.logo) / 3)})`;
+				let hue = 250;
+				scenes.forEach((s, i) => {
+					const from = T.features + i * SCENE;
+					const a = envelope(t, from, from + SCENE, 0.55, 0.45);
+					s.l.style.opacity = a;
+					if (!a) return;
+					hue = hues[i];
+					const p = (t - from) / SCENE;
+					reveal(s.h, t, from + 0.1, 24);
+					reveal(s.s, t, from + 0.45, 18);
+					const rise = ease((t - from) / 0.9);
+					s.w.style.transform = s.side
+						? `perspective(2200px) rotateY(${-14 + 8 * smooth(p)}deg) translateX(${(1 - rise) * 140}px) scale(${0.98 + 0.05 * p})`
+						: `perspective(2200px) rotateX(${10 - 8 * smooth(p)}deg) translateY(${(1 - rise) * 120}px) scale(${0.97 + 0.05 * p})`;
+				});
+				const g = envelope(t, T.grid, T.privacy, 0.5, 0.5);
+				grid.style.opacity = g;
+				if (g) {
+					hue = 270;
+					reveal(gridTitle, t, T.grid + 0.2, 20);
+					const zoom = 1.25 - 0.25 * ease((t - T.grid) / 2.2);
+					tiles.forEach(({ w, i }) => {
+						const col = i % 3;
+						const row = Math.floor(i / 3);
+						const appear = ease((t - T.grid - 0.08 * i) / 0.7);
+						const x = 960 + (col - 1) * 510 * zoom - 235;
+						const y = 640 + (row - 1) * 290 * zoom - 125;
+						w.style.left = x + 'px';
+						w.style.top = y + 'px';
+						w.style.opacity = appear;
+						w.style.transform = `scale(${zoom * (0.9 + 0.1 * appear)})`;
+					});
+				}
+				privacy.style.opacity = envelope(t, T.privacy, T.end);
+				const e = envelope(t, T.end, DURATION + 1, 0.8, 0.01);
+				end.style.opacity = e;
+				end.style.transform = `scale(${0.96 + 0.04 * ease((t - T.end) / 2)})`;
+				if (t >= T.privacy && t < T.end) hue = 200;
+				if (t >= T.end) hue = 300;
+				glow.style.background = `radial-gradient(60% 50% at 70% 40%, hsl(${hue} 70% 40% / 0.28), transparent 70%), radial-gradient(50% 45% at 20% 80%, hsl(${(hue + 60) % 360} 70% 35% / 0.18), transparent 70%)`;
+			};
+			window.film = { DURATION, captions, beat: 60 / 96 };
+
+			// --- The soundtrack: composed, not looped. D major, I–V–vi–IV at 96 BPM. ---
+			window.composeTrack = async (seconds) => {
+				const rate = 44100;
+				const ctx = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate);
+				const beat = 60 / 96;
+				const bar = beat * 4;
+				const midi = (n) => 440 * 2 ** ((n - 69) / 12);
+				// Chords as MIDI notes: D, A, Bm, G.
+				const chords = [
+					[62, 66, 69, 74],
+					[61, 64, 69, 73],
+					[59, 62, 66, 71],
+					[59, 62, 67, 71]
+				];
+				const roots = [38, 33, 35, 31];
+
+				const master = ctx.createDynamicsCompressor();
+				master.threshold.value = -16;
+				master.ratio.value = 3;
+				const out = ctx.createGain();
+				out.gain.value = 0.9;
+				master.connect(out).connect(ctx.destination);
+				// A hall reverb from noise decaying over three seconds.
+				const verb = ctx.createConvolver();
+				const ir = ctx.createBuffer(2, rate * 3, rate);
+				for (let c = 0; c < 2; c++) {
+					const d = ir.getChannelData(c);
+					for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3.2);
+				}
+				verb.buffer = ir;
+				const verbOut = ctx.createGain();
+				verbOut.gain.value = 0.32;
+				verb.connect(verbOut).connect(master);
+				// The pads breathe with the kick (side-chain).
+				const padBus = ctx.createGain();
+				padBus.gain.value = 1;
+				const padFilter = ctx.createBiquadFilter();
+				padFilter.type = 'lowpass';
+				padFilter.Q.value = 0.6;
+				padBus.connect(padFilter);
+				padFilter.connect(master);
+				padFilter.connect(verb);
+
+				const bars = Math.ceil(seconds / bar);
+				// Sections: intro (pads, piano), groove (drums, bass), full (claps, brighter), outro.
+				const groove = 3;
+				const full = Math.floor((seconds * 0.45) / bar);
+				const outro = Math.floor((seconds - 6) / bar);
+				padFilter.frequency.setValueAtTime(700, 0);
+				padFilter.frequency.linearRampToValueAtTime(1400, groove * bar);
+				padFilter.frequency.linearRampToValueAtTime(2600, full * bar);
+				padFilter.frequency.linearRampToValueAtTime(3200, outro * bar);
+				padFilter.frequency.linearRampToValueAtTime(900, seconds);
+
+				const pad = (notes, t, len) => {
+					notes.forEach((n, k) => {
+						for (const cents of [-7, 7]) {
+							const o = ctx.createOscillator();
+							o.type = 'sawtooth';
+							o.frequency.value = midi(n);
+							o.detune.value = cents;
+							const g = ctx.createGain();
+							const pan = ctx.createStereoPanner();
+							pan.pan.value = (k / (notes.length - 1)) * 1.2 - 0.6;
+							g.gain.setValueAtTime(0, t);
+							g.gain.linearRampToValueAtTime(0.022, t + 0.9);
+							g.gain.setValueAtTime(0.022, t + len - 0.4);
+							g.gain.linearRampToValueAtTime(0, t + len + 1.2);
+							o.connect(g).connect(pan).connect(padBus);
+							o.start(t);
+							o.stop(t + len + 1.3);
+						}
+					});
+				};
+				const piano = (n, t, vel = 0.16) => {
+					const g = ctx.createGain();
+					const f = ctx.createBiquadFilter();
+					f.type = 'lowpass';
+					f.frequency.value = 3800;
+					g.gain.setValueAtTime(0, t);
+					g.gain.linearRampToValueAtTime(vel, t + 0.006);
+					g.gain.exponentialRampToValueAtTime(0.0008, t + 1.6);
+					for (const [type, mult, amp] of [['triangle', 1, 1], ['sine', 2, 0.35], ['sine', 3, 0.12]]) {
+						const o = ctx.createOscillator();
+						o.type = type;
+						o.frequency.value = midi(n) * mult;
+						const a = ctx.createGain();
+						a.gain.value = amp;
+						o.connect(a).connect(f);
+						o.start(t);
+						o.stop(t + 1.7);
+					}
+					const pan = ctx.createStereoPanner();
+					pan.pan.value = ((n % 7) / 7) * 0.8 - 0.4;
+					f.connect(g).connect(pan);
+					pan.connect(master);
+					pan.connect(verb);
+				};
+				const bass = (n, t, len) => {
+					const o = ctx.createOscillator();
+					o.type = 'sine';
+					o.frequency.value = midi(n);
+					const sub = ctx.createOscillator();
+					sub.type = 'triangle';
+					sub.frequency.value = midi(n);
+					const g = ctx.createGain();
+					g.gain.setValueAtTime(0, t);
+					g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+					g.gain.exponentialRampToValueAtTime(0.08, t + len * 0.9);
+					g.gain.linearRampToValueAtTime(0, t + len);
+					const s = ctx.createGain();
+					s.gain.value = 0.25;
+					o.connect(g);
+					sub.connect(s).connect(g);
+					g.connect(master);
+					o.start(t);
+					sub.start(t);
+					o.stop(t + len + 0.05);
+					sub.stop(t + len + 0.05);
+				};
+				const noise = ctx.createBuffer(1, rate, rate);
+				const nd = noise.getChannelData(0);
+				for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+				const kick = (t) => {
+					const o = ctx.createOscillator();
+					o.frequency.setValueAtTime(140, t);
+					o.frequency.exponentialRampToValueAtTime(42, t + 0.14);
+					const g = ctx.createGain();
+					g.gain.setValueAtTime(0.9, t);
+					g.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+					o.connect(g).connect(master);
+					o.start(t);
+					o.stop(t + 0.45);
+					// Side-chain: the pads duck, then come back.
+					padBus.gain.setValueAtTime(1, t);
+					padBus.gain.linearRampToValueAtTime(0.45, t + 0.02);
+					padBus.gain.linearRampToValueAtTime(1, t + 0.32);
+				};
+				const hiss = (t, freq, len, vol, type = 'highpass', reverb = false) => {
+					const s = ctx.createBufferSource();
+					s.buffer = noise;
+					const f = ctx.createBiquadFilter();
+					f.type = type;
+					f.frequency.value = freq;
+					const g = ctx.createGain();
+					g.gain.setValueAtTime(vol, t);
+					g.gain.exponentialRampToValueAtTime(0.001, t + len);
+					s.connect(f).connect(g).connect(master);
+					if (reverb) g.connect(verb);
+					s.start(t, Math.random() * 0.5);
+					s.stop(t + len + 0.02);
+				};
+				const clap = (t) => [0, 0.011, 0.023].forEach((d) => hiss(t + d, 1400, 0.16, 0.22, 'bandpass', true));
+
+				// A motif that answers itself, two bars long, over the chord tones.
+				const motif = [0, 2, 3, 2, 1, 2, 3, 3];
+				for (let b = 0; b < bars; b++) {
+					const t0 = b * bar;
+					if (t0 >= seconds - 1) break;
+					const c = chords[b % 4];
+					if (b < outro) pad(c, t0, bar);
+					else if (b === outro) pad(chords[0], t0, seconds - t0 - 1.5);
+					// Piano: sparse in the intro, eighth notes later, an octave up in the full part.
+					const lift = b >= full && b < outro ? 12 : 0;
+					for (let k = 0; k < 8; k++) {
+						if (b < groove && k % 2) continue;
+						if (b >= outro) break;
+						const n = c[motif[(k + (b % 2) * 3) % 8]] + lift;
+						piano(n, t0 + k * (beat / 2), k % 2 ? 0.1 : 0.15);
+					}
+					if (b >= groove && b < outro) {
+						for (let q = 0; q < 4; q++) {
+							const tq = t0 + q * beat;
+							if (q % 2 === 0) kick(tq);
+							bass(roots[b % 4], tq, beat * 0.95);
+							hiss(tq + beat / 2, 7500, 0.05, 0.06);
+							if (b >= full) hiss(tq, 9000, 0.03, 0.035);
+							if (b >= full && q % 2 === 1) clap(tq);
+						}
+					}
+					// A rise into the full part.
+					if (b === full - 1) {
+						const s = ctx.createBufferSource();
+						s.buffer = noise;
+						s.loop = true;
+						const f = ctx.createBiquadFilter();
+						f.type = 'bandpass';
+						f.Q.value = 2.5;
+						f.frequency.setValueAtTime(400, t0);
+						f.frequency.exponentialRampToValueAtTime(5000, t0 + bar);
+						const g = ctx.createGain();
+						g.gain.setValueAtTime(0, t0);
+						g.gain.linearRampToValueAtTime(0.06, t0 + bar);
+						g.gain.linearRampToValueAtTime(0, t0 + bar + 0.05);
+						s.connect(f).connect(g).connect(master);
+						s.start(t0);
+						s.stop(t0 + bar + 0.1);
+					}
+				}
+				// The last chord, on the end card.
+				chords[0].forEach((n) => piano(n - 12, outro * bar, 0.14));
+				chords[0].forEach((n) => piano(n, outro * bar + 0.03, 0.1));
+
+				const buf = await ctx.startRendering();
+				const n = buf.length;
+				const view = new DataView(new ArrayBuffer(44 + n * 4));
+				const text = (o, s) => [...s].forEach((ch, i) => view.setUint8(o + i, ch.charCodeAt(0)));
+				text(0, 'RIFF');
+				view.setUint32(4, 36 + n * 4, true);
+				text(8, 'WAVEfmt ');
+				view.setUint32(16, 16, true);
+				view.setUint16(20, 1, true);
+				view.setUint16(22, 2, true);
+				view.setUint32(24, rate, true);
+				view.setUint32(28, rate * 4, true);
+				view.setUint16(32, 4, true);
+				view.setUint16(34, 16, true);
+				text(36, 'data');
+				view.setUint32(40, n * 4, true);
+				const l = buf.getChannelData(0);
+				const r = buf.getChannelData(1);
+				for (let i = 0; i < n; i++) {
+					view.setInt16(44 + i * 4, Math.max(-1, Math.min(1, l[i])) * 32767, true);
+					view.setInt16(46 + i * 4, Math.max(-1, Math.min(1, r[i])) * 32767, true);
+				}
+				let bin = '';
+				const bytes = new Uint8Array(view.buffer);
+				for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+				return btoa(bin);
+			};
+		</script>
+	</body>
+</html>

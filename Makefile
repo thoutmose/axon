@@ -40,4 +40,4 @@ down:
 
 ## teaser: record the home page teaser from the local stack's demo (AXON_DEMO=1)
 teaser:
-	./scripts/teaser/make-teaser.sh http://localhost:3000
+	./scripts/trailer/make-trailer.sh http://localhost:3000
