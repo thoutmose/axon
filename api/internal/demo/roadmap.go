@@ -93,6 +93,7 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 		}
 	}
 	deck := "MIT 6.042J: logic"
+	history := rand.New(rand.NewPCG(2026, 600)) //nolint:gosec // reproducible demo data, not security
 	for i, c := range logicCards {
 		card, err := cards.Create(ctx, tx, user, graph.UserActor, cards.Fields{Front: &c[0], Back: &c[1], Deck: &deck}, &note.ID, now)
 		if err != nil {
@@ -112,7 +113,7 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 			}
 		}
 		if i < 10 {
-			if err := reviewHistory(ctx, tx, user, card.ID, now, uint64(i)); err != nil {
+			if err := reviewHistory(ctx, tx, user, card.ID, now.AddDate(0, 0, -60).Add(time.Duration(i)*time.Hour), now, history); err != nil {
 				return plan, err
 			}
 		}
@@ -120,13 +121,12 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 	return plan, nil
 }
 
-// reviewHistory reviews a card for the last two months, at or after each
+// reviewHistory reviews a card from at until now, at or after each
 // due date, so recall calibration has predictions to compare (EP-77). A
 // review a little late is a little more often forgotten, as in life; the
 // draws come from a fixed seed, so the demo is the same every night.
-func reviewHistory(ctx context.Context, tx pgx.Tx, user, card uuid.UUID, now time.Time, seed uint64) error {
-	r := rand.New(rand.NewPCG(2026, 600+seed)) //nolint:gosec // reproducible demo data, not security
-	at, late := now.AddDate(0, 0, -60).Add(time.Duration(seed)*time.Hour), 0.0
+func reviewHistory(ctx context.Context, tx pgx.Tx, user, card uuid.UUID, at, now time.Time, r *rand.Rand) error {
+	late := 0.0
 	for at.Before(now.Add(-2 * time.Hour)) {
 		rating := fsrs.Good
 		switch x := r.Float64(); {
