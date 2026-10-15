@@ -427,7 +427,7 @@ def crossroads(bg_hi, bg_lo, ground, road, ink, leaf, alpha):
         g.append(f'<path d="M{x} {y} V{f(y-150*sc)}" stroke-width="{f(5*sc)}"/>')
         for k in range(5):
             a = 2 * math.pi * k / 5
-            g.append(f'<circle cx="{f(x+45*sc*math.cos(a))}" cy="{f(y-190*sc+35*sc*math.sin(a))}" r="{f(48*sc)}" fill="{leaf}" fill-opacity="{alpha*0.8:.2f}" stroke-width="1.2"/>')
+            g.append(f'<circle cx="{f(x+45*sc*math.cos(a))}" cy="{f(y-190*sc+35*sc*math.sin(a))}" r="{f(48*sc)}" fill="{leaf}" fill-opacity="{alpha*0.4:.2f}" stroke-width="1.2"/>')
     # the signpost at the fork, one arm for each road
     g.append('<path d="M800 760 V600" stroke-width="5"/>')
     g.append('<path d="M800 610 L900 590 L915 603 L900 618 L800 632 Z M800 640 L705 628 L690 642 L705 656 L800 662 Z" stroke-width="2.4"/>')
