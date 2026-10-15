@@ -95,7 +95,13 @@ remote '[ -f backup_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -C "axon-backup@
 # Backup metrics file for node_exporter's textfile collector (directory owned by root).
 ssh "$host" 'f=/var/lib/prometheus/node-exporter/axon_backup.prom; [ -f $f ] || sudo install -o "$(id -un)" -m 0644 /dev/null $f'
 {
-  age --decrypt -i "$key" "$secrets"
+  # Borrowed secrets carry their server's own address: srv-dev declares its own
+  # in dev.settings.env, or its sign-in and every write would be refused there.
+  if [[ "$secrets" != "deploy/env/$env.env.age" ]]; then
+    age --decrypt -i "$key" "$secrets" | grep -v '^\(AXON_BASE_URL\|WEBAUTHN_RP_ID\)='
+  else
+    age --decrypt -i "$key" "$secrets"
+  fi
   # Non-secret settings, reviewed in the open (they must not repeat a secret's name).
   grep -v '^\s*\(#\|$\)' "deploy/env/$env.settings.env"
   echo "COMPOSE_FILE=compose.yaml:deploy/compose.server.yaml"
