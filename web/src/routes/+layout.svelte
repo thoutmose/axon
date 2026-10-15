@@ -11,6 +11,7 @@
 	import { applyAppearance, storedAppearance } from '$lib/preferences';
 	import { api, type AuthStatus } from '$lib/api';
 	import { avatar, avatarSrc } from '$lib/avatar.svelte';
+	import { searching } from '$lib/search.svelte';
 	import { flush, loadOutbox, outbox } from '$lib/outbox.svelte';
 	import { watchInstall } from '$lib/install.svelte';
 	import { loadMenu, menu, storedHidden } from '$lib/menu.svelte';
@@ -264,6 +265,25 @@
 					</li>
 				{/each}
 			</ul>
+			{#if avatar.signedIn}
+				<button
+					type="button"
+					class="search"
+					onclick={() => (searching.open = true)}
+					aria-keyshortcuts="Control+K /"
+					><svg
+						viewBox="0 0 24 24"
+						width="16"
+						height="16"
+						aria-hidden="true"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
+					><span class="search-label">{t('Search')}</span><kbd aria-hidden="true">{t('Ctrl K')}</kbd
+					></button
+				>
+			{/if}
 			<a href="/account" class="account" aria-current={current('/account') ? 'page' : undefined}
 				>{#if avatar.signedIn}<img
 						src={avatarSrc(avatar.version)}
@@ -547,6 +567,53 @@
 		z-index: 20;
 		background: var(--surface-solid);
 		padding: var(--space-2) var(--space-3);
+	}
+	/* The search in the menu bar (EP-115): a field that opens the command center. */
+	.search {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font: inherit;
+		font-size: var(--text-sm);
+		color: var(--muted);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+		min-height: 2.25rem;
+		min-width: 2.25rem;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+	.search:hover {
+		color: var(--fg);
+		border-color: var(--accent);
+	}
+	.search kbd {
+		font: inherit;
+		font-size: 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm, 4px);
+		padding: 0 var(--space-1);
+	}
+	@media (max-width: 1100px) {
+		.search kbd {
+			display: none;
+		}
+	}
+	@media (max-width: 760px) {
+		.search {
+			padding: var(--space-1);
+			justify-content: center;
+		}
+		.search-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
 	}
 	.account {
 		display: inline-flex;

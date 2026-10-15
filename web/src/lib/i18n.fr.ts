@@ -3444,5 +3444,6 @@ export const fr: Record<string, string> = {
 	'You are underconfident: things you expect happen more often than you say.':
 		'Vous ne l’êtes pas assez : ce que vous attendez arrive plus souvent que vous ne le dites.',
 	'Well calibrated: things happen about as often as you say.':
-		'Bien calibré : les choses arrivent à peu près aussi souvent que vous le dites.'
+		'Bien calibré : les choses arrivent à peu près aussi souvent que vous le dites.',
+	'Ctrl K': 'Ctrl K'
 };

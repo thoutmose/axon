@@ -7,6 +7,7 @@
 	import { iconFor, iconTheme } from './preferences';
 	import { openDaily } from './newNote';
 	import { highlight } from './notes';
+	import { searchPages } from './search.svelte';
 	import { toast } from './ui/toast.svelte';
 
 	type Hit = Schemas['SearchHit'];
@@ -29,23 +30,11 @@
 			detail: t('Command · n'),
 			run: () => (capturing.open = true)
 		},
-		...[
-			[t('Today'), '/today'],
-			[t('Tasks'), '/tasks'],
-			[t('Notes'), '/notes'],
-			[t('Goals'), '/goals'],
-			[t('Projects'), '/projects'],
-			[t('Learn'), '/learn'],
-			[t('Roadmaps'), '/roadmaps'],
-			[t('Habits'), '/habits'],
-			[t('Calendar'), '/calendar'],
-			[t('Agents'), '/agents'],
-			[t('Account'), '/account']
-		].map(([l, h]) => ({
-			id: `g-${h}`,
-			label: t('Go to {l}', { l }),
+		...searchPages.map((p) => ({
+			id: `g-${p.href}`,
+			label: t('Go to {l}', { l: t(p.label) }),
 			detail: t('Page'),
-			run: () => goto(h)
+			run: () => goto(p.href)
 		}))
 	]);
 
