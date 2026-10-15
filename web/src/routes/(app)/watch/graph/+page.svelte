@@ -2,6 +2,9 @@
 	import { api, message } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
 	import { forceLayout } from '$lib/overview';
+	import GraphToolbar from '$lib/GraphToolbar.svelte';
+	import { centerOn, fit, placeLabels, zoomAt, type View } from '$lib/graphView';
+	import { panzoom } from '$lib/panzoom';
 	import Status from '$lib/ui/Status.svelte';
 	import { lastDays, trendWord, type WatchGraph, type WatchTopic } from '$lib/watch';
 
@@ -90,6 +93,27 @@
 		({ rising: t('rising'), fading: t('fading'), steady: t('steady') })[trendWord(n.trend)];
 	const sourcesLabel = (n: number) => (n === 1 ? t('1 source') : t('{n} sources', { n }));
 	const pick = (id: string) => (pinned = pinned === id ? null : id);
+
+	// Pan, zoom, find, and labels that never overlap (EP-122).
+	let view = $state<View>({ x: 0, y: 0, k: 1 });
+	let sky = $state<HTMLDivElement>();
+	$effect(() => {
+		view = fit(placed, W, H);
+	});
+	const labels = $derived(
+		placeLabels(
+			placed.map((n) => ({ ...n, r: radius(n) })),
+			view,
+			(s) => s.length * 7.4,
+			new Set([...(active ? [active] : []), ...(near ?? [])])
+		)
+	);
+	function find(id: string) {
+		pinned = id;
+		const n = at.get(id);
+		if (n) view = centerOn({ ...view, k: Math.max(view.k, 1.8) }, n.x, n.y, W, H);
+	}
+	const screen = (gx: number, gy: number) => ({ x: view.x + view.k * gx, y: view.y + view.k * gy });
 </script>
 
 <svelte:head><title>{t('News graph')} · Axon</title></svelte:head>
@@ -165,70 +189,85 @@
 			{/each}
 		</p>
 	{/if}
+	<GraphToolbar
+		nodes={data.nodes}
+		onfind={find}
+		onzoom={(f) => (view = zoomAt(view, f, W / 2, H / 2))}
+		onfit={() => (view = fit(placed, W, H))}
+		fullscreen={sky}
+	/>
 	<div class="layout">
-		<div class="sky">
+		<div class="sky" bind:this={sky}>
 			<svg
+				use:panzoom={{ view: () => view, set: (v) => (view = v), width: W, height: H }}
 				viewBox="0 0 {W} {H}"
 				role="group"
 				aria-label={t('News graph: {n} concepts. The table below lists them.', {
 					n: data.nodes.length
 				})}
 			>
-				{#each data.edges as e (e.from + e.to)}
-					{@const a = at.get(e.from)}
-					{@const b = at.get(e.to)}
-					{#if a && b}
-						<line
-							x1={a.x}
-							y1={a.y}
-							x2={b.x}
-							y2={b.y}
-							stroke-width={0.5 + e.npmi * 2}
-							class:dim={dim(e.from) || dim(e.to)}
-						/>
-					{/if}
-				{/each}
-				{#each placed as n (n.id)}
-					<g
-						class="node"
-						class:dim={dim(n.id)}
-						class:focused={active === n.id}
-						transform="translate({n.x},{n.y})"
-						role="button"
-						tabindex="0"
-						aria-label="{n.label}, {t('{n} news', { n: n.count })}, {trendLabel(n)}{n.in_notes
-							.length
-							? ', ' + t('also in your notes')
-							: ''}"
-						onmouseenter={() => (hovered = n.id)}
-						onmouseleave={() => (hovered = null)}
-						onfocus={() => (hovered = n.id)}
-						onblur={() => (hovered = null)}
-						onclick={() => pick(n.id)}
-						onkeydown={(ev) => {
-							if (ev.key === 'Enter' || ev.key === ' ') {
-								ev.preventDefault();
-								pick(n.id);
-							}
-						}}
-					>
-						<circle class="halo" r={radius(n) * 2.2} fill={colour(n.community)} />
-						<circle class="hit" r={Math.max(12, radius(n) + 6)} />
-						<circle r={radius(n)} fill={colour(n.community)} />
-						{#if n.in_notes.length}<circle class="ring" r={radius(n) + 4} />{/if}
-						{#if n.rank >= 0.4 || active === n.id || near?.has(n.id)}
-							<text y={-radius(n) - 6}>{n.label}</text>
+				<g transform="translate({view.x} {view.y}) scale({view.k})">
+					{#each data.edges as e (e.from + e.to)}
+						{@const a = at.get(e.from)}
+						{@const b = at.get(e.to)}
+						{#if a && b}
+							<line
+								x1={a.x}
+								y1={a.y}
+								x2={b.x}
+								y2={b.y}
+								stroke-width={0.5 + e.npmi * 2}
+								vector-effect="non-scaling-stroke"
+								class:dim={dim(e.from) || dim(e.to)}
+							/>
 						{/if}
-					</g>
-				{/each}
+					{/each}
+					{#each placed as n (n.id)}
+						<g
+							class="node"
+							class:dim={dim(n.id)}
+							class:focused={active === n.id}
+							transform="translate({n.x},{n.y})"
+							role="button"
+							tabindex="0"
+							aria-label="{n.label}, {t('{n} news', { n: n.count })}, {trendLabel(n)}{n.in_notes
+								.length
+								? ', ' + t('also in your notes')
+								: ''}"
+							onmouseenter={() => (hovered = n.id)}
+							onmouseleave={() => (hovered = null)}
+							onfocus={() => (hovered = n.id)}
+							onblur={() => (hovered = null)}
+							onclick={() => pick(n.id)}
+							onkeydown={(ev) => {
+								if (ev.key === 'Enter' || ev.key === ' ') {
+									ev.preventDefault();
+									pick(n.id);
+								}
+							}}
+						>
+							<circle class="halo" r={radius(n) * 2.2} fill={colour(n.community)} />
+							<circle class="hit" r={Math.max(12, radius(n) + 6)} />
+							<circle r={radius(n)} fill={colour(n.community)} />
+							{#if n.in_notes.length}<circle class="ring" r={radius(n) + 4} />{/if}
+							{#if labels.has(n.id)}
+								<text
+									y={-radius(n) - 6 / view.k}
+									style:font-size="{13 / view.k}px"
+									style:stroke-width="{3 / view.k}px">{n.label}</text
+								>
+							{/if}
+						</g>
+					{/each}
+				</g>
 			</svg>
 			{#if tip}
 				<div
 					class="tip"
 					role="tooltip"
-					style:left="{(tip.x / W) * 100}%"
-					style:top="{(tip.y / H) * 100}%"
-					class:below={tip.y < H / 3}
+					style:left="{(screen(tip.x, tip.y).x / W) * 100}%"
+					style:top="{(screen(tip.x, tip.y).y / H) * 100}%"
+					class:below={screen(tip.x, tip.y).y < H / 3}
 				>
 					<strong>{tip.label}</strong>
 					<span class="small muted"
@@ -387,6 +426,21 @@
 	}
 	/* A night sky, distinct from the notes' graph: a deep field and a few
 	   faint stars, in both themes. */
+	.sky svg {
+		cursor: grab;
+		touch-action: none;
+	}
+	.sky svg:active {
+		cursor: grabbing;
+	}
+	.sky:fullscreen {
+		display: grid;
+		place-items: center;
+	}
+	.sky:fullscreen svg {
+		width: 100vw;
+		height: 100vh;
+	}
 	.sky {
 		position: relative;
 		border-radius: var(--radius-lg);

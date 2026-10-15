@@ -2,6 +2,9 @@
 	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import { forceLayout } from './overview';
+	import GraphToolbar from './GraphToolbar.svelte';
+	import { centerOn, fit, placeLabels, zoomAt, type View } from './graphView';
+	import { panzoom } from './panzoom';
 	import Status from './ui/Status.svelte';
 
 	/** The Zettelkasten knowledge graph (EP-47): literature and permanent notes
@@ -77,6 +80,33 @@
 	);
 	const other = (e: G['edges'][number]) => byId.get(e.from === focused ? e.to : e.from);
 	const radius = (n: ZNode) => 5 + n.pagerank * 13;
+
+	// Pan, zoom, find, and labels that never overlap (EP-122).
+	let view = $state<View>({ x: 0, y: 0, k: 1 });
+	let frame = $state<HTMLDivElement>();
+	$effect(() => {
+		view = fit(placed, W, H);
+	});
+	const labels = $derived(
+		placeLabels(
+			placed.map((n) => ({
+				id: n.id,
+				label: n.title,
+				x: n.x,
+				y: n.y,
+				r: radius(n),
+				rank: n.pagerank
+			})),
+			view,
+			(s) => s.length * 7.4,
+			new Set([...(focused ? [focused] : []), ...(near ?? [])])
+		)
+	);
+	function find(id: string) {
+		focused = id;
+		const n = at.get(id);
+		if (n) view = centerOn({ ...view, k: Math.max(view.k, 1.8) }, n.x, n.y, W, H);
+	}
 	const label = (c: number) => data?.communities.find((x) => x.id === c)?.label ?? t('Unconnected');
 </script>
 
@@ -128,70 +158,87 @@
 				}
 			)}
 		</p>
+		<GraphToolbar
+			nodes={placed.map((n) => ({ id: n.id, label: n.title }))}
+			onfind={find}
+			onzoom={(f) => (view = zoomAt(view, f, W / 2, H / 2))}
+			onfit={() => (view = fit(placed, W, H))}
+			fullscreen={frame}
+		/>
 		<div class="layout">
-			<svg
-				viewBox="0 0 {W} {H}"
-				role="group"
-				aria-label={t(
-					'Knowledge graph: {notes} notes in {value} communities. The table below lists the connections.',
-					{ notes: data.stats.notes, value: data.stats.communities }
-				)}
-			>
-				{#each data.edges as e (e.from + e.to)}
-					{@const a = at.get(e.from)}
-					{@const b = at.get(e.to)}
-					{#if a && b}
-						<line
-							x1={a.x}
-							y1={a.y}
-							x2={b.x}
-							y2={b.y}
-							stroke-width={0.5 + Math.min(e.score, 1) * 3.5}
-							class:link={e.kinds.includes('link')}
-							class:dim={dim(e.from) || dim(e.to)}
-						/>
-					{/if}
-				{/each}
-				{#each placed as n (n.id)}
-					<g
-						class="node"
-						class:dim={dim(n.id)}
-						class:focused={focused === n.id}
-						transform="translate({n.x},{n.y})"
-						role="button"
-						tabindex="0"
-						aria-label={t(
-							n.bridge
-								? '{title}, {kind}, community {community}, bridge, {degree} connections'
-								: '{title}, {kind}, community {community}, {degree} connections',
-							{ title: n.title, kind: n.kind, community: label(n.community), degree: n.degree }
-						)}
-						onclick={() => (focused = focused === n.id ? null : n.id)}
-						onkeydown={(ev) => {
-							if (ev.key === 'Enter' || ev.key === ' ') {
-								ev.preventDefault();
-								focused = focused === n.id ? null : n.id;
-							}
-						}}
-					>
-						{#if n.bridge}
-							<rect
-								x={-radius(n)}
-								y={-radius(n)}
-								width={radius(n) * 2}
-								height={radius(n) * 2}
-								transform="rotate(45)"
-								fill={colour(n.community)}
-							/>
-						{:else}
-							<circle r={radius(n)} fill={n.degree ? colour(n.community) : 'var(--muted)'} />
-						{/if}
-						{#if n.pagerank >= 0.45 || focused === n.id || near?.has(n.id)}
-							<text y={-radius(n) - 4}>{n.title}</text>
-						{/if}
+			<div class="frame" bind:this={frame}>
+				<svg
+					use:panzoom={{ view: () => view, set: (v) => (view = v), width: W, height: H }}
+					viewBox="0 0 {W} {H}"
+					role="group"
+					aria-label={t(
+						'Knowledge graph: {notes} notes in {value} communities. The table below lists the connections.',
+						{ notes: data.stats.notes, value: data.stats.communities }
+					)}
+				>
+					<g transform="translate({view.x} {view.y}) scale({view.k})">
+						{#each data.edges as e (e.from + e.to)}
+							{@const a = at.get(e.from)}
+							{@const b = at.get(e.to)}
+							{#if a && b}
+								<line
+									x1={a.x}
+									y1={a.y}
+									x2={b.x}
+									y2={b.y}
+									stroke-width={0.5 + Math.min(e.score, 1) * 3.5}
+									vector-effect="non-scaling-stroke"
+									class:link={e.kinds.includes('link')}
+									class:dim={dim(e.from) || dim(e.to)}
+								/>
+							{/if}
+						{/each}
+						{#each placed as n (n.id)}
+							<g
+								class="node"
+								class:dim={dim(n.id)}
+								class:focused={focused === n.id}
+								transform="translate({n.x},{n.y})"
+								role="button"
+								tabindex="0"
+								aria-label={t(
+									n.bridge
+										? '{title}, {kind}, community {community}, bridge, {degree} connections'
+										: '{title}, {kind}, community {community}, {degree} connections',
+									{ title: n.title, kind: n.kind, community: label(n.community), degree: n.degree }
+								)}
+								onclick={() => (focused = focused === n.id ? null : n.id)}
+								onkeydown={(ev) => {
+									if (ev.key === 'Enter' || ev.key === ' ') {
+										ev.preventDefault();
+										focused = focused === n.id ? null : n.id;
+									}
+								}}
+							>
+								{#if n.bridge}
+									<rect
+										x={-radius(n)}
+										y={-radius(n)}
+										width={radius(n) * 2}
+										height={radius(n) * 2}
+										transform="rotate(45)"
+										fill={colour(n.community)}
+									/>
+								{:else}
+									<circle r={radius(n)} fill={n.degree ? colour(n.community) : 'var(--muted)'} />
+								{/if}
+								{#if labels.has(n.id)}
+									<text
+										y={-radius(n) - 4 / view.k}
+										style:font-size="{13 / view.k}px"
+										style:stroke-width="{3 / view.k}px">{n.title}</text
+									>
+								{/if}
+							</g>
+						{/each}
 					</g>
-				{/each}
-			</svg>
+				</svg>
+			</div>
 
 			<aside aria-live="polite">
 				{#if node}
@@ -318,6 +365,22 @@
 		.layout {
 			grid-template-columns: 1fr;
 		}
+	}
+	svg {
+		cursor: grab;
+		touch-action: none;
+	}
+	svg:active {
+		cursor: grabbing;
+	}
+	.frame:fullscreen {
+		display: grid;
+		place-items: center;
+		background: var(--surface-solid);
+	}
+	.frame:fullscreen svg {
+		width: 100vw;
+		height: 100vh;
 	}
 	svg {
 		width: 100%;

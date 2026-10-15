@@ -1183,6 +1183,19 @@ test('analyse literature and permanent notes: topics, concepts, and a note panel
 		}
 		return id;
 	});
+	// The notes' graph (EP-122): find a note, zoom, and fit.
+	await page.goto('/notes');
+	await page.waitForLoadState('networkidle');
+	const graph = page.getByRole('group', { name: /^Knowledge graph:/ });
+	const name = await page.locator('datalist option').first().getAttribute('value');
+	await page.getByLabel('Find in the graph').fill(name!);
+	await page.getByLabel('Find in the graph').press('Enter');
+	await expect(page.getByRole('heading', { level: 3, name: name! })).toBeVisible();
+	const before = await graph.locator('> g').getAttribute('transform');
+	await page.getByRole('button', { name: 'Zoom in' }).click();
+	expect(await graph.locator('> g').getAttribute('transform')).not.toBe(before);
+	await page.getByRole('button', { name: 'Fit' }).click();
+	await noSeriousA11yViolations(page);
 	await page.goto('/notes/analysis');
 	await expect(
 		page.getByRole('heading', { level: 1, name: /Analysis of your literature/ })

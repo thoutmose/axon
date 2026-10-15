@@ -41,6 +41,8 @@ A task you check off stays in its list, crossed out, until the next day, so you 
 - **Analysis** looks at your literature and permanent notes: key phrases, readability, topics, and a concept graph. Each note has an **Analysis** panel with related ideas and why.
 - **Vim mode** for the editor is in **Preferences → Keyboard**.
 
+In the notes' graph and the news graph, scroll or pinch to zoom, drag to move, **Fit** to see everything, and **Full screen**; type in **Find in the graph** to select a note or a concept and centre on it. Labels that would overlap are left out until you zoom in.
+
 ## Aim: Goals, Projects, Areas, Resources
 
 - **Goals** have an outcome, a date, milestones, and linked tasks and habits. Progress shows exactly how it was worked out.
