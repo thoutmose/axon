@@ -414,6 +414,31 @@ def dispatch(bg_hi, bg_lo, sun, ink, alpha):
     g.append('</g>')
     return svg(''.join(b + g), d)
 
+# --- Crossroads (decisions): two roads in a yellow wood, after Frost ---
+def crossroads(bg_hi, bg_lo, ground, road, ink, leaf, alpha):
+    d = f'<linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></linearGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>']
+    # the ground, and two roads parting from one at the fork
+    b.append(f'<path d="M0 560 Q400 520 800 545 T{W} 530 V{H} H0 Z" fill="{ground}" fill-opacity="{alpha*0.9:.2f}"/>')
+    b.append(f'<path d="M640 {H} L960 {H} L840 720 L1180 560 L1150 556 L800 700 L780 700 L500 548 L470 552 L760 720 Z" fill="{road}" fill-opacity="{alpha*1.2:.2f}"/>')
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha:.2f}" stroke-linecap="round" stroke-linejoin="round">']
+    # trees on either side: trunks and round crowns
+    for x, y, sc in [(120, 640, 1.2), (300, 590, 0.9), (420, 570, 0.7), (1240, 580, 0.8), (1380, 610, 1.0), (1520, 660, 1.3), (620, 560, 0.55), (1000, 552, 0.5)]:
+        g.append(f'<path d="M{x} {y} V{f(y-150*sc)}" stroke-width="{f(5*sc)}"/>')
+        for k in range(5):
+            a = 2 * math.pi * k / 5
+            g.append(f'<circle cx="{f(x+45*sc*math.cos(a))}" cy="{f(y-190*sc+35*sc*math.sin(a))}" r="{f(48*sc)}" fill="{leaf}" fill-opacity="{alpha*0.8:.2f}" stroke-width="1.2"/>')
+    # the signpost at the fork, one arm for each road
+    g.append('<path d="M800 760 V600" stroke-width="5"/>')
+    g.append('<path d="M800 610 L900 590 L915 603 L900 618 L800 632 Z M800 640 L705 628 L690 642 L705 656 L800 662 Z" stroke-width="2.4"/>')
+    g.append('</g>')
+    # falling leaves
+    for _ in range(40):
+        x, y = random.randint(0, W), random.randint(80, 900)
+        a = random.randint(0, 180)
+        b.append(f'<ellipse cx="{x}" cy="{y}" rx="9" ry="4" transform="rotate({a} {x} {y})" fill="{leaf}" fill-opacity="{alpha*1.4:.2f}"/>')
+    return svg(''.join(b + g), d)
+
 art = {
   'notebook-light': notebook('#5b3a1a', '#f7ecd2', '#e9d4a8', 0.30),
   'notebook-dark': notebook('#d9b77c', '#2b2318', '#1a140d', 0.22),
@@ -449,6 +474,8 @@ art = {
   'studio-dark': studio('#22121c', '#0f070c', '#e2a8c6', '#e06aa4', 0.28),
   'dispatch-light': dispatch('#fdf6ec', '#f4e6d2', '#f2a65a', '#7a4a20', 0.30),
   'dispatch-dark': dispatch('#1d1622', '#0d0a10', '#e07a3a', '#e8c9a0', 0.26),
+  'crossroads-light': crossroads('#fbf5e6', '#f3e6c8', '#c9a95a', '#e8d5a6', '#5a4220', '#e0a530', 0.26),
+  'crossroads-dark': crossroads('#1c170f', '#0e0b07', '#5a4620', '#3a2f1a', '#d9c08a', '#c8861e', 0.30),
 }
 for name, s in art.items():
     open(os.path.join(out, name + '.svg'), 'w').write(s)

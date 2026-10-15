@@ -59,6 +59,8 @@ tags:
     description: "The learning and memory engine (EP-52): the day's plan, free recall of notes, cards drafted from notes, practice tests, and memory palaces."
   - name: progress
     description: Transparent XP, levels, badges, and one daily streak computed from every area (EP-15).
+  - name: decisions
+    description: The decision journal, its reviews, and how well the forecasts were calibrated.
   - name: insights
     description: Explainable weekly metrics, trends, weekly reviews, and CSV export, computed on the server (EP-20).
   - name: wellbeing
@@ -1850,6 +1852,158 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/decisions:
+    get:
+      tags: [decisions]
+      operationId: listDecisions
+      summary: Decisions, those to review first by their day, then the reviewed ones
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [open, due, reviewed] }, description: "open: not reviewed; due: not reviewed and its day has come; reviewed. All when absent." }
+      responses:
+        "200":
+          description: Decisions, and the person's today.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, today]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Decision" } }
+                  today: { type: string, format: date }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [decisions]
+      operationId: createDecision
+      summary: Record a decision with the outcome expected and its chance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, expected, probability, review_on]
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 200, example: Move the API to Go }
+                context: { type: string, maxLength: 5000 }
+                choice: { type: string, maxLength: 2000, example: Rewrite the hot paths in Go }
+                expected: { type: string, minLength: 1, maxLength: 500, example: p99 latency under 100 ms }
+                probability: { type: number, minimum: 0.01, maximum: 0.99, description: "The chance that the expected outcome happens. It never changes once given.", example: 0.8 }
+                decided_on: { type: string, format: date, description: "Defaults to the person's today; never a later day." }
+                review_on: { type: string, format: date, description: "After the decision, within ten years." }
+      responses:
+        "201":
+          description: The decision.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Decision" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/decisions/calibration:
+    get:
+      tags: [decisions]
+      operationId: getDecisionCalibration
+      summary: How well the reviewed forecasts matched what happened
+      responses:
+        "200":
+          description: "The Brier score is the mean of (chance - outcome)²: 0 is perfect, and always saying 50% scores 0.25. Buckets are the non-empty tenths of chance, lowest first."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, brier, predicted, happened, buckets]
+                properties:
+                  count: { type: integer }
+                  brier: { type: [number, "null"] }
+                  predicted: { type: number }
+                  happened: { type: number }
+                  buckets:
+                    type: array
+                    items:
+                      type: object
+                      required: [from, count, predicted, happened]
+                      properties:
+                        from: { type: number }
+                        count: { type: integer }
+                        predicted: { type: number }
+                        happened: { type: number }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/decisions/{id}:
+    patch:
+      tags: [decisions]
+      operationId: updateDecision
+      summary: Change a decision's title, context, choice, or review day; the forecast cannot change
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                title: { type: string, minLength: 1, maxLength: 200 }
+                context: { type: string, maxLength: 5000 }
+                choice: { type: string, maxLength: 2000 }
+                review_on: { type: string, format: date }
+                expected: { type: string, description: "Refused with 422: a forecast stays as it was made." }
+                probability: { type: number, description: "Refused with 422: a forecast stays as it was made." }
+      responses:
+        "200":
+          description: The decision.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Decision" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [decisions]
+      operationId: deleteDecision
+      summary: Remove a decision
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/decisions/{id}/review:
+    post:
+      tags: [decisions]
+      operationId: reviewDecision
+      summary: Record what happened (again, to correct it)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [happened]
+              additionalProperties: false
+              properties:
+                happened: { type: boolean, description: "Whether the expected outcome happened." }
+                outcome: { type: string, maxLength: 5000 }
+                lessons: { type: string, maxLength: 5000 }
+      responses:
+        "200":
+          description: The decision, reviewed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Decision" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/palaces:
     get:
       tags: [learning]
@@ -8282,6 +8436,24 @@ components:
         skill_id: { type: [string, "null"], format: uuid }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    Decision:
+      type: object
+      required: [id, title, context, choice, expected, probability, decided_on, review_on, happened, outcome, lessons, reviewed_on, due, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        context: { type: string }
+        choice: { type: string }
+        expected: { type: string }
+        probability: { type: number }
+        decided_on: { type: string, format: date }
+        review_on: { type: string, format: date }
+        happened: { type: [boolean, "null"], description: "Null until reviewed." }
+        outcome: { type: string }
+        lessons: { type: string }
+        reviewed_on: { type: [string, "null"], format: date }
+        due: { type: boolean, description: "Not reviewed, and its day has come." }
+        created_at: { type: string, format: date-time }
     PracticeProblem:
       type: object
       required: [id, title, url, platform, difficulty, topics, language, skill_id, created_at, attempts, solved, due_on]
@@ -9478,7 +9650,7 @@ components:
               type: array
               maxItems: 21
               uniqueItems: true
-              items: { enum: [tasks, projects, calendar, focus, notes, watch, areas, resources, archive, learn, goals, habits, health, media, budget, household, journal, digest, review, insights, agents] }
+              items: { enum: [tasks, projects, calendar, focus, notes, watch, areas, resources, archive, learn, goals, habits, health, media, budget, household, journal, digest, review, decisions, insights, agents] }
             chosen: { type: boolean }
         reminders:
           type: object

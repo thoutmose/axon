@@ -72,6 +72,10 @@ After two weeks of entries, **What helps you** on the same page shows which of y
 
 If your vault mirror writes health logs (Preferences → Vault), each journal day is also a daily note in `Axon/Health/Journal/`, with mood, energy, stress, and sleep in the front matter, ready for queries in Obsidian.
 
+## Decisions
+
+**Reflect → Decisions** is a decision journal. When you make a decision, write down what you chose, what you expect to happen, and how likely you think it is (5 to 95 percent), and when to look back: in a month, three, six, or twelve, or on a day. The forecast cannot be changed afterwards. On the review day the decision appears under **To review**: say what happened and what you learned, then whether what you expected came true. **Your calibration** scores your reviewed forecasts with the Brier score (0 is perfect; always saying 50 percent scores 0.25) and, after ten reviews, tells you whether you are over- or under-confident; the chart puts the chance you gave against the share that came true.
+
 ## Media and health
 
 - **Media**: films, series, and books you want, are on, have finished, or dropped, with ratings, progress, and reviews. **Up next** explains each suggestion. Searching sends only the typed title to Open Library or TMDB, after you allow lookups.

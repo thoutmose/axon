@@ -1165,6 +1165,76 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/decisions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Decisions, those to review first by their day, then the reviewed ones */
+		get: operations['listDecisions'];
+		put?: never;
+		/** Record a decision with the outcome expected and its chance */
+		post: operations['createDecision'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/decisions/calibration': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** How well the reviewed forecasts matched what happened */
+		get: operations['getDecisionCalibration'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/decisions/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a decision */
+		delete: operations['deleteDecision'];
+		options?: never;
+		head?: never;
+		/** Change a decision's title, context, choice, or review day; the forecast cannot change */
+		patch: operations['updateDecision'];
+		trace?: never;
+	};
+	'/v1/decisions/{id}/review': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Record what happened (again, to correct it) */
+		post: operations['reviewDecision'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/palaces': {
 		parameters: {
 			query?: never;
@@ -5117,6 +5187,29 @@ export interface components {
 			/** Format: date-time */
 			updated_at: string;
 		};
+		Decision: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			context: string;
+			choice: string;
+			expected: string;
+			probability: number;
+			/** Format: date */
+			decided_on: string;
+			/** Format: date */
+			review_on: string;
+			/** @description Null until reviewed. */
+			happened: boolean | null;
+			outcome: string;
+			lessons: string;
+			/** Format: date */
+			reviewed_on: string | null;
+			/** @description Not reviewed, and its day has come. */
+			due: boolean;
+			/** Format: date-time */
+			created_at: string;
+		};
 		PracticeProblem: {
 			/** Format: uuid */
 			id: string;
@@ -6423,6 +6516,7 @@ export interface components {
 					| 'journal'
 					| 'digest'
 					| 'review'
+					| 'decisions'
 					| 'insights'
 					| 'agents'
 				)[];
@@ -9477,6 +9571,218 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	listDecisions: {
+		parameters: {
+			query?: {
+				/** @description open: not reviewed; due: not reviewed and its day has come; reviewed. All when absent. */
+				status?: 'open' | 'due' | 'reviewed';
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Decisions, and the person's today. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						items: components['schemas']['Decision'][];
+						/** Format: date */
+						today: string;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	createDecision: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example Move the API to Go */
+					title: string;
+					context?: string;
+					/** @example Rewrite the hot paths in Go */
+					choice?: string;
+					/** @example p99 latency under 100 ms */
+					expected: string;
+					/**
+					 * @description The chance that the expected outcome happens. It never changes once given.
+					 * @example 0.8
+					 */
+					probability: number;
+					/**
+					 * Format: date
+					 * @description Defaults to the person's today; never a later day.
+					 */
+					decided_on?: string;
+					/**
+					 * Format: date
+					 * @description After the decision, within ten years.
+					 */
+					review_on: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The decision. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Decision'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getDecisionCalibration: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The Brier score is the mean of (chance - outcome)²: 0 is perfect, and always saying 50% scores 0.25. Buckets are the non-empty tenths of chance, lowest first. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						count: number;
+						brier: number | null;
+						predicted: number;
+						happened: number;
+						buckets: {
+							from: number;
+							count: number;
+							predicted: number;
+							happened: number;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	deleteDecision: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	updateDecision: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					title?: string;
+					context?: string;
+					choice?: string;
+					/** Format: date */
+					review_on?: string;
+					/** @description Refused with 422: a forecast stays as it was made. */
+					expected?: string;
+					/** @description Refused with 422: a forecast stays as it was made. */
+					probability?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The decision. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Decision'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	reviewDecision: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @description Whether the expected outcome happened. */
+					happened: boolean;
+					outcome?: string;
+					lessons?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description The decision, reviewed. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Decision'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	listPalaces: {

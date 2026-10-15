@@ -3377,5 +3377,72 @@ export const fr: Record<string, string> = {
 		'Un micro à ruban et la forme d’onde d’une voix, d’après les studios de radio des années 1940 : l’actualité, lue pour vous.',
 	'Paper planes at sunrise': 'Des avions en papier au lever du soleil',
 	'Paper planes on their routes at dawn, after the airmail of Saint-Exupéry’s Night Flight (1931): your digest, sent out each morning.':
-		'Des avions en papier sur leurs routes à l’aube, d’après l’Aéropostale de Vol de nuit de Saint-Exupéry (1931) : votre récapitulatif, envoyé chaque matin.'
+		'Des avions en papier sur leurs routes à l’aube, d’après l’Aéropostale de Vol de nuit de Saint-Exupéry (1931) : votre récapitulatif, envoyé chaque matin.',
+	'Recorded. Axon will ask you on {day}.': 'Enregistrée. Axon vous la rappellera le {day}.',
+	'Reviewed.': 'Bilan fait.',
+	'Remove “{title}”?': 'Supprimer « {title} » ?',
+	Decisions: 'Décisions',
+	'Write a decision down when you make it: what you chose, what you expect, and how likely it is. On the review day, say what happened. The forecast cannot be changed afterwards, so your score tells you how far to trust your own confidence.':
+		'Notez une décision au moment où vous la prenez : ce que vous avez choisi, ce que vous attendez, et avec quelle probabilité. Le jour du bilan, dites ce qui s’est passé. La prévision ne peut plus être modifiée ensuite : votre score vous dit à quel point vous fier à votre propre assurance.',
+	'To review': 'À faire le bilan',
+	'You expected: {expected}': 'Vous attendiez : {expected}',
+	'{chance} sure, on {day}': 'sûr à {chance}, le {day}',
+	'You chose: {choice}': 'Vous avez choisi : {choice}',
+	'What happened': 'Ce qui s’est passé',
+	'What you learned': 'Ce que vous en avez appris',
+	'It happened': 'C’est arrivé',
+	'It did not happen': 'Ce n’est pas arrivé',
+	'Record a decision': 'Noter une décision',
+	Decision: 'Décision',
+	'Move the API to Go': 'Passer l’API en Go',
+	'Context: what you know, and the options': 'Contexte : ce que vous savez, et les options',
+	'What you chose': 'Ce que vous avez choisi',
+	'What you expect to happen': 'Ce que vous attendez',
+	'p99 latency under 100 ms by March': 'latence p99 sous 100 ms d’ici mars',
+	'How likely: {chance}': 'Probabilité : {chance}',
+	'Review in': 'Bilan dans',
+	'1 month': '1 mois',
+	'1 year': '1 an',
+	'Or on': 'Ou le',
+	'Record it': 'L’enregistrer',
+	'Your calibration': 'Votre calibration',
+	'Review your first decision to see how well your forecasts match what happens.':
+		'Faites le bilan d’une première décision pour voir si vos prévisions correspondent à ce qui arrive.',
+	'Brier score': 'score de Brier',
+	'chance given, on average': 'de probabilité donnée, en moyenne',
+	'came true': 'se sont réalisées',
+	reviewed: 'bilans',
+	'The Brier score is the mean of (chance − outcome)²: 0 is perfect, and always saying 50% scores 0.25.':
+		'Le score de Brier est la moyenne de (probabilité − résultat)² : 0 est parfait, et toujours dire 50 % donne 0,25.',
+	'Chance given (across) against the share that came true (up)':
+		'Probabilité donnée (en abscisse) contre la part réalisée (en ordonnée)',
+	'{from}–{to} sure: {n} decisions, {share} came true':
+		'sûr de {from} à {to} : {n} décisions, {share} réalisées',
+	'chance given': 'probabilité donnée',
+	'On the dashed line, things happen as often as you say. Below it, you were too sure.':
+		'Sur la ligne pointillée, les choses arrivent aussi souvent que vous le dites. En dessous, vous étiez trop sûr.',
+	'Chance given': 'Probabilité donnée',
+	'Came true': 'Réalisées',
+	'Waiting for their day': 'En attente de leur jour',
+	'review on {day}': 'bilan le {day}',
+	'Nothing waiting. Record a decision above.': 'Rien en attente. Notez une décision ci-dessus.',
+	Reviewed: 'Bilans faits',
+	'it happened': 'c’est arrivé',
+	'it did not happen': 'ce n’est pas arrivé',
+	'No decision reviewed yet.': 'Aucun bilan pour l’instant.',
+	'Two roads in a wood': 'Deux routes dans un bois',
+	'A signpost where a road forks in an autumn wood, after Robert Frost’s The Road Not Taken (1916): write down the way you chose, and come back to see where it led.':
+		'Un panneau là où la route se divise dans un bois d’automne, d’après The Road Not Taken de Robert Frost (1916) : notez le chemin choisi, et revenez voir où il a mené.',
+	'Sharp: your forecasts are close to what happens.':
+		'Précis : vos prévisions sont proches de ce qui arrive.',
+	'Better than always saying 50%.': 'Mieux que de toujours dire 50 %.',
+	'About as good as always saying 50%.': 'À peu près aussi bien que de toujours dire 50 %.',
+	'Worse than always saying 50%: your chances point the wrong way.':
+		'Moins bien que de toujours dire 50 % : vos probabilités vont dans le mauvais sens.',
+	'You are overconfident: things you expect happen less often than you say.':
+		'Vous êtes trop sûr de vous : ce que vous attendez arrive moins souvent que vous ne le dites.',
+	'You are underconfident: things you expect happen more often than you say.':
+		'Vous ne l’êtes pas assez : ce que vous attendez arrive plus souvent que vous ne le dites.',
+	'Well calibrated: things happen about as often as you say.':
+		'Bien calibré : les choses arrivent à peu près aussi souvent que vous le dites.'
 };

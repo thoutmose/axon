@@ -44,6 +44,6 @@ describe('planFor', () => {
 			'home'
 		]);
 		expect(all.hidden).toEqual([]);
-		expect(PAGES.length).toBe(21);
+		expect(PAGES.length).toBe(22);
 	});
 });

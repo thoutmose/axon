@@ -1042,6 +1042,47 @@ test('practice: paste a problem link, log how it went, and see when it comes bac
 	await noSeriousA11yViolations(page);
 });
 
+test('decisions: record a forecast, review one that is due, and see the calibration', async () => {
+	await page.goto('/decisions');
+	await page.waitForLoadState('networkidle');
+	const record = page.getByRole('region', { name: 'Record a decision' });
+	await record.getByLabel('Decision').fill('Take the CKA exam');
+	await record.getByLabel('What you expect to happen').fill('Pass on the first try');
+	await record.getByLabel(/How likely/).fill('60');
+	await record.getByRole('button', { name: 'Record it' }).click();
+	await expect(page.getByRole('region', { name: 'Waiting for their day' })).toContainText(
+		'Take the CKA exam'
+	);
+	// A decision made a month ago whose day has come.
+	const day = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+	expect(
+		(
+			await page.request.post('/api/v1/decisions', {
+				headers: { Origin: new URL(page.url()).origin },
+				data: {
+					title: 'Move the API to Go',
+					expected: 'p99 latency under 100 ms',
+					probability: 0.8,
+					decided_on: day(-30),
+					review_on: day(-1)
+				}
+			})
+		).ok()
+	).toBe(true);
+	await page.reload();
+	await page.waitForLoadState('networkidle');
+	const due = page.getByRole('region', { name: 'To review' });
+	await due.getByLabel('What you learned').fill('The database was the bottleneck.');
+	await due.getByRole('button', { name: 'It did not happen' }).click();
+	await expect(page.getByRole('region', { name: 'Reviewed' })).toContainText(
+		'The database was the bottleneck.'
+	);
+	const cal = page.getByRole('region', { name: 'Your calibration' });
+	await expect(cal).toContainText('0.64');
+	await expect(cal.getByRole('img')).toBeVisible();
+	await noSeriousA11yViolations(page);
+});
+
 test('analyse literature and permanent notes: topics, concepts, and a note panel', async () => {
 	await page.goto('/notes');
 	const first: string = await page.evaluate(async () => {
