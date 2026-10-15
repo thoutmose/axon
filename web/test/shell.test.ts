@@ -1367,7 +1367,8 @@ test('tech watch: export the view, share it with a link anyone can open, then re
 	await dialog.getByLabel('Name').fill('E2E team');
 	await dialog.getByRole('button', { name: 'Create the link' }).click();
 	const link = await dialog.getByLabel('Link').inputValue();
-	expect(link).toMatch(/^http:\/\/localhost:3000\/shared\/watch\/[\w-]{43}$/);
+	expect(link.startsWith(`${origin}/shared/watch/`)).toBe(true);
+	expect(link.slice(`${origin}/shared/watch/`.length)).toMatch(/^[\w-]{43}$/);
 	await dialog.getByRole('button', { name: 'Close' }).click();
 
 	// Someone without an account opens it.
