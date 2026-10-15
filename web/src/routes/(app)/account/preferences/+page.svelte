@@ -3,6 +3,7 @@
 	import { disablePush, enablePush } from '$lib/reminders';
 	import EmbeddingSettings from '$lib/EmbeddingSettings.svelte';
 	import VaultServer from '$lib/VaultServer.svelte';
+	import AudiobookshelfSettings from '$lib/AudiobookshelfSettings.svelte';
 	import ChannelSettings from '$lib/ChannelSettings.svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import { setLocale, t } from '$lib/i18n.svelte';
@@ -455,6 +456,9 @@
 			<ChannelSettings />
 		</Section>
 
+		<Section id="audiobookshelf" title={t('Podcasts from Audiobookshelf')}>
+			<AudiobookshelfSettings />
+		</Section>
 		<Section id="meaning" title={t('Search by meaning')}>
 			<EmbeddingSettings />
 		</Section>

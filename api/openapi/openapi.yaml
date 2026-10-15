@@ -7843,6 +7843,91 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
         "429": { $ref: "#/components/responses/Problem" }
+  /v1/audiobookshelf:
+    get:
+      tags: [watch]
+      operationId: getAudiobookshelf
+      summary: Your Audiobookshelf server, without its token
+      responses:
+        "200":
+          description: Its state; connected is false without one.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [connected, url, synced_at, error, shows]
+                properties:
+                  connected: { type: boolean }
+                  url: { type: string }
+                  synced_at: { type: [string, "null"], format: date-time }
+                  error: { type: string, description: "The last sync's error, if any." }
+                  shows: { type: integer, description: "Shows followed in the tech watch." }
+        "401": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [watch]
+      operationId: connectAudiobookshelf
+      summary: Connect your Audiobookshelf, then follow its podcasts in the tech watch
+      description: "The address and token are checked with the server; the token is sealed (AXON_ENCRYPTION_KEY) and never shown again. A server on a private network needs the operator's AXON_CALENDAR_PRIVATE=1. Refused to the shared demo."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              additionalProperties: false
+              properties:
+                url: { type: string, maxLength: 500, example: "https://abs.example.org" }
+                token: { type: string, maxLength: 2000, description: "An API token from Audiobookshelf; empty keeps the one saved." }
+      responses:
+        "200":
+          description: Connected and synced.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [connected, url, synced_at, error, shows]
+                properties:
+                  connected: { type: boolean }
+                  url: { type: string }
+                  synced_at: { type: [string, "null"], format: date-time }
+                  error: { type: string, description: "The last sync's error, if any." }
+                  shows: { type: integer, description: "Shows followed in the tech watch." }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [watch]
+      operationId: disconnectAudiobookshelf
+      summary: Forget your Audiobookshelf; its shows are no longer followed, their episodes stay
+      responses:
+        "204": { description: Disconnected. }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/audiobookshelf/sync:
+    post:
+      tags: [watch]
+      operationId: syncAudiobookshelf
+      summary: Follow every show of your podcast libraries, and read new episodes
+      responses:
+        "200":
+          description: What the sync brought.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [shows, new_shows, new_episodes]
+                properties:
+                  shows: { type: integer }
+                  new_shows: { type: integer }
+                  new_episodes: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
   /v1/watch/podcast:
     get:
       tags: [watch]
@@ -8248,7 +8333,7 @@ components:
         schedule: { type: string }
         enabled: { type: boolean }
         full_text: { type: boolean }
-        origin: { type: string, enum: [manual, csv, opml, freshrss, agent] }
+        origin: { type: string, enum: [manual, csv, opml, freshrss, agent, audiobookshelf] }
         next_fetch_at: { type: string, format: date-time }
         last_fetched_at: { type: [string, "null"], format: date-time }
         last_ok_at: { type: [string, "null"], format: date-time }

@@ -26,15 +26,21 @@ func Transcribe(ctx context.Context, pool *pgxpool.Pool, userID, itemID uuid.UUI
 		return it, err
 	}
 	id := VideoID(it.URL)
-	if id == "" {
-		return it, ValidationError{"Only YouTube videos have a transcript to read."}
+	if id == "" && it.Audio == "" {
+		return it, ValidationError{"Only videos and podcast episodes have words to transcribe."}
 	}
 	if it.TranscriptSource != "" {
 		return it, nil
 	}
-	tctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	tctx, cancel := context.WithTimeout(ctx, 20*time.Minute)
 	defer cancel()
-	tr, terr := VideoTranscript(tctx, id, w)
+	var tr Transcript
+	var terr error
+	if id != "" {
+		tr, terr = VideoTranscript(tctx, id, w)
+	} else {
+		tr, terr = episodeTranscript(tctx, pool, userID, it, w)
+	}
 	err = pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
 		if terr != nil {
 			_, err := tx.Exec(ctx, `UPDATE watch_items SET transcript_tried_at = now() WHERE id = $1`, itemID)
@@ -63,11 +69,41 @@ func Transcribe(ctx context.Context, pool *pgxpool.Pool, userID, itemID uuid.UUI
 	return GetItem(ctx, pool, userID, itemID)
 }
 
-// TranscribePending transcribes the newest videos not tried yet.
+// maxEpisode bounds a podcast episode sent to Whisper.
+const maxEpisode = 250 << 20
+
+// episodeTranscript sends a podcast episode's audio to Whisper: from its
+// origin (the person's Audiobookshelf), else its public file.
+func episodeTranscript(ctx context.Context, pool *pgxpool.Pool, userID uuid.UUID, it Item, w *Whisper) (Transcript, error) {
+	if w == nil {
+		return Transcript{}, ErrNoTranscript
+	}
+	var origin, guid string
+	if err := pool.QueryRow(ctx, `SELECT coalesce(s.origin, ''), i.guid FROM watch_items i LEFT JOIN watch_sources s ON s.id = i.source_id
+		WHERE i.id = $1`, it.ID).Scan(&origin, &guid); err != nil {
+		return Transcript{}, err
+	}
+	var audio []byte
+	name := "episode.mp3"
+	var err error
+	if o, ok := origins[origin]; ok && o.Audio != nil {
+		audio, name, err = o.Audio(ctx, pool, userID, guid)
+	} else {
+		audio, err = download(ctx, it.Audio, maxEpisode)
+	}
+	if err != nil {
+		return Transcript{}, err
+	}
+	return w.Transcribe(ctx, audio, name)
+}
+
+// TranscribePending transcribes the newest videos not tried yet, and,
+// when a Whisper server is set up, podcast episodes.
 func TranscribePending(ctx context.Context, pool *pgxpool.Pool, w *Whisper, n int) error {
 	rows, err := pool.Query(ctx, `SELECT i.id, i.user_id FROM watch_items i JOIN users u ON u.id = i.user_id
-		WHERE i.transcript_tried_at IS NULL AND i.url LIKE 'https://youtube.com/watch?%' AND NOT u.demo
-		ORDER BY i.published_at DESC LIMIT $1`, n)
+		WHERE i.transcript_tried_at IS NULL AND NOT u.demo
+		  AND (i.url LIKE 'https://youtube.com/watch?%' OR ($2 AND i.audio <> ''))
+		ORDER BY i.published_at DESC LIMIT $1`, n, w != nil)
 	if err != nil {
 		return err
 	}

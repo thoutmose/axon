@@ -131,8 +131,13 @@ func FetchSource(ctx context.Context, pool *pgxpool.Pool, userID, id uuid.UUID, 
 	}
 	fctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	r, err := get(fctx, src.URL, src.etag, src.mod)
-	if err != nil {
+	var r response
+	var feed Feed
+	if o, ok := origins[src.Origin]; ok { // not a feed: its origin reads it (EP-124)
+		if feed, err = o.Fetch(fctx, pool, userID, src); err != nil {
+			return fail(err)
+		}
+	} else if r, err = get(fctx, src.URL, src.etag, src.mod); err != nil {
 		return fail(err)
 	}
 	if r.notModified {
@@ -140,7 +145,9 @@ func FetchSource(ctx context.Context, pool *pgxpool.Pool, userID, id uuid.UUID, 
 		_, err := pool.Exec(ctx, `UPDATE watch_sources SET last_fetched_at = $2, last_ok_at = $2, last_error = '', failures = 0, next_fetch_at = $3 WHERE id = $1`, id, now, next)
 		return Stats{}, err
 	}
-	feed, err := Parse(r.body)
+	if _, ok := origins[src.Origin]; !ok {
+		feed, err = Parse(r.body)
+	}
 	if err != nil && src.LastOKAt == nil {
 		// Imported as a site, a Medium author, a Substack…: find its feed once.
 		found, derr := Discover(fctx, src.URL)

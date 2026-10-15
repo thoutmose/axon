@@ -95,6 +95,7 @@ Axon brings together the things that are usually scattered across note apps, tas
 - ✅ Invitations: the owner brings someone in with a link used once, even while registration is closed, and into the household.
 - ✅ Share as a picture: your level, a card, a goal, or a habit's run, drawn on your device for the share sheet or a post on X, LinkedIn, or Bluesky.
 - ✅ YouTube in the tech watch: a video's words from its captions, or your own Whisper server, in its analysis and the news graph, in English, French, or Spanish, with links cleaned of tracking.
+- ✅ Podcasts from your Audiobookshelf in the tech watch, each episode with its notes and, with Whisper, its words.
 - ✅ Certifications: planned, booked, passed, or failed, with the exam countdown, cost against the plan, credential, and expiry with a renewal warning; exams and expiries on the calendar. The roadmap plans its nine exams.
 - ✅ Study hours against the plan: focus time on a roadmap, this week day by day beside the plan's block and over 12 weeks against its weekly target, by skill and project.
 - ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.

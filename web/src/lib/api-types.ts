@@ -4706,6 +4706,45 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/audiobookshelf': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Your Audiobookshelf server, without its token */
+		get: operations['getAudiobookshelf'];
+		/**
+		 * Connect your Audiobookshelf, then follow its podcasts in the tech watch
+		 * @description The address and token are checked with the server; the token is sealed (AXON_ENCRYPTION_KEY) and never shown again. A server on a private network needs the operator's AXON_CALENDAR_PRIVATE=1. Refused to the shared demo.
+		 */
+		put: operations['connectAudiobookshelf'];
+		post?: never;
+		/** Forget your Audiobookshelf; its shows are no longer followed, their episodes stay */
+		delete: operations['disconnectAudiobookshelf'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/audiobookshelf/sync': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Follow every show of your podcast libraries, and read new episodes */
+		post: operations['syncAudiobookshelf'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/watch/podcast': {
 		parameters: {
 			query?: never;
@@ -4862,7 +4901,7 @@ export interface components {
 			enabled: boolean;
 			full_text: boolean;
 			/** @enum {string} */
-			origin: 'manual' | 'csv' | 'opml' | 'freshrss' | 'agent';
+			origin: 'manual' | 'csv' | 'opml' | 'freshrss' | 'agent' | 'audiobookshelf';
 			/** Format: date-time */
 			next_fetch_at: string;
 			/** Format: date-time */
@@ -18261,6 +18300,128 @@ export interface operations {
 			404: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			429: components['responses']['Problem'];
+		};
+	};
+	getAudiobookshelf: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Its state; connected is false without one. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						connected: boolean;
+						url: string;
+						/** Format: date-time */
+						synced_at: string | null;
+						/** @description The last sync's error, if any. */
+						error: string;
+						/** @description Shows followed in the tech watch. */
+						shows: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	connectAudiobookshelf: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @example https://abs.example.org */
+					url: string;
+					/** @description An API token from Audiobookshelf; empty keeps the one saved. */
+					token?: string;
+				};
+			};
+		};
+		responses: {
+			/** @description Connected and synced. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						connected: boolean;
+						url: string;
+						/** Format: date-time */
+						synced_at: string | null;
+						/** @description The last sync's error, if any. */
+						error: string;
+						/** @description Shows followed in the tech watch. */
+						shows: number;
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
+		};
+	};
+	disconnectAudiobookshelf: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Disconnected. */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	syncAudiobookshelf: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What the sync brought. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						shows: number;
+						new_shows: number;
+						new_episodes: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
 		};
 	};
 	watchPodcast: {

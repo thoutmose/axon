@@ -31,6 +31,20 @@ func TestCanonical(t *testing.T) {
 	}
 }
 
+func TestClean(t *testing.T) {
+	// The link a person follows keeps its scheme, host, and port; only the
+	// trackers go, and YouTube's forms become one (EP-123, EP-124).
+	for in, want := range map[string]string{
+		"http://192.168.1.10:13378/item/li_1?episode=ep_2&utm_source=x": "http://192.168.1.10:13378/item/li_1?episode=ep_2",
+		"https://www.example.com/a?fbclid=1#x":                          "https://www.example.com/a",
+		"https://youtu.be/dQw4w9WgXcQ?si=Ab12":                          "https://youtube.com/watch?v=dQw4w9WgXcQ",
+	} {
+		if got := Clean(in); got != want {
+			t.Errorf("Clean(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestCleanLinksAndVideoID(t *testing.T) {
 	md := "See [the talk](https://youtu.be/dQw4w9WgXcQ?si=x) and https://example.com/a?utm_source=rss&id=3."
 	if got := CleanLinks(md); got != "See [the talk](https://youtube.com/watch?v=dQw4w9WgXcQ) and https://example.com/a?id=3." {
