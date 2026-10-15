@@ -930,7 +930,7 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(coffee).toContainText('95 of 400 mg of caffeine');
 	await coffee.getByRole('button', { name: 'Add Espresso, 63 mg' }).click();
 	await expect(coffee).toContainText('158 of 400 mg of caffeine');
-	await expect(coffee.getByRole('status')).toContainText(/until|past|no more caffeine/);
+	await expect(coffee.getByRole('status')).toContainText(/until|Too late|no more caffeine/);
 	await coffee.getByRole('button', { name: /^Remove Espresso at / }).click();
 	await expect(coffee).toContainText('95 of 400 mg of caffeine');
 	await noSeriousA11yViolations(page);

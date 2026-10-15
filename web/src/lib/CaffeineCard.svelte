@@ -4,6 +4,7 @@
 	import { appLocale } from '$lib/dates';
 	import { t } from '$lib/i18n.svelte';
 	import Button from '$lib/ui/Button.svelte';
+	import { skyState } from '$lib/skyState.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
 	// Coffee and tea (EP-117): each drink in one tap, the day against EFSA's
@@ -65,8 +66,13 @@
 		}
 	}
 
+	// In the account's time zone, where bedtime is.
 	const time = (iso: string) =>
-		new Date(iso).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
+		new Date(iso).toLocaleTimeString(appLocale(), {
+			hour: '2-digit',
+			minute: '2-digit',
+			timeZone: skyState.zone
+		});
 	const say = $derived(day ? advice(day, new Date()).key : null);
 	const weekMax = $derived(
 		Math.max(day?.limit_mg ?? 400, ...(day?.week ?? []).map((d) => d.total_mg))
@@ -107,8 +113,7 @@
 					bedtime: time(day.bedtime)
 				})}
 			{:else if say === 'past'}
-				{t('It is past {time}: a coffee now would still be in you at {bedtime}.', {
-					time: time(day.cutoff!),
+				{t('Too late for a coffee: one now would still be in you at {bedtime}.', {
 					bedtime: time(day.bedtime)
 				})}
 			{:else}
