@@ -1,0 +1,51 @@
+import { describe, expect, it } from 'vitest';
+import { cardName, nextStep, groups } from './collection';
+
+const card = (over: Record<string, unknown>) =>
+	({
+		id: 'x',
+		family: 'practice',
+		title: '',
+		kind: 'hard',
+		tier: '',
+		value: 0,
+		unit: 'problems',
+		next: { tier: 'bronze', target: 1 },
+		...over
+	}) as Parameters<typeof cardName>[0];
+
+describe('the collection (EP-119)', () => {
+	it('names a card by its skill or habit, or by what it counts', () => {
+		expect(cardName(card({ family: 'habit', title: 'Read 20 pages' }))).toBe('Read 20 pages');
+		expect(cardName(card({}))).toBe('Hard problems');
+		expect(cardName(card({ family: 'streak' }))).toBe('Daily streak');
+	});
+	it('says what the next tier takes, in whole numbers', () => {
+		expect(nextStep(card({ value: 0 }))).toBe('1 more solved for bronze');
+		expect(
+			nextStep(
+				card({ family: 'habit', value: 7, unit: 'days', next: { tier: 'silver', target: 21 } })
+			)
+		).toBe('14 more days in a row for silver');
+		expect(
+			nextStep(
+				card({ family: 'skill', value: 3.2, unit: 'hours', next: { tier: 'silver', target: 10 } })
+			)
+		).toBe('7 more hours of focus on it for silver');
+		expect(nextStep(card({ family: 'skill', next: { tier: 'bronze', target: 0 } }))).toBe(
+			'Start learning it for bronze'
+		);
+		expect(
+			nextStep(card({ family: 'skill', tier: 'silver', next: { tier: 'gold', target: 0 } }))
+		).toBe('Mark it learned for gold');
+		expect(nextStep(card({ tier: 'gold', next: null }))).toBe('Complete');
+	});
+	it('groups skills, habits, and the rest', () => {
+		const g = groups([card({ family: 'skill' }), card({ family: 'habit' }), card({})]);
+		expect(g.map((x) => [x.id, x.cards.length])).toEqual([
+			['skills', 1],
+			['habits', 1],
+			['milestones', 1]
+		]);
+	});
+});

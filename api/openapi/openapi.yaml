@@ -6006,6 +6006,45 @@ paths:
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
+  /v1/progress/collection:
+    get:
+      tags: [progress]
+      operationId: getCollection
+      summary: The collection, cards raised from bronze to silver to gold by what you do
+      description: "A trophy for each roadmap skill (started, 10 hours of focus, learned), a card for each habit (best run of scheduled days kept: 7, 21, 66), problems solved unaided by difficulty, focus hours, flashcard reviews, the longest daily streak, and decisions reviewed. Worked out from what is recorded. 409 while progress rewards are off."
+      responses:
+        "200":
+          description: The cards, and the tiers earned out of all there are (bronze counts 1, silver 2, gold 3).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cards, earned, total]
+                properties:
+                  earned: { type: integer }
+                  total: { type: integer }
+                  cards:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, family, title, kind, tier, value, unit, next]
+                      properties:
+                        id: { type: string, example: "practice:hard" }
+                        family: { enum: [skill, habit, practice, focus, reviews, streak, decisions] }
+                        title: { type: string, description: "The skill's or habit's name; empty for the others." }
+                        kind: { type: string, description: "For practice: easy, medium, or hard." }
+                        tier: { enum: ["", bronze, silver, gold] }
+                        value: { type: number }
+                        unit: { enum: [days, hours, problems, reviews, decisions] }
+                        next:
+                          type: [object, "null"]
+                          required: [tier, target]
+                          description: "The next tier and its threshold; target 0 when it is not a number (a skill started, or learned)."
+                          properties:
+                            tier: { enum: [bronze, silver, gold] }
+                            target: { type: number }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
   /v1/progress/rules:
     get:
       tags: [progress]

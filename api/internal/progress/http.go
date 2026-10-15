@@ -60,6 +60,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/progress", h.summary)
 	r.Get("/v1/progress/ledger", h.ledger)
 	r.Get("/v1/progress/rules", h.rules)
+	r.Get("/v1/progress/collection", h.collection)
 	r.Post("/v1/progress/freezes", h.buyFreeze)
 }
 
@@ -267,4 +268,26 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 		return nil, err
 	}
 	return pgx.CollectRows(rows, pgx.RowToStructByPos[row])
+}
+
+func (h *Handlers) collection(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	if on, err := h.enabled(r.Context(), who.UserID); err != nil {
+		h.fail(w, err)
+		return
+	} else if !on {
+		httpx.Problem(w, http.StatusConflict, "Progress rewards are off. Turn them on in Preferences.")
+		return
+	}
+	tz, today, err := h.zone(r.Context(), who.UserID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	c, err := GetCollection(r.Context(), h.db, who.UserID, tz, today)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, c)
 }

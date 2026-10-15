@@ -2206,6 +2206,11 @@ test('progress rewards are opt-in, explain every point, and reflect every area',
 	await expect(ledger.getByRole('cell', { name: /Complete a task/ }).first()).toBeVisible();
 	await expect(ledger.getByRole('cell', { name: /Review a flashcard/ }).first()).toBeVisible();
 	await expect(page.getByRole('region', { name: 'Badges' })).toContainText('First step');
+	// The collection (EP-119): roadmap trophies, habit cards, and milestones, raised by tier.
+	const collection = page.getByRole('region', { name: 'Your collection' });
+	await expect(collection).toContainText(/\d+ of \d+ tiers collected/);
+	await expect(collection.getByRole('heading', { name: 'Habit cards' })).toBeVisible();
+	await expect(collection).toContainText('Hard problems');
 	await noSeriousA11yViolations(page);
 	await page.goto('/today');
 	await expect(page.getByRole('link', { name: /^Level \d+ · \d+-day run/ })).toBeVisible();

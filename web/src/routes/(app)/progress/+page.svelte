@@ -3,6 +3,7 @@
 	import { t } from '$lib/i18n.svelte';
 	import { api, message } from '$lib/api';
 	import type { paths } from '$lib/api-types';
+	import Collection from '$lib/Collection.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -151,6 +152,8 @@
 			{/each}
 		</ul>
 	</section>
+
+	<Collection />
 
 	<div class="top">
 		<section class="card glass" aria-labelledby="ledger-title">

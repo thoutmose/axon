@@ -91,6 +91,29 @@ func scheduled(days []int, d time.Time) bool {
 	return slices.Contains(days, wd)
 }
 
+// BestRun is the longest run of scheduled days kept, from the habit's
+// creation to today: a two-minute version counts, a planned rest day
+// neither counts nor breaks it, a missed day ends it (EP-119).
+func BestRun(days []int, checkins map[string]string, created, today time.Time) int {
+	best, run := 0, 0
+	for d := created; !d.After(today); d = d.AddDate(0, 0, 1) {
+		if !scheduled(days, d) {
+			continue
+		}
+		switch checkins[d.Format(time.DateOnly)] {
+		case "done", "two_minute":
+			run++
+			best = max(best, run)
+		case "skipped":
+		default:
+			if !d.Equal(today) { // today is not over yet
+				run = 0
+			}
+		}
+	}
+	return best
+}
+
 // Compute derives today's state from check-ins keyed by local date
 // (YYYY-MM-DD). Days before the habit existed never count as missed.
 // It is pure date arithmetic, so DST changes and travel cannot shift it.

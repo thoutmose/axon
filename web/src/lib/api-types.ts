@@ -3567,6 +3567,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/progress/collection': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * The collection, cards raised from bronze to silver to gold by what you do
+		 * @description A trophy for each roadmap skill (started, 10 hours of focus, learned), a card for each habit (best run of scheduled days kept: 7, 21, 66), problems solved unaided by difficulty, focus hours, flashcard reviews, the longest daily streak, and decisions reviewed. Worked out from what is recorded. 409 while progress rewards are off.
+		 */
+		get: operations['getCollection'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/progress/rules': {
 		parameters: {
 			query?: never;
@@ -15396,6 +15416,52 @@ export interface operations {
 				};
 			};
 			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+		};
+	};
+	getCollection: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The cards, and the tiers earned out of all there are (bronze counts 1, silver 2, gold 3). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						earned: number;
+						total: number;
+						cards: {
+							/** @example practice:hard */
+							id: string;
+							/** @enum {unknown} */
+							family: 'skill' | 'habit' | 'practice' | 'focus' | 'reviews' | 'streak' | 'decisions';
+							/** @description The skill's or habit's name; empty for the others. */
+							title: string;
+							/** @description For practice: easy, medium, or hard. */
+							kind: string;
+							/** @enum {unknown} */
+							tier: '' | 'bronze' | 'silver' | 'gold';
+							value: number;
+							/** @enum {unknown} */
+							unit: 'days' | 'hours' | 'problems' | 'reviews' | 'decisions';
+							/** @description The next tier and its threshold; target 0 when it is not a number (a skill started, or learned). */
+							next: {
+								/** @enum {unknown} */
+								tier: 'bronze' | 'silver' | 'gold';
+								target: number;
+							} | null;
+						}[];
+					};
+				};
+			};
 			401: components['responses']['Problem'];
 			409: components['responses']['Problem'];
 		};
