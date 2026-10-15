@@ -65,13 +65,32 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		t.Errorf("roadmaps = %s", r)
 	}
 	// A tech watch on the roadmap's domains, in the morning digest (EP-110).
-	for path, min := range map[string]int{"/v1/watch/topics": 4, "/v1/watch/sources": 4, "/v1/watch/items": 10} {
+	for path, min := range map[string]int{"/v1/watch/topics": 4, "/v1/watch/sources": 4, "/v1/watch/items": 30} {
 		if n := count(t, visitor, path); n < min {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
 		}
 	}
 	if d := visitor.mustDo(200, "GET", "/v1/me/digest?kind=daily", nil); !bytes.Contains(d, []byte(`"key":"Tech watch"`)) {
 		t.Errorf("the daily digest has no tech watch: %s", d)
+	}
+	// Its knowledge graph has linked concepts in several communities, and its podcast an episode (EP-111, EP-113).
+	var wg struct {
+		Stats struct {
+			Concepts    int `json:"concepts"`
+			Edges       int `json:"edges"`
+			Communities int `json:"communities"`
+		} `json:"stats"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/watch/graph", nil), &wg)
+	if wg.Stats.Concepts < 20 || wg.Stats.Edges < 20 || wg.Stats.Communities < 3 {
+		t.Errorf("demo watch graph = %+v", wg.Stats)
+	}
+	var ep struct {
+		Chapters []json.RawMessage `json:"chapters"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/watch/podcast", nil), &ep)
+	if len(ep.Chapters) < 3 {
+		t.Errorf("demo podcast has %d chapters", len(ep.Chapters))
 	}
 	if d := visitor.mustDo(200, "GET", "/v1/decks", nil); !bytes.Contains(d, []byte("MIT 6.042J: logic")) {
 		t.Errorf("the 6.042J deck is missing: %s", d)
