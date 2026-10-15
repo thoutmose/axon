@@ -140,15 +140,31 @@ Axon brings together the things that are usually scattered across note apps, tas
 
 ## Screenshots
 
-| Home | Today (light) | Today (dark, phone) |
-|---|---|---|
-| ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view with a scenic hero, task counts, and cards](doc/screenshots/today.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
+[![The trailer: Axon in a minute](web/static/teaser/axon.jpg)](web/static/teaser/axon.mp4)
 
-| Command dashboard | Notes workspace | Command center |
-|---|---|---|
-| ![Command dashboard with KPIs, an activity chart, a heatmap, a skills network, and tables](doc/screenshots/dashboard.png) | ![Notes workspace with a folder tree, Markdown editor, and live preview](doc/screenshots/notes-edit.png) | ![Command center searching notes](doc/screenshots/command-center.png) |
+**[Watch the trailer](web/static/teaser/axon.mp4)** (one minute, with music; also on the home page when the demo is on).
 
-Captured from a test account with sample data.
+| Today | Tasks | Notes |
+|---|---|---|
+| ![Today: tasks, habits, goals, and the day's counts](doc/screenshots/gallery/today.jpg) | ![Tasks on a Kanban board with contexts](doc/screenshots/gallery/tasks.jpg) | ![The notes' knowledge graph with its communities](doc/screenshots/gallery/notes.jpg) |
+
+| Learn | Roadmap | Focus |
+|---|---|---|
+| ![Learn: flashcards, recall, the weekly test, and memory measured](doc/screenshots/gallery/learn.jpg) | ![The roadmap's skills radar, hard and soft](doc/screenshots/gallery/roadmap.jpg) | ![Focus: Pomodoro with music and the week's sessions](doc/screenshots/gallery/focus.jpg) |
+
+| Tech watch | News graph | Health |
+|---|---|---|
+| ![The tech watch: news, topics, and labels](doc/screenshots/gallery/watch.jpg) | ![The news graph: concepts, links, and communities](doc/screenshots/gallery/graph.jpg) | ![Water, coffee and tea, and the journal on Today](doc/screenshots/gallery/health.jpg) |
+
+| Decisions | Collection | Habits |
+|---|---|---|
+| ![The decision journal's calibration chart](doc/screenshots/gallery/decisions.jpg) | ![The collection of trophies and cards](doc/screenshots/gallery/collection.jpg) | ![Habits and Huberman's protocols, sourced](doc/screenshots/gallery/habits.jpg) |
+
+| Home | Today (dark, phone) |
+|---|---|
+| ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
+
+Captured from the demo account, with its sample data. `make teaser` takes them again and makes the trailer from a running Axon.
 
 <details><summary>Design direction</summary>
 

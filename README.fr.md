@@ -140,15 +140,31 @@ Axon rassemble ce qui est d’habitude éparpillé entre applications de notes, 
 
 ## Captures d’écran
 
-| Accueil | Aujourd’hui (clair) | Aujourd’hui (sombre, téléphone) |
-|---|---|---|
-| ![Page d’accueil avec un paysage de montagne nocturne et des sections de fonctionnalités](doc/screenshots/home.png) | ![Vue Aujourd’hui avec un bandeau paysager, des compteurs de tâches et des cartes](doc/screenshots/today.png) | ![Vue Aujourd’hui en mode sombre sur téléphone](doc/screenshots/today-mobile-dark.png) |
+[![La bande-annonce : Axon en une minute](web/static/teaser/axon.jpg)](web/static/teaser/axon.mp4)
 
-| Tableau de bord | Espace de notes | Centre de commandes |
-|---|---|---|
-| ![Tableau de bord avec indicateurs, graphique d’activité, carte de chaleur, réseau de compétences et tableaux](doc/screenshots/dashboard.png) | ![Espace de notes avec arborescence, éditeur Markdown et aperçu en direct](doc/screenshots/notes-edit.png) | ![Centre de commandes cherchant dans les notes](doc/screenshots/command-center.png) |
+**[Voir la bande-annonce](web/static/teaser/axon.mp4)** (une minute, en musique ; aussi sur la page d’accueil quand la démo est ouverte).
 
-Capturées sur un compte de test avec des données d’exemple.
+| Aujourd’hui | Tâches | Notes |
+|---|---|---|
+| ![Aujourd’hui : tâches, habitudes, objectifs et compteurs du jour](doc/screenshots/gallery/today.jpg) | ![Les tâches en Kanban avec leurs contextes](doc/screenshots/gallery/tasks.jpg) | ![Le graphe de connaissances des notes et ses communautés](doc/screenshots/gallery/notes.jpg) |
+
+| Apprendre | Feuille de route | Concentration |
+|---|---|---|
+| ![Apprendre : cartes, rappel, test hebdomadaire et mémoire mesurée](doc/screenshots/gallery/learn.jpg) | ![La toile des compétences de la feuille de route](doc/screenshots/gallery/roadmap.jpg) | ![Concentration : Pomodoro en musique et sessions de la semaine](doc/screenshots/gallery/focus.jpg) |
+
+| Veille | Graphe de la veille | Santé |
+|---|---|---|
+| ![La veille : actualités, thèmes et étiquettes](doc/screenshots/gallery/watch.jpg) | ![Le graphe de la veille : concepts, liens et communautés](doc/screenshots/gallery/graph.jpg) | ![L’eau, le café et le thé, et le journal sur Aujourd’hui](doc/screenshots/gallery/health.jpg) |
+
+| Décisions | Collection | Habitudes |
+|---|---|---|
+| ![Le graphique de calibration du journal de décisions](doc/screenshots/gallery/decisions.jpg) | ![La collection de trophées et de cartes](doc/screenshots/gallery/collection.jpg) | ![Les habitudes et les protocoles de Huberman, sourcés](doc/screenshots/gallery/habits.jpg) |
+
+| Accueil | Aujourd’hui (sombre, téléphone) |
+|---|---|
+| ![Page d’accueil avec un paysage de montagne nocturne et des sections de fonctionnalités](doc/screenshots/home.png) | ![Vue Aujourd’hui en mode sombre sur téléphone](doc/screenshots/today-mobile-dark.png) |
+
+Capturées sur le compte de démonstration et ses données d’exemple. `make teaser` les reprend et refait la bande-annonce depuis un Axon en marche.
 
 <details><summary>Direction visuelle</summary>
 
