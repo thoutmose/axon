@@ -8,6 +8,7 @@ How Axon runs on its servers. Host configuration (SSH, Docker, monitoring, logs)
 |---|---|---|
 | Staging | `srv-staging` | https://srv-staging.tail781d53.ts.net |
 | Production | `srv-prod` | https://srv-prod.tail781d53.ts.net |
+| Dev (a branch under review) | `srv-dev` (or `AXON_DEV_HOST`) | https://srv-dev.tail781d53.ts.net |
 
 Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the API (with its background workers), web, PostgreSQL 16 + pgvector, the Anki bridge, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
 
@@ -41,6 +42,8 @@ deploy/deploy.sh prod
 ```
 
 The script refuses to deploy a commit without a green `ci` run on GitHub, and refuses a production version that staging is not serving. After migrating it runs `axon integrity`, which fails the deployment if any entity lacks its domain row or has an unregistered type. It then builds the images, copies them over SSH, copies the configuration, runs pending migrations, starts the stack, enables Tailscale Serve, and fails unless `/api/readyz` answers within 30 seconds.
+
+A branch under review goes to dev, from its checkout: `deploy/deploy.sh dev`. While CI cannot run (GitHub Actions minutes spent until 1 November 2026), `deploy/deploy.sh dev --skip-ci` deploys without it; the flag is refused for staging and production, whose rules do not change. Dev reads `deploy/env/dev.settings.env`, and staging's secrets until `deploy/env/dev.env.age` exists. Dev's backup key is not authorized on `srv-services`, so its off-site copies fail until `deploy/setup-offsite.sh` covers it.
 
 ## Roll back
 
