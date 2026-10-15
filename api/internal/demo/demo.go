@@ -460,6 +460,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if err := seedHistory(ctx, tx, user, now); err != nil {
 		return err
 	}
+	if err := seedWatch(ctx, tx, user, now); err != nil {
+		return err
+	}
 	return seedProposals(ctx, tx, user, review)
 }
 

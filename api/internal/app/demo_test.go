@@ -64,6 +64,15 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	if r := visitor.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(r, []byte("Top-5% in 26 engineering domains")) {
 		t.Errorf("roadmaps = %s", r)
 	}
+	// A tech watch on the roadmap's domains, in the morning digest (EP-110).
+	for path, min := range map[string]int{"/v1/watch/topics": 4, "/v1/watch/sources": 4, "/v1/watch/items": 10} {
+		if n := count(t, visitor, path); n < min {
+			t.Errorf("%s: %d items, want at least %d", path, n, min)
+		}
+	}
+	if d := visitor.mustDo(200, "GET", "/v1/me/digest?kind=daily", nil); !bytes.Contains(d, []byte(`"key":"Tech watch"`)) {
+		t.Errorf("the daily digest has no tech watch: %s", d)
+	}
 	if d := visitor.mustDo(200, "GET", "/v1/decks", nil); !bytes.Contains(d, []byte("MIT 6.042J: logic")) {
 		t.Errorf("the 6.042J deck is missing: %s", d)
 	}
