@@ -54,7 +54,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	// Sample data in every area.
 	for path, min := range map[string]int{
 		"/v1/tasks?view=next": 3, "/v1/tasks?view=inbox": 2, "/v1/projects": 1, "/v1/notes": 8, "/v1/goals": 2,
-		"/v1/habits": 8, "/v1/roadmaps": 1, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
+		"/v1/habits": 8, "/v1/roadmaps": 1, "/v1/trash": 2, "/v1/agent-memories": 4, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
 	} {
 		if n := count(t, visitor, path); n < min {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
@@ -91,6 +91,15 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/watch/podcast", nil), &ep)
 	if len(ep.Chapters) < 3 {
 		t.Errorf("demo podcast has %d chapters", len(ep.Chapters))
+	}
+	// Two months of reviews, so recall calibration has something to compare (EP-77).
+	var cal struct {
+		Reviews int               `json:"reviews"`
+		Buckets []json.RawMessage `json:"buckets"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/flashcards/calibration", nil), &cal)
+	if cal.Reviews < 20 || len(cal.Buckets) < 2 {
+		t.Errorf("demo calibration: %d reviews in %d buckets", cal.Reviews, len(cal.Buckets))
 	}
 	if d := visitor.mustDo(200, "GET", "/v1/decks", nil); !bytes.Contains(d, []byte("MIT 6.042J: logic")) {
 		t.Errorf("the 6.042J deck is missing: %s", d)

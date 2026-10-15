@@ -450,6 +450,23 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		s.link(call, graph.RelatesTo, health.ID)
 		s.link(cardIDs[1], graph.RelatesTo, site)
 	}
+	// Two things in the trash, deleted on different days, to restore or
+	// empty. The seed is one transaction, so each deletion is given a batch
+	// of its own, as separate deletions would have.
+	dropped := s.task("Rewrite the blog in a new framework", "someday", nil, nil, "")
+	draft := s.note("Zettel/fleeting/blog-ideas.md", "---\ntype: fleeting\ntitle: Blog ideas\n---\n# Blog ideas\n\n- A post a week on what I learn.\n")
+	if s.err == nil {
+		s.err = tasks.Delete(ctx, tx, user, dropped, graph.UserActor)
+	}
+	if s.err == nil {
+		s.err = notes.Delete(ctx, tx, user, draft, graph.UserActor)
+	}
+	for i, id := range []uuid.UUID{dropped, draft} {
+		if s.err == nil {
+			_, s.err = tx.Exec(ctx, `UPDATE trash SET batch = $3, deleted_at = $4 WHERE user_id = $1 AND entity_id = $2`,
+				user, id, -1-i, now.AddDate(0, 0, -2-3*i))
+		}
+	}
 	if s.err != nil {
 		return fmt.Errorf("demo seed: %w", s.err)
 	}
@@ -509,7 +526,7 @@ func seedJournal(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time
 }
 
 // seedProposals adds an agent run with pending proposals, so the approval
-// queue can be tried without an AI provider.
+// queue can be tried without an AI provider, and what agents remember.
 func seedProposals(ctx context.Context, tx pgx.Tx, user, task uuid.UUID) error {
 	run := uuid.Must(uuid.NewV7())
 	if _, err := tx.Exec(ctx, `INSERT INTO agent_runs (id, user_id, agent, skill_version, model, status, tools_called, proposals, finished_at)
@@ -528,6 +545,17 @@ func seedProposals(ctx context.Context, tx pgx.Tx, user, task uuid.UUID) error {
 	} {
 		if _, err := tx.Exec(ctx, `INSERT INTO agent_proposals (id, user_id, run_id, agent, tool, input, summary, reason)
 			VALUES ($1, $2, $3, 'task-manager', $4, $5, $6, $7)`, uuid.Must(uuid.NewV7()), user, run, p.tool, p.input, p.summary, p.reason); err != nil {
+			return err
+		}
+	}
+	// What the agents remember about the person, to see and forget.
+	for _, m := range [][2]string{
+		{"task-manager", "Does the weekly review on Sunday evening, at the desk."},
+		{"personal-trainer", "Training for a 10 km race in under an hour; runs after work, in the park."},
+		{"goals", "Follows the Top-5% engineering roadmap, about 22 to 26 study hours a week."},
+		{"chef", "Wants weekday dinners ready in under 30 minutes."},
+	} {
+		if _, err := tx.Exec(ctx, `INSERT INTO agent_memories (id, user_id, agent, content) VALUES ($1, $2, $3, $4)`, uuid.Must(uuid.NewV7()), user, m[0], m[1]); err != nil {
 			return err
 		}
 	}
