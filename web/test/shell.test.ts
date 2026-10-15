@@ -594,6 +594,23 @@ test('take the skills assessment, then start the roadmap at your level', async (
 	await expect(page.getByLabel('Status of Python')).toHaveValue('learning');
 });
 
+test("Huberman's protocols: what to do, why, the sources, and a habit in one click", async () => {
+	await page.goto('/habits');
+	const protocols = page.getByRole('region', {
+		name: 'Protocols for health, after Andrew Huberman'
+	});
+	await protocols.getByText('Wait 90 minutes before the first coffee').click();
+	await expect(protocols).toContainText('His advice, not tested');
+	await protocols.getByText('Morning sunlight', { exact: true }).click();
+	await expect(
+		protocols.getByRole('link', { name: 'Khalsa et al. 2003, J Physiol' })
+	).toHaveAttribute('href', 'https://doi.org/10.1113/jphysiol.2003.040477');
+	await noSeriousA11yViolations(page);
+	await protocols.getByRole('button', { name: 'Make it a habit' }).first().click();
+	const design = page.getByRole('region', { name: 'Design a habit' });
+	await expect(design.getByLabel('Habit', { exact: true })).toHaveValue('Morning sunlight');
+});
+
 test('the roadmap is a whole plan: skills with resources, a goal, milestones, projects, and habits', async () => {
 	await page.goto('/roadmaps');
 	await page.getByRole('link', { name: 'Open the roadmap' }).click();

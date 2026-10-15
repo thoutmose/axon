@@ -313,6 +313,8 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		{"Read 20 pages", "After I pour my morning coffee", "Read one page", "I am a reader", "07:15", "on the balcony", 1},
 		{"Run", "After I get home from work", "Put on running shoes", "I am a runner", "18:30", "in the park", 2},
 		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1},
+		// One of Huberman's protocols (EP-118).
+		{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk", 1},
 	} {
 		if s.err != nil {
 			break

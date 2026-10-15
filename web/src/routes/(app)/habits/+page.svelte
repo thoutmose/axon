@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
 	import { habitTemplates } from '$lib/entityTemplates';
+	import { evidenceNames, protocols, type Protocol } from '$lib/protocols';
 	import { chains, laws, plan, scheduleLabel, weekdays, type Habit } from '$lib/habits';
 	import TemplateChips from '$lib/TemplateChips.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -30,6 +31,24 @@
 		days: [1, 2, 3, 4, 5, 6, 7]
 	});
 	let form = $state(blank());
+	// A protocol fills in the habit form, in the interface's language (EP-118).
+	function fromProtocol(p: Protocol) {
+		const h = p.habit;
+		const tr = (v?: string) => (v ? t(v) : '');
+		form = {
+			...blank(),
+			...h,
+			title: tr(h.title),
+			identity: tr(h.identity),
+			stack_after: tr(h.stack_after),
+			intention_place: tr(h.intention_place),
+			cue: tr(h.cue),
+			craving: tr(h.craving),
+			two_minute: tr(h.two_minute)
+		};
+		document.getElementById('new-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		toast(t('Filled in. Adjust it to your life, then create it.'));
+	}
 	const preview = $derived(form.title ? plan(form as unknown as Habit) : []);
 	const stacks = $derived(habits ? chains(habits) : []);
 
@@ -365,6 +384,39 @@
 		</form>
 	</section>
 
+	<section class="card" aria-labelledby="protocols-title">
+		<h2 id="protocols-title">{t('Protocols for health, after Andrew Huberman')}</h2>
+		<p class="muted small">
+			{t(
+				'Habits the neuroscientist recommends on the Huberman Lab podcast, with the studies behind them and how strong they are. For information, not medical advice.'
+			)}
+		</p>
+		<ul class="protocols">
+			{#each protocols as p (p.id)}
+				<li>
+					<details>
+						<summary
+							><span class="ptitle">{t(p.title)}</span>
+							<span class="evidence {p.evidence}">{t(evidenceNames[p.evidence])}</span></summary
+						>
+						<p>{t(p.how)}</p>
+						<p class="muted">{t(p.why)}</p>
+						{#if p.caution}<p class="caution" role="note">{t(p.caution)}</p>{/if}
+						<p class="small">
+							{t('Sources:')}
+							{#each p.sources as src, i (src.url)}{#if i},
+								{/if}<a href={src.url} rel="noopener noreferrer" target="_blank">{src.label}</a
+								>{/each}
+						</p>
+						<Button variant="secondary" onclick={() => fromProtocol(p)}
+							>{t('Make it a habit')}</Button
+						>
+					</details>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
 	<section class="card" aria-labelledby="scorecard-title">
 		<h2 id="scorecard-title">{t('Habits scorecard')}</h2>
 		<p class="muted small">
@@ -417,6 +469,41 @@
 {/if}
 
 <style>
+	.protocols {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.protocols li {
+		border-bottom: 1px solid var(--border);
+		padding: var(--space-2) 0;
+	}
+	.protocols summary {
+		cursor: pointer;
+		display: flex;
+		gap: var(--space-2);
+		align-items: baseline;
+		flex-wrap: wrap;
+	}
+	.ptitle {
+		font-weight: 600;
+	}
+	.evidence {
+		font-size: var(--text-sm);
+		border-radius: 999px;
+		padding: 0 var(--space-2);
+		border: 1px solid var(--border);
+	}
+	.evidence.strong {
+		color: var(--ok);
+	}
+	.evidence.debated {
+		color: var(--muted);
+	}
+	.caution {
+		color: var(--bad);
+		font-size: var(--text-sm);
+	}
 	/* Checked today: crossed out, until tomorrow (EP-116). */
 	.checked .title {
 		color: var(--muted);
