@@ -113,3 +113,36 @@ func TestTravelAcrossTimeZones(t *testing.T) {
 		t.Fatalf("back home: %+v", st)
 	}
 }
+
+func TestBestRun(t *testing.T) {
+	day := func(n int) time.Time { return time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 0, n) }
+	key := func(n int) string { return day(n).Format(time.DateOnly) }
+	every := []int{1, 2, 3, 4, 5, 6, 7}
+	// Kept days 0–4, missed 5, kept 6–7: the best run is 5.
+	c := map[string]string{}
+	for _, n := range []int{0, 1, 2, 3, 4, 6, 7} {
+		c[key(n)] = "done"
+	}
+	if got := BestRun(every, c, day(0), day(7)); got != 5 {
+		t.Fatalf("best = %d, want 5", got)
+	}
+	// A planned rest day neither counts nor breaks it; a two-minute version counts.
+	c[key(5)] = "skipped"
+	c[key(6)] = "two_minute"
+	if got := BestRun(every, c, day(0), day(7)); got != 7 {
+		t.Fatalf("with a rest day = %d, want 7", got)
+	}
+	// Days off the schedule are not misses: Mondays, Wednesdays, Fridays.
+	mwf := map[string]string{}
+	for d := day(0); !d.After(day(27)); d = d.AddDate(0, 0, 1) {
+		if wd := d.Weekday(); wd == time.Monday || wd == time.Wednesday || wd == time.Friday {
+			mwf[d.Format(time.DateOnly)] = "done"
+		}
+	}
+	if got := BestRun([]int{1, 3, 5}, mwf, day(0), day(27)); got != 12 {
+		t.Fatalf("three days a week for four weeks = %d, want 12", got)
+	}
+	if got := BestRun(every, map[string]string{}, day(0), day(7)); got != 0 {
+		t.Fatalf("nothing = %d", got)
+	}
+}

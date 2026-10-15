@@ -100,6 +100,8 @@ Nine weekly metrics with their formulas, trends in plain words, and the items be
 
 Turn on progress rewards in Preferences: points from every area, each traceable, levels, badges, and one daily streak with freezes bought with earned points. No shame, no notifications.
 
+**Your collection** gathers cards to raise from bronze to silver to gold: a trophy for each skill of your roadmap (started, 10 hours of focus on it, learned), a card for each habit by its best run of scheduled days kept (7, 21, then 66 days, about the time a habit takes to become automatic), and milestones for problems solved by difficulty, focus hours, flashcard reviews, your longest daily streak, and decisions reviewed. A locked card shows what it takes.
+
 ## AI agents (optional)
 
 Agents draft changes; **nothing changes until you approve**. Each person picks a provider (Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model) and a monthly budget under **Agents**, and turns on **AI agents** in Privacy. Agents: Task Manager, Goals, Habits, Tutor, Resource, Teacher, Media, Side projects, Code review, and, with their own consent, Personal Trainer and Nutritionist.
