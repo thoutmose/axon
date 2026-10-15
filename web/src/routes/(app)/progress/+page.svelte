@@ -119,13 +119,13 @@
 				spec={{
 					title: t('My progress on Axon'),
 					value: t('Level {level}', { level: p.level }),
-					caption: t('{xp} points, and a {days}-day run.', {
-						xp: p.xp,
+					caption: t('{xp} points, and a run of {days} days.', {
+						xp: (p.xp ?? 0).toLocaleString(appLocale()),
 						days: p.streak?.days ?? 0
 					}),
 					kind: 'accent'
 				}}
-				text={t('Level {level} on Axon, with a {days}-day run. #Axon', {
+				text={t('Level {level} on Axon, with a run of {days} days. #Axon', {
 					level: p.level,
 					days: p.streak?.days ?? 0
 				})}

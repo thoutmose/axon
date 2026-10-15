@@ -3642,7 +3642,7 @@ export const fr: Record<string, string> = {
 	'Copy the picture': 'Copier l’image',
 	'Download the picture': 'Télécharger l’image',
 	'Kept {n} scheduled days in a row.': '{n} jours prévus tenus d’affilée.',
-	'Level {level} on Axon, with a {days}-day run. #Axon':
+	'Level {level} on Axon, with a run of {days} days. #Axon':
 		'Niveau {level} sur Axon, avec une série de {days} jours. #Axon',
 	'Made with Axon, my life OS': 'Fait avec Axon, mon OS de vie',
 	'My progress on Axon': 'Ma progression sur Axon',
@@ -3664,5 +3664,5 @@ export const fr: Record<string, string> = {
 	'{percent}% of the way to “{goal}”. #Axon': '{percent} % du chemin vers « {goal} ». #Axon',
 	'{tier} on Axon': '{tier} sur Axon',
 	'{tier}: {name}. {what} #Axon': '{tier} : {name}. {what} #Axon',
-	'{xp} points, and a {days}-day run.': '{xp} points, et une série de {days} jours.'
+	'{xp} points, and a run of {days} days.': '{xp} points, et une série de {days} jours.'
 };
