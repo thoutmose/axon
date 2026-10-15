@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardName, nextStep, groups } from './collection';
+import { achievement, cardName, nextStep, groups } from './collection';
 
 const card = (over: Record<string, unknown>) =>
 	({
@@ -47,5 +47,11 @@ describe('the collection (EP-119)', () => {
 			['habits', 1],
 			['milestones', 1]
 		]);
+	});
+	it('says what an earned card stands for', () => {
+		expect(achievement(card({ family: 'habit', tier: 'silver', value: 23 }))).toBe(
+			'Kept 23 scheduled days in a row.'
+		);
+		expect(achievement(card({ tier: 'bronze', value: 3 }))).toBe('3 problems solved unaided.');
 	});
 });

@@ -2212,6 +2212,19 @@ test('progress rewards are opt-in, explain every point, and reflect every area',
 	await expect(collection.getByRole('heading', { name: 'Habit cards' })).toBeVisible();
 	await expect(collection).toContainText('Hard problems');
 	await noSeriousA11yViolations(page);
+	// Sharing (EP-121): a picture drawn on the device, and a post with its words.
+	await page
+		.getByRole('region', { name: /^Level \d+$/ })
+		.getByRole('button', { name: 'Share' })
+		.click();
+	const share = page.getByRole('dialog', { name: 'Share' });
+	await expect(share.getByRole('img', { name: /^My progress on Axon: Level \d+/ })).toBeVisible();
+	await expect(share.getByRole('link', { name: 'Post on X' })).toHaveAttribute(
+		'href',
+		/^https:\/\/x\.com\/intent\/post\?text=Level%20\d+%20on%20Axon/
+	);
+	await noSeriousA11yViolations(page);
+	await share.getByRole('button', { name: 'Close' }).click();
 	await page.goto('/today');
 	await expect(page.getByRole('link', { name: /^Level \d+ · \d+-day run/ })).toBeVisible();
 });

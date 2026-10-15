@@ -104,6 +104,8 @@ Turn on progress rewards in Preferences: points from every area, each traceable,
 
 **Your collection** gathers cards to raise from bronze to silver to gold: a trophy for each skill of your roadmap (started, 10 hours of focus on it, learned), a card for each habit by its best run of scheduled days kept (7, 21, then 66 days, about the time a habit takes to become automatic), and milestones for problems solved by difficulty, focus hours, flashcard reviews, your longest daily streak, and decisions reviewed. A locked card shows what it takes.
 
+**Share** (on your level, an earned card, a goal, or a habit) draws a picture of it on your device: share it from there, download or copy it, or open a post on X, LinkedIn, or Bluesky with its words and attach the picture. Nothing is sent until you do.
+
 ## AI agents (optional)
 
 Agents draft changes; **nothing changes until you approve**. Each person picks a provider (Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model) and a monthly budget under **Agents**, and turns on **AI agents** in Privacy. Agents: Task Manager, Goals, Habits, Tutor, Resource, Teacher, Media, Side projects, Code review, and, with their own consent, Personal Trainer and Nutritionist.

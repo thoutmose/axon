@@ -4,6 +4,7 @@
 	import { api, message } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import Collection from '$lib/Collection.svelte';
+	import ShareButton from '$lib/ShareButton.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -114,6 +115,21 @@
 					today_xp: p.today_xp
 				})}
 			</p>
+			<ShareButton
+				spec={{
+					title: t('My progress on Axon'),
+					value: t('Level {level}', { level: p.level }),
+					caption: t('{xp} points, and a {days}-day run.', {
+						xp: p.xp,
+						days: p.streak?.days ?? 0
+					}),
+					kind: 'accent'
+				}}
+				text={t('Level {level} on Axon, with a {days}-day run. #Axon', {
+					level: p.level,
+					days: p.streak?.days ?? 0
+				})}
+			/>
 		</section>
 		<section class="card glass" aria-labelledby="streak-title">
 			<h2 id="streak-title">{t('{value}-day run', { value: p.streak?.days ?? 0 })}</h2>

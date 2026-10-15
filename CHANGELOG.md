@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Share as a picture** (EP-121): share your level, a card of your collection, a goal, or a habit's run as a picture made on your device, through the share sheet, a download, a copy, or a post on X, LinkedIn, or Bluesky.
 - **Invitations** (EP-120): the owner invites one person at a time with a link used once, even while registration is closed, and can bring them into the household (Account → Invitations).
 - **The collection** (EP-119): on Progress, cards to collect and raise from bronze to silver to gold: a trophy for each roadmap skill, a card for each habit by its best run, and milestones for problems by difficulty, focus hours, reviews, the daily streak, and decisions; each shows what the next tier takes.
 - **Huberman's protocols** (EP-118): on Habits, Andrew Huberman's health habits (morning sunlight, a regular wake time, the caffeine cut-off, dim evenings, cyclic sighing, rest, zone 2, cold) with what to do, why, how strong the evidence is, the studies, cautions, and a habit in one click.
