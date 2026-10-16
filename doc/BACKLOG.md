@@ -187,7 +187,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Done |
 | EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Done |
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Done |
-| EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Planned |
+| EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Done |
 | EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
@@ -2275,7 +2275,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "By default, on one's own setup, there is no note, but still templates and courses; with the AI agents one can set up everything for one's needs in a few hours."
 
-- [ ] **EP-139/IS-139.01** · 1 pt · MUST — A new account starts with no notes, tasks, or items of its own (the demo keeps its sample); the note templates, roadmaps, courses, and Huberman protocols are there. `doc/getting-started.md` (and in French) walks through the first hours with the agents: the onboarding, the roadmap, the vault, the habits.
+- [x] **EP-139/IS-139.01** · 1 pt · MUST — A new account starts with no notes, tasks, habits, goals, projects, roadmaps, media, or sources (checked: registration creates only the account; the demo keeps its sample); the note templates, the library roadmap with its courses, and Huberman's protocols are offered. `doc/getting-started.md` and `doc/getting-started.fr.md`, linked from both READMEs, walk through a first afternoon with the agents: preferences and a provider, the roadmap, goals, projects, habits, tasks, health, notes, the tech watch, the digest, the budget, the weekly review.
 
 **Tests.** A new account has zero notes and the templates; the docs check.
 
