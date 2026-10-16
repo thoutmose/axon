@@ -30,9 +30,10 @@ func TestCaffeineModel(t *testing.T) {
 	if gap := at(23, 0).Sub(cut).Hours(); math.Abs(gap-8.8) > 0.1 {
 		t.Fatalf("cut-off %v before bed, want about 8.8 h", gap)
 	}
-	// A morning coffee leaves a little at bedtime: the cut-off comes earlier.
+	// A morning coffee does not move it: the study times each coffee, it does
+	// not budget the day (two coffees before noon are fine).
 	cut2, ok := Cutoff(coffee, at(23, 0), 5)
-	if !ok || !cut2.Before(cut) {
+	if !ok || !cut2.Equal(cut) {
 		t.Fatalf("cut-off with a morning coffee = %v, %v", cut2, ok)
 	}
 	// Too much already: no more coffee today.
