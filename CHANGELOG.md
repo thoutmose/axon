@@ -8,6 +8,18 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Today's what is new** (EP-140): the life web, natural podcast voices, films, series, and books, and the budget charts, each with a line icon.
+- **The digest's channels on its page** (EP-133): email, notifications, and the chat apps (Slack, Discord, Microsoft Teams, Telegram, ntfy, a web address) set up on the Digest page.
+- **A podcast with natural voices** (EP-132): the podcast is spoken by your own speech server (the bundled Kokoro with `docker compose --profile tts up -d` and `AXON_TTS_URL`, or any server with the OpenAI speech API), by one host or two in conversation; without it, the device's voices as before. Voices of real people are not offered.
+- **A clean start** (EP-139): a new account has nothing of anyone else's, only the templates and the library; [Your first afternoon](doc/getting-started.md) walks through setting Axon up with the agents.
+- **Budget charts** (EP-138): Reports opens on a month with donuts of where the money went and where it came from, and a year of income against spending; `GET /v1/budget/report?month=` picks the month.
+- **A reading habit turns the pages** (EP-137): a habit linked to a book or series with a number in its name ("Read 20 pages") moves its progress when done, and back when undone.
+- **Notes for films, series, and books** (EP-136): their own templates, as literature notes, created and linked from the item's page.
+- **Media cards worth opening** (EP-135): larger cards with stars, genres, progress, and what is left, and a page for each film, series, and book.
+- **Every cover** (EP-134): a closer match finds covers the catalogues name differently (Dune for Dune: Part One), looked for by themselves.
+- **The life web** (EP-131): a radar of the day across food, water, sleep, activity, caffeine, and mood, with a level, the week's best to beat, and what to raise next.
+- **One set of icons** (EP-129): line icons replace the emoji for kinds of items, the notes' links, the agents' button, the journal's scales, and the digest page.
+- **A journal without past moods** (EP-130) and **a shorter board** (EP-128): the journal's last 30 days no longer show moods; board columns show five cards, then Show more.
 - **Every new feature in sight** (EP-127): the menu names YouTube videos, Podcasts, the Collection, Coffee and tea, the Huberman protocols, and invitations; the tech watch opens on tabs by kind with their counts; Today lists what is new.
 - **The original and its source** (EP-126): every news item, video, and episode links to its original and to its source (the channel, the blog, the show), and the reader shows the full link, without trackers, to copy.
 - **A new trailer and a gallery** (EP-125): a one-minute trailer drawn frame by frame, with a soundtrack composed for it, on the home page and at the top of the README, and a gallery of twelve pages of today's Axon.
