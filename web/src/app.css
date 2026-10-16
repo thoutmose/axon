@@ -53,6 +53,16 @@
 	--chart-1: #0062c4;
 	--chart-2: #b45309;
 	--chart-3: #7c3aed;
+	/* Eight categorical hues in a fixed order (EP-138), validated for colour
+	   vision deficiency on the light and dark surfaces; a ninth folds into Other. */
+	--series-1: #2a78d6;
+	--series-2: #eb6834;
+	--series-3: #1baf7a;
+	--series-4: #eda100;
+	--series-5: #e87ba4;
+	--series-6: #008300;
+	--series-7: #6250d6;
+	--series-8: #e34948;
 	--warn: #8a5100;
 	--bad: #b42318;
 	--bad-soft: #fdecea;
@@ -80,6 +90,14 @@
 		--chart-1: #4ea5ff;
 		--chart-2: #fbbf24;
 		--chart-3: #c4b5fd;
+		--series-1: #3987e5;
+		--series-2: #d95926;
+		--series-3: #199e70;
+		--series-4: #c98500;
+		--series-5: #d55181;
+		--series-6: #008300;
+		--series-7: #9085e9;
+		--series-8: #e66767;
 		--warn: #fbbf24;
 		--bad: #ff7b72;
 		--bad-soft: rgb(255 123 114 / 0.14);
@@ -105,6 +123,14 @@
 	--chart-1: #4ea5ff;
 	--chart-2: #fbbf24;
 	--chart-3: #c4b5fd;
+	--series-1: #3987e5;
+	--series-2: #d95926;
+	--series-3: #199e70;
+	--series-4: #c98500;
+	--series-5: #d55181;
+	--series-6: #008300;
+	--series-7: #9085e9;
+	--series-8: #e66767;
 	--warn: #fbbf24;
 	--bad: #ff7b72;
 	--bad-soft: rgb(255 123 114 / 0.14);

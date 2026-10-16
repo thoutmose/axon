@@ -831,6 +831,11 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 		.getByRole('link', { name: 'Reports' })
 		.click();
 	await expect(page.getByText('Net worth today')).toBeVisible();
+	// A month's spending and income as donuts, and the year as bars (EP-138).
+	await expect(page.getByRole('region', { name: 'Where the money went' })).toBeVisible();
+	await expect(page.getByRole('img', { name: 'Income and spending by month' })).toBeVisible();
+	await page.getByText('Show the figures as a table').click();
+	await expect(page.getByRole('columnheader', { name: 'Balance' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 

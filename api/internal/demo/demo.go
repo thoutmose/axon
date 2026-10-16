@@ -291,20 +291,32 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		_, s.err = budget.CreateRule(ctx, tx, user, budget.RuleFields{Name: ptr("Supermarkets"), Value: ptr("market"), CategoryID: &groceries, Tag: ptr("food")})
 	}
 	first := time.Date(s.today.Year(), s.today.Month(), 1, 0, 0, 0, 0, time.UTC)
-	for _, t := range []struct {
-		day       int
-		kind, cat string
-		cents     int64
-		payee     string
-	}{{0, "income", "Salary", 260000, "Employer"}, {1, "expense", "Rent", 95000, "Landlord"}, {2, "expense", "Groceries", 6420, "Market"},
-		{4, "expense", "Transport", 7500, "Monthly pass"}, {6, "expense", "Eating out", 2850, "Pizzeria"}, {8, "expense", "Groceries", 4315, "Supermarket"}} {
-		on := first.AddDate(0, 0, t.day)
-		if s.err != nil || on.After(s.today) {
-			continue
+	// This month, and the eleven before it a little different each time, so
+	// the reports have a year to show (EP-138).
+	for back := 11; back >= 0; back-- {
+		for _, t := range []struct {
+			day       int
+			kind, cat string
+			cents     int64
+			payee     string
+		}{{0, "income", "Salary", 260000, "Employer"}, {1, "expense", "Rent", 95000, "Landlord"}, {2, "expense", "Groceries", 6420, "Market"},
+			{4, "expense", "Transport", 7500, "Monthly pass"}, {6, "expense", "Eating out", 2850, "Pizzeria"}, {8, "expense", "Groceries", 4315, "Supermarket"},
+			{12, "expense", "Groceries", 5120, "Market"}, {15, "income", "Salary", 18000, "Side project"}, {20, "expense", "Eating out", 4100, "Bistro"}} {
+			on := first.AddDate(0, -back, t.day)
+			if s.err != nil || on.After(s.today) {
+				continue
+			}
+			cents := t.cents
+			if t.cat != "Rent" && t.payee != "Employer" { // other months vary by up to ±30 %
+				cents = cents * int64(70+(back*37+t.day*11)%61) / 100
+			}
+			if t.payee == "Side project" && back%3 != 0 {
+				continue
+			}
+			id := cats[t.cat]
+			_, s.err = budget.CreateTransaction(ctx, tx, user, budget.TransactionFields{OccurredOn: ptr(on.Format(time.DateOnly)), Kind: ptr(t.kind),
+				AmountCents: &cents, CategoryID: &id, AccountID: &checking.ID, Payee: ptr(t.payee)})
 		}
-		id := cats[t.cat]
-		_, s.err = budget.CreateTransaction(ctx, tx, user, budget.TransactionFields{OccurredOn: ptr(on.Format(time.DateOnly)), Kind: ptr(t.kind),
-			AmountCents: &t.cents, CategoryID: &id, AccountID: &checking.ID, Payee: ptr(t.payee)})
 	}
 	if s.err == nil { // pay yourself first: a monthly transfer to savings
 		_, s.err = budget.CreateRecurring(ctx, tx, user, budget.RecurringFields{Name: ptr("Savings"), Rule: ptr("FREQ=MONTHLY;BYMONTHDAY=2"),

@@ -175,6 +175,16 @@ func TestFinanceAccountsRecurringRulesAndImport(t *testing.T) {
 		t.Fatalf("report = %+v, balances %v", rep, b)
 	}
 	alice.mustDo(400, "GET", "/v1/budget/report?months=0", nil)
+	// One month, chosen: a past one holds none of this month's money (EP-138).
+	var past struct {
+		Months     []struct{ Month string } `json:"months"`
+		Categories []struct{}               `json:"categories"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/budget/report?months=1&month=2020-01", nil), &past)
+	if len(past.Months) != 1 || past.Months[0].Month != "2020-01" || len(past.Categories) != 0 {
+		t.Fatalf("a past month = %+v", past)
+	}
+	alice.mustDo(400, "GET", "/v1/budget/report?month=January", nil)
 
 	// Bob reaches none of it.
 	bob.mustDo(404, "PATCH", "/v1/budget/accounts/"+checking, []byte(`{"name":"Mine"}`))
