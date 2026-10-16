@@ -73,6 +73,11 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	// The demo shows its sample invitations, and cannot create one (EP-120); its
 	// videos are YouTube talks whose transcript it may read (EP-123).
 	visitor.mustDo(403, "POST", "/v1/invites", []byte(`{}`))
+	// Nothing the demo drank is in the future: its coffee is from before the reset.
+	var future bool
+	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM caffeine_entries c JOIN users u ON u.id = c.user_id WHERE u.demo AND c.drunk_at > now())`).Scan(&future); err != nil || future {
+		t.Errorf("a demo coffee in the future (%v)", err)
+	}
 	if b := visitor.mustDo(200, "GET", "/v1/watch/items?status=all&kind=video", nil); !bytes.Contains(b, []byte("Raft - The Understandable Distributed Protocol")) {
 		t.Errorf("no YouTube talk in the demo: %.300s", b)
 	}

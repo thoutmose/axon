@@ -95,6 +95,7 @@ func (s *seeder) note(path, content string) uuid.UUID {
 }
 
 func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
+	resetAt := now // the moment of the reset; now becomes today at noon for the habits below
 	loc, _ := time.LoadLocation("Europe/Paris")
 	y, m, d := now.In(loc).Date()
 	s := &seeder{ctx: ctx, tx: tx, user: user, today: time.Date(y, m, d, 0, 0, 0, 0, time.UTC)}
@@ -481,13 +482,13 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if err := seedWater(ctx, tx, user, s.today); err != nil {
 		return err
 	}
-	if err := seedCaffeine(ctx, tx, user, now); err != nil {
+	if err := seedCaffeine(ctx, tx, user, resetAt); err != nil {
 		return err
 	}
 	if err := seedHistory(ctx, tx, user, now); err != nil {
 		return err
 	}
-	if err := seedWatch(ctx, tx, user, now); err != nil {
+	if err := seedWatch(ctx, tx, user, resetAt); err != nil {
 		return err
 	}
 	if err := seedDecisions(ctx, tx, user, s.today); err != nil {
@@ -503,7 +504,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		token := uuid.Must(uuid.NewRandom())
 		if _, err := tx.Exec(ctx, `INSERT INTO invites (id, created_by, token_hash, note, household, expires_at, created_at)
 			VALUES ($1, $2, sha256($3), $4, $5, $6, $7)`, uuid.Must(uuid.NewV7()), user, token[:], inv.note, inv.household,
-			now.AddDate(0, 0, inv.days), now.AddDate(0, 0, inv.days-7)); err != nil {
+			resetAt.AddDate(0, 0, inv.days), resetAt.AddDate(0, 0, inv.days-7)); err != nil {
 			return err
 		}
 	}
