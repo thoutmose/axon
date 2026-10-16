@@ -197,3 +197,27 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	}
 	owner.mustDo(200, "GET", "/v1/tasks/"+secret.ID, nil)
 }
+
+// A new account starts clean (EP-139): nothing of anyone else's, but the
+// roadmap library and the note templates to start from.
+func TestANewAccountStartsClean(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	for _, path := range []string{"/v1/notes", "/v1/tasks", "/v1/habits", "/v1/goals", "/v1/projects", "/v1/roadmaps", "/v1/media", "/v1/watch/sources"} {
+		var list struct {
+			Items []json.RawMessage `json:"items"`
+		}
+		_ = json.Unmarshal(alice.mustDo(200, "GET", path, nil), &list)
+		if len(list.Items) != 0 {
+			t.Errorf("%s: %d items, want none", path, len(list.Items))
+		}
+	}
+	var sources struct {
+		Items []json.RawMessage `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/sources", nil), &sources)
+	if len(sources.Items) == 0 {
+		t.Error("the roadmap library offers nothing")
+	}
+}

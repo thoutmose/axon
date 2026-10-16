@@ -380,7 +380,7 @@ Chaque environnement tient sur un hôte ([ADR 0003](doc/adr/0003-single-host-fir
 ## Démarrage rapide
 
 > [!IMPORTANT]
-> Axon 1.0 est une version candidate : chaque domaine décrit ici fonctionne aujourd’hui. Pour l’utiliser pour de vrai, suivez le **[guide d’installation](doc/install.md)** ; puis lisez le **[guide d’utilisation](doc/user-guide.md)**, comment **[mettre à jour](doc/upgrading.md)** et la **[politique de support](doc/support.md)** (en anglais). Notes de version : [CHANGELOG.md](CHANGELOG.md).
+> Axon 1.0 est une version candidate : chaque domaine décrit ici fonctionne aujourd’hui. Pour l’utiliser pour de vrai, suivez le **[guide d’installation](doc/install.md)** ; puis passez **[votre premier après-midi](doc/getting-started.fr.md)** à le configurer avec les agents, lisez le **[guide d’utilisation](doc/user-guide.md)**, comment **[mettre à jour](doc/upgrading.md)** et la **[politique de support](doc/support.md)** (en anglais). Notes de version : [CHANGELOG.md](CHANGELOG.md).
 
 ### Prérequis
 

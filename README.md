@@ -380,7 +380,7 @@ Each environment is one host ([ADR 0003](doc/adr/0003-single-host-first.md), [AD
 ## Quick start
 
 > [!IMPORTANT]
-> Axon 1.0 is a release candidate: every area in this README works today. To run it for real, follow the **[install guide](doc/install.md)**; then read the **[user guide](doc/user-guide.md)**, how to **[upgrade](doc/upgrading.md)**, and the **[support policy](doc/support.md)**. Release notes: [CHANGELOG.md](CHANGELOG.md).
+> Axon 1.0 is a release candidate: every area in this README works today. To run it for real, follow the **[install guide](doc/install.md)**; then spend **[your first afternoon](doc/getting-started.md)** setting it up with the agents, read the **[user guide](doc/user-guide.md)**, how to **[upgrade](doc/upgrading.md)**, and the **[support policy](doc/support.md)**. Release notes: [CHANGELOG.md](CHANGELOG.md).
 
 ### Prerequisites
 
