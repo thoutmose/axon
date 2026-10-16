@@ -45,6 +45,10 @@ The script refuses to deploy a commit without a green `ci` run on GitHub, and re
 
 A branch under review goes to dev, from its checkout: `deploy/deploy.sh dev`. While CI cannot run (GitHub Actions minutes spent until 1 November 2026), `deploy/deploy.sh dev --skip-ci` deploys without it; the flag is refused for staging and production, whose rules do not change. Dev reads `deploy/env/dev.settings.env`, and staging's secrets until `deploy/env/dev.env.age` exists. Dev's backup key is not authorized on `srv-services`, so its off-site copies fail until `deploy/setup-offsite.sh` covers it.
 
+## CI runner
+
+CI runs on a self-hosted GitHub Actions runner on srv-dev (`~/actions-runner`, systemd unit `actions.runner.thoutmose-axon.srv-dev`, label `srv-dev`), so it uses no Actions minutes; pushes to `main` and `dev` and pull requests run there one job at a time. Its Docker bridge networks have no internet, so builds and scans use the host's network; the e2e job runs its stack as compose project `axon-ci` on port 3200, beside the demo on 3000, and removes it afterwards. Watch the disk (`df -h /`): each job prunes dangling images; `docker builder prune -af` frees the build cache. Status: `sudo ~/actions-runner/svc.sh status`; to remove it, `sudo ~/actions-runner/svc.sh uninstall` and `./config.sh remove` with a removal token (`gh api -X POST repos/thoutmose/axon/actions/runners/remove-token`).
+
 ## Roll back
 
 ```bash

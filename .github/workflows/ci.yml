@@ -1,14 +1,16 @@
 name: ci
 
-# Actions minutes are limited: pull requests that only change documentation
-# skip CI, and images are built, scanned, and described (SBOM) on main only,
-# where deploy.sh requires the whole run to be green. The e2e job still
-# builds the api and web images for every pull request.
+# Jobs run on the self-hosted runner on srv-dev (label srv-dev), so they use
+# no Actions minutes. Its Docker bridge networks have no internet: builds and
+# downloads use the host's network, and the e2e stack runs as its own compose
+# project on port 3200, beside the demo on 3000. Pull requests that only
+# change documentation skip CI; images are built, scanned, and described
+# (SBOM) on pushes to main and dev, where deploy.sh requires a green run.
 on:
   pull_request:
     paths-ignore: ["**/*.md", "doc/**", "LICENSE"]
   push:
-    branches: [main]
+    branches: [main, dev]
 
 permissions:
   contents: read
@@ -19,7 +21,7 @@ concurrency:
 
 jobs:
   api:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     services:
       db:
@@ -54,7 +56,7 @@ jobs:
           AXON_TEST_DATABASE_URL: postgres://axon:ci-only@localhost:5432/axon_test?sslmode=disable
 
   web:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     defaults:
       run:
@@ -75,19 +77,19 @@ jobs:
       - run: npm run build
 
   spec:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: ShellCheck the scripts
-        run: git ls-files -z '*.sh' | xargs -0 shellcheck -S warning
+        run: git ls-files -z '*.sh' | xargs -0 docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:v0.11.0 -S warning
       - name: Lint the OpenAPI document
         run: docker run --rm -v "$PWD/api/openapi:/spec" -w /spec redocly/cli:2.6.0 lint openapi.yaml
       - name: The French README keeps the English one's structure
         run: sh scripts/check-readme.sh
 
   anki:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,29 +102,42 @@ jobs:
         run: sh scripts/check-anki-sync.sh
 
   e2e:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    runs-on: [self-hosted, srv-dev]
+    timeout-minutes: 30
+    env:
+      COMPOSE_PROJECT_NAME: axon-ci # never the demo's own stack
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Start the stack
         run: |
           cp .env.example .env
-          echo AXON_DEMO=1 >> .env
-          echo AXON_CALENDAR_PRIVATE=1 >> .env # the test follows Axon's own feed through Caddy
+          sed -i 's|^AXON_BASE_URL=.*|AXON_BASE_URL=http://localhost:3200|' .env
+          {
+            echo AXON_PORT=3200
+            echo AXON_VERSION=ci
+            echo AXON_BUILD_NETWORK=host
+            echo AXON_DEMO=1
+            echo AXON_CALENDAR_PRIVATE=1 # the test follows Axon's own feed through Caddy
+          } >> .env
+          docker compose down -v --remove-orphans || true
           docker compose up -d --build --wait
           docker compose exec -T api axon migrate up
           docker compose exec -T api axon demo reset
       - name: Playwright with axe (Chromium, virtual passkey)
         run: >-
-          docker run --rm --network host -v "$PWD/web:/work" -w /work
+          docker run --rm --network host --ipc=host -e E2E_BASE_URL=http://localhost:3200
+          -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD/web:/work" -w /work
           mcr.microsoft.com/playwright:v1.63.0-noble
           sh -c 'npm ci --no-fund --no-audit && npx playwright test'
       - name: Server logs on failure
         if: failure()
         run: docker compose logs --tail 200 api web caddy
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v --remove-orphans && docker image prune -f
 
   secrets:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -133,7 +148,7 @@ jobs:
 
   images:
     if: github.event_name == 'push'
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, srv-dev]
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -148,15 +163,19 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build
-        run: docker build --build-arg VERSION=${{ github.sha }} -t axon-${{ matrix.image.name }}:ci ${{ matrix.image.context }}
+        run: docker build --network host --build-arg VERSION=${{ github.sha }} -t axon-${{ matrix.image.name }}:ci-image ${{ matrix.image.context }}
       - name: Scan for fixable HIGH and CRITICAL vulnerabilities
         run: >-
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.74.0
+          docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache
+          aquasec/trivy:0.74.0
           image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --no-progress
-          axon-${{ matrix.image.name }}:ci
+          axon-${{ matrix.image.name }}:ci-image
       - name: SBOM
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
-          image: axon-${{ matrix.image.name }}:ci
+          image: axon-${{ matrix.image.name }}:ci-image
           format: spdx-json
           artifact-name: sbom-${{ matrix.image.name }}.spdx.json
+      - name: Free the runner's disk
+        if: always()
+        run: docker image prune -f
