@@ -6,6 +6,7 @@ import {
 	dailyPath,
 	fill,
 	isTemplatePath,
+	mediaNote,
 	slug,
 	templateName,
 	templates,
@@ -112,5 +113,28 @@ describe('vault templates', () => {
 describe('the templates an empty vault starts with', () => {
 	it('match the API copy', () => {
 		expect(builtInFiles(new Date(2026, 0, 2, 3, 4))).toEqual(apiTemplates);
+	});
+});
+
+describe('a note for a film, series, or book', () => {
+	it('fills its template from the item, as a literature note', () => {
+		const n = mediaNote(
+			{
+				kind: 'book',
+				title: 'Dune',
+				creators: 'Frank Herbert',
+				year: 1965,
+				genres: ['Science fiction'],
+				total: 612,
+				cover_id: null
+			},
+			new Date(2026, 0, 2, 3, 4)
+		);
+		expect(n.path).toBe('Zettel/literature/202601020304-dune.md');
+		expect(n.content).toContain('type: literature\nsource_type: book\ntitle: "Dune"');
+		expect(n.content).toContain('author: Frank Herbert\nyear: 1965\ngenres: [Science fiction]');
+		expect(n.content).toContain('pages: 612');
+		expect(n.content).toContain('## Reading log');
+		expect(n.content).not.toMatch(/\{\{/);
 	});
 });

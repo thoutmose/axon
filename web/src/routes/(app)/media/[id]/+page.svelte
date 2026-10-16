@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import Connections from '$lib/Connections.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { left, stars } from '$lib/media';
 	import MediaCover from '$lib/MediaCover.svelte';
+	import { refreshNotes } from '$lib/noteIndex.svelte';
+	import { mediaNote } from '$lib/noteTemplates';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -54,6 +57,27 @@
 			busy = false;
 		}
 	}
+	// Its note (EP-136): the film, series, or book template filled from the
+	// item, linked to it, opened to write.
+	async function writeNote() {
+		busy = true;
+		try {
+			const note = await api<{ id: string }>('/v1/notes', {
+				method: 'POST',
+				body: mediaNote(item!, new Date())
+			});
+			await api('/v1/links', {
+				method: 'POST',
+				body: { source_id: note.id, relation: 'relates_to', target_id: item!.id }
+			});
+			await refreshNotes();
+			await goto(`/notes/${note.id}?edit=1`);
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			busy = false;
+		}
+	}
 	const advance = (n: number) =>
 		patch({
 			progress: item!.total ? Math.min(item!.total, item!.progress + n) : item!.progress + n,
@@ -91,6 +115,11 @@
 				</p>
 			{/if}
 			{#if item.overview}<p class="overview">{item.overview}</p>{/if}
+			<div class="row">
+				<Button variant="secondary" {busy} onclick={writeNote}
+					>{t('Write a note')}</Button
+				>
+			</div>
 
 			<section class="card" aria-labelledby="where">
 				<h2 id="where">{t('Where you are')}</h2>
