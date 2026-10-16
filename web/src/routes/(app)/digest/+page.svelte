@@ -2,6 +2,8 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
 	import ChannelSettings from '$lib/ChannelSettings.svelte';
+	import { emojiIcon } from '$lib/icons';
+	import Icon from '$lib/ui/Icon.svelte';
 	import DigestTemplate from '$lib/DigestTemplate.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -81,6 +83,13 @@
 
 <svelte:head><title>{t('Digest')} · Axon</title></svelte:head>
 
+{#snippet mark(emoji: string, size: number)}
+	{@const icon = emojiIcon(emoji)}
+	<span class="mark" aria-hidden="true"
+		>{#if icon}<Icon name={icon} {size} />{:else}{emoji}{/if}</span
+	>
+{/snippet}
+
 <DigestTemplate bind:open={customising} onsaved={() => load(kind)} />
 
 <div class="page">
@@ -119,8 +128,8 @@
 					<ul class="stats">
 						{#each digest.stats as s (s.label)}
 							<li>
-								<span aria-hidden="true">{s.emoji}</span><strong>{s.value}</strong><span
-									class="muted small">{s.label}</span
+								{@render mark(s.emoji, 18)}<strong>{s.value}</strong><span class="muted small"
+									>{s.label}</span
 								>
 							</li>
 						{/each}
@@ -129,7 +138,7 @@
 
 				{#each digest.sections ?? [] as sec (sec.key)}
 					<section>
-						<h2><span aria-hidden="true">{sec.emoji}</span> {sec.title}</h2>
+						<h2>{@render mark(sec.emoji, 20)} {sec.title}</h2>
 						<ul class="items">
 							{#each sec.items as it, i (it.id + i)}
 								<li>
@@ -198,6 +207,11 @@
 </div>
 
 <style>
+	.mark {
+		color: var(--accent);
+		display: inline-flex;
+		vertical-align: -0.1em;
+	}
 	.where {
 		margin-top: var(--space-6);
 		padding: var(--space-4);

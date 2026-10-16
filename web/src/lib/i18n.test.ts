@@ -37,3 +37,12 @@ describe('kindIcon', () => {
 		expect(kindIcon('unknown')).toBeNull();
 	});
 });
+
+describe('emojiIcon', () => {
+	it('draws the digest’s emoji as line icons, and leaves others alone', async () => {
+		const { emojiIcon } = await import('./icons');
+		expect(emojiIcon('✅')).toBe('task');
+		expect(emojiIcon('🗓️')).toBe('calendar');
+		expect(emojiIcon('🦄')).toBeNull();
+	});
+});
