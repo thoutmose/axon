@@ -71,6 +71,7 @@
 			label: t('Life'),
 			links: [
 				{ href: '/health', label: t('Health') },
+				{ href: '/health#life-web-title', label: t('Life web') },
 				{ href: '/coffee', label: t('Coffee and tea') },
 				{ href: '/media', label: t('Media') },
 				{ href: '/budget', label: t('Budget') },

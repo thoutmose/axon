@@ -2,6 +2,7 @@
 	import { localDate } from '$lib/dates';
 	import AgentDock from '$lib/AgentDock.svelte';
 	import DailyNeeds from '$lib/DailyNeeds.svelte';
+	import LifeWeb from '$lib/LifeWeb.svelte';
 	import WaterCard from '$lib/WaterCard.svelte';
 	import CaffeineCard from '$lib/CaffeineCard.svelte';
 	import MealPhoto from '$lib/MealPhoto.svelte';
@@ -271,6 +272,7 @@
 		<Button onclick={() => consent('health_data')}>{t('Turn on health logging')}</Button>
 	</section>
 {:else}
+	<LifeWeb />
 	<nav class="tabs" aria-label={t('Health sections')}>
 		<a href="?tab=food" aria-current={tab === 'food' ? 'page' : undefined}>{t('Food')}</a>
 		<a href="?tab=training" aria-current={tab === 'training' ? 'page' : undefined}
