@@ -3789,5 +3789,15 @@ export const fr: Record<string, string> = {
 	Chinese: 'chinois',
 	Hindi: 'hindi',
 	woman: 'femme',
-	man: 'homme'
+	man: 'homme',
+	'The digest goes to {email}.': 'Le résumé part à {email}.',
+	'No email.': 'Pas d’e-mail.',
+	Times: 'Horaires',
+	'Where it goes': 'Où il part',
+	'By email': 'Par e-mail',
+	'you@example.com': 'vous@exemple.fr',
+	'Email needs the operator’s mail server (AXON_SMTP_URL).':
+		'L’e-mail demande le serveur de messagerie de l’opérateur (AXON_SMTP_URL).',
+	'On {n} device(s) as notifications.': 'Sur {n} appareil(s) en notifications.',
+	'Turn them on': 'Les activer'
 };
