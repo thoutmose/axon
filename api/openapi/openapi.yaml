@@ -8363,7 +8363,7 @@ components:
           items: { type: object, required: [line, url, reason], properties: { line: { type: integer }, url: { type: string }, reason: { type: string } } }
     WatchItem:
       type: object
-      required: [id, source_id, source_title, url, title, author, published_at, fetched_at, summary, image, audio, lang, words, reading_minutes, keywords, labels, categories, topic_ids, score, outlier, also_in, status, note_id, kind, transcript_source, transcript_lang]
+      required: [id, source_id, source_title, url, title, author, published_at, fetched_at, summary, image, audio, lang, words, reading_minutes, keywords, labels, categories, topic_ids, score, outlier, also_in, status, note_id, kind, transcript_source, transcript_lang, source_url]
       properties:
         id: { type: string, format: uuid }
         source_id: { type: [string, "null"], format: uuid }
@@ -8392,6 +8392,7 @@ components:
         kind: { type: string, enum: [article, video, podcast] }
         transcript_source: { enum: ["", captions, auto_captions, whisper], description: "Where a video's words came from (EP-123); empty without a transcript." }
         transcript_lang: { type: string, description: "The transcript's language, as YouTube or Whisper gave it." }
+        source_url: { type: string, description: "Where the source lives (the channel, the blog, the show), its feed when it gives none; empty once unfollowed (EP-126)." }
     WatchEpisode:
       type: object
       required: [title, lang, format, intro, chapters, outro, words, minutes, from, to]

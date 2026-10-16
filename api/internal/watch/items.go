@@ -48,6 +48,8 @@ type Item struct {
 	// A video's words (EP-123): captions, auto_captions, or whisper, and their language; empty without.
 	TranscriptSource string `json:"transcript_source"`
 	TranscriptLang   string `json:"transcript_lang"`
+	// Where the source lives: the channel, the blog, the show (EP-126); empty once it is unfollowed.
+	SourceURL string `json:"source_url"`
 }
 
 // Kinds of news, for filters and exports.
@@ -71,14 +73,15 @@ func kindOf(url, audio string) string {
 
 const itemColumns = `i.id, i.source_id, i.source_title, i.url, i.title, i.author, i.published_at, i.fetched_at, i.summary, i.image, i.audio,
 	i.lang, i.words, i.keywords, i.labels, i.categories, i.topic_ids::text[], i.score, i.outlier, i.also_in, i.status, i.note_id,
-	i.transcript_source, i.transcript_lang`
+	i.transcript_source, i.transcript_lang,
+	coalesce((SELECT coalesce(nullif(s.site_url, ''), s.url) FROM watch_sources s WHERE s.id = i.source_id), '')`
 
 func scanItem(r pgx.Row, content *string) (Item, error) {
 	var it Item
 	var score float32
 	dst := []any{&it.ID, &it.SourceID, &it.SourceTitle, &it.URL, &it.Title, &it.Author, &it.PublishedAt, &it.FetchedAt, &it.Summary, &it.Image, &it.Audio,
 		&it.Lang, &it.Words, &it.Keywords, &it.Labels, &it.Categories, &it.TopicIDs, &score, &it.Outlier, &it.AlsoIn, &it.Status, &it.NoteID,
-		&it.TranscriptSource, &it.TranscriptLang}
+		&it.TranscriptSource, &it.TranscriptLang, &it.SourceURL}
 	if content != nil {
 		dst = append(dst, content)
 	}
