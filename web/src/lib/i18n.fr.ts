@@ -3725,5 +3725,26 @@ export const fr: Record<string, string> = {
 		'Des trophées pour les compétences de votre feuille de route, des cartes pour vos habitudes et des jalons, qui passent du bronze à l’argent puis à l’or à mesure que vos séries, votre pratique et votre concentration progressent.',
 	'Show {n} more': 'Afficher {n} de plus',
 	'Show less': 'Afficher moins',
-	Shown: 'Affichées'
+	Shown: 'Affichées',
+	'Life web': 'Toile de vie',
+	Caffeine: 'Caféine',
+	'Log your meals': 'Notez vos repas',
+	'Drink a glass of water': 'Buvez un verre d’eau',
+	'Write how you slept': 'Notez comment vous avez dormi',
+	'Log a workout or a walk': 'Notez une séance ou une marche',
+	'Log your coffee and tea': 'Notez vos cafés et thés',
+	'Write how you feel': 'Notez comment vous vous sentez',
+	Platinum: 'Platine',
+	'Today: {scores}': 'Aujourd’hui : {scores}',
+	'no data': 'aucune donnée',
+	'{points} points to {level}': 'Encore {points} points pour {level}',
+	'Towards {level}': 'Vers {level}',
+	'The highest level. Keep it up.': 'Le plus haut niveau. Continuez.',
+	'Better than every day this week (best {best}).':
+		'Mieux que tous les jours de la semaine (meilleur : {best}).',
+	'Best day this week: {best}. Beat it.': 'Meilleur jour de la semaine : {best}. Battez-le.',
+	'Raise next: {axis}.': 'À relever ensuite : {axis}.',
+	'Nothing logged today for: {axes}.': 'Rien de noté aujourd’hui pour : {axes}.',
+	'Last week, on average': 'La semaine passée, en moyenne',
+	Sleep: 'Sommeil'
 };

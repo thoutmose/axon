@@ -179,7 +179,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-128 | A shorter board | Each column of the GTD board and the kanban shows its first five cards, then "Show N more". | SHOULD | 1 pt | EP-07 | Done |
 | EP-129 | One set of icons | One set of line icons in SVG replaces the emoji: the kinds of items (goal, skill, note, project…), the notes' side links, and the journal's scales. | SHOULD | 2 pts | EP-38 | Done |
 | EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Done |
-| EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Planned |
+| EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Done |
 | EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -2203,7 +2203,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "For Life, with food, health and activities, gamify much more, a spider-web chart."
 
-- [ ] **EP-131/IS-131.01** · 2 pts · SHOULD — Health opens on a radar of today across six axes scored from 0 to 100: food (energy and protein against the daily needs), water (against the target), sleep (hours against 7 to 9), activity (minutes against 30 a day, WHO), caffeine (under the limit), and mood (the journal). Last week's average is drawn behind today's; the day's score is their mean, with a level (Bronze, Silver, Gold, Platinum), the best day to beat, and the next axis to raise. Axes without data say so.
+- [x] **EP-131/IS-131.01** · 2 pts · SHOULD — Health opens on a radar of today across six axes scored from 0 to 100: food (energy and protein against the daily needs), water (against the target), sleep (hours against 7 to 9), activity (minutes against 30 a day, WHO), caffeine (under the limit), and mood (the journal). Last week's average is drawn behind today's; the day's score is their mean, with a level (Bronze, Silver, Gold, Platinum), the best day to beat, and the next axis to raise. Axes without data say so. Without a profile, the targets are the EU reference intakes (2,000 kcal, 50 g of protein) and EFSA's 1.6 L of drinks. The menu's Life names **Life web**.
 
 **Tests.** Unit tests of each axis's score and the level; an e2e test of the radar on the demo, with axe.
 

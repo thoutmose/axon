@@ -10,6 +10,7 @@ export const searchPages: { label: string; href: string }[] = [
 	{ label: 'Roadmaps', href: '/roadmaps' },
 	{ label: 'Progress', href: '/progress' },
 	{ label: 'Collection', href: '/collection' },
+	{ label: 'Life web', href: '/health#life-web-title' },
 	{ label: 'Coffee and tea', href: '/coffee' },
 	{ label: 'YouTube videos', href: '/watch?kind=video' },
 	{ label: 'Podcasts', href: '/watch?kind=podcast' },
