@@ -301,9 +301,10 @@
 						</button>
 						<p class="links small">
 							<a href={it.url} target="_blank" rel="noopener noreferrer">↗ {host(it.url)}</a
-							>{#if it.source_url}
-								· <a href={it.source_url} target="_blank" rel="noopener noreferrer"
-									>{t('Source: {name}', { name: it.source_title })}</a
+							>{#if it.source_url}{' · '}<a
+									href={it.source_url}
+									target="_blank"
+									rel="noopener noreferrer">{t('Source: {name}', { name: it.source_title })}</a
 								>{/if}
 						</p>
 						<div class="chips">
