@@ -60,6 +60,29 @@ func Reset(ctx context.Context, pool *pgxpool.Pool, now time.Time) (uuid.UUID, e
 
 func ptr[T any](v T) *T { return &v }
 
+// Protocols are Huberman's habits the demo keeps (EP-118): title, stack,
+// two-minute version, identity, time, and place.
+var Protocols = [][6]string{
+	{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk"},
+	{"No caffeine after 2 pm", "After lunch", "Switch to herbal tea", "I am someone who sleeps well", "14:00", ""},
+	{"Zone 2 cardio, 45 minutes", "After I get home on Tuesday, Thursday, and Saturday", "Walk briskly for 10 minutes", "I am someone with a strong heart", "18:30", "in the park"},
+	{"Dim the lights after sunset", "After dinner", "Turn off the ceiling light", "I am someone who sleeps well", "21:00", "at home"},
+	{"NSDR, 10 minutes", "After lunch", "Three physiological sighs", "I am a calm person", "13:30", "on the sofa"},
+}
+
+// Schools are the universities and schools behind the library roadmap's
+// courses: title, address, and what to take there.
+var Schools = [][3]string{
+	{"MIT OpenCourseWare", "https://ocw.mit.edu/", "6.006 algorithms, 6.042J mathematics for CS, 6.5840 distributed systems, 6.1810 operating systems, 18.404 theory: lectures, problem sets, and exams, free."},
+	{"Stanford Online", "https://online.stanford.edu/free-courses", "CS106B, CS144 networking, CS231n vision, CS224n language: the courses top engineers cite most."},
+	{"Carnegie Mellon: CS:APP and databases", "https://csapp.cs.cmu.edu/", "15-213 Computer Systems (the CS:APP labs) and 15-445 database systems with BusTub."},
+	{"Harvard: CS50 and Stat 110", "https://cs50.harvard.edu/", "CS50 to start, Stat 110 probability (Joe Blitzstein) for the maths of data."},
+	{"UC Berkeley CS 61A/B/C", "https://cs61a.org/", "Structure and interpretation, data structures, machine structures: the classic sequence."},
+	{"Open Source Society University", "https://github.com/ossu/computer-science", "A complete computer science degree from free university courses, in order."},
+	{"Teach Yourself Computer Science", "https://teachyourselfcs.com/", "Nine subjects, the best book and lectures for each."},
+	{"42 school: piscine and common core", "https://42.fr/en/what-is-42/", "Peer learning without teachers: the C piscine, then the common core (libft, ft_printf, get_next_line, minishell, cub3D, ft_transcendence), self-taught here."},
+}
+
 type seeder struct {
 	ctx   context.Context
 	tx    pgx.Tx
@@ -199,16 +222,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 	}
 	// The universities and schools behind the roadmap's courses, linked to it.
-	for _, r := range [][3]string{
-		{"MIT OpenCourseWare", "https://ocw.mit.edu/", "6.006 algorithms, 6.042J mathematics for CS, 6.5840 distributed systems, 6.1810 operating systems, 18.404 theory: lectures, problem sets, and exams, free."},
-		{"Stanford Online", "https://online.stanford.edu/free-courses", "CS106B, CS144 networking, CS231n vision, CS224n language: the courses top engineers cite most."},
-		{"Carnegie Mellon: CS:APP and databases", "https://csapp.cs.cmu.edu/", "15-213 Computer Systems (the CS:APP labs) and 15-445 database systems with BusTub."},
-		{"Harvard: CS50 and Stat 110", "https://cs50.harvard.edu/", "CS50 to start, Stat 110 probability (Joe Blitzstein) for the maths of data."},
-		{"UC Berkeley CS 61A/B/C", "https://cs61a.org/", "Structure and interpretation, data structures, machine structures: the classic sequence."},
-		{"Open Source Society University", "https://github.com/ossu/computer-science", "A complete computer science degree from free university courses, in order."},
-		{"Teach Yourself Computer Science", "https://teachyourselfcs.com/", "Nine subjects, the best book and lectures for each."},
-		{"42 school: piscine and common core", "https://42.fr/en/what-is-42/", "Peer learning without teachers: the C piscine, then the common core (libft, ft_printf, get_next_line, minishell, cub3D, ft_transcendence), self-taught here."},
-	} {
+	for _, r := range Schools {
 		if s.err != nil {
 			break
 		}
@@ -352,18 +366,17 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		days, miss                                int // how far back, and a day missed every n (0: never)
 	}
 	var habitIDs []uuid.UUID
-	for _, h := range []habitSeed{
+	history := [][3]int{{1, 30, 9}, {1, 25, 6}, {2, 30, 0}, {1, 20, 7}, {1, 14, 5}} // every, days, miss
+	var protocols []habitSeed
+	for i, p := range Protocols {
+		protocols = append(protocols, habitSeed{p[0], p[1], p[2], p[3], p[4], p[5], history[i][0], history[i][1], history[i][2]})
+	}
+	for _, h := range append([]habitSeed{
 		// A long run (gold in the collection), a medium one (silver), and shorter ones.
 		{"Read 20 pages", "After I pour my morning coffee", "Read one page", "I am a reader", "07:15", "on the balcony", 1, 80, 0},
 		{"Run", "After I get home from work", "Put on running shoes", "I am a runner", "18:30", "in the park", 2, 30, 9},
 		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1, 45, 30},
-		// One of Huberman's protocols (EP-118).
-		{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk", 1, 30, 9},
-		{"No caffeine after 2 pm", "After lunch", "Switch to herbal tea", "I am someone who sleeps well", "14:00", "", 1, 25, 6},
-		{"Zone 2 cardio, 45 minutes", "After I get home on Tuesday, Thursday, and Saturday", "Walk briskly for 10 minutes", "I am someone with a strong heart", "18:30", "in the park", 2, 30, 0},
-		{"Dim the lights after sunset", "After dinner", "Turn off the ceiling light", "I am someone who sleeps well", "21:00", "at home", 1, 20, 7},
-		{"NSDR, 10 minutes", "After lunch", "Three physiological sighs", "I am a calm person", "13:30", "on the sofa", 1, 14, 5},
-	} {
+	}, protocols...) { // and Huberman's protocols (EP-118)
 		if s.err != nil {
 			break
 		}
