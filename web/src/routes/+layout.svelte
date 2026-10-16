@@ -4,6 +4,7 @@
 	import { spaceFor, spaceInfo } from '$lib/spaces';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
+	import { afterNavigate } from '$app/navigation';
 	import Toaster from '$lib/ui/Toaster.svelte';
 	import { connection, watchConnection } from '$lib/connection.svelte';
 	import { applyTheme, storedTheme, type Theme } from '$lib/theme';
@@ -46,6 +47,8 @@
 			links: [
 				{ href: '/notes', label: t('Notes') },
 				{ href: '/watch', label: t('Tech watch') },
+				{ href: '/watch?kind=video', label: t('YouTube videos') },
+				{ href: '/watch?kind=podcast', label: t('Podcasts') },
 				{ href: '/areas', label: t('Areas') },
 				{ href: '/resources', label: t('Resources') },
 				{ href: '/archive', label: t('Archive') }
@@ -58,7 +61,9 @@
 				{ href: '/learn', label: t('Learn'), also: ['/roadmaps', '/cards'] },
 				{ href: '/goals', label: t('Goals') },
 				{ href: '/habits', label: t('Habits') },
-				{ href: '/progress', label: t('Progress') }
+				{ href: '/habits#protocols-title', label: t('Huberman protocols') },
+				{ href: '/progress', label: t('Progress') },
+				{ href: '/collection', label: t('Collection') }
 			]
 		},
 		{
@@ -66,9 +71,11 @@
 			label: t('Life'),
 			links: [
 				{ href: '/health', label: t('Health') },
+				{ href: '/coffee', label: t('Coffee and tea') },
 				{ href: '/media', label: t('Media') },
 				{ href: '/budget', label: t('Budget') },
-				{ href: '/household', label: t('Household') }
+				{ href: '/household', label: t('Household') },
+				{ href: '/account#invites-title', label: t('Invite someone') }
 			]
 		},
 		{
@@ -86,7 +93,11 @@
 	]);
 	const groups = $derived(
 		allGroups
-			.map((g) => ({ ...g, links: g.links.filter((l) => !menu.hidden.includes(l.href.slice(1))) }))
+			.map((g) => ({
+				...g,
+				// A link to a part of a page goes with its page.
+				links: g.links.filter((l) => !menu.hidden.includes(l.href.slice(1).split(/[?#]/)[0]))
+			}))
 			.filter((g) => g.links.length > 0)
 	);
 	const inSection = (l: NavLink) => current(l.href) || (l.also ?? []).some(current);
@@ -95,9 +106,23 @@
 	let sheet = $state(false);
 	// A menu closes when a page opens, on Escape, and on a click elsewhere.
 	$effect(() => {
-		void page.url.pathname;
+		void page.url.href;
 		openGroup = null;
 		sheet = false;
+	});
+	// A link to a part of a page (/habits#protocols-title) waits for that
+	// part, which may render once the page's data arrives (EP-127).
+	afterNavigate(({ to }) => {
+		const id = to?.url.hash.slice(1);
+		if (!id || document.getElementById(id)) return;
+		const seen = new MutationObserver(() => {
+			const el = document.getElementById(id);
+			if (!el) return;
+			seen.disconnect();
+			el.scrollIntoView();
+		});
+		seen.observe(document.body, { childList: true, subtree: true });
+		setTimeout(() => seen.disconnect(), 5000);
 	});
 	function closeMenus(e: Event) {
 		if (

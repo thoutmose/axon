@@ -81,6 +81,14 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	if b := visitor.mustDo(200, "GET", "/v1/watch/items?status=all&kind=video", nil); !bytes.Contains(b, []byte("Raft - The Understandable Distributed Protocol")) {
 		t.Errorf("no YouTube talk in the demo: %.300s", b)
 	}
+	// The reader's tabs count each kind (EP-127).
+	var kinds struct {
+		Items struct{ Videos, Podcasts int } `json:"items"`
+	}
+	_ = json.Unmarshal(visitor.mustDo(200, "GET", "/v1/watch/stats", nil), &kinds)
+	if kinds.Items.Videos < 5 || kinds.Items.Podcasts < 2 {
+		t.Errorf("demo watch kinds = %+v", kinds.Items)
+	}
 	if d := visitor.mustDo(200, "GET", "/v1/me/digest?kind=daily", nil); !bytes.Contains(d, []byte(`"key":"Tech watch"`)) {
 		t.Errorf("the daily digest has no tech watch: %s", d)
 	}

@@ -3702,5 +3702,27 @@ export const fr: Record<string, string> = {
 	'Read on {site}': 'Lire sur {site}',
 	'Source: {name}': 'Source : {name}',
 	'Copy the link': 'Copier le lien',
-	'The audio file': 'Le fichier audio'
+	'The audio file': 'Le fichier audio',
+	// EP-127: every new feature named in the menu.
+	Everything: 'Tout',
+	YouTube: 'YouTube',
+	'YouTube videos': 'Vidéos YouTube',
+	'Huberman protocols': 'Protocoles Huberman',
+	Collection: 'Collection',
+	'Collection · Axon': 'Collection · Axon',
+	'Coffee and tea · Axon': 'Café et thé · Axon',
+	'New in Axon': 'Nouveau dans Axon',
+	'Channels you follow, with their subtitles read and their links to the video and the channel.':
+		'Les chaînes que vous suivez, avec leurs sous-titres lus et les liens vers la vidéo et la chaîne.',
+	'Episodes with their notes, from feeds or your Audiobookshelf server.':
+		'Des épisodes avec leurs notes, depuis des flux ou votre serveur Audiobookshelf.',
+	'Trophies, cards, and medals earned by your streaks and practice.':
+		'Trophées, cartes et médailles gagnés par vos séries et votre pratique.',
+	'Your caffeine against the daily limit, and the last coffee that keeps your sleep.':
+		'Votre caféine face à la limite du jour, et le dernier café qui préserve votre sommeil.',
+	'Morning light, cold, sleep: habits with the studies behind them.':
+		'Lumière du matin, froid, sommeil : des habitudes avec les études qui les fondent.',
+	'A link to join Axon, or your household.': 'Un lien pour rejoindre Axon, ou votre foyer.',
+	'Trophies for your roadmap skills, cards for your habits, and milestones, raised from bronze to silver to gold as your streaks, practice, and focus grow.':
+		'Des trophées pour les compétences de votre feuille de route, des cartes pour vos habitudes et des jalons, qui passent du bronze à l’argent puis à l’or à mesure que vos séries, votre pratique et votre concentration progressent.'
 };

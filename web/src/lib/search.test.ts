@@ -10,6 +10,6 @@ describe('search', () => {
 		const hrefs = searchPages.map((p) => p.href);
 		for (const p of PAGES) expect(hrefs).toContain(`/${p}`);
 		for (const href of hrefs)
-			expect(routes, href).toContain(`/src/routes/(app)${href}/+page.svelte`);
+			expect(routes, href).toContain(`/src/routes/(app)${href.split(/[?#]/)[0]}/+page.svelte`);
 	});
 });

@@ -577,6 +577,10 @@ type Overview struct {
 		Week     int `json:"week"`
 		Outliers int `json:"outliers"`
 		Merged   int `json:"merged"` // stories carried by more than one source, stored once
+		// What the list shows of each kind, outliers left out (EP-127).
+		Articles int `json:"articles"`
+		Videos   int `json:"videos"`
+		Podcasts int `json:"podcasts"`
 	} `json:"items"`
 	Daily  []DayCount   `json:"daily"` // news stored per day, last 30 days
 	Labels []LabelCount `json:"labels"`
@@ -631,8 +635,12 @@ func Summarize(ctx context.Context, q *pgxpool.Pool, userID uuid.UUID, now time.
 	}
 	err = q.QueryRow(ctx, `SELECT count(*), count(*) FILTER (WHERE status = 'unread' AND outlier = ''), count(*) FILTER (WHERE status = 'saved'),
 		count(*) FILTER (WHERE fetched_at > $2::timestamptz - interval '1 day'), count(*) FILTER (WHERE fetched_at > $2::timestamptz - interval '7 days'),
-		count(*) FILTER (WHERE outlier <> ''), count(*) FILTER (WHERE cardinality(also_in) > 0)
-		FROM watch_items WHERE user_id = $1`, userID, now).Scan(&o.Items.Total, &o.Items.Unread, &o.Items.Saved, &o.Items.Today, &o.Items.Week, &o.Items.Outliers, &o.Items.Merged)
+		count(*) FILTER (WHERE outlier <> ''), count(*) FILTER (WHERE cardinality(also_in) > 0),
+		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url !~* '`+videoURL+`'),
+		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url ~* '`+videoURL+`'),
+		count(*) FILTER (WHERE outlier = '' AND audio <> '')
+		FROM watch_items WHERE user_id = $1`, userID, now).Scan(&o.Items.Total, &o.Items.Unread, &o.Items.Saved, &o.Items.Today, &o.Items.Week, &o.Items.Outliers, &o.Items.Merged,
+		&o.Items.Articles, &o.Items.Videos, &o.Items.Podcasts)
 	if err != nil {
 		return o, err
 	}

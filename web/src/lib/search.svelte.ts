@@ -9,6 +9,11 @@ export const searchPages: { label: string; href: string }[] = [
 	...PAGES.map((p) => ({ label: pageLabels[p], href: `/${p}` })),
 	{ label: 'Roadmaps', href: '/roadmaps' },
 	{ label: 'Progress', href: '/progress' },
+	{ label: 'Collection', href: '/collection' },
+	{ label: 'Coffee and tea', href: '/coffee' },
+	{ label: 'YouTube videos', href: '/watch?kind=video' },
+	{ label: 'Podcasts', href: '/watch?kind=podcast' },
+	{ label: 'Huberman protocols', href: '/habits#protocols-title' },
 	{ label: 'Account', href: '/account' },
 	{ label: 'Preferences', href: '/account/preferences' },
 	{ label: 'Trash', href: '/account/trash' }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Welcome from '$lib/Welcome.svelte';
+	import WhatsNew from '$lib/WhatsNew.svelte';
 	import Scenery from '$lib/ui/Scenery.svelte';
 	import WaterCard from '$lib/WaterCard.svelte';
 	import CaffeineCard from '$lib/CaffeineCard.svelte';
@@ -249,6 +250,7 @@
 	{:else if !d}
 		<Status kind="loading" message={t('Loading your day…')} />
 	{:else}
+		{#if !firstRun}<WhatsNew />{/if}
 		{#if firstRun && !chosen}
 			<Welcome
 				ondone={(s) => {
