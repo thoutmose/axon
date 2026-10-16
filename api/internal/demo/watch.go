@@ -39,7 +39,8 @@ type demoWatch struct {
 			URL    string `json:"url"`
 			Title  string `json:"title"`
 			Author string `json:"author"`
-			Text   string `json:"text"` // paragraphs, separated by a blank line
+			Audio  string `json:"audio"` // a podcast episode's file
+			Text   string `json:"text"`  // paragraphs, separated by a blank line
 		} `json:"articles"`
 	} `json:"sources"`
 }
@@ -67,7 +68,7 @@ func seedWatch(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) er
 		f := watch.Found{URL: s.URL, Feed: watch.Feed{Title: s.Title, SiteURL: s.Site}}
 		for _, a := range s.Articles {
 			f.Feed.Items = append(f.Feed.Items, watch.Entry{GUID: a.URL, URL: a.URL, Title: a.Title, Author: a.Author,
-				Published: now.Add(-time.Duration(a.Hours) * time.Hour), Content: asHTML(a.Text)})
+				Published: now.Add(-time.Duration(a.Hours) * time.Hour), Content: asHTML(a.Text), Audio: a.Audio})
 		}
 		if _, _, err := watch.CreateSource(ctx, tx, user, watch.SourceInput{Origin: "manual"}, f, now); err != nil {
 			return err
