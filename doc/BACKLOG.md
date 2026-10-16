@@ -2194,7 +2194,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "The icons for goal, skill and note are not professional and aesthetic; same problem on Notes; for the journal, the icons are really not professional."
 
-- [x] **EP-129/IS-129.01** · 2 pts · SHOULD — An `Icon` component draws one set of line icons (24 × 24, 1.75 stroke, `currentColor`, after Lucide, ISC licence): the kinds of items in place of the emoji and symbols, the notes' side links (explore, analysis, templates), the agents' button, and the journal's mood, energy, and stress (a face that smiles, a battery that fills, a gauge that swings). The icons follow the theme's colour; Preferences → Icons is now Shown or None.
+- [x] **EP-129/IS-129.01** · 2 pts · SHOULD — An `Icon` component draws one set of line icons (24 × 24, 1.75 stroke, `currentColor`, after Lucide, ISC licence): the kinds of items in place of the emoji and symbols, the notes' side links (explore, analysis, templates), the agents' button, and the journal's mood, energy, and stress (a face that smiles, a battery that fills, a gauge that swings). The icons follow the theme's colour; Preferences → Icons is now Shown or None. The Digest page draws its sections and figures with the same icons; emails and chat apps keep their emoji, which they can show.
 
 **Tests.** Every kind has an icon; the scales keep their labels for screen readers; axe on the journal and notes.
 

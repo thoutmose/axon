@@ -107,7 +107,15 @@ export const icons = {
 		'M21 12c.55 0 1-.45.95-1a10 10 0 0 0-8.95-8.95c-.55-.05-1 .4-1 .95v8a1 1 0 0 0 1 1z',
 		'M21.21 15.89A10 10 0 1 1 8 2.83'
 	),
-	web: path('M12 2l8.66 5v10L12 22l-8.66-5V7z', 'M12 7l4.33 2.5v5L12 17l-4.33-2.5v-5z', 'M12 2v20')
+	web: path('M12 2l8.66 5v10L12 22l-8.66-5V7z', 'M12 7l4.33 2.5v5L12 17l-4.33-2.5v-5z', 'M12 2v20'),
+	calendar:
+		'<rect x="3" y="4" width="18" height="18" rx="2"/>' + path('M16 2v4', 'M8 2v4', 'M3 10h18'),
+	timer: circle(12, 14, 8) + path('M10 2h4', 'M12 14l3-3'),
+	cards: '<rect x="2" y="6" width="14" height="16" rx="2"/>' + path('M8 2h12a2 2 0 0 1 2 2v14'),
+	pin: path(
+		'M12 17v5',
+		'M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z'
+	)
 } as const;
 
 export type IconName = keyof typeof icons;
@@ -116,3 +124,20 @@ export type IconName = keyof typeof icons;
 export function kindIcon(type: string): IconName | null {
 	return type in icons ? (type as IconName) : null;
 }
+
+/** The line icon for an emoji the digest sends to chat apps (EP-129). */
+const fromEmoji: Record<string, IconName> = {
+	'✅': 'task',
+	'🌱': 'habit',
+	'🗓️': 'calendar',
+	'🧠': 'skill',
+	'📰': 'feed_item',
+	'📌': 'pin',
+	'🪞': 'sun',
+	'🎯': 'goal',
+	'🏁': 'milestone',
+	'🃏': 'cards',
+	'⏱️': 'timer',
+	'📝': 'note'
+};
+export const emojiIcon = (emoji: string): IconName | null => fromEmoji[emoji] ?? null;
