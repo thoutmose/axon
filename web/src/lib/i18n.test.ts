@@ -28,13 +28,12 @@ describe('t', () => {
 	});
 });
 
-import { iconFor } from './preferences';
+import { kindIcon } from './icons';
+import { typeNames } from './links';
 
-describe('iconFor', () => {
-	it('follows the icon theme', () => {
-		expect(iconFor('goal', 'emoji')).toBe('🎯');
-		expect(iconFor('goal', 'symbols')).toBe('◎');
-		expect(iconFor('goal', 'none')).toBe('');
-		expect(iconFor('unknown', 'emoji')).toBe('');
+describe('kindIcon', () => {
+	it('draws every kind of item, and nothing for an unknown one', () => {
+		for (const type of Object.keys(typeNames)) expect(kindIcon(type), type).not.toBeNull();
+		expect(kindIcon('unknown')).toBeNull();
 	});
 });

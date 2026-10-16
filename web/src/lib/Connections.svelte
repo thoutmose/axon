@@ -2,7 +2,9 @@
 	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from './api';
 	import { href, label, options, typeNames, type Link, type Option, type Relation } from './links';
-	import { iconFor, iconTheme } from './preferences';
+	import { kindIcon } from './icons';
+	import { iconTheme } from './preferences';
+	import Icon from './ui/Icon.svelte';
 	import Button from './ui/Button.svelte';
 	import { toast } from './ui/toast.svelte';
 
@@ -102,6 +104,13 @@
 	}
 </script>
 
+{#snippet kind(type: string)}
+	{@const icon = iconTheme() === 'none' ? null : kindIcon(type)}
+	<span class="chip"
+		>{#if icon}<Icon name={icon} size={14} />{/if}{t(typeNames[type] ?? type)}</span
+	>
+{/snippet}
+
 <section class="card connections" aria-labelledby="connections-{id}">
 	<h2 id="connections-{id}">{t('Connections')}</h2>
 	{#if rows.length === 0}
@@ -116,10 +125,7 @@
 					{:else}
 						<span class="grow">{link.entity.title}</span>
 					{/if}
-					<span class="chip"
-						>{iconFor(link.entity.type, iconTheme())}
-						{t(typeNames[link.entity.type] ?? link.entity.type)}</span
-					>
+					{@render kind(link.entity.type)}
 					{#if link.relation !== 'references'}
 						<Button
 							variant="ghost"
@@ -149,7 +155,7 @@
 				{#each hits as h (h.id)}
 					<li>
 						<button type="button" onclick={() => pick(h)}>
-							<span class="chip">{iconFor(h.type, iconTheme())} {t(typeNames[h.type])}</span>
+							{@render kind(h.type)}
 							{h.title}
 						</button>
 					</li>
@@ -220,6 +226,9 @@
 		overflow-wrap: anywhere;
 	}
 	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
 		font-size: var(--text-sm);
 		border-radius: 999px;
 		padding: 0 var(--space-2);
