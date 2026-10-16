@@ -614,7 +614,7 @@
 		text-decoration: underline;
 	}
 	.stars {
-		color: #d99a00;
+		color: var(--warn);
 		letter-spacing: 0.1em;
 	}
 	.genres {
