@@ -78,7 +78,7 @@ func (s *Speech) Voices(ctx context.Context) ([]Voice, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	var body struct {
 		Voices []string `json:"voices"`
 	}
@@ -111,7 +111,7 @@ func (s *Speech) Say(ctx context.Context, text, voice string, speed float64) ([]
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	audio, err := io.ReadAll(io.LimitReader(res.Body, maxSpeech+1))
 	if err == nil && len(audio) > maxSpeech {
 		err = fmt.Errorf("speech server: more than %d bytes", maxSpeech)
