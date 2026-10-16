@@ -57,7 +57,8 @@
 			links: [
 				{ href: '/learn', label: t('Learn'), also: ['/roadmaps', '/cards'] },
 				{ href: '/goals', label: t('Goals') },
-				{ href: '/habits', label: t('Habits') }
+				{ href: '/habits', label: t('Habits') },
+				{ href: '/progress', label: t('Progress') }
 			]
 		},
 		{

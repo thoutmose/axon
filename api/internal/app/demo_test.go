@@ -54,7 +54,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 	// Sample data in every area.
 	for path, min := range map[string]int{
 		"/v1/tasks?view=next": 3, "/v1/tasks?view=inbox": 2, "/v1/projects": 1, "/v1/notes": 8, "/v1/goals": 2,
-		"/v1/habits": 8, "/v1/roadmaps": 1, "/v1/trash": 2, "/v1/agent-memories": 4, "/v1/decisions?status=reviewed": 12, "/v1/decisions?status=due": 1, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
+		"/v1/habits": 8, "/v1/roadmaps": 1, "/v1/trash": 2, "/v1/agent-memories": 4, "/v1/decisions?status=reviewed": 12, "/v1/invites": 2, "/v1/decisions?status=due": 1, "/v1/proposals?status=pending": 2, "/v1/assessments": 1,
 	} {
 		if n := count(t, visitor, path); n < min {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
@@ -69,6 +69,12 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		if n := count(t, visitor, path); n < min {
 			t.Errorf("%s: %d items, want at least %d", path, n, min)
 		}
+	}
+	// The demo shows its sample invitations, and cannot create one (EP-120); its
+	// videos are YouTube talks whose transcript it may read (EP-123).
+	visitor.mustDo(403, "POST", "/v1/invites", []byte(`{}`))
+	if b := visitor.mustDo(200, "GET", "/v1/watch/items?status=all&kind=video", nil); !bytes.Contains(b, []byte("Raft - The Understandable Distributed Protocol")) {
+		t.Errorf("no YouTube talk in the demo: %.300s", b)
 	}
 	if d := visitor.mustDo(200, "GET", "/v1/me/digest?kind=daily", nil); !bytes.Contains(d, []byte(`"key":"Tech watch"`)) {
 		t.Errorf("the daily digest has no tech watch: %s", d)

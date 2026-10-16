@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/thoutmose/axon/api/internal/watch"
 )
@@ -96,4 +97,17 @@ func seedWatch(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) er
 		_, err = watch.Keep(ctx, tx, user, id)
 	}
 	return err
+}
+
+// Enrich reads the words of the demo's videos from YouTube's captions,
+// after a reset, outside its transaction: the demo then shows transcripts
+// in its news and graph. A failure leaves the button to try again.
+func Enrich(ctx context.Context, pool *pgxpool.Pool) (int, error) {
+	var id uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT id FROM users WHERE demo`).Scan(&id); err != nil {
+		return 0, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+	return watch.TranscribeUser(ctx, pool, id, nil, 10)
 }

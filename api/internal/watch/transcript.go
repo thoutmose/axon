@@ -120,3 +120,26 @@ func TranscribePending(ctx context.Context, pool *pgxpool.Pool, w *Whisper, n in
 	}
 	return ctx.Err()
 }
+
+// TranscribeUser reads the words of one person's videos not tried yet: the
+// shared demo's, after it is reset, from YouTube's captions only.
+func TranscribeUser(ctx context.Context, pool *pgxpool.Pool, userID uuid.UUID, w *Whisper, n int) (int, error) {
+	rows, err := pool.Query(ctx, `SELECT id FROM watch_items WHERE user_id = $1 AND transcript_tried_at IS NULL
+		AND url LIKE 'https://youtube.com/watch?%' ORDER BY published_at DESC LIMIT $2`, userID, n)
+	if err != nil {
+		return 0, err
+	}
+	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil {
+		return 0, err
+	}
+	done := 0
+	for _, id := range ids {
+		if it, err := Transcribe(ctx, pool, userID, id, w); err == nil && it.TranscriptSource != "" {
+			done++
+		} else if ctx.Err() != nil {
+			return done, ctx.Err()
+		}
+	}
+	return done, nil
+}

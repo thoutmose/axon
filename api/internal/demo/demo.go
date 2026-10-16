@@ -491,6 +491,20 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	if err := seedDecisions(ctx, tx, user, s.today); err != nil {
 		return err
 	}
+	// Two invitations to show the page (EP-120): their tokens are random and
+	// shown to nobody, so they open nothing.
+	for _, inv := range []struct {
+		note      string
+		household bool
+		days      int
+	}{{"For Sam", true, 5}, {"For Lea", false, -3}} {
+		token := uuid.Must(uuid.NewRandom())
+		if _, err := tx.Exec(ctx, `INSERT INTO invites (id, created_by, token_hash, note, household, expires_at, created_at)
+			VALUES ($1, $2, sha256($3), $4, $5, $6, $7)`, uuid.Must(uuid.NewV7()), user, token[:], inv.note, inv.household,
+			now.AddDate(0, 0, inv.days), now.AddDate(0, 0, inv.days-7)); err != nil {
+			return err
+		}
+	}
 	return seedProposals(ctx, tx, user, review)
 }
 

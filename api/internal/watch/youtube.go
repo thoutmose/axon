@@ -58,6 +58,9 @@ type player struct {
 	Captions struct {
 		R struct {
 			Tracks []track `json:"captionTracks"`
+			// With dubbed audio, every language has automatic captions: this
+			// names the track of the language spoken in the video.
+			Source []int `json:"defaultTranslationSourceTrackIndices"`
 		} `json:"playerCaptionsTracklistRenderer"`
 	} `json:"captions"`
 	Streaming struct {
@@ -98,17 +101,35 @@ func playerInfo(ctx context.Context, id string) (player, error) {
 // pickTrack prefers the author's captions in the spoken language (the
 // language of the automatic ones), then any of the author's, then the
 // automatic ones.
-func pickTrack(tracks []track) (track, string) {
+func pickTrack(tracks []track) (track, string) { return pickTrackFrom(tracks, -1) }
+
+// primary is a language tag without its region: "en-US" is "en".
+func primary(lang string) string {
+	l, _, _ := strings.Cut(strings.ToLower(lang), "-")
+	return l
+}
+
+// pickTrackFrom is pickTrack when YouTube names the spoken language's
+// track (source, or -1): with dubbed audio, every dubbed language has its
+// automatic captions, and only that one is what was said.
+func pickTrackFrom(tracks []track, source int) (track, string) {
 	spoken := ""
-	for _, t := range tracks {
-		if t.Kind == "asr" {
-			spoken = t.Lang
+	if source >= 0 && source < len(tracks) {
+		spoken = primary(tracks[source].Lang)
+	} else {
+		for _, t := range tracks {
+			if t.Kind == "asr" && spoken == "" {
+				spoken = primary(t.Lang)
+			}
 		}
 	}
 	for _, t := range tracks {
-		if t.Kind != "asr" && (spoken == "" || t.Lang == spoken) {
+		if t.Kind != "asr" && (spoken == "" || primary(t.Lang) == spoken) {
 			return t, "captions"
 		}
+	}
+	if source >= 0 && source < len(tracks) {
+		return tracks[source], "auto_captions"
 	}
 	for _, t := range tracks {
 		if t.Kind != "asr" {
@@ -116,7 +137,9 @@ func pickTrack(tracks []track) (track, string) {
 		}
 	}
 	for _, t := range tracks {
-		return t, "auto_captions"
+		if primary(t.Lang) == spoken {
+			return t, "auto_captions"
+		}
 	}
 	return track{}, ""
 }
@@ -180,7 +203,11 @@ func VideoTranscript(ctx context.Context, id string, w *Whisper) (Transcript, er
 	if err != nil {
 		return Transcript{}, err
 	}
-	if t, source := pickTrack(p.Captions.R.Tracks); source != "" {
+	src := -1
+	if len(p.Captions.R.Source) > 0 {
+		src = p.Captions.R.Source[0]
+	}
+	if t, source := pickTrackFrom(p.Captions.R.Tracks, src); source != "" {
 		body, err := download(ctx, t.BaseURL, maxBody)
 		if err != nil {
 			return Transcript{}, err

@@ -559,7 +559,7 @@ var catalog = map[string]string{
 	"YouTube or the Whisper server did not answer. Try again later.":                                "YouTube ou le serveur Whisper n’a pas répondu. Réessayez plus tard.",
 	"Audiobookshelf did not answer. Check the address, and that Axon can reach it.":                 "Audiobookshelf n’a pas répondu. Vérifiez l’adresse, et qu’Axon peut l’atteindre.",
 	"Audiobookshelf refused this API token.":                                                        "Audiobookshelf a refusé ce jeton d’API.",
-	"Give the API token from Audiobookshelf (Settings → Users → your account).":                     "Donnez le jeton d’API d’Audiobookshelf (Paramètres → Utilisateurs → votre compte).",
+	"Give an API key from Audiobookshelf (Settings → API Keys).":                                    "Donnez une clé d’API d’Audiobookshelf (Paramètres → Clés d’API).",
 	"Give your Audiobookshelf's address, like https://abs.example.org, with no password in it.":     "Donnez l’adresse de votre Audiobookshelf, comme https://abs.example.org, sans mot de passe.",
 	"No Audiobookshelf server is connected.":                                                        "Aucun serveur Audiobookshelf n’est connecté.",
 	"That API token is too long.":                                                                   "Ce jeton d’API est trop long.",

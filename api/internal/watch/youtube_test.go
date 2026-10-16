@@ -31,6 +31,16 @@ func TestPickTrack(t *testing.T) {
 	if got.Lang != "fr" || got.Kind != "" || src != "captions" {
 		t.Fatalf("picked %+v %s", got, src)
 	}
+	// A dubbed video has automatic captions in every dubbed language; the
+	// source track YouTube names is the spoken one.
+	got, src = pickTrackFrom([]track{tr("nl-NL", "asr"), tr("en", "asr"), tr("fr-FR", "asr")}, 1)
+	if got.Lang != "en" || src != "auto_captions" {
+		t.Fatalf("dubbed: picked %+v %s", got, src)
+	}
+	got, src = pickTrackFrom([]track{tr("en-US", ""), tr("nl-NL", "asr"), tr("en", "asr")}, 2)
+	if got.Lang != "en-US" || src != "captions" {
+		t.Fatalf("author's in the spoken language: picked %+v %s", got, src)
+	}
 	got, src = pickTrack([]track{tr("de", "asr")})
 	if got.Lang != "de" || src != "auto_captions" {
 		t.Fatalf("picked %+v %s", got, src)
