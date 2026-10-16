@@ -181,7 +181,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Done |
 | EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Done |
 | EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Done |
-| EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
+| EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Done |
 | EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
 | EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
 | EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Done |
@@ -2227,7 +2227,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "The digest is really cool; add the ability to send it by mail, Discord, Slack, Teams…" It already goes to all of them (EP-107), but the setup sat in Preferences.
 
-- [ ] **EP-133/IS-133.01** · 1 pt · SHOULD — The Digest page shows **Where it goes**: email and each channel, and sets up Email, Slack, Discord, Microsoft Teams, Telegram, ntfy, and a web address there, with **Send a test** for each.
+- [x] **EP-133/IS-133.01** · 1 pt · SHOULD — The Digest page shows **Where it goes**: the email address (saved there; a note when the operator has no mail server), how many devices get notifications, and the chat apps (Slack, Discord, Microsoft Teams, Telegram, ntfy, a web address), added, linked, and disconnected there. **Send it to me now** tests them all; **Times** leads to Preferences.
 
 **Tests.** The e2e digest test finds the channels on the Digest page.
 

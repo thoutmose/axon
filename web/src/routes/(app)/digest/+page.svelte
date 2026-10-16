@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
+	import ChannelSettings from '$lib/ChannelSettings.svelte';
 	import DigestTemplate from '$lib/DigestTemplate.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -40,6 +41,32 @@
 					channels: r.channels,
 					email: r.email ? t(' and by email') : ''
 				})
+			);
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+	// Where it goes (EP-133): email, this person's devices, and chat apps,
+	// set up here rather than only in Preferences.
+	let status = $state<{ email: boolean; devices: unknown[] } | null>(null);
+	let email = $state('');
+	api<{ email: boolean; devices: unknown[] }>('/v1/me/reminders')
+		.then((r) => (status = r))
+		.catch(() => {});
+	api<{ reminders: { email: string } }>('/v1/me/settings')
+		.then((r) => (email = r.reminders.email))
+		.catch(() => {});
+	async function saveEmail(e: SubmitEvent) {
+		e.preventDefault();
+		try {
+			const doc = await api<{ reminders: Record<string, unknown> } & Record<string, unknown>>(
+				'/v1/me/settings'
+			);
+			delete doc.ai;
+			doc.reminders = { ...doc.reminders, email: email.trim(), enabled: true };
+			await api('/v1/me/settings', { method: 'PUT', body: doc });
+			toast(
+				email.trim() ? t('The digest goes to {email}.', { email: email.trim() }) : t('No email.')
 			);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -131,9 +158,7 @@
 		<div class="row">
 			<Button variant="secondary" onclick={send}>{t('Send it to me now')}</Button>
 			<Button variant="secondary" onclick={() => (customising = true)}>{t('Customise')}</Button>
-			<Button variant="ghost" href="/account/preferences#reminders"
-				>{t('Times and channels')}</Button
-			>
+			<Button variant="ghost" href="/account/preferences#reminders">{t('Times')}</Button>
 		</div>
 		<p class="muted small">
 			{t(
@@ -141,9 +166,55 @@
 			)}
 		</p>
 	{/if}
+
+	<section class="card where" aria-labelledby="where-title">
+		<h2 id="where-title">{t('Where it goes')}</h2>
+		<form class="email" onsubmit={saveEmail}>
+			<label for="digest-email">{t('By email')}</label>
+			{#if status?.email}
+				<div class="row">
+					<input
+						id="digest-email"
+						type="email"
+						maxlength="254"
+						autocomplete="email"
+						placeholder={t('you@example.com')}
+						bind:value={email}
+					/>
+					<Button type="submit" variant="secondary">{t('Save')}</Button>
+				</div>
+			{:else}
+				<p class="muted small" id="digest-email">
+					{t('Email needs the operator’s mail server (AXON_SMTP_URL).')}
+				</p>
+			{/if}
+		</form>
+		<p class="small">
+			{t('On {n} device(s) as notifications.', { n: status?.devices.length ?? 0 })}
+			<a href="/account/preferences#reminders">{t('Turn them on')}</a>
+		</p>
+		<ChannelSettings />
+	</section>
 </div>
 
 <style>
+	.where {
+		margin-top: var(--space-6);
+		padding: var(--space-4);
+		display: grid;
+		gap: var(--space-2);
+	}
+	.where h2 {
+		margin: 0;
+	}
+	.email .row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+	.email input {
+		flex: 1 1 14rem;
+	}
 	.page {
 		max-width: 42rem;
 		margin: 0 auto;

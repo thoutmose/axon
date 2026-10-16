@@ -1449,6 +1449,11 @@ test('the digest: numbered items, a picture drawn for the day, and a quote', asy
 		.toBe(1200);
 	await page.getByRole('tab', { name: 'This week' }).click();
 	await expect(page.locator('.eyebrow')).toContainText('Your week');
+	// Where it goes is set up on the page itself (EP-133).
+	const where = page.getByRole('region', { name: 'Where it goes' });
+	await expect(where).toContainText('Teams');
+	await expect(where.getByRole('button', { name: 'Add a channel' })).toBeVisible();
+	await expect(where.getByText('By email')).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
 
