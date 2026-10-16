@@ -198,6 +198,26 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			_, s.err = para.Resources.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(r[0]), URL: ptr(r[1])})
 		}
 	}
+	// The universities and schools behind the roadmap's courses, linked to it.
+	for _, r := range [][3]string{
+		{"MIT OpenCourseWare", "https://ocw.mit.edu/", "6.006 algorithms, 6.042J mathematics for CS, 6.5840 distributed systems, 6.1810 operating systems, 18.404 theory: lectures, problem sets, and exams, free."},
+		{"Stanford Online", "https://online.stanford.edu/free-courses", "CS106B, CS144 networking, CS231n vision, CS224n language: the courses top engineers cite most."},
+		{"Carnegie Mellon: CS:APP and databases", "https://csapp.cs.cmu.edu/", "15-213 Computer Systems (the CS:APP labs) and 15-445 database systems with BusTub."},
+		{"Harvard: CS50 and Stat 110", "https://cs50.harvard.edu/", "CS50 to start, Stat 110 probability (Joe Blitzstein) for the maths of data."},
+		{"UC Berkeley CS 61A/B/C", "https://cs61a.org/", "Structure and interpretation, data structures, machine structures: the classic sequence."},
+		{"Open Source Society University", "https://github.com/ossu/computer-science", "A complete computer science degree from free university courses, in order."},
+		{"Teach Yourself Computer Science", "https://teachyourselfcs.com/", "Nine subjects, the best book and lectures for each."},
+		{"42 school: piscine and common core", "https://42.fr/en/what-is-42/", "Peer learning without teachers: the C piscine, then the common core (libft, ft_printf, get_next_line, minishell, cub3D, ft_transcendence), self-taught here."},
+	} {
+		if s.err != nil {
+			break
+		}
+		var res para.Item
+		res, s.err = para.Resources.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(r[0]), URL: ptr(r[1]), Description: ptr(r[2])})
+		if s.err == nil && plan.Roadmap.ID != uuid.Nil {
+			s.link(res.ID, graph.RelatesTo, plan.Roadmap.ID)
+		}
+	}
 
 	// Films, series, and books: finished favourites make the recommendations explain themselves.
 	var reading uuid.UUID // the book the reading habit turns the pages of (EP-137)
@@ -339,6 +359,10 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1, 45, 30},
 		// One of Huberman's protocols (EP-118).
 		{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk", 1, 30, 9},
+		{"No caffeine after 2 pm", "After lunch", "Switch to herbal tea", "I am someone who sleeps well", "14:00", "", 1, 25, 6},
+		{"Zone 2 cardio, 45 minutes", "After I get home on Tuesday, Thursday, and Saturday", "Walk briskly for 10 minutes", "I am someone with a strong heart", "18:30", "in the park", 2, 30, 0},
+		{"Dim the lights after sunset", "After dinner", "Turn off the ceiling light", "I am someone who sleeps well", "21:00", "at home", 1, 20, 7},
+		{"NSDR, 10 minutes", "After lunch", "Three physiological sighs", "I am a calm person", "13:30", "on the sofa", 1, 14, 5},
 	} {
 		if s.err != nil {
 			break
@@ -500,6 +524,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		return fmt.Errorf("demo seed: %w", s.err)
 	}
 	if err := seedJournal(ctx, tx, user, s.today); err != nil {
+		return err
+	}
+	if err := seedFood(ctx, tx, user, s.today); err != nil {
 		return err
 	}
 	if err := seedWater(ctx, tx, user, s.today); err != nil {
@@ -692,6 +719,38 @@ func seedCaffeine(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time)
 		}
 	}
 	return add(now.Add(-30*time.Minute), "coffee", 95)
+}
+
+// seedFood gives the demo a health profile (for its daily needs) and a week
+// of meals in the spirit of the protocols: protein first, whole foods, an
+// early dinner; today, breakfast and lunch so far.
+func seedFood(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time) error {
+	if _, err := tx.Exec(ctx, `INSERT INTO health_profiles (user_id, birth_year, sex, height_cm, weight_kg, activity) VALUES ($1, 1994, 'male', 178, 74, 'moderate')
+		ON CONFLICT (user_id) DO NOTHING`, user); err != nil {
+		return err
+	}
+	type meal struct {
+		meal, name           string
+		grams, kcal, p, c, f float64
+	}
+	menus := [][]meal{
+		{{"breakfast", "Three eggs, wholegrain toast, avocado", 320, 560, 28, 38, 32}, {"lunch", "Salmon, quinoa, and green salad", 450, 690, 42, 55, 30}, {"snack", "Greek yogurt and blueberries", 250, 230, 20, 22, 6}, {"dinner", "Lentil and vegetable curry with rice", 500, 640, 26, 98, 14}},
+		{{"breakfast", "Greek yogurt, berries, walnuts, and oats", 330, 520, 30, 52, 20}, {"lunch", "Chicken, sweet potato, and broccoli", 480, 650, 48, 70, 14}, {"snack", "An apple and a handful of almonds", 210, 260, 7, 26, 15}, {"dinner", "Tofu stir-fry with vegetables and noodles", 450, 610, 30, 72, 20}},
+		{{"breakfast", "Cottage cheese, banana, and peanut butter", 300, 480, 34, 42, 18}, {"lunch", "Tuna and white bean salad with olive oil", 400, 590, 44, 40, 26}, {"snack", "Kefir and a pear", 350, 250, 12, 40, 4}, {"dinner", "Beef, roasted vegetables, and potatoes", 520, 720, 46, 60, 30}},
+	}
+	for back := 7; back >= 0; back-- {
+		day := today.AddDate(0, 0, -back).Format(time.DateOnly)
+		for i, m := range menus[back%len(menus)] {
+			if back == 0 && i > 1 { // today: breakfast and lunch so far
+				break
+			}
+			if _, err := tx.Exec(ctx, `INSERT INTO food_entries (id, user_id, eaten_on, meal, name, grams, kcal, protein_g, carbs_g, fat_g) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+				uuid.Must(uuid.NewV7()), user, day, m.meal, m.name, m.grams, m.kcal, m.p, m.c, m.f); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func seedWater(ctx context.Context, tx pgx.Tx, user uuid.UUID, today time.Time) error {
