@@ -188,7 +188,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Done |
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Done |
 | EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Done |
-| EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Planned |
+| EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -2281,7 +2281,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 ### EP-140 — The life web on Today
 
-- [ ] **EP-140/IS-140.01** · 1 pt · SHOULD — An e2e test of the life web on the demo (the score, the level, the menu's link), with axe.
+- [x] **EP-140/IS-140.01** · 1 pt · SHOULD — An e2e test of the life web on the demo (the score, the radar, the menu's link), with axe. Today's **New in Axon** lists the life web, the podcast's natural voices, films, series, and books, and the budget charts, each with a line icon instead of an emoji, and shows again for this release.
 
 ### EP-20 — Analytics & insights
 
