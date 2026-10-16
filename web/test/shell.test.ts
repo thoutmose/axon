@@ -1577,6 +1577,12 @@ test('demo: every new feature is named in the menu and on Today', async ({ brows
 	await nav.getByRole('button', { name: 'Grow' }).click();
 	await nav.getByRole('link', { name: 'Huberman protocols' }).click();
 	await expect(demo.getByRole('heading', { name: /after Andrew Huberman/ })).toBeInViewport();
+	// The life web (EP-131, EP-140): the day's score and level, reached from the menu.
+	await nav.getByRole('button', { name: 'Life' }).click();
+	await nav.getByRole('link', { name: 'Life web' }).click();
+	const web = demo.getByRole('region', { name: 'Life web' });
+	await expect(web).toContainText('/ 100');
+	await expect(web.getByRole('img', { name: /^Today: Food/ })).toBeVisible();
 	await noSeriousA11yViolations(demo);
 	await demo.context().close();
 });

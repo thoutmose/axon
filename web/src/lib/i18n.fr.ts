@@ -3799,5 +3799,15 @@ export const fr: Record<string, string> = {
 	'Email needs the operator’s mail server (AXON_SMTP_URL).':
 		'L’e-mail demande le serveur de messagerie de l’opérateur (AXON_SMTP_URL).',
 	'On {n} device(s) as notifications.': 'Sur {n} appareil(s) en notifications.',
-	'Turn them on': 'Les activer'
+	'Turn them on': 'Les activer',
+	'Food, water, sleep, activity, caffeine, and mood on one web, with a level to reach.':
+		'Alimentation, eau, sommeil, activité, caféine et humeur sur une même toile, avec un niveau à atteindre.',
+	'Podcast with natural voices': 'Podcast aux voix naturelles',
+	'Your tech watch read by one host, or two in conversation.':
+		'Votre veille lue par un animateur, ou deux en conversation.',
+	'Every cover, a page for each, a note from its template, and pages turned by a habit.':
+		'Chaque couverture, une page pour chacun, une note depuis son modèle, et des pages tournées par une habitude.',
+	'Budget charts': 'Graphiques du budget',
+	'Where the money went and where it came from, month by month.':
+		'Où est passé l’argent et d’où il est venu, mois par mois.'
 };
