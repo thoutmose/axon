@@ -54,6 +54,9 @@ jobs:
         run: go test -race -count=1 -p 1 ./...
         env:
           AXON_TEST_DATABASE_URL: postgres://axon:ci-only@localhost:5432/axon_test?sslmode=disable
+      - name: Free the runner's disk
+        if: always()
+        run: go clean -cache -testcache
 
   web:
     runs-on: [self-hosted, srv-dev]
@@ -134,7 +137,9 @@ jobs:
         run: docker compose logs --tail 200 api web caddy
       - name: Stop the stack
         if: always()
-        run: docker compose down -v --remove-orphans && docker image prune -f
+        run: |
+          docker compose down -v --remove-orphans --rmi all
+          docker builder prune -af
 
   secrets:
     runs-on: [self-hosted, srv-dev]
@@ -178,4 +183,7 @@ jobs:
           artifact-name: sbom-${{ matrix.image.name }}.spdx.json
       - name: Free the runner's disk
         if: always()
-        run: docker image prune -f
+        run: |
+          docker rmi -f axon-${{ matrix.image.name }}:ci-image || true
+          docker image prune -f
+          docker builder prune -af

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -394,4 +395,40 @@ func containsString(list []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// The podcast's natural voices (EP-132): the operator's speech server lists
+// its voices and speaks a part; without one, the device's voices are used.
+func TestPodcastNaturalVoices(t *testing.T) {
+	tts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v1/audio/voices":
+			_, _ = w.Write([]byte(`{"voices":["af_heart","ff_siwis"]}`))
+		case "/v1/audio/speech":
+			w.Header().Set("Content-Type", "audio/mpeg")
+			_, _ = w.Write([]byte("ID3 mp3"))
+		}
+	}))
+	defer tts.Close()
+
+	t.Setenv("AXON_TTS_URL", "")
+	alice := newEnv(t, false).client()
+	alice.register("Alice")
+	if out := alice.mustDo(200, "GET", "/v1/watch/podcast/voices", nil); !bytes.Contains(out, []byte(`"available":false`)) {
+		t.Fatalf("without a server = %s", out)
+	}
+	alice.mustDo(409, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hello","voice":"af_heart"}`))
+
+	t.Setenv("AXON_TTS_URL", tts.URL)
+	bob := newEnv(t, false).client()
+	bob.register("Bob")
+	if out := bob.mustDo(200, "GET", "/v1/watch/podcast/voices", nil); !bytes.Contains(out, []byte(`{"id":"ff_siwis","lang":"fr"}`)) {
+		t.Fatalf("voices = %s", out)
+	}
+	if out := bob.mustDo(200, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hello","voice":"af_heart","speed":1.2}`)); string(out) != "ID3 mp3" {
+		t.Fatalf("speech = %q", out)
+	}
+	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"","voice":"af_heart"}`))
+	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hi","voice":"bad voice!"}`))
+	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hi","voice":"af_heart","speed":5}`))
 }
