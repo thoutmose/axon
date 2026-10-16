@@ -307,14 +307,16 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	type habitSeed struct {
 		title, stack, twoMin, identity, at, where string
 		every                                     int // checked in every n days
+		days, miss                                int // how far back, and a day missed every n (0: never)
 	}
 	var habitIDs []uuid.UUID
 	for _, h := range []habitSeed{
-		{"Read 20 pages", "After I pour my morning coffee", "Read one page", "I am a reader", "07:15", "on the balcony", 1},
-		{"Run", "After I get home from work", "Put on running shoes", "I am a runner", "18:30", "in the park", 2},
-		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1},
+		// A long run (gold in the collection), a medium one (silver), and shorter ones.
+		{"Read 20 pages", "After I pour my morning coffee", "Read one page", "I am a reader", "07:15", "on the balcony", 1, 80, 0},
+		{"Run", "After I get home from work", "Put on running shoes", "I am a runner", "18:30", "in the park", 2, 30, 9},
+		{"Meditate", "After I brush my teeth at night", "One mindful breath", "I am a calm person", "", "", 1, 45, 30},
 		// One of Huberman's protocols (EP-118).
-		{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk", 1},
+		{"Morning sunlight", "After I get up", "Step outside with my first drink", "I am someone who sleeps well", "07:15", "outside, on the balcony or a short walk", 1, 30, 9},
 	} {
 		if s.err != nil {
 			break
@@ -323,8 +325,8 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin),
 			Identity: ptr(h.identity), IntentionTime: ptr(h.at), IntentionPlace: ptr(h.where)}, now)
 		habitIDs = append(habitIDs, habit.ID)
-		for back := 30; back >= 1 && s.err == nil; back-- {
-			if back%h.every != 0 || back%9 == 0 { // a few missed days, as in real life
+		for back := h.days; back >= 1 && s.err == nil; back-- {
+			if back%h.every != 0 || (h.miss > 0 && back%h.miss == 0) { // a few missed days, as in real life
 				continue
 			}
 			status := "done"

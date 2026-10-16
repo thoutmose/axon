@@ -3694,5 +3694,7 @@ export const fr: Record<string, string> = {
 	'synced {date}': 'synchronisé le {date}',
 	'{n} new episodes.': '{n} nouveaux épisodes.',
 	'API key (Audiobookshelf → Settings → API Keys)':
-		'Clé d’API (Audiobookshelf → Paramètres → Clés d’API)'
+		'Clé d’API (Audiobookshelf → Paramètres → Clés d’API)',
+	'In the shared demo, connecting a server is off. On your own Axon, give its address and an API key: its shows then appear in the tech watch, like the demo’s podcasts and videos.':
+		'Dans la démo partagée, la connexion à un serveur est désactivée. Sur votre propre Axon, donnez son adresse et une clé d’API : ses émissions apparaissent alors dans la veille, comme les podcasts et vidéos de la démo.'
 };

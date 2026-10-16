@@ -284,10 +284,10 @@ func seedStudy(ctx context.Context, tx pgx.Tx, user uuid.UUID, start, today time
 		target  uuid.UUID
 		minutes []int
 	}{
-		{skill["Maths"], []int{50, 50, 40}},
+		{skill["Maths"], []int{50, 50, 50, 40}},
 		{skill["Data structures and algorithms"], []int{50, 50}},
 		{skill["Python"], []int{50, 45, 30}},
-		{skill["Maths"], []int{50, 25}},
+		{skill["Maths"], []int{50, 50, 50}},
 		{plan.Roadmap.ID, []int{50, 40}},
 		{pipekit, []int{50, 50, 50, 50, 50, 50, 40}},
 		{pipekit, []int{50, 50, 50, 40, 50, 50}},
@@ -308,6 +308,14 @@ func seedStudy(ctx context.Context, tx pgx.Tx, user uuid.UUID, start, today time
 				return err
 			}
 			at = at.Add(time.Duration(m+10) * time.Minute)
+		}
+	}
+	// Two skills of the first phase already learned: the collection shows gold (EP-119).
+	for _, title := range []string{"Learning how to learn", "Bash"} {
+		if id, ok := skill[title]; ok {
+			if _, err := tx.Exec(ctx, `UPDATE skills SET status = 'done', updated_at = $2 WHERE id = $1`, id, today.AddDate(0, 0, -3)); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

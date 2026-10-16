@@ -442,6 +442,29 @@
           "text": "Rob Pike's talk at Gopherfest 2015 on the Go proverbs: short sayings that capture how to write Go, such as \"don't communicate by sharing memory, share memory by communicating\" and \"a little copying is better than a little dependency\"."
         }
       ]
+    },
+    {
+      "url": "https://changelog.com/news/feed",
+      "site": "https://changelog.com/news",
+      "title": "Changelog News",
+      "articles": [
+        {
+          "hours": 26,
+          "url": "https://changelog.com/news/185",
+          "title": "Bitwarden CLI compromised",
+          "author": "Changelog Media",
+          "audio": "https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/news/185/changelog-news-185.mp3",
+          "text": "Bitwarden's CLI got hit by the Checkmarx supply-chain campaign, TypeScript 7.0 beta lands with the Go-rewritten compiler running ~10x faster than 6.0, and pgBackRest lost its maintainer of thirteen years leaving anyone running production Postgres with a real dependency-trust task this week. We've also got Ubuntu 26.04 LTS shipping with TPM-backed full-disk encryption, and Matz dropping Spinel as an AOT path that takes Ruby to native binaries. This week was a good reminder that the tools we depend on are all moving at once. Security, performance, and maintenance aren't isolated threads."
+        },
+        {
+          "hours": 140,
+          "url": "https://changelog.com/news/184",
+          "title": "Astral has been acquired by OpenAI",
+          "author": "Changelog Media",
+          "audio": "https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/news/184/changelog-news-184.mp3",
+          "text": "Astral is joining OpenAI, which says a lot about where the center of gravity is moving for developer tools, LiteLLM got hit by a nasty supply-chain attack, and OpenCode blew up as the latest serious open source swing at the coding-agent stack. We've also got Rust doing a very public reality check on its own pain points, WorkOS pushing AuthKit into CLI auth, Ryan Lizza using AI to build an open source TurboTax alternative, and a fresh httpx fork that turns open source maintenance drama into a real dependency story. If nothing else, this week was a good reminder that tools, trust, and control all move together."
+        }
+      ]
     }
   ]
 }

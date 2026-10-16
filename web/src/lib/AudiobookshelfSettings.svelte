@@ -30,6 +30,11 @@
 		}
 	}
 	load();
+	// The shared demo cannot reach a server of its own.
+	let demo = $state(false);
+	api<{ demo: boolean }>('/v1/me')
+		.then((m) => (demo = m.demo))
+		.catch(() => {});
 
 	async function connect(e: SubmitEvent) {
 		e.preventDefault();
@@ -81,6 +86,13 @@
 		'Follow the podcasts your Audiobookshelf server downloads in the tech watch: each show is a source, each episode news with its notes, and, when Axon is set up with a Whisper server, its words. The token is sealed and never shown again.'
 	)}
 </p>
+{#if demo}
+	<p class="note" role="note">
+		{t(
+			'In the shared demo, connecting a server is off. On your own Axon, give its address and an API key: its shows then appear in the tech watch, like the demo’s podcasts and videos.'
+		)}
+	</p>
+{/if}
 {#if st?.connected}
 	<p>
 		{t('Connected to {url} · {n} shows', { url: st.url, n: st.shows })}{#if st.synced_at}
@@ -115,7 +127,7 @@
 		/>
 	</div>
 	<div class="row">
-		<Button type="submit" {busy}>{st?.connected ? t('Save') : t('Connect')}</Button>
+		<Button type="submit" {busy} disabled={demo}>{st?.connected ? t('Save') : t('Connect')}</Button>
 		{#if st?.connected}
 			<Button variant="secondary" onclick={sync} {busy}>{t('Sync now')}</Button>
 			<Button variant="ghost" onclick={disconnect}>{t('Disconnect')}</Button>
@@ -144,5 +156,10 @@
 	}
 	.error {
 		color: var(--bad);
+	}
+	.note {
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-lg);
+		background: var(--accent-soft);
 	}
 </style>
