@@ -207,11 +207,13 @@
 		display: grid;
 		gap: var(--space-2);
 	}
+	/* A compact card: the checkbox beside the title, its details and menu below. */
 	li {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: var(--space-2);
+		column-gap: var(--space-2);
+		row-gap: var(--space-1);
 		background: var(--surface-solid);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
@@ -225,9 +227,10 @@
 		width: 1.1rem;
 		height: 1.1rem;
 		accent-color: var(--accent);
+		margin: 0;
 	}
 	.title {
-		flex: 1 1 calc(100% - 2rem); /* the title gets its own line; meta and menu go below */
+		flex: 1 1 calc(100% - 3rem);
 		min-width: 0;
 		text-align: left;
 		font: inherit;
@@ -242,10 +245,15 @@
 		text-decoration: line-through;
 	}
 	.meta {
+		margin-left: calc(1.1rem + var(--space-2));
 		display: flex;
+		flex-wrap: wrap;
 		gap: var(--space-2);
 		color: var(--muted);
 		font-size: var(--text-sm);
+	}
+	.meta > span {
+		white-space: nowrap;
 	}
 	.chip {
 		background: var(--accent-soft);
@@ -264,6 +272,8 @@
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
+		min-height: 0;
+		max-width: 8.5rem;
 		padding: 0 var(--space-1);
 		margin-left: auto;
 	}
