@@ -25,14 +25,15 @@ import (
 
 // Handlers serves the tech watch.
 type Handlers struct {
-	db  *pgxpool.Pool
-	log *slog.Logger
-	now func() time.Time
+	db     *pgxpool.Pool
+	log    *slog.Logger
+	now    func() time.Time
+	speech *Speech // the operator's speech server, or nil (EP-132)
 }
 
 // NewHandlers returns the endpoints.
 func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
-	return &Handlers{db: pool, log: log, now: time.Now}
+	return &Handlers{db: pool, log: log, now: time.Now, speech: SpeechFromEnv()}
 }
 
 // Routes mounts the endpoints; the caller wraps them in auth.Require.
@@ -61,6 +62,8 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/watch/graph", h.graph)
 	r.Get("/v1/watch/export", h.export)
 	r.Get("/v1/watch/podcast", h.podcast)
+	r.Get("/v1/watch/podcast/voices", h.voices)
+	r.Post("/v1/watch/podcast/speech", h.speak)
 }
 
 // SessionRoutes manage share links: they make news public, so they take a
@@ -752,4 +755,60 @@ func (h *Handlers) podcast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, ep)
+}
+
+// voices lists the natural voices of the operator's speech server (EP-132).
+func (h *Handlers) voices(w http.ResponseWriter, r *http.Request) {
+	out := map[string]any{"available": false, "voices": []Voice{}}
+	if h.speech != nil {
+		vs, err := h.speech.Voices(r.Context())
+		if err != nil {
+			h.log.Warn("speech voices", "err", err)
+		} else {
+			out = map[string]any{"available": true, "voices": vs}
+		}
+	}
+	httpx.JSON(w, http.StatusOK, out)
+}
+
+// speak reads one part of an episode aloud with a natural voice, as MP3.
+func (h *Handlers) speak(w http.ResponseWriter, r *http.Request) {
+	if h.speech == nil {
+		httpx.Problem(w, http.StatusConflict, "No speech server is set up: the operator sets AXON_TTS_URL.")
+		return
+	}
+	var body struct {
+		Text  string  `json:"text"`
+		Voice string  `json:"voice"`
+		Speed float64 `json:"speed"`
+	}
+	if err := httpx.Decode(r, &body); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if body.Speed == 0 {
+		body.Speed = 1
+	}
+	switch n := len([]rune(strings.TrimSpace(body.Text))); {
+	case n == 0 || n > 3000:
+		h.fail(w, ValidationError{"The text to speak is 1 to 3,000 characters."})
+		return
+	case !voiceRe.MatchString(body.Voice):
+		h.fail(w, ValidationError{"The voice is a name like af_heart."})
+		return
+	case body.Speed < 0.5 || body.Speed > 2:
+		h.fail(w, ValidationError{"The speed is between 0.5 and 2."})
+		return
+	}
+	// Speaking takes longer than the server's usual write timeout.
+	_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(3 * time.Minute))
+	audio, err := h.speech.Say(r.Context(), body.Text, body.Voice, body.Speed)
+	if err != nil {
+		h.log.Warn("speech", "err", err)
+		httpx.Problem(w, http.StatusBadGateway, "The speech server did not answer. Try again, or use this device's voices.")
+		return
+	}
+	w.Header().Set("Content-Type", "audio/mpeg")
+	w.Header().Set("Cache-Control", "private, max-age=86400")
+	_, _ = w.Write(audio)
 }

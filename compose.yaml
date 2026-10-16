@@ -43,6 +43,9 @@ services:
       AXON_WHISPER_URL: ${AXON_WHISPER_URL:-} # your Whisper server (OpenAI transcription API), for videos without captions (EP-123)
       AXON_WHISPER_MODEL: ${AXON_WHISPER_MODEL:-}
       AXON_WHISPER_TOKEN: ${AXON_WHISPER_TOKEN:-}
+      AXON_TTS_URL: ${AXON_TTS_URL:-} # natural podcast voices (EP-132): http://tts:8880 with the tts profile, or your own server (OpenAI speech API)
+      AXON_TTS_MODEL: ${AXON_TTS_MODEL:-}
+      AXON_TTS_TOKEN: ${AXON_TTS_TOKEN:-}
     security_opt: [no-new-privileges:true] # no setuid escalation inside the container
     cap_drop: [ALL] # needs no Linux capability
     depends_on:
@@ -61,6 +64,15 @@ services:
       - ankidata:/data
     security_opt: [no-new-privileges:true] # no setuid escalation inside the container
     cap_drop: [ALL] # needs no Linux capability
+
+  # Natural voices for the podcast (EP-132): Kokoro, an open model (Apache
+  # 2.0) that speaks on the CPU. Optional: `docker compose --profile tts up -d`
+  # and AXON_TTS_URL=http://tts:8880. Internal only, about 4 GB on disk.
+  tts:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.4
+    profiles: [tts]
+    security_opt: [no-new-privileges:true] # no setuid escalation inside the container
+    cap_drop: [ALL] # listens on 8880, so needs no Linux capability
 
   web:
     image: axon-web:${AXON_VERSION:-dev}

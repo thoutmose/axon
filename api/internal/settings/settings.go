@@ -138,6 +138,10 @@ type Podcast struct {
 	Days    int     `json:"days" yaml:"days"`   // 1 or 7
 	Voice   string  `json:"voice" yaml:"voice"` // a voice name; empty for the device's default
 	Rate    float64 `json:"rate" yaml:"rate"`   // 0.5 to 2
+	// Hosts is 1, or 2 for a conversation where Voice and Voice2 take turns
+	// (EP-132); 0, from before, reads as 1.
+	Hosts  int    `json:"hosts" yaml:"hosts"`
+	Voice2 string `json:"voice2" yaml:"voice2"`
 }
 
 // Sceneries are the landscapes under the sky: nature, the earth from
@@ -228,7 +232,7 @@ func Defaults() Doc {
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 		Digest: Digest{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
 			Monthly: []string{"goals", "month", "watch"}, Quote: true, Picture: true},
-		Podcast:  Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1},
+		Podcast:  Podcast{Format: "digest", Lang: "en", Minutes: 10, Days: 1, Rate: 1, Hosts: 1},
 		Caffeine: Caffeine{Bedtime: "23:00", Metabolism: "average"},
 	}
 }
@@ -355,6 +359,10 @@ func (d Doc) Validate() error {
 		return FieldError{"podcast.rate", "is between 0.5 and 2"}
 	case len([]rune(p.Voice)) > 200:
 		return FieldError{"podcast.voice", "is up to 200 characters"}
+	case p.Hosts < 0 || p.Hosts > 2:
+		return FieldError{"podcast.hosts", "is 1 or 2"}
+	case len([]rune(p.Voice2)) > 200:
+		return FieldError{"podcast.voice2", "is up to 200 characters"}
 	}
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}
