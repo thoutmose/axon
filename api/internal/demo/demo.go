@@ -200,6 +200,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 
 	// Films, series, and books: finished favourites make the recommendations explain themselves.
+	var reading uuid.UUID // the book the reading habit turns the pages of (EP-137)
 	for _, m := range []struct {
 		title, kind, status, creators string
 		genres                        []string
@@ -226,7 +227,11 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		if m.year > 0 {
 			f.Year = ptr(m.year)
 		}
-		_, s.err = media.Create(ctx, tx, user, graph.UserActor, f, nil, s.today)
+		var it media.Item
+		it, s.err = media.Create(ctx, tx, user, graph.UserActor, f, nil, s.today)
+		if m.title == "Designing Data-Intensive Applications" {
+			reading = it.ID
+		}
 	}
 
 	// A month of budget: categories with budgets, income, and spending.
@@ -341,6 +346,8 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			_, s.err = tx.Exec(ctx, `INSERT INTO habit_checkins (habit_id, day, status) VALUES ($1, $2, $3)`, habit.ID, s.day(-back), status)
 		}
 	}
+
+	s.link(habitIDs[0], "relates_to", reading) // Read 20 pages → the book in progress (EP-137)
 
 	// A habit to break, with the four laws inverted, and the habits scorecard.
 	if s.err == nil {

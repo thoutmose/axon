@@ -185,7 +185,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
 | EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
 | EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Done |
-| EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Planned |
+| EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Done |
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Planned |
 | EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Planned |
 | EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Planned |
@@ -2259,7 +2259,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "If I have the habit Read 20 pages today, connected to a book like Dune, the pages read should increase and the pages to read decrease."
 
-- [ ] **EP-137/IS-137.01** · 1 pt · SHOULD — A habit linked to a book or series (Connections) with a number in its name or its target ("Read 20 pages", "Watch 1 episode") moves that item's progress forward by that number when checked in, back when unchecked, never past its total; the habit says so ("Dune: 230 of 611 pages").
+- [x] **EP-137/IS-137.01** · 1 pt · SHOULD — A habit linked to a book or series (Connections) with a number in its name or its target ("Read 20 pages", "Watch 1 episode") moves that item's progress forward by that number when a day becomes done, back when it is undone or skipped, between 0 and its total; a book wanted becomes in progress. The two-minute version moves nothing. The demo's Read 20 pages turns Designing Data-Intensive Applications.
 
 **Tests.** API: check in, the progress goes up; uncheck, it goes back; the total caps it.
 
