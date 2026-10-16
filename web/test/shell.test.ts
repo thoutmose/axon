@@ -910,12 +910,20 @@ test('track films by hand, rate them, and see recommendations that say why', asy
 		'By Denis Villeneuve, like Arrival, which you rated 9/10.'
 	);
 	await expect(page.getByText('Rated 9/10', { exact: true })).toBeVisible();
-	// Without a cover, a generated one carries the title; the rating sits on the poster.
+	// Without a cover, a generated one carries the title; the rating shows as stars.
 	const arrival = page.locator('.item', { hasText: 'Arrival' }).first();
 	await expect(arrival.locator('.generated')).toContainText('Arrival');
-	await expect(arrival.locator('.badge.rating')).toContainText('9');
+	await expect(arrival.locator('.stars')).toContainText('★★★★½');
 	// Finding covers sends titles away, so it waits for lookups to be allowed.
 	await expect(page.getByRole('button', { name: 'Find missing covers' })).toHaveCount(0);
+	await noSeriousA11yViolations(page);
+
+	// Each card opens the item's own page (EP-135): progress moves it along.
+	await page.locator('.item', { hasText: 'Dune: Part One' }).locator('a.title').click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Dune: Part One' })).toBeVisible();
+	await page.getByRole('button', { name: '+30 minutes' }).click();
+	await expect(page.getByText('Film · In progress')).toBeVisible();
+	await expect(page.getByLabel('Progress')).toHaveValue('30');
 	await noSeriousA11yViolations(page);
 });
 
