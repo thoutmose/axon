@@ -464,7 +464,8 @@ func CheckIn(ctx context.Context, q db.Querier, userID, id uuid.UUID, day time.T
 	if len(note) > 1000 {
 		return Checkin{}, ValidationError{"Notes are limited to 1,000 characters."}
 	}
-	if _, err := Get(ctx, q, userID, id, now); err != nil {
+	h, err := Get(ctx, q, userID, id, now)
+	if err != nil {
 		return Checkin{}, err
 	}
 	today, _, err := Today(ctx, q, userID, now)
@@ -474,26 +475,47 @@ func CheckIn(ctx context.Context, q db.Querier, userID, id uuid.UUID, day time.T
 	if day.After(today) || day.Before(today.AddDate(0, 0, -7)) {
 		return Checkin{}, ValidationError{"Check in for today or one of the last 7 days."}
 	}
+	prev := previous(ctx, q, id, day)
 	c := Checkin{Day: tasks.Date{Time: day}, Status: status, Note: note}
 	err = q.QueryRow(ctx, `INSERT INTO habit_checkins (habit_id, day, status, note) VALUES ($1, $2, $3, $4)
 		ON CONFLICT (habit_id, day) DO UPDATE SET status = $3, note = $4 RETURNING created_at`, id, day, status, note).Scan(&c.CreatedAt)
 	if err == nil && OnCheckin != nil {
 		OnCheckin(ctx, q, userID, id)
 	}
+	if err == nil && OnDone != nil && (prev == "done") != (status == "done") {
+		OnDone(ctx, q, userID, id, h.Title, map[bool]int{true: 1, false: -1}[status == "done"], now)
+	}
 	return c, err
 }
 
 // Uncheck removes a day's check-in.
 func Uncheck(ctx context.Context, q db.Querier, userID, id uuid.UUID, day time.Time, now time.Time) error {
-	if _, err := Get(ctx, q, userID, id, now); err != nil {
+	h, err := Get(ctx, q, userID, id, now)
+	if err != nil {
 		return err
 	}
-	_, err := q.Exec(ctx, `DELETE FROM habit_checkins WHERE habit_id = $1 AND day = $2`, id, day)
+	prev := previous(ctx, q, id, day)
+	_, err = q.Exec(ctx, `DELETE FROM habit_checkins WHERE habit_id = $1 AND day = $2`, id, day)
 	if err == nil && OnCheckin != nil {
 		OnCheckin(ctx, q, userID, id)
 	}
+	if err == nil && OnDone != nil && prev == "done" {
+		OnDone(ctx, q, userID, id, h.Title, -1, now)
+	}
 	return err
 }
+
+// previous is a day's check-in status before it changes, "" for none.
+func previous(ctx context.Context, q db.Querier, id uuid.UUID, day time.Time) string {
+	var s string
+	_ = q.QueryRow(ctx, `SELECT status FROM habit_checkins WHERE habit_id = $1 AND day = $2`, id, day).Scan(&s)
+	return s
+}
+
+// OnDone, when set, hears when a day becomes done (+1) or stops being done
+// (-1): a reading habit then turns its book's pages (EP-137). Its errors
+// never fail the check-in.
+var OnDone func(ctx context.Context, q db.Querier, userID, habitID uuid.UUID, title string, delta int, now time.Time)
 
 // OnCheckin, when set, hears about every check-in change (the vault mirror
 // refreshes the habit's note). Its errors never fail the check-in.

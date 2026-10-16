@@ -101,3 +101,40 @@ func TestHabitCheckInsRecoveryAndGoals(t *testing.T) {
 	alice.mustDo(204, "DELETE", "/v1/habits/"+h.ID, nil)
 	alice.mustDo(404, "GET", "/v1/habits/"+h.ID, nil)
 }
+
+func TestAReadingHabitTurnsItsBooksPages(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+
+	var h habitJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Read 20 pages"}`)), &h)
+	var book struct {
+		ID       string `json:"id"`
+		Status   string `json:"status"`
+		Progress int    `json:"progress"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/media", []byte(`{"title":"Dune","kind":"book","total":30}`)), &book)
+	alice.mustDo(201, "POST", "/v1/links", []byte(`{"source_id":"`+h.ID+`","relation":"relates_to","target_id":"`+book.ID+`"}`))
+	get := func() {
+		t.Helper()
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/media/"+book.ID, nil), &book)
+	}
+
+	alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+h.State.Today, []byte(`{"status":"done"}`))
+	if get(); book.Progress != 20 || book.Status != "doing" {
+		t.Fatalf("after one day: %+v", book)
+	}
+	// The same day again changes nothing; another day stops at the last page.
+	alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+h.State.Today, []byte(`{"status":"done"}`))
+	alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+day(-1), []byte(`{"status":"done"}`))
+	if get(); book.Progress != 30 {
+		t.Fatalf("capped at the total: %+v", book)
+	}
+	// Undone, or only skipped, the pages go back.
+	alice.mustDo(204, "DELETE", "/v1/habits/"+h.ID+"/checkins/"+day(-1), nil)
+	alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+h.State.Today, []byte(`{"status":"skipped"}`))
+	if get(); book.Progress != 0 {
+		t.Fatalf("after undoing both days: %+v", book)
+	}
+}
