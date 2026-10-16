@@ -38,3 +38,24 @@ export function overdue(task: Task, today: string): boolean {
 		!!task.due_on && task.due_on < today && task.status !== 'done' && task.status !== 'cancelled'
 	);
 }
+
+/** Cards a board column shows before "Show N more" (EP-128). */
+export const BOARD_LIMIT = 5;
+
+/**
+ * The cards of a folded column: the first `limit` of each group, and any card
+ * in `keep` (one just moved there, so it never vanishes). `hidden` counts the rest.
+ */
+export function fold<T extends { id: string }>(
+	groups: [string, T[]][],
+	keep: Set<string>,
+	limit = BOARD_LIMIT
+): { groups: [string, T[]][]; hidden: number } {
+	let hidden = 0;
+	const out = groups.map(([key, items]): [string, T[]] => {
+		const shown = items.filter((x, i) => i < limit || keep.has(x.id));
+		hidden += items.length - shown.length;
+		return [key, shown];
+	});
+	return { groups: out, hidden };
+}

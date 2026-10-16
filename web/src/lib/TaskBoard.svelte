@@ -14,7 +14,8 @@
 </script>
 
 <script lang="ts">
-	import { overdue, relativeDay } from '$lib/tasks';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { fold, overdue, relativeDay } from '$lib/tasks';
 
 	let {
 		label,
@@ -34,6 +35,15 @@
 
 	let dragging = $state<Task | null>(null);
 	let over = $state<string | null>(null);
+	// Long columns fold after a few cards (EP-128); a column opened, or a card
+	// just moved, stays in sight.
+	const opened = new SvelteSet<string>();
+	const moved = new SvelteSet<string>();
+
+	function move(task: Task, status: Task['status']) {
+		moved.add(task.id);
+		onmove(task, status);
+	}
 
 	function groups(col: BoardColumn): [string, Task[]][] {
 		if (!col.byContext) return [['', col.tasks]];
@@ -53,19 +63,22 @@
 		const to = columns[at + (e.key === 'ArrowLeft' ? -1 : 1)];
 		if (!to) return;
 		e.preventDefault();
-		onmove(task, to.status);
+		move(task, to.status);
 	}
 
 	function drop(e: DragEvent, col: BoardColumn) {
 		e.preventDefault();
 		over = null;
-		if (dragging && dragging.status !== col.status) onmove(dragging, col.status);
+		if (dragging && dragging.status !== col.status) move(dragging, col.status);
 		dragging = null;
 	}
 </script>
 
 <div class="board" role="group" aria-label={label}>
 	{#each columns as col, i (col.status)}
+		{@const folded = opened.has(col.status)
+			? { groups: groups(col), hidden: 0 }
+			: fold(groups(col), moved)}
 		<section
 			class="column"
 			class:over={over === col.status}
@@ -79,7 +92,7 @@
 		>
 			<h2 id="col-{col.status}">{col.label} <span class="count">{col.tasks.length}</span></h2>
 			<p class="hint">{col.hint}</p>
-			{#each groups(col) as [context, tasks] (context)}
+			{#each folded.groups as [context, tasks] (context)}
 				{#if context}<h3>{context}</h3>{/if}
 				<ul>
 					{#each tasks as item (item.id)}
@@ -116,7 +129,7 @@
 							<select
 								id="move-{item.id}"
 								value={item.status}
-								onchange={(e) => onmove(item, e.currentTarget.value as Task['status'])}
+								onchange={(e) => move(item, e.currentTarget.value as Task['status'])}
 							>
 								{#each columns as c (c.status)}<option value={c.status}>{c.label}</option>{/each}
 							</select>
@@ -126,6 +139,15 @@
 			{:else}
 				<p class="empty">{t('Nothing here.')}</p>
 			{/each}
+			{#if folded.hidden}
+				<button type="button" class="more" onclick={() => opened.add(col.status)}
+					>{t('Show {n} more', { n: folded.hidden })}</button
+				>
+			{:else if opened.has(col.status)}
+				<button type="button" class="more" onclick={() => opened.delete(col.status)}
+					>{t('Show less')}</button
+				>
+			{/if}
 		</section>
 	{/each}
 </div>
@@ -244,6 +266,21 @@
 		border-radius: var(--radius-sm);
 		padding: 0 var(--space-1);
 		margin-left: auto;
+	}
+	.more {
+		width: 100%;
+		margin-top: var(--space-2);
+		padding: var(--space-2);
+		font: inherit;
+		font-size: var(--text-sm);
+		color: var(--accent);
+		background: none;
+		border: 1px dashed var(--border);
+		border-radius: var(--radius);
+		cursor: pointer;
+	}
+	.more:hover {
+		border-color: var(--accent);
 	}
 	kbd {
 		font-family: var(--font-mono);

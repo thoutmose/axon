@@ -3724,5 +3724,7 @@ export const fr: Record<string, string> = {
 		'Lumière du matin, froid, sommeil : des habitudes avec les études qui les fondent.',
 	'A link to join Axon, or your household.': 'Un lien pour rejoindre Axon, ou votre foyer.',
 	'Trophies for your roadmap skills, cards for your habits, and milestones, raised from bronze to silver to gold as your streaks, practice, and focus grow.':
-		'Des trophées pour les compétences de votre feuille de route, des cartes pour vos habitudes et des jalons, qui passent du bronze à l’argent puis à l’or à mesure que vos séries, votre pratique et votre concentration progressent.'
+		'Des trophées pour les compétences de votre feuille de route, des cartes pour vos habitudes et des jalons, qui passent du bronze à l’argent puis à l’or à mesure que vos séries, votre pratique et votre concentration progressent.',
+	'Show {n} more': 'Afficher {n} de plus',
+	'Show less': 'Afficher moins'
 };
