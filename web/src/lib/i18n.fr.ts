@@ -3696,5 +3696,11 @@ export const fr: Record<string, string> = {
 	'API key (Audiobookshelf → Settings → API Keys)':
 		'Clé d’API (Audiobookshelf → Paramètres → Clés d’API)',
 	'In the shared demo, connecting a server is off. On your own Axon, give its address and an API key: its shows then appear in the tech watch, like the demo’s podcasts and videos.':
-		'Dans la démo partagée, la connexion à un serveur est désactivée. Sur votre propre Axon, donnez son adresse et une clé d’API : ses émissions apparaissent alors dans la veille, comme les podcasts et vidéos de la démo.'
+		'Dans la démo partagée, la connexion à un serveur est désactivée. Sur votre propre Axon, donnez son adresse et une clé d’API : ses émissions apparaissent alors dans la veille, comme les podcasts et vidéos de la démo.',
+	'Watch on {site}': 'Regarder sur {site}',
+	'Open the episode on {site}': 'Ouvrir l’épisode sur {site}',
+	'Read on {site}': 'Lire sur {site}',
+	'Source: {name}': 'Source : {name}',
+	'Copy the link': 'Copier le lien',
+	'The audio file': 'Le fichier audio'
 };

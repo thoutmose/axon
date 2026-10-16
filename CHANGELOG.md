@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **The original and its source** (EP-126): every news item, video, and episode links to its original and to its source (the channel, the blog, the show), and the reader shows the full link, without trackers, to copy.
 - **A new trailer and a gallery** (EP-125): a one-minute trailer drawn frame by frame, with a soundtrack composed for it, on the home page and at the top of the README, and a gallery of twelve pages of today's Axon.
 - **Podcasts from Audiobookshelf** (EP-124): connect your Audiobookshelf in Preferences and every podcast it downloads follows in the tech watch, each episode with its notes and, with a Whisper server, its words read from your own copy.
 - **YouTube in the tech watch** (EP-123): videos get their words from YouTube's captions, or from your own Whisper server when they have none, and those words join their analysis, topics, and the news graph; Spanish is understood beside English and French; links lose their tracking (`si`, `fbclid`, `utm_*`…), and every form of a YouTube link is one video.

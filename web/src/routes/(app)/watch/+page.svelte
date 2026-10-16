@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { host, originalLabel } from '$lib/watchLinks';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
@@ -144,6 +145,12 @@
 		auto_captions: 'from YouTube’s automatic captions',
 		whisper: 'transcribed by Whisper'
 	};
+	// The original and its source, a click away (EP-126).
+	async function copyLink() {
+		if (!open) return;
+		await navigator.clipboard.writeText(open.item.url);
+		toast(t('Link copied.'));
+	}
 	async function readAll() {
 		try {
 			const { status: _s, ...rest } = filter;
@@ -292,6 +299,13 @@
 							</span>
 							{#if it.summary}<span class="summary small">{it.summary}</span>{/if}
 						</button>
+						<p class="links small">
+							<a href={it.url} target="_blank" rel="noopener noreferrer">↗ {host(it.url)}</a
+							>{#if it.source_url}
+								· <a href={it.source_url} target="_blank" rel="noopener noreferrer"
+									>{t('Source: {name}', { name: it.source_title })}</a
+								>{/if}
+						</p>
 						<div class="chips">
 							{#if it.outlier}<span class="chip warn">{t(it.outlier)}</span>{/if}
 							{#each it.labels.slice(0, 4) as l (l)}
@@ -312,7 +326,7 @@
 			<div class="row actions">
 				<Button variant="ghost" onclick={() => (open = null)} aria-label={t('Close')}>←</Button>
 				<a class="original" href={open.item.url} target="_blank" rel="noopener noreferrer"
-					>{t('Open the original')} ↗</a
+					>{t(originalLabel(open.item).key, { site: originalLabel(open.item).site })} ↗</a
 				>
 				{#if open.item.status !== 'saved'}
 					<Button variant="ghost" onclick={() => setStatus(open!.item, 'saved')}
@@ -334,11 +348,25 @@
 				{/if}
 			</div>
 			<p class="eyebrow muted small">
-				{open.item.source_title}{#if open.item.author}
+				{#if open.item.source_url}<a
+						href={open.item.source_url}
+						target="_blank"
+						rel="noopener noreferrer">{open.item.source_title} ↗</a
+					>{:else}{open.item.source_title}{/if}{#if open.item.author}
 					· {open.item.author}{/if} · {new Date(open.item.published_at).toLocaleString()} · {open
 					.item.reading_minutes} min
 			</p>
 			<h2>{open.item.title}</h2>
+			<p class="link-line small">
+				<a class="url" href={open.item.url} target="_blank" rel="noopener noreferrer"
+					>{open.item.url}</a
+				>
+				<button type="button" class="linkbtn" onclick={copyLink}>{t('Copy the link')}</button>
+				{#if open.item.kind === 'podcast' && open.item.audio && open.item.audio !== open.item.url}
+					· <a href={open.item.audio} target="_blank" rel="noopener noreferrer"
+						>{t('The audio file')}</a
+					>{/if}
+			</p>
 			{#if open.item.also_in.length}
 				<p class="muted small">{t('Also in')}: {open.item.also_in.join(', ')}</p>
 			{/if}
@@ -383,6 +411,29 @@
 </div>
 
 <style>
+	.links {
+		margin: 0 0 var(--space-1);
+		padding: 0 var(--space-2);
+		color: var(--muted);
+	}
+	.link-line {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: baseline;
+		margin-top: 0;
+	}
+	.link-line .url {
+		overflow-wrap: anywhere;
+	}
+	.linkbtn {
+		background: none;
+		border: 0;
+		color: var(--accent);
+		cursor: pointer;
+		font: inherit;
+		padding: 0;
+	}
 	.head {
 		display: flex;
 		flex-wrap: wrap;

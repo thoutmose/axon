@@ -174,6 +174,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-123 | YouTube in the tech watch | Videos' words from their captions, else the operator's Whisper server, in their analysis and graph; Spanish too; links without tracking. | SHOULD | 8 pts | EP-110, EP-111 | Done |
 | EP-124 | Podcasts from Audiobookshelf | The person's Audiobookshelf, connected in Preferences, brings each podcast into the tech watch, each episode with its notes and, with Whisper, its words from their own copy. | SHOULD | 5 pts | EP-110, EP-123 | Done |
 | EP-125 | A trailer and a gallery | An Apple-style trailer drawn frame by frame with a composed soundtrack, replacing the recorded tour, and a README gallery of today's Axon. | COULD | 3 pts | EP-84 | Done |
+| EP-126 | The original and its source | Every news item links to its original (watch, listen, read) and to its source (the channel, the blog, the show), with the full clean link to copy. | SHOULD | 1 pt | EP-110, EP-123 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -210,7 +211,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2152,6 +2153,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-125/IS-125.02** · 1 pt · COULD — The README (English and French) opens its screenshots with the trailer's poster linked to the film, then a gallery of twelve pages of today's Axon (Today, tasks, notes, Learn, the roadmap, Focus, the tech watch and its graph, health, decisions, the collection, habits), described for screen readers.
 
 **Tests.** Rendered and measured: loudness and true peak (EBU R128), the spectrogram's sections, preview frames of each kind of scene; `make check` (shellcheck on the script).
+
+### EP-126 — The original and its source
+
+**Goal.** "For the tech watch, YouTube, etc., make sure I can easily find the source's link too." The reader had one "Open the original" button, and the source was plain text.
+
+- [x] **EP-126/IS-126.01** · 1 pt · SHOULD — Each item carries `source_url`, where its source lives (the YouTube channel, the blog, the show; its feed when it gives none). In the list, each item links to its original, named by its site (↗ youtube.com), and to its source. In the reader, the button says what opening it does (Watch on youtube.com, Open the episode on changelog.com, Read on go.dev), the source's name links to it, the full link without trackers is shown with **Copy the link**, and a podcast links to its audio file.
+
+**Tests.** `TestWatchVideoTranscript` checks the source's address; the site names and labels, and their French (written first); an e2e test on the demo's YouTube talk (the list's link, the reader's button, the full link, the copy button, the source), with axe.
 
 ### EP-20 — Analytics & insights
 

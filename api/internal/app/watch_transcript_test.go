@@ -22,7 +22,7 @@ func TestWatchVideoTranscript(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/feed.xml":
-			_, _ = w.Write([]byte(`<rss version="2.0"><channel><title>Talks</title><item><title>A talk on consensus</title>
+			_, _ = w.Write([]byte(`<rss version="2.0"><channel><title>Talks</title><link>https://www.youtube.com/channel/UC_talks</link><item><title>A talk on consensus</title>
 				<link>https://youtu.be/oV9rvDllKEg?si=share123</link><guid>v1</guid><pubDate>Mon, 12 Oct 2026 08:00:00 GMT</pubDate>
 				<description>A conference talk.</description></item></channel></rss>`))
 		case "/youtubei/v1/player":
@@ -49,17 +49,20 @@ func TestWatchVideoTranscript(t *testing.T) {
 	}
 	var list struct {
 		Items []struct {
-			ID     string   `json:"id"`
-			URL    string   `json:"url"`
-			Kind   string   `json:"kind"`
-			Labels []string `json:"labels"`
+			ID        string   `json:"id"`
+			URL       string   `json:"url"`
+			Kind      string   `json:"kind"`
+			Labels    []string `json:"labels"`
+			SourceURL string   `json:"source_url"`
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/watch/items?status=all", nil), &list)
 	if len(list.Items) != 1 {
 		t.Fatalf("raw = %s", alice.mustDo(200, "GET", "/v1/watch/items?status=all&outliers=1", nil))
 	}
-	if list.Items[0].URL != "https://youtube.com/watch?v=oV9rvDllKEg" || list.Items[0].Kind != "video" {
+	// The original and its source are a click away (EP-126).
+	if list.Items[0].URL != "https://youtube.com/watch?v=oV9rvDllKEg" || list.Items[0].Kind != "video" ||
+		list.Items[0].SourceURL != "https://www.youtube.com/channel/UC_talks" {
 		t.Fatalf("items = %+v", list.Items)
 	}
 	id := list.Items[0].ID

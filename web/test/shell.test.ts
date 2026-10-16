@@ -1483,6 +1483,33 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	await noSeriousA11yViolations(page);
 });
 
+test('tech watch: each item links to its original and to its source', async ({ browser }) => {
+	// The demo has news from YouTube channels and blogs (EP-126).
+	const demo = await (await browser.newContext()).newPage();
+	await demo.request.post(origin + '/api/v1/auth/demo', { headers: { Origin: origin } });
+	await demo.goto(origin + '/watch');
+	const video = demo
+		.getByRole('listitem')
+		.filter({ hasText: 'Concurrency is not Parallelism by Rob Pike' });
+	await expect(video.getByRole('link', { name: '↗ youtube.com' })).toHaveAttribute(
+		'href',
+		'https://youtube.com/watch?v=oV9rvDllKEg'
+	);
+	await video.getByRole('button').first().click();
+	const reader = demo.getByRole('article');
+	await expect(reader.getByRole('link', { name: 'Watch on youtube.com ↗' })).toBeVisible();
+	await expect(
+		reader.getByRole('link', { name: 'https://youtube.com/watch?v=oV9rvDllKEg' })
+	).toBeVisible();
+	await expect(reader.getByRole('button', { name: 'Copy the link' })).toBeVisible();
+	await expect(reader.getByRole('link', { name: 'Hacker News ↗' })).toHaveAttribute(
+		'href',
+		'https://news.ycombinator.com/'
+	);
+	await noSeriousA11yViolations(demo);
+	await demo.context().close();
+});
+
 test('tech watch: export the view, share it with a link anyone can open, then revoke it', async ({
 	browser
 }) => {

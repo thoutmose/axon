@@ -4977,6 +4977,8 @@ export interface components {
 			transcript_source: '' | 'captions' | 'auto_captions' | 'whisper';
 			/** @description The transcript's language, as YouTube or Whisper gave it. */
 			transcript_lang: string;
+			/** @description Where the source lives (the channel, the blog, the show), its feed when it gives none; empty once unfollowed (EP-126). */
+			source_url: string;
 		};
 		WatchEpisode: {
 			title: string;
