@@ -5036,6 +5036,9 @@ export interface components {
 				week: number;
 				outliers: number;
 				merged: number;
+				articles: number;
+				videos: number;
+				podcasts: number;
 			};
 			daily: {
 				/** Format: date */

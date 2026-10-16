@@ -1510,6 +1510,37 @@ test('tech watch: each item links to its original and to its source', async ({ b
 	await demo.context().close();
 });
 
+test('demo: every new feature is named in the menu and on Today', async ({ browser }) => {
+	// The owner could not find YouTube, the collection, or coffee (EP-127).
+	const demo = await (await browser.newContext()).newPage();
+	await demo.request.post(origin + '/api/v1/auth/demo', { headers: { Origin: origin } });
+	await demo.goto(origin + '/today');
+	const news = demo.getByRole('region', { name: 'New in Axon' });
+	await expect(news.getByRole('link', { name: /YouTube videos/ })).toBeVisible();
+	const nav = demo.getByRole('navigation', { name: 'Main' });
+	await nav.getByRole('button', { name: 'Think' }).click();
+	await nav.getByRole('link', { name: 'YouTube videos' }).click();
+	await expect(demo.getByRole('tab', { name: /YouTube/ })).toHaveAttribute('aria-selected', 'true');
+	await expect(demo.getByText('▶ YouTube').first()).toBeVisible();
+	// Only videos: each story in the list carries the badge.
+	const stories = demo.getByRole('region', { name: 'News' }).getByRole('listitem');
+	await expect(stories.first()).toBeVisible();
+	await expect(stories.filter({ hasNotText: '▶ YouTube' })).toHaveCount(0);
+	await demo.getByRole('tab', { name: /Podcasts/ }).click();
+	await expect(demo.getByText('🎧 Podcast').first()).toBeVisible();
+	await nav.getByRole('button', { name: 'Grow' }).click();
+	await nav.getByRole('link', { name: 'Collection' }).click();
+	await expect(demo.getByRole('heading', { name: 'Your collection' })).toBeVisible();
+	await nav.getByRole('button', { name: 'Life' }).click();
+	await nav.getByRole('link', { name: 'Coffee and tea' }).click();
+	await expect(demo.getByRole('heading', { name: 'Coffee and tea', level: 2 })).toBeVisible();
+	await nav.getByRole('button', { name: 'Grow' }).click();
+	await nav.getByRole('link', { name: 'Huberman protocols' }).click();
+	await expect(demo.getByRole('heading', { name: /after Andrew Huberman/ })).toBeInViewport();
+	await noSeriousA11yViolations(demo);
+	await demo.context().close();
+});
+
 test('tech watch: export the view, share it with a link anyone can open, then revoke it', async ({
 	browser
 }) => {

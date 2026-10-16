@@ -8440,8 +8440,8 @@ components:
           properties: { total: { type: integer }, ok: { type: integer }, failing: { type: integer }, waiting: { type: integer }, off: { type: integer } }
         items:
           type: object
-          required: [total, unread, saved, today, week, outliers, merged]
-          properties: { total: { type: integer }, unread: { type: integer }, saved: { type: integer }, today: { type: integer }, week: { type: integer }, outliers: { type: integer }, merged: { type: integer } }
+          required: [total, unread, saved, today, week, outliers, merged, articles, videos, podcasts]
+          properties: { total: { type: integer }, unread: { type: integer }, saved: { type: integer }, today: { type: integer }, week: { type: integer }, outliers: { type: integer }, merged: { type: integer }, articles: { type: integer }, videos: { type: integer }, podcasts: { type: integer } }
         daily:
           type: array
           items: { type: object, required: [day, count], properties: { day: { type: string, format: date }, count: { type: integer } } }

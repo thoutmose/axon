@@ -353,13 +353,14 @@ func TestTechWatch(t *testing.T) {
 
 	// Monitoring at a glance.
 	var st struct {
-		Sources struct{ Total, OK, Failing, Waiting int }    `json:"sources"`
-		Items   struct{ Total, Merged, Outliers, Saved int } `json:"items"`
-		Daily   []struct{ Count int }                        `json:"daily"`
-		Labels  []struct{ Label string }                     `json:"labels"`
+		Sources struct{ Total, OK, Failing, Waiting int }                                `json:"sources"`
+		Items   struct{ Total, Merged, Outliers, Saved, Articles, Videos, Podcasts int } `json:"items"`
+		Daily   []struct{ Count int }                                                    `json:"daily"`
+		Labels  []struct{ Label string }                                                 `json:"labels"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/watch/stats", nil), &st)
-	if st.Sources.Total != 6 || st.Sources.Waiting != 3 || st.Items.Total != 5 || st.Items.Merged != 1 || st.Items.Outliers != 1 || st.Items.Saved != 1 || len(st.Daily) != 30 || len(st.Labels) == 0 {
+	if st.Sources.Total != 6 || st.Sources.Waiting != 3 || st.Items.Total != 5 || st.Items.Merged != 1 || st.Items.Outliers != 1 || st.Items.Saved != 1 || len(st.Daily) != 30 || len(st.Labels) == 0 ||
+		st.Items.Articles+st.Items.Videos+st.Items.Podcasts != st.Items.Total-st.Items.Outliers {
 		t.Fatalf("stats = %+v", st)
 	}
 

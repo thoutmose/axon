@@ -64,6 +64,22 @@
 			// The list still works without the side panel.
 		}
 	}
+	// The kind follows the address, so the menu opens the videos or the
+	// podcasts (EP-127).
+	const kindParam = (k: string | null): WatchFilter['kind'] =>
+		k === 'article' || k === 'video' || k === 'podcast' ? k : '';
+	const urlKind = $derived(kindParam(page.url.searchParams.get('kind')));
+	$effect(() => {
+		filter.kind = urlKind;
+	});
+	function pickKind(kind: WatchFilter['kind']) {
+		const q = new URLSearchParams(page.url.searchParams);
+		q.delete('item');
+		if (kind) q.set('kind', kind);
+		else q.delete('kind');
+		open = null;
+		goto(`?${q}`, { keepFocus: true, noScroll: true });
+	}
 	$effect(() => {
 		(void filter.status, filter.topic, filter.label, filter.q, filter.outliers, filter.kind);
 		load();
@@ -75,7 +91,9 @@
 			open = await api<{ item: WatchItem; note: string }>(`/v1/watch/items/${id}`);
 			labelsText = open.item.labels.join(', ');
 			if (open.item.status === 'unread') await setStatus(open.item, 'read', true);
-			goto(`?item=${id}`, { replaceState: true, keepFocus: true, noScroll: true });
+			const q = new URLSearchParams(page.url.searchParams);
+			q.set('item', id);
+			goto(`?${q}`, { replaceState: true, keepFocus: true, noScroll: true });
 		} catch (err) {
 			toast(message(err), 'error');
 		}
@@ -184,6 +202,22 @@
 		['saved', 'Saved'],
 		['archived', 'Archived']
 	];
+	const kinds: { kind: WatchFilter['kind']; label: string; icon: string }[] = [
+		{ kind: '', label: 'Everything', icon: '◎' },
+		{ kind: 'article', label: 'Articles', icon: '📰' },
+		{ kind: 'video', label: 'YouTube', icon: '▶' },
+		{ kind: 'podcast', label: 'Podcasts', icon: '🎧' }
+	];
+	const kindCount = (k: WatchFilter['kind']) => {
+		if (!stats) return null;
+		const n = stats.items;
+		return {
+			'': n.articles + n.videos + n.podcasts,
+			article: n.articles,
+			video: n.videos,
+			podcast: n.podcasts
+		}[k ?? ''];
+	};
 </script>
 
 <svelte:window onkeydown={onKey} />
@@ -211,6 +245,21 @@
 	</nav>
 </header>
 
+<div class="kinds" role="tablist" aria-label={t('Kind')}>
+	{#each kinds as k (k.kind)}
+		<button
+			type="button"
+			role="tab"
+			class={k.kind || 'all'}
+			aria-selected={filter.kind === k.kind}
+			onclick={() => pickKind(k.kind)}
+			><span aria-hidden="true">{k.icon}</span>
+			{t(k.label)}
+			{#if kindCount(k.kind) != null}<span class="n">{kindCount(k.kind)}</span>{/if}</button
+		>
+	{/each}
+</div>
+
 <div class="filters">
 	<div class="tabs" role="tablist" aria-label={t('Status')}>
 		{#each tabs as [s, label] (label)}
@@ -228,12 +277,6 @@
 		placeholder={t('Search the news')}
 		bind:value={filter.q}
 	/>
-	<select aria-label={t('Kind')} bind:value={filter.kind}>
-		<option value="">{t('All kinds')}</option>
-		<option value="article">{t('Articles')}</option>
-		<option value="video">{t('Videos')}</option>
-		<option value="podcast">{t('Podcasts')}</option>
-	</select>
 	<select aria-label={t('Topic')} bind:value={filter.topic}>
 		<option value="">{t('All topics')}</option>
 		{#each topics as tp (tp.id)}<option value={tp.id}>{tp.name}</option>{/each}
@@ -289,7 +332,9 @@
 						<button type="button" class="item" onclick={() => show(it.id)}>
 							<span class="title">{it.title}</span>
 							<span class="meta muted small">
-								{it.source_title} · {ago(it.published_at)} · {it.reading_minutes} min
+								{#if it.kind === 'video'}<span class="kind video">▶ {t('YouTube')}</span>
+								{:else if it.kind === 'podcast'}<span class="kind podcast">🎧 {t('Podcast')}</span>
+								{/if}{it.source_title} · {ago(it.published_at)} · {it.reading_minutes} min
 								{#if it.also_in.length}
 									· <span title={it.also_in.join(', ')}
 										>{t('also in {n}', { n: it.also_in.length })}</span
@@ -461,6 +506,44 @@
 	.filters input[type='search'] {
 		flex: 1 1 12rem;
 		min-width: 0;
+	}
+	.kinds {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+	.kinds button {
+		font: inherit;
+		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		border-radius: var(--radius-lg);
+		padding: var(--space-2) var(--space-4);
+		cursor: pointer;
+	}
+	.kinds button[aria-selected='true'] {
+		background: var(--accent);
+		color: var(--accent-fg);
+		border-color: var(--accent);
+	}
+	.kinds .n {
+		font-weight: 400;
+		font-size: var(--text-sm);
+		opacity: 0.8;
+	}
+	.kind {
+		display: inline-block;
+		font-weight: 600;
+		border-radius: 999px;
+		padding: 0 var(--space-2);
+		margin-right: var(--space-1);
+		background: var(--accent-soft);
+		color: var(--fg);
 	}
 	.tabs {
 		display: flex;

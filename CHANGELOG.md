@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Every new feature in sight** (EP-127): the menu names YouTube videos, Podcasts, the Collection, Coffee and tea, the Huberman protocols, and invitations; the tech watch opens on tabs by kind with their counts; Today lists what is new.
 - **The original and its source** (EP-126): every news item, video, and episode links to its original and to its source (the channel, the blog, the show), and the reader shows the full link, without trackers, to copy.
 - **A new trailer and a gallery** (EP-125): a one-minute trailer drawn frame by frame, with a soundtrack composed for it, on the home page and at the top of the README, and a gallery of twelve pages of today's Axon.
 - **Podcasts from Audiobookshelf** (EP-124): connect your Audiobookshelf in Preferences and every podcast it downloads follows in the tech watch, each episode with its notes and, with a Whisper server, its words read from your own copy.

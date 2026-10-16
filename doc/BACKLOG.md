@@ -175,6 +175,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-124 | Podcasts from Audiobookshelf | The person's Audiobookshelf, connected in Preferences, brings each podcast into the tech watch, each episode with its notes and, with Whisper, its words from their own copy. | SHOULD | 5 pts | EP-110, EP-123 | Done |
 | EP-125 | A trailer and a gallery | An Apple-style trailer drawn frame by frame with a composed soundtrack, replacing the recorded tour, and a README gallery of today's Axon. | COULD | 3 pts | EP-84 | Done |
 | EP-126 | The original and its source | Every news item links to its original (watch, listen, read) and to its source (the channel, the blog, the show), with the full clean link to copy. | SHOULD | 1 pt | EP-110, EP-123 | Done |
+| EP-127 | Every new feature in sight | The menu names YouTube videos, Podcasts, the Collection, Coffee and tea, the Huberman protocols, and invitations; the tech watch opens on tabs by kind, with their counts; Today lists what is new. | MUST | 1 pt | EP-116 to EP-126 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -211,7 +212,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2161,6 +2162,12 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-126/IS-126.01** · 1 pt · SHOULD — Each item carries `source_url`, where its source lives (the YouTube channel, the blog, the show; its feed when it gives none). In the list, each item links to its original, named by its site (↗ youtube.com), and to its source. In the reader, the button says what opening it does (Watch on youtube.com, Open the episode on changelog.com, Read on go.dev), the source's name links to it, the full link without trackers is shown with **Copy the link**, and a podcast links to its audio file.
 
 **Tests.** `TestWatchVideoTranscript` checks the source's address; the site names and labels, and their French (written first); an e2e test on the demo's YouTube talk (the list's link, the reader's button, the full link, the copy button, the source), with axe.
+
+### EP-127 — Every new feature in sight
+
+**Goal.** The owner, in the demo on srv-dev, could not find the YouTube videos, the collection, or coffee and tea: they were there, but under a filter, inside Progress, and at the bottom of Today.
+
+- [x] **EP-127/IS-127.01** · 1 pt · MUST — The menu names each feature: Think has **YouTube videos** and **Podcasts** (the tech watch on that kind), Grow has **Huberman protocols** and **Collection** (its own page), Life has **Coffee and tea** (its own page) and **Invite someone**; a link to a part of a page waits for that part to render. The tech watch opens on tabs **Everything · Articles · YouTube · Podcasts** with their counts (`items.articles`, `items.videos`, `items.podcasts` in `/v1/watch/stats`), the kind kept in the address, and each video or episode carries a badge. Today shows **New in Axon**, a card linking each new feature, until closed. The search offers the new pages. Tests: the stats count each kind, the demo has at least five videos and two episodes, and an end-to-end walk of the demo through the menu.
 
 ### EP-20 — Analytics & insights
 
