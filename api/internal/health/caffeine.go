@@ -49,15 +49,15 @@ func Remaining(sips []Sip, at time.Time, halfLife float64) float64 {
 	return mg
 }
 
-// Cutoff is the latest moment a coffee still leaves no more than BedtimeMG
-// at bedtime, given what was already drunk; false when even a coffee now is
-// too much.
+// Cutoff is the latest moment a coffee keeps sleep intact: 8.8 hours
+// before bed at the average half-life, as Gardiner et al. found, longer or
+// shorter with the person's metabolism (when it leaves BedtimeMG). False
+// when what was already drunk leaves more than that at bedtime.
 func Cutoff(sips []Sip, bedtime time.Time, halfLife float64) (time.Time, bool) {
-	room := BedtimeMG - Remaining(sips, bedtime, halfLife)
-	if room <= 0 {
+	if Remaining(sips, bedtime, halfLife) > BedtimeMG {
 		return time.Time{}, false
 	}
-	gap := halfLife * math.Log2(CoffeeMG/room) // hours before bed
+	gap := halfLife * math.Log2(CoffeeMG/BedtimeMG) // hours before bed
 	return bedtime.Add(-time.Duration(gap * float64(time.Hour))), true
 }
 
