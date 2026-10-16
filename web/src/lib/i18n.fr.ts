@@ -3692,5 +3692,7 @@ export const fr: Record<string, string> = {
 		'Ne plus suivre vos podcasts Audiobookshelf ? Leurs épisodes restent dans la veille.',
 	'Sync now': 'Synchroniser',
 	'synced {date}': 'synchronisé le {date}',
-	'{n} new episodes.': '{n} nouveaux épisodes.'
+	'{n} new episodes.': '{n} nouveaux épisodes.',
+	'API key (Audiobookshelf → Settings → API Keys)':
+		'Clé d’API (Audiobookshelf → Paramètres → Clés d’API)'
 };

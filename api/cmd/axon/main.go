@@ -215,6 +215,9 @@ func keepDemo(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 			} else {
 				log.Info("demo account reset")
 				last = now
+				if n, err := demo.Enrich(ctx, pool); err != nil {
+					log.Warn("demo transcripts failed", "read", n, "err", err)
+				}
 			}
 		}
 		select {
@@ -239,7 +242,11 @@ func demoReset() error {
 	if _, err := demo.Reset(ctx, pool, time.Now()); err != nil {
 		return err
 	}
-	fmt.Println("demo account reset")
+	n, err := demo.Enrich(ctx, pool)
+	fmt.Printf("demo account reset; %d video transcripts read\n", n)
+	if err != nil {
+		fmt.Println("transcripts:", err)
+	}
 	return nil
 }
 

@@ -80,6 +80,9 @@ func useInvite(ctx context.Context, tx pgx.Tx, tokenHash []byte, newUser uuid.UU
 
 func (s *Service) inviteOwner(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 	who, _ := FromContext(r.Context())
+	if who.Demo { // the demo shows its sample invitations; creating one is refused on the route
+		return who.UserID, true
+	}
 	owner, err := isOwner(r.Context(), s.db, who.UserID)
 	if err != nil {
 		s.fail(w, r, err)

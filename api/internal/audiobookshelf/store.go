@@ -127,7 +127,7 @@ func (s *Store) Connect(ctx context.Context, userID uuid.UUID, rawURL, token str
 	if token == "" {
 		old, err := s.client(ctx, s.db, userID)
 		if err != nil {
-			return Status{}, ValidationError{"Give the API token from Audiobookshelf (Settings → Users → your account)."}
+			return Status{}, ValidationError{"Give an API key from Audiobookshelf (Settings → API Keys)."}
 		}
 		token = old.Token
 	}

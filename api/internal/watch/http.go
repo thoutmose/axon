@@ -56,7 +56,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/watch/items/{id}", h.item)
 	r.Patch("/v1/watch/items/{id}", h.updateItem)
 	r.Post("/v1/watch/items/{id}/keep", h.keep)
-	r.With(auth.NotDemo).Post("/v1/watch/items/{id}/transcript", h.transcript)
+	r.Post("/v1/watch/items/{id}/transcript", h.transcript) // the demo: YouTube's captions of its own videos, never Whisper
 	r.Get("/v1/watch/stats", h.stats)
 	r.Get("/v1/watch/graph", h.graph)
 	r.Get("/v1/watch/export", h.export)
@@ -540,7 +540,11 @@ func (h *Handlers) transcript(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	it, err := Transcribe(r.Context(), h.db, who.UserID, id, WhisperFromEnv())
+	whisper := WhisperFromEnv()
+	if who.Demo {
+		whisper = nil
+	}
+	it, err := Transcribe(r.Context(), h.db, who.UserID, id, whisper)
 	switch {
 	case errors.Is(err, ErrNoTranscript):
 		httpx.Problem(w, http.StatusUnprocessableEntity, "This video has no captions, and no Whisper server is set up to transcribe it.")

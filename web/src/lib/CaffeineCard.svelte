@@ -214,6 +214,13 @@
 </section>
 
 <style>
+	.caffeine {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		margin: var(--space-4) 0;
+	}
 	.total {
 		font-size: var(--text-xl);
 		margin: 0 0 var(--space-2);

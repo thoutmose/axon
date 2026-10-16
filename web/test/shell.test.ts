@@ -1374,7 +1374,7 @@ test('podcasts from Audiobookshelf are set up in Preferences, with a token never
 	await page.goto('/account/preferences#audiobookshelf');
 	const abs = page.getByRole('region', { name: 'Podcasts from Audiobookshelf' });
 	await expect(abs.getByLabel('Address')).toBeVisible();
-	await expect(abs.getByLabel('API token')).toHaveAttribute('type', 'password');
+	await expect(abs.getByLabel(/^API key/)).toHaveAttribute('type', 'password');
 	await expect(abs.getByRole('button', { name: 'Connect' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 });

@@ -102,7 +102,9 @@
 	</div>
 	<div class="field">
 		<label for="{uid}-token"
-			>{st?.connected ? t('New API token (empty keeps the saved one)') : t('API token')}</label
+			>{st?.connected
+				? t('New API token (empty keeps the saved one)')
+				: t('API key (Audiobookshelf → Settings → API Keys)')}</label
 		>
 		<input
 			id="{uid}-token"
