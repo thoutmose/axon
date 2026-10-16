@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { i18n } from './i18n.svelte';
-import { overdue, relativeDay, type Task } from './tasks';
+import { fold, overdue, relativeDay, type Task } from './tasks';
 
 describe('relativeDay', () => {
 	it('names nearby days', () => {
@@ -28,5 +28,25 @@ describe('overdue', () => {
 		expect(overdue(task('2026-10-10'), '2026-10-10')).toBe(false);
 		expect(overdue(task('2026-10-09', 'done'), '2026-10-10')).toBe(false);
 		expect(overdue(task(null), '2026-10-10')).toBe(false);
+	});
+});
+
+describe('fold', () => {
+	const items = (n: number, p = '') => Array.from({ length: n }, (_, i) => ({ id: `${p}${i}` }));
+	it('shows the first five of each group and counts the rest', () => {
+		const r = fold(
+			[
+				['@home', items(7, 'h')],
+				['@phone', items(2, 'p')]
+			],
+			new Set()
+		);
+		expect(r.groups.map(([, x]) => x.length)).toEqual([5, 2]);
+		expect(r.hidden).toBe(2);
+	});
+	it('keeps a card just moved there in sight', () => {
+		const r = fold([['', items(8)]], new Set(['7']));
+		expect(r.groups[0][1].map((x) => x.id)).toEqual(['0', '1', '2', '3', '4', '7']);
+		expect(r.hidden).toBe(2);
 	});
 });

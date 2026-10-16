@@ -176,6 +176,12 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-125 | A trailer and a gallery | An Apple-style trailer drawn frame by frame with a composed soundtrack, replacing the recorded tour, and a README gallery of today's Axon. | COULD | 3 pts | EP-84 | Done |
 | EP-126 | The original and its source | Every news item links to its original (watch, listen, read) and to its source (the channel, the blog, the show), with the full clean link to copy. | SHOULD | 1 pt | EP-110, EP-123 | Done |
 | EP-127 | Every new feature in sight | The menu names YouTube videos, Podcasts, the Collection, Coffee and tea, the Huberman protocols, and invitations; the tech watch opens on tabs by kind, with their counts; Today lists what is new. | MUST | 1 pt | EP-116 to EP-126 | Done |
+| EP-128 | A shorter board | Each column of the GTD board and the kanban shows its first five cards, then "Show N more". | SHOULD | 1 pt | EP-07 | Done |
+| EP-129 | One set of icons | One set of line icons in SVG replaces the emoji: the kinds of items (goal, skill, note, project…), the notes' side links, and the journal's scales. | SHOULD | 2 pts | EP-38 | Planned |
+| EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Planned |
+| EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Planned |
+| EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
+| EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -212,7 +218,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-132 → EP-133 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2169,6 +2175,55 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 - [x] **EP-127/IS-127.01** · 1 pt · MUST — The menu names each feature: Think has **YouTube videos** and **Podcasts** (the tech watch on that kind), Grow has **Huberman protocols** and **Collection** (its own page), Life has **Coffee and tea** (its own page) and **Invite someone**; a link to a part of a page waits for that part to render. The tech watch opens on tabs **Everything · Articles · YouTube · Podcasts** with their counts (`items.articles`, `items.videos`, `items.podcasts` in `/v1/watch/stats`), the kind kept in the address, and each video or episode carries a badge. Today shows **New in Axon**, a card linking each new feature, until closed. The search offers the new pages. Tests: the stats count each kind, the demo has at least five videos and two episodes, and an end-to-end walk of the demo through the menu.
 
+### EP-128 — A shorter board
+
+**Goal.** "Reduce the size of the GTD view: hide when a column has more than a given number of elements." A column of twenty-two cards pushed the others off the screen.
+
+- [x] **EP-128/IS-128.01** · 1 pt · SHOULD — Each column of the GTD board and the kanban shows its first five cards (by context, the first five of each context), then a **Show N more** button that opens the rest, and **Show less**. The count in the header stays the whole column.
+
+**Tests.** A unit test of the split; an e2e test on the demo's kanban (five shown, Show more, all shown).
+
+### EP-129 — One set of icons
+
+**Goal.** "The icons for goal, skill and note are not professional and aesthetic; same problem on Notes; for the journal, the icons are really not professional."
+
+- [ ] **EP-129/IS-129.01** · 2 pts · SHOULD — An `Icon` component draws one set of line icons (24 × 24, 1.75 stroke, `currentColor`, after Lucide, ISC licence): the kinds of items in place of the emoji and symbols, the notes' side links (explore, analysis, templates), and the journal's mood, energy, and stress, as five-step scales drawn in the same line. The icons follow the theme's colour.
+
+**Tests.** Every kind has an icon; the scales keep their labels for screen readers; axe on the journal and notes.
+
+### EP-130 — A journal without the past moods
+
+**Goal.** "We don't need to see our previous mood." (Owner's choice: the journal's history.)
+
+- [ ] **EP-130/IS-130.01** · 1 pt · SHOULD — The journal's last 30 days lose the mood and energy chart and the faces: each day stays listed by date with its sleep and first line, to reopen. What helps you (EP-92) is unchanged.
+
+**Tests.** The e2e journal test checks no chart and no faces in the list.
+
+### EP-131 — The life web
+
+**Goal.** "For Life, with food, health and activities, gamify much more, a spider-web chart."
+
+- [ ] **EP-131/IS-131.01** · 2 pts · SHOULD — Health opens on a radar of today across six axes scored from 0 to 100: food (energy and protein against the daily needs), water (against the target), sleep (hours against 7 to 9), activity (minutes against 30 a day, WHO), caffeine (under the limit), and mood (the journal). Last week's average is drawn behind today's; the day's score is their mean, with a level (Bronze, Silver, Gold, Platinum), the best day to beat, and the next axis to raise. Axes without data say so.
+
+**Tests.** Unit tests of each axis's score and the level; an e2e test of the radar on the demo, with axe.
+
+### EP-132 — A podcast with real voices
+
+**Goal.** "Improve drastically the podcast: the voices are really too robotic." (Owner's choice: a self-hosted Kokoro. Voices of real, famous people are not offered: copying a person's voice without consent is impersonation.)
+
+- [ ] **EP-132/IS-132.01** · 2 pts · SHOULD — `compose.yaml` gains an optional `tts` service (Kokoro-FastAPI, CPU image, profile `tts`); `AXON_TTS_URL` points the API at any server speaking the OpenAI speech API. `GET /v1/watch/podcast/voices` lists its voices; `POST /v1/watch/podcast/speech` speaks one part (at most 4,000 characters, MP3). Without the server, the device's voices as before.
+- [ ] **EP-132/IS-132.02** · 1 pt · SHOULD — The podcast page offers the natural voices first, a **Conversation** format where two hosts take turns, a player that plays parts back to back with the next one fetched ahead, and a speed control.
+
+**Tests.** The speech handler against a fake server (size limit, error); the conversation's turns; the e2e test with a fake voice.
+
+### EP-133 — Send the digest from its page
+
+**Goal.** "The digest is really cool; add the ability to send it by mail, Discord, Slack, Teams…" It already goes to all of them (EP-107), but the setup sat in Preferences.
+
+- [ ] **EP-133/IS-133.01** · 1 pt · SHOULD — The Digest page shows **Where it goes**: email and each channel, and sets up Email, Slack, Discord, Microsoft Teams, Telegram, ntfy, and a web address there, with **Send a test** for each.
+
+**Tests.** The e2e digest test finds the channels on the Digest page.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2375,6 +2430,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
+| 2026-10-16 | Owner requests: a shorter board, one set of icons, no past moods in the journal, a life radar, natural podcast voices (self-hosted Kokoro; famous people's voices declined), and the digest's channels on its page. Planned as EP-128 to EP-133. |
 | 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |

@@ -683,6 +683,21 @@ test('tasks open on a GTD board, and a Kanban board moves work along', async () 
 			.getByRole('button', { name: 'Plan the garden' })
 	).toBeVisible();
 	await noSeriousA11yViolations(page);
+
+	// A long column folds after five cards (EP-128).
+	for (const n of [1, 2, 3, 4, 5, 6])
+		await page.request.post('/api/v1/tasks', {
+			headers: { Origin: new URL(page.url()).origin },
+			data: { title: `Fold me ${n}`, status: 'next' }
+		});
+	await page.reload();
+	const todo = kanban.getByRole('region', { name: /To do/ });
+	await expect(todo.getByRole('listitem')).toHaveCount(5);
+	const more = todo.getByRole('button', { name: /^Show \d+ more$/ });
+	await more.click();
+	await expect(todo.getByRole('listitem').filter({ hasText: 'Fold me' })).toHaveCount(6);
+	await todo.getByRole('button', { name: 'Show less' }).click();
+	await expect(todo.getByRole('listitem')).toHaveCount(5);
 });
 
 test('the calendar opens on a month grid, with the agenda one click away', async () => {
