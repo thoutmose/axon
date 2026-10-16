@@ -1,130 +1,198 @@
 <script lang="ts">
 	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from '$lib/api';
+	import { colourOrder, slices } from '$lib/budgetCharts';
 	import { monthLabel } from '$lib/calendar';
+	import Donut from '$lib/charts/Donut.svelte';
+	import YearBars from '$lib/charts/YearBars.svelte';
+	import { formatDate, localDate } from '$lib/dates';
 	import { formatCents } from '$lib/money';
 	import Status from '$lib/ui/Status.svelte';
 
+	// Reports (EP-138): a period, a month by default, as two donuts of where the
+	// money went and where it came from; below, the year to that month.
 	type Report = Schemas['BudgetReport'];
-	let months = $state(12);
-	let report = $state<Report | null>(null);
+	let month = $state(localDate(new Date()).slice(0, 7));
+	let months = $state(1);
+	let period = $state<Report | null>(null);
+	let year = $state<Report | null>(null);
 	let error = $state('');
-	const money = (c: number) => formatCents(c, report?.currency ?? 'EUR');
-	const peak = $derived(
-		Math.max(1, ...(report?.months ?? []).flatMap((m) => [m.income_cents, m.expense_cents]))
-	);
-	const expenses = $derived(report?.categories.filter((c) => c.kind === 'expense') ?? []);
-	const spent = $derived(expenses.reduce((n, c) => n + c.cents, 0));
-	const income = $derived(report?.months.reduce((n, m) => n + m.income_cents, 0) ?? 0);
-	const outgo = $derived(report?.months.reduce((n, m) => n + m.expense_cents, 0) ?? 0);
+	const money = (c: number) => formatCents(c, period?.currency ?? 'EUR');
 
 	$effect(() => {
-		const n = months;
-		api<Report>(`/v1/budget/report?months=${n}`)
-			.then((r) => (report = r))
+		const [m, n] = [month, months];
+		if (!/^\d{4}-\d{2}$/.test(m)) return;
+		Promise.all([
+			api<Report>(`/v1/budget/report?months=${n}&month=${m}`),
+			api<Report>(`/v1/budget/report?months=12&month=${m}`)
+		])
+			.then(([p, y]) => {
+				period = p;
+				year = y;
+				error = '';
+			})
 			.catch((err) => (error = message(err)));
 	});
+
+	const income = $derived(period?.months.reduce((n, m) => n + m.income_cents, 0) ?? 0);
+	const outgo = $derived(period?.months.reduce((n, m) => n + m.expense_cents, 0) ?? 0);
+	const spending = $derived(
+		period && year
+			? slices(period.categories, 'expense', colourOrder(year.categories, 'expense'), t('Other'))
+			: []
+	);
+	const earning = $derived(
+		period && year
+			? slices(period.categories, 'income', colourOrder(year.categories, 'income'), t('Other'))
+			: []
+	);
+	const short = (m: string) => formatDate(`${m}-01`, { month: 'short' });
 </script>
 
 <svelte:head><title>{t('Reports · Budget · Axon')}</title></svelte:head>
 
-<div class="row">
+<div class="row head">
 	<h1>{t('Reports')}</h1>
-	<label class="row small"
-		>{t('Period')}
-		<select bind:value={months}>
-			<option value={3}>{t('3 months')}</option>
-			<option value={6}>{t('6 months')}</option>
-			<option value={12}>{t('12 months')}</option>
-			<option value={24}>{t('24 months')}</option>
-		</select></label
-	>
+	<div class="row">
+		<label class="row small"
+			>{t('Month')}
+			<input type="month" bind:value={month} /></label
+		>
+		<label class="row small"
+			>{t('Period')}
+			<select bind:value={months}>
+				<option value={1}>{t('That month')}</option>
+				<option value={3}>{t('3 months')}</option>
+				<option value={6}>{t('6 months')}</option>
+				<option value={12}>{t('12 months')}</option>
+			</select></label
+		>
+	</div>
 </div>
 
 {#if error}
 	<Status kind="error" message={error} />
-{:else if !report}
+{:else if !period || !year}
 	<Status kind="loading" message={t('Working it out…')} />
 {:else}
 	<section class="card" aria-labelledby="totals">
 		<h2 id="totals">
-			{t('{from} to {to}: in {value}, out {value2}, saved', {
-				from: report.from,
-				to: report.to,
-				value: money(income),
-				value2: money(outgo)
-			})}
-			<span class:bad={income - outgo < 0} class:ok={income - outgo > 0}
-				>{money(income - outgo)}</span
-			>{income ? ` (${Math.round(((income - outgo) / income) * 100)} %)` : ''}
+			{months === 1 ? monthLabel(month) : t('{from} to {to}', { from: period.from, to: period.to })}
 		</h2>
-		<p class="small">{t('Net worth today:')} <strong>{money(report.net_worth_cents)}</strong></p>
+		<dl class="tiles">
+			<div>
+				<dt>{t('In')}</dt>
+				<dd>{money(income)}</dd>
+			</div>
+			<div>
+				<dt>{t('Out')}</dt>
+				<dd>{money(outgo)}</dd>
+			</div>
+			<div>
+				<dt>{t('Saved')}</dt>
+				<dd class:bad={income - outgo < 0} class:ok={income - outgo > 0}>
+					{money(income - outgo)}{income
+						? ` · ${Math.round(((income - outgo) / income) * 100)} %`
+						: ''}
+				</dd>
+			</div>
+			<div>
+				<dt>{t('Net worth today')}</dt>
+				<dd>{money(period.net_worth_cents)}</dd>
+			</div>
+		</dl>
 	</section>
+
+	<div class="pies">
+		<section class="card" aria-label={t('Where the money went')}>
+			<Donut
+				title={t('Where the money went')}
+				slices={spending}
+				total={money(outgo)}
+				format={money}
+			/>
+		</section>
+		<section class="card" aria-label={t('Where it came from')}>
+			<Donut
+				title={t('Where it came from')}
+				slices={earning}
+				total={money(income)}
+				format={money}
+			/>
+		</section>
+	</div>
 
 	<section class="card" aria-labelledby="by-month">
-		<h2 id="by-month">{t('Income and spending by month')}</h2>
-		<table>
-			<thead
-				><tr
-					><th scope="col">{t('Month')}</th><th scope="col">{t('Income and spending')}</th><th
-						scope="col"
-						class="num">{t('In')}</th
-					><th scope="col" class="num">{t('Out')}</th></tr
-				></thead
-			>
-			<tbody>
-				{#each report.months as m (m.month)}
-					<tr>
-						<td>{monthLabel(m.month)}</td>
-						<td class="bars" aria-hidden="true">
-							<span class="bar in" style:width="{(m.income_cents / peak) * 100}%"></span>
-							<span class="bar out" style:width="{(m.expense_cents / peak) * 100}%"></span>
-						</td>
-						<td class="num ok">{money(m.income_cents)}</td>
-						<td class="num">{money(m.expense_cents)}</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</section>
-
-	<section class="card" aria-labelledby="by-category">
-		<h2 id="by-category">{t('Where the money went')}</h2>
-		{#if expenses.length === 0}
-			<p class="muted">{t('No spending in this period.')}</p>
-		{:else}
+		<h2 id="by-month">{t('The year to {month}', { month: monthLabel(month) })}</h2>
+		<YearBars
+			months={year.months.map((m) => ({
+				label: short(m.month),
+				income: m.income_cents,
+				expense: m.expense_cents
+			}))}
+			format={money}
+		/>
+		<details>
+			<summary>{t('Show the figures as a table')}</summary>
 			<table>
+				<thead
+					><tr
+						><th scope="col">{t('Month')}</th><th scope="col" class="num">{t('In')}</th><th
+							scope="col"
+							class="num">{t('Out')}</th
+						><th scope="col" class="num">{t('Balance')}</th></tr
+					></thead
+				>
 				<tbody>
-					{#each expenses as c (c.category_id ?? 'none')}
+					{#each year.months as m (m.month)}
 						<tr>
-							<td>{c.name}</td>
-							<td class="bars" aria-hidden="true"
-								><span class="bar out" style:width="{(c.cents / spent) * 100}%"></span></td
+							<td>{monthLabel(m.month)}</td>
+							<td class="num">{money(m.income_cents)}</td>
+							<td class="num">{money(m.expense_cents)}</td>
+							<td class="num" class:bad={m.income_cents < m.expense_cents}
+								>{money(m.income_cents - m.expense_cents)}</td
 							>
-							<td class="num">{money(c.cents)}</td>
-							<td class="num muted">{Math.round((c.cents / spent) * 100)} %</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
-		{/if}
+		</details>
 	</section>
 {/if}
 
 <style>
-	.bars {
-		width: 50%;
+	.head {
+		justify-content: space-between;
+		flex-wrap: wrap;
 	}
-	.bar {
-		display: block;
-		height: 0.5rem;
-		border-radius: 999px;
-		margin: 2px 0;
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: var(--space-3);
+		margin: 0;
 	}
-	.bar.in {
-		background: var(--ok);
+	.tiles dt {
+		color: var(--muted);
+		font-size: var(--text-sm);
 	}
-	.bar.out {
-		background: var(--chart-2);
+	.tiles dd {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 650;
+	}
+	.pies {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+		gap: var(--space-4);
+	}
+	details {
+		margin-top: var(--space-3);
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.num {
+		text-align: right;
 	}
 </style>

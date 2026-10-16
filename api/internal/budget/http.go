@@ -611,6 +611,15 @@ func (h *Handlers) report(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	// ?month=2026-09 ends the report with that month instead of this one (EP-138).
+	if m := r.URL.Query().Get("month"); m != "" {
+		d, err := time.Parse("2006-01", m)
+		if err != nil {
+			httpx.Problem(w, http.StatusBadRequest, "?month= looks like 2026-09.")
+			return
+		}
+		today = d
+	}
 	rep, err := BuildReport(r.Context(), h.db, who.UserID, today, months)
 	h.reply(w, http.StatusOK, rep, err)
 }

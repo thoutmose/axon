@@ -3758,5 +3758,16 @@ export const fr: Record<string, string> = {
 		'Une série, saison par saison : ses personnages, ses idées et votre verdict.',
 	'A book, chapter by chapter, with a reading log, quotes, and what you will do differently.':
 		'Un livre, chapitre par chapitre, avec un journal de lecture, des citations et ce que vous ferez autrement.',
-	'Write a note': 'Écrire une note'
+	'Write a note': 'Écrire une note',
+	'Nothing in this period.': 'Rien sur cette période.',
+	'in all': 'en tout',
+	Spending: 'Dépenses',
+	out: 'sorties',
+	balance: 'solde',
+	'That month': 'Ce mois-là',
+	'{from} to {to}': 'Du {from} au {to}',
+	'Net worth today': 'Patrimoine aujourd’hui',
+	'Where it came from': 'D’où il est venu',
+	'The year to {month}': 'L’année jusqu’à {month}',
+	'Show the figures as a table': 'Afficher les chiffres en tableau'
 };

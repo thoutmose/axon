@@ -12797,6 +12797,8 @@ export interface operations {
 		parameters: {
 			query?: {
 				months?: number;
+				/** @description The last month of the report, e.g. 2026-09; this month by default. */
+				month?: string;
 			};
 			header?: never;
 			path?: never;

@@ -80,6 +80,7 @@ var catalog = map[string]string{
 	"?limit= is 1 to 500.":                                                                  "?limit= va de 1 à 500.",
 	"?limit= must be between 1 and 100.":                                                    "?limit= doit être entre 1 et 100.",
 	"?months= must be between 1 and 60.":                                                    "?months= doit être entre 1 et 60.",
+	"?month= looks like 2026-09.":                                                           "?month= ressemble à 2026-09.",
 	"?offset= must be between 0 and 1000.":                                                  "?offset= doit être entre 0 et 1000.",
 	"?para= is inbox, projects, areas, resources, archive, or other.":                       "?para= vaut inbox, projects, areas, resources, archive ou other.",
 	"?q= must be 1 to 500 characters.":                                                      "?q= doit faire de 1 à 500 caractères.",

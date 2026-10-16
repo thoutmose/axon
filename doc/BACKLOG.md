@@ -186,7 +186,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
 | EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Done |
 | EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Done |
-| EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Planned |
+| EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Done |
 | EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Planned |
 | EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -2267,7 +2267,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "A pie chart of the expenses of a period, by default a month, per category; the same for income; and a chart of expenses and income over a year."
 
-- [ ] **EP-138/IS-138.01** · 2 pts · SHOULD — Budget → Reports opens on a period (this month by default, any month or range) with two donuts, spending and income by category, each slice named with its amount and share, and a table for screen readers; below, a year of income and spending by month as paired bars with the balance.
+- [x] **EP-138/IS-138.01** · 2 pts · SHOULD — Budget → Reports opens on a period (this month by default, any month or range) with two donuts, spending and income by category, each slice named with its amount and share, and a table for screen readers; below, a year of income and spending by month as paired bars with the balance, and the figures as a table. `GET /v1/budget/report?month=2026-09` ends the report with that month. A category keeps its colour (eight hues validated for colour vision deficiency, light and dark) whatever the period; past seven, Other. The demo has a year of money.
 
 **Tests.** Unit tests of the slices; e2e on the demo's budget, with axe.
 

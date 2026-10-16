@@ -116,9 +116,7 @@
 			{/if}
 			{#if item.overview}<p class="overview">{item.overview}</p>{/if}
 			<div class="row">
-				<Button variant="secondary" {busy} onclick={writeNote}
-					>{t('Write a note')}</Button
-				>
+				<Button variant="secondary" {busy} onclick={writeNote}>{t('Write a note')}</Button>
 			</div>
 
 			<section class="card" aria-labelledby="where">
