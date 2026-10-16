@@ -219,7 +219,16 @@
 			.length
 	);
 	let finding = $state(false);
-	async function findCovers() {
+	// Covers are looked for by themselves once per visit (EP-134); quietly,
+	// unless some were found.
+	let looked = false;
+	$effect(() => {
+		if (!looked && items && catalogs.consented && missing > 0) {
+			looked = true;
+			findCovers(true);
+		}
+	});
+	async function findCovers(quiet = false) {
 		finding = true;
 		try {
 			const r = await api<{ checked: number; found: number; more: boolean }>(
@@ -229,10 +238,10 @@
 			const said = r.found
 				? t('{found} covers found ({checked} looked up).', { found: r.found, checked: r.checked })
 				: t('No cover found for the {checked} looked up.', { checked: r.checked });
-			toast(r.more ? `${said} ${t('Press again for the rest.')}` : said);
+			if (!quiet || r.found) toast(r.more ? `${said} ${t('Press again for the rest.')}` : said);
 			if (r.found) await load();
 		} catch (err) {
-			toast(message(err), 'error');
+			if (!quiet) toast(message(err), 'error');
 		} finally {
 			finding = false;
 		}
@@ -352,7 +361,7 @@
 			{missing === 1
 				? t('One item has no cover yet.')
 				: t('{n} items have no cover yet.', { n: missing })}
-			<Button variant="secondary" busy={finding} onclick={findCovers}
+			<Button variant="secondary" busy={finding} onclick={() => findCovers()}
 				>{t('Find missing covers')}</Button
 			>
 		</p>

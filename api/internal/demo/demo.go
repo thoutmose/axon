@@ -204,13 +204,14 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		title, kind, status, creators string
 		genres                        []string
 		rating, progress, total       int
+		year                          int // films and series: TMDB names Dune: Part One "Dune" (2021)
 	}{
-		{"Arrival", "film", "done", "Denis Villeneuve", []string{"Science fiction"}, 9, 0, 0},
-		{"Dune: Part One", "film", "want", "Denis Villeneuve", []string{"Science fiction"}, 0, 0, 0},
-		{"Severance", "series", "doing", "Dan Erickson", []string{"Drama", "Mystery"}, 0, 4, 19},
-		{"The Left Hand of Darkness", "book", "done", "Ursula K. Le Guin", []string{"Science fiction"}, 10, 0, 0},
-		{"The Dispossessed", "book", "want", "Ursula K. Le Guin", []string{"Science fiction"}, 0, 0, 0},
-		{"Designing Data-Intensive Applications", "book", "doing", "Martin Kleppmann", []string{"Software"}, 0, 210, 611},
+		{"Arrival", "film", "done", "Denis Villeneuve", []string{"Science fiction"}, 9, 0, 0, 2016},
+		{"Dune: Part One", "film", "want", "Denis Villeneuve", []string{"Science fiction"}, 0, 0, 0, 2021},
+		{"Severance", "series", "doing", "Dan Erickson", []string{"Drama", "Mystery"}, 0, 4, 19, 2022},
+		{"The Left Hand of Darkness", "book", "done", "Ursula K. Le Guin", []string{"Science fiction"}, 10, 0, 0, 0},
+		{"The Dispossessed", "book", "want", "Ursula K. Le Guin", []string{"Science fiction"}, 0, 0, 0, 0},
+		{"Designing Data-Intensive Applications", "book", "doing", "Martin Kleppmann", []string{"Software"}, 0, 210, 611, 0},
 	} {
 		if s.err != nil {
 			break
@@ -221,6 +222,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 		if m.total > 0 {
 			f.Total = ptr(m.total)
+		}
+		if m.year > 0 {
+			f.Year = ptr(m.year)
 		}
 		_, s.err = media.Create(ctx, tx, user, graph.UserActor, f, nil, s.today)
 	}

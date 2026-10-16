@@ -23,6 +23,15 @@ func TestBestMatchTakesOnlyTheSameWork(t *testing.T) {
 			{Title: "Arrival", Creators: "Someone", HasCover: true, CoverKey: "x"},
 			{Title: "Arrival", Creators: "Denis Villeneuve", HasCover: true, CoverKey: "y"},
 		}, "y"},
+		{"a shorter name, the same year", Item{Title: "Dune: Part One", Year: year(2021)}, []Candidate{
+			{Title: "Dune", Year: year(1984), HasCover: true, CoverKey: "old"},
+			{Title: "Dune", Year: year(2021), HasCover: true, CoverKey: "new"},
+		}, "new"},
+		{"a shorter name, no year to agree", Item{Title: "Dune: Part One"}, []Candidate{
+			{Title: "Dune", Year: year(2021), HasCover: true, CoverKey: "new"},
+		}, ""},
+		{"a sequel of the same author and another year", Item{Title: "Dune Messiah", Creators: "Frank Herbert", Year: year(1969)}, []Candidate{dune}, ""},
+		{"a word cut short is no match", Item{Title: "Dun", Year: year(1965)}, []Candidate{dune}, ""},
 		{"Le Guin, one of several authors", Item{Title: "The Dispossessed", Creators: "Ursula K. Le Guin"}, []Candidate{
 			{Title: "The dispossessed", Creators: "Ursula K. Le Guin, Another Editor", HasCover: true, CoverKey: "z"},
 		}, "z"},
