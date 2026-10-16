@@ -3748,5 +3748,15 @@ export const fr: Record<string, string> = {
 	'Last week, on average': 'La semaine passée, en moyenne',
 	Sleep: 'Sommeil',
 	'{n} left': '{n} restant(s)',
-	'Where you are': 'Où vous en êtes'
+	'Where you are': 'Où vous en êtes',
+	'Film note': 'Note de film',
+	'Series note': 'Note de série',
+	'Book note': 'Note de livre',
+	'A film: the scenes that stay, its ideas, its craft, and your verdict.':
+		'Un film : les scènes qui restent, ses idées, son art et votre verdict.',
+	'A series, season by season: its characters, ideas, and your verdict.':
+		'Une série, saison par saison : ses personnages, ses idées et votre verdict.',
+	'A book, chapter by chapter, with a reading log, quotes, and what you will do differently.':
+		'Un livre, chapitre par chapitre, avec un journal de lecture, des citations et ce que vous ferez autrement.',
+	'Write a note': 'Écrire une note'
 };

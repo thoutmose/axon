@@ -925,6 +925,10 @@ test('track films by hand, rate them, and see recommendations that say why', asy
 	await expect(page.getByText('Film · In progress')).toBeVisible();
 	await expect(page.getByLabel('Progress')).toHaveValue('30');
 	await noSeriousA11yViolations(page);
+	// Its note starts from the film template, linked back to the film (EP-136).
+	await page.getByRole('button', { name: 'Write a note' }).click();
+	await expect(page).toHaveURL(/\/notes\/[\w-]+\?edit=1/);
+	await expect(page.locator('textarea').first()).toHaveValue(/## Scenes that stay/);
 });
 
 test('health logging waits for consent, then logs food and a workout', async () => {

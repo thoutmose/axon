@@ -184,7 +184,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
 | EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
 | EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
-| EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Planned |
+| EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Done |
 | EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Planned |
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Planned |
 | EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Planned |
@@ -2251,7 +2251,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "A movie, a series, and a book should have a template note, like the literature, permanent, and resource notes, made for their purpose."
 
-- [ ] **EP-136/IS-136.01** · 1 pt · SHOULD — Three vault templates, Film, Series, and Book: their details filled from the item (title, creator, year, genres, cover), and sections for why it, quotes and scenes, ideas, what it changes, the rating and a verdict; a book adds a reading log and chapters, a series its seasons. "Write a note" on the item creates it from its template, linked to the item.
+- [x] **EP-136/IS-136.01** · 1 pt · SHOULD — Three vault templates, Film, Series, and Book: their details filled from the item (title, creator, year, genres, cover), and sections for why it, quotes and scenes, ideas, what it changes, the rating and a verdict; a book adds a reading log and chapters, a series its seasons. They are literature notes (`Zettel/literature/`, `source_type: film | series | book`), so they join the knowledge graph and its retrieval tests; **Write a note** on the item's page creates one from its template, linked to the item. The vault's Templates/ gets them too.
 
 **Tests.** The templates fill their placeholders; e2e: a note from a book.
 

@@ -4,6 +4,9 @@ import { localDate as isoDate } from './dates';
 import { stem } from './notes';
 // The owner's vault templates (EP-100), shipped as they are in ~/SecondBrain/Templates.
 import areaMd from './vaultTemplates/area.md?raw';
+import bookMd from './vaultTemplates/book.md?raw';
+import filmMd from './vaultTemplates/film.md?raw';
+import seriesMd from './vaultTemplates/series.md?raw';
 import dailyMd from './vaultTemplates/daily.md?raw';
 import goalMd from './vaultTemplates/goal.md?raw';
 import habitMd from './vaultTemplates/habit.md?raw';
@@ -98,6 +101,31 @@ export const templates: Template[] = [
 		'Literature note',
 		'What a book, article, or course says, in your own words, with its retrieval tests.',
 		literatureMd,
+		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
+	),
+	// Films, series, and books (EP-136): literature notes made for each.
+	fromVault(
+		'film',
+		'zettelkasten',
+		'Film note',
+		'A film: the scenes that stay, its ideas, its craft, and your verdict.',
+		filmMd,
+		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
+	),
+	fromVault(
+		'series',
+		'zettelkasten',
+		'Series note',
+		'A series, season by season: its characters, ideas, and your verdict.',
+		seriesMd,
+		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
+	),
+	fromVault(
+		'book',
+		'zettelkasten',
+		'Book note',
+		'A book, chapter by chapter, with a reading log, quotes, and what you will do differently.',
+		bookMd,
 		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
 	),
 	fromVault(
@@ -486,4 +514,27 @@ export function builtInFiles(now: Date): { path: string; content: string }[] {
 						.replaceAll(isoDate(now), '{{date}}')
 				}
 	);
+}
+
+/** A film's, series', or book's details for its note template (EP-136). */
+export type MediaDetails = {
+	kind: 'film' | 'series' | 'book';
+	title: string;
+	creators: string;
+	year: number | null;
+	genres: string[];
+	total: number | null;
+	cover_id: string | null;
+};
+
+/** The note for a film, series, or book: its template, filled from the item. */
+export function mediaNote(it: MediaDetails, now: Date): { path: string; content: string } {
+	const t = templates.find((x) => x.id === it.kind)!;
+	const raw = t
+		.raw!.replace(/\{\{\s*creator\s*\}\}/g, it.creators)
+		.replace(/\{\{\s*year\s*\}\}/g, it.year ? String(it.year) : '')
+		.replace(/\{\{\s*genres\s*\}\}/g, it.genres.length ? `[${it.genres.join(', ')}]` : '')
+		.replace(/\{\{\s*total\s*\}\}/g, it.total ? String(it.total) : '')
+		.replace(/\{\{\s*cover\s*\}\}/g, it.cover_id ? `/api/v1/media/covers/${it.cover_id}` : '');
+	return { path: t.path(it.title, now), content: fill(raw, it.title, now) };
 }
