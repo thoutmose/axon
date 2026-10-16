@@ -5,6 +5,7 @@
 	import { api, message } from '$lib/api';
 	import NewNoteDialog from '$lib/NewNoteDialog.svelte';
 	import NoteFolder from '$lib/NoteFolder.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
 	import { openDaily } from '$lib/newNote';
 	import { noteIndex, refreshNotes } from '$lib/noteIndex.svelte';
 	import { tree } from '$lib/noteTree';
@@ -60,9 +61,13 @@
 			<label for="note-search" class="visually-hidden">{t('Search notes')}</label>
 			<input id="note-search" type="search" placeholder={t('Search notes…')} bind:value={query} />
 		</form>
-		<a class="explore" href="/notes/explore">{t('🕸 Explore and knowledge graph')}</a>
-		<a class="explore" href="/notes/analysis">{t('🔬 Analysis: topics and concepts')}</a>
-		<a class="explore" href="/notes/templates">{t('🧩 Templates')}</a>
+		<a class="explore" href="/notes/explore"
+			><Icon name="graph" />{t('Explore and knowledge graph')}</a
+		>
+		<a class="explore" href="/notes/analysis"
+			><Icon name="analysis" />{t('Analysis: topics and concepts')}</a
+		>
+		<a class="explore" href="/notes/templates"><Icon name="templates" />{t('Templates')}</a>
 		<nav aria-label={t('Folders')}>
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}
@@ -207,7 +212,9 @@
 		min-width: 0;
 	}
 	.explore {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 		margin: var(--space-2) 0 var(--space-3);
 		font-size: var(--text-sm);
 	}

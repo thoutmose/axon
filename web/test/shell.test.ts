@@ -1021,6 +1021,9 @@ test('the journal: how the day felt, the night, and what you are grateful for', 
 	const month = page.getByRole('region', { name: 'The last 30 days' });
 	await expect(month).toContainText('7.5 h of sleep');
 	await expect(month).toContainText('A call with Sam');
+	// Past moods are not shown again (EP-130): no chart, no faces.
+	await expect(month.getByRole('img')).toHaveCount(0);
+	await expect(month.getByLabel('Mood')).toHaveCount(0);
 	// One day is too few to say what helps: the page says how many more it needs.
 	await page.reload();
 	await expect(page.getByRole('region', { name: 'What helps you' })).toContainText(
@@ -1610,7 +1613,7 @@ test('tech watch: the podcast is off until turned on, then makes an episode', as
 	await expect(page.getByText('Podcast settings saved.')).toBeVisible();
 	// The reader offers the Tech watch agent.
 	await page.goto('/watch');
-	await page.getByRole('button', { name: '✨ Ask the agent' }).click();
+	await page.getByRole('button', { name: 'Ask the agent' }).click();
 	await expect(page.getByRole('region', { name: 'Agents for this page' })).toContainText(
 		/tech watch/i
 	);
@@ -1937,7 +1940,7 @@ test('a task can carry a reminder at a time, set by quick add or in the task', a
 
 test('each page offers its own agents, and says when none can run yet', async () => {
 	await page.goto('/tasks');
-	await page.getByRole('button', { name: '✨ Ask an agent' }).click();
+	await page.getByRole('button', { name: 'Ask an agent' }).click();
 	const dock = page.getByRole('region', { name: 'Agents for this page' });
 	await expect(dock.getByRole('radio', { name: 'Task Manager' })).toBeChecked();
 	await expect(dock.getByText('No AI provider is set up yet.')).toBeVisible();
@@ -1949,7 +1952,7 @@ test('each page offers its own agents, and says when none can run yet', async ()
 	await expect(dock.getByRole('radio', { name: 'Goals' })).toBeChecked();
 	await noSeriousA11yViolations(page);
 	await page.goto('/habits');
-	await page.getByRole('button', { name: '✨ Ask the agent' }).click();
+	await page.getByRole('button', { name: 'Ask the agent' }).click();
 	await expect(page.getByRole('region', { name: 'Agents for this page' })).toContainText('Habits');
 });
 

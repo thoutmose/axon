@@ -4,6 +4,7 @@
 	import { api, message, type Schemas } from './api';
 	import type { paths } from './api-types';
 	import Button from './ui/Button.svelte';
+	import Icon from './ui/Icon.svelte';
 	import { toast } from './ui/toast.svelte';
 
 	// The agents whose skills fit a page, asked from that page (EP-53). What
@@ -130,7 +131,8 @@
 
 <section class="dock" aria-label={t('Agents for this page')}>
 	<button type="button" class="toggle" aria-expanded={open} onclick={toggle}>
-		{'✨ ' + (open ? t('Close') : agents.length > 1 ? t('Ask an agent') : t('Ask the agent'))}
+		<Icon name="sparkles" />
+		{open ? t('Close') : agents.length > 1 ? t('Ask an agent') : t('Ask the agent')}
 	</button>
 	{#if open}
 		<div class="panel glass">
@@ -236,6 +238,9 @@
 		margin: var(--space-4) 0;
 	}
 	.toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
 		font: inherit;
 		border: 1px solid var(--border);
 		border-radius: 999px;

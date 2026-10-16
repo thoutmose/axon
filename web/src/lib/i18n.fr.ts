@@ -1745,9 +1745,8 @@ export const fr: Record<string, string> = {
 	"Today's note": 'Note du jour',
 	'Search notes': 'Rechercher dans les notes',
 	'Search notes…': 'Rechercher dans les notes…',
-	'🕸 Explore and knowledge graph': '🕸 Explorer et graphe de connaissances',
-	'🔬 Analysis: topics and concepts': '🔬 Analyse : sujets et concepts',
-	'🧩 Templates': '🧩 Modèles',
+	'Explore and knowledge graph': 'Explorer et graphe de connaissances',
+	'Analysis: topics and concepts': 'Analyse : sujets et concepts',
 	Folders: 'Dossiers',
 	'No notes yet.': 'Aucune note pour l’instant.',
 	'Notes · Axon': 'Notes · Axon',
@@ -2701,7 +2700,6 @@ export const fr: Record<string, string> = {
 	'Grateful for, {n} of 3': 'Reconnaissance, {n} sur 3',
 	'A call with an old friend…': 'Un appel avec un vieil ami…',
 	'The last 30 days': 'Les 30 derniers jours',
-	'Mood and energy, from 1 to 5': 'Humeur et énergie, de 1 à 5',
 	'{hours} h of sleep': '{hours} h de sommeil',
 	'What helps you': 'Ce qui vous aide',
 	'Nothing stands out yet in the last 90 days ({days} days written). That is an answer too: keep writing, and look again in a few weeks.':
@@ -3726,5 +3724,6 @@ export const fr: Record<string, string> = {
 	'Trophies for your roadmap skills, cards for your habits, and milestones, raised from bronze to silver to gold as your streaks, practice, and focus grow.':
 		'Des trophées pour les compétences de votre feuille de route, des cartes pour vos habitudes et des jalons, qui passent du bronze à l’argent puis à l’or à mesure que vos séries, votre pratique et votre concentration progressent.',
 	'Show {n} more': 'Afficher {n} de plus',
-	'Show less': 'Afficher moins'
+	'Show less': 'Afficher moins',
+	Shown: 'Affichées'
 };

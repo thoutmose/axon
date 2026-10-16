@@ -1,17 +1,19 @@
 <script lang="ts">
+	import { scaleArt, type ScaleKind } from './journal';
+
 	// A five-point scale (EP-91): native radio buttons, so arrow keys and
-	// screen readers work, drawn as a row of faces. Choosing the chosen one
-	// again clears it.
+	// screen readers work, drawn as a row of line icons (EP-129). Choosing the
+	// chosen one again clears it.
 	let {
 		legend,
 		labels,
-		faces,
+		kind,
 		value = $bindable(null),
 		onchange
 	}: {
 		legend: string;
 		labels: string[];
-		faces: string[];
+		kind: ScaleKind;
 		value?: number | null;
 		onchange?: () => void;
 	} = $props();
@@ -32,7 +34,22 @@
 					onchange?.();
 				}}
 			/>
-			<span aria-hidden="true">{faces[i]}</span>
+			<span aria-hidden="true"
+				><svg
+					viewBox="0 0 24 24"
+					width="24"
+					height="24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.6"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><!-- Constant drawing from scaleArt, never user input. -->{@html scaleArt(
+						kind,
+						i + 1
+					)}</svg
+				></span
+			>
 			<span class="visually-hidden">{label}</span>
 		</label>
 	{/each}
@@ -69,15 +86,19 @@
 		place-items: center;
 		width: 2.75rem;
 		height: 2.75rem;
-		font-size: 1.5rem;
 		border-radius: 999px;
 		border: 1px solid var(--border);
 		background: var(--surface);
-		filter: grayscale(0.8);
-		transition: filter var(--motion-fast) var(--ease);
+		color: var(--muted);
+		transition:
+			color var(--motion-fast) var(--ease),
+			border-color var(--motion-fast) var(--ease);
+	}
+	label:hover span[aria-hidden] {
+		color: var(--fg);
 	}
 	input:checked + span {
-		filter: none;
+		color: var(--accent);
 		border-color: var(--accent);
 		background: var(--accent-soft);
 	}

@@ -41,27 +41,6 @@ export function storedAppearance(): Appearance | null {
 	}
 }
 
-const icons: Record<string, [string, string]> = {
-	task: ['✅', '☐'],
-	note: ['📝', '✎'],
-	goal: ['🎯', '◎'],
-	milestone: ['🏁', '⚑'],
-	project: ['🗂️', '▦'],
-	habit: ['🌱', '↻'],
-	roadmap: ['🧭', '⌖'],
-	skill: ['🎓', '◆'],
-	area: ['🧱', '▣'],
-	resource: ['📚', '❏'],
-	feed_item: ['📰', '▤']
-};
-
-/** The icon for an entity type in the chosen icon theme ("" for none). */
-export function iconFor(type: string, theme: string | undefined): string {
-	const pair = icons[type];
-	if (!pair || theme === 'none') return '';
-	return theme === 'symbols' ? pair[1] : pair[0];
-}
-
 /** The icon theme currently applied to the page. */
 export function iconTheme(): string | undefined {
 	return typeof document === 'undefined' ? undefined : document.documentElement.dataset.icons;

@@ -177,8 +177,8 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-126 | The original and its source | Every news item links to its original (watch, listen, read) and to its source (the channel, the blog, the show), with the full clean link to copy. | SHOULD | 1 pt | EP-110, EP-123 | Done |
 | EP-127 | Every new feature in sight | The menu names YouTube videos, Podcasts, the Collection, Coffee and tea, the Huberman protocols, and invitations; the tech watch opens on tabs by kind, with their counts; Today lists what is new. | MUST | 1 pt | EP-116 to EP-126 | Done |
 | EP-128 | A shorter board | Each column of the GTD board and the kanban shows its first five cards, then "Show N more". | SHOULD | 1 pt | EP-07 | Done |
-| EP-129 | One set of icons | One set of line icons in SVG replaces the emoji: the kinds of items (goal, skill, note, project…), the notes' side links, and the journal's scales. | SHOULD | 2 pts | EP-38 | Planned |
-| EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Planned |
+| EP-129 | One set of icons | One set of line icons in SVG replaces the emoji: the kinds of items (goal, skill, note, project…), the notes' side links, and the journal's scales. | SHOULD | 2 pts | EP-38 | Done |
+| EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Done |
 | EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Planned |
 | EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
@@ -2187,7 +2187,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "The icons for goal, skill and note are not professional and aesthetic; same problem on Notes; for the journal, the icons are really not professional."
 
-- [ ] **EP-129/IS-129.01** · 2 pts · SHOULD — An `Icon` component draws one set of line icons (24 × 24, 1.75 stroke, `currentColor`, after Lucide, ISC licence): the kinds of items in place of the emoji and symbols, the notes' side links (explore, analysis, templates), and the journal's mood, energy, and stress, as five-step scales drawn in the same line. The icons follow the theme's colour.
+- [x] **EP-129/IS-129.01** · 2 pts · SHOULD — An `Icon` component draws one set of line icons (24 × 24, 1.75 stroke, `currentColor`, after Lucide, ISC licence): the kinds of items in place of the emoji and symbols, the notes' side links (explore, analysis, templates), the agents' button, and the journal's mood, energy, and stress (a face that smiles, a battery that fills, a gauge that swings). The icons follow the theme's colour; Preferences → Icons is now Shown or None.
 
 **Tests.** Every kind has an icon; the scales keep their labels for screen readers; axe on the journal and notes.
 
@@ -2195,7 +2195,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "We don't need to see our previous mood." (Owner's choice: the journal's history.)
 
-- [ ] **EP-130/IS-130.01** · 1 pt · SHOULD — The journal's last 30 days lose the mood and energy chart and the faces: each day stays listed by date with its sleep and first line, to reopen. What helps you (EP-92) is unchanged.
+- [x] **EP-130/IS-130.01** · 1 pt · SHOULD — The journal's last 30 days lose the mood and energy chart and the faces: each day stays listed by date with its sleep and first line, to reopen. What helps you (EP-92) is unchanged.
 
 **Tests.** The e2e journal test checks no chart and no faces in the list.
 

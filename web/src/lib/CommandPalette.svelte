@@ -4,14 +4,23 @@
 	import { api, message, type Schemas } from './api';
 	import { capturing } from './capture.svelte';
 	import { href, typeNames } from './links';
-	import { iconFor, iconTheme } from './preferences';
+	import { kindIcon, type IconName } from './icons';
+	import { iconTheme } from './preferences';
+	import Icon from './ui/Icon.svelte';
 	import { openDaily } from './newNote';
 	import { highlight } from './notes';
 	import { searchPages } from './search.svelte';
 	import { toast } from './ui/toast.svelte';
 
 	type Hit = Schemas['SearchHit'];
-	type Item = { id: string; label: string; detail?: string; snippet?: string; run: () => unknown };
+	type Item = {
+		id: string;
+		label: string;
+		detail?: string;
+		icon?: IconName | null;
+		snippet?: string;
+		run: () => unknown;
+	};
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
 	let dialog: HTMLDialogElement;
@@ -46,7 +55,8 @@
 			.map((h) => ({
 				id: h.id,
 				label: h.title,
-				detail: `${iconFor(h.type, iconTheme())} ${t(typeNames[h.type] ?? h.type)}`.trim(),
+				detail: t(typeNames[h.type] ?? h.type),
+				icon: iconTheme() === 'none' ? null : kindIcon(h.type),
 				snippet: h.snippet,
 				run: () => goto(href(h)!)
 			}));
@@ -162,7 +172,10 @@
 				onmousemove={() => (active = i)}
 			>
 				<span class="label">{item.label}</span>
-				<span class="detail">{item.detail}</span>
+				<span class="detail"
+					>{#if item.icon}<Icon name={item.icon} size={14} />{/if}
+					{item.detail}</span
+				>
 				{#if item.snippet}
 					<!-- highlight() escapes the snippet before marking matches. -->
 					<span class="snippet">{@html highlight(item.snippet)}</span>

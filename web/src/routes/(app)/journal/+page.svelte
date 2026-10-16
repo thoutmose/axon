@@ -4,7 +4,6 @@
 	import { formatDate } from '$lib/dates';
 	import { t } from '$lib/i18n.svelte';
 	import { emptyDay, hasContent, scales, type JournalFields } from '$lib/journal';
-	import LineChart from '$lib/charts/LineChart.svelte';
 	import Scale from '$lib/Scale.svelte';
 	import WhatHelps from '$lib/WhatHelps.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -12,7 +11,8 @@
 	import { toast } from '$lib/ui/toast.svelte';
 
 	// The daily journal (EP-91): how the day felt, the night's sleep, three
-	// things to be grateful for, and a note; the last 30 days below.
+	// things to be grateful for, and a note; the last 30 days below, by date
+	// only: past moods are not shown again (EP-130).
 	type Entry = Schemas['JournalEntry'];
 	let entries = $state<Entry[] | null>(null);
 	let today = $state('');
@@ -90,22 +90,6 @@
 		}
 	}
 
-	const series = $derived.by(() => {
-		const rows = [...(entries ?? [])].reverse();
-		return [
-			{
-				id: 'mood',
-				label: t('Mood'),
-				points: rows.filter((e) => e.mood != null).map((e) => ({ day: e.day, value: e.mood! }))
-			},
-			{
-				id: 'energy',
-				label: t('Energy'),
-				points: rows.filter((e) => e.energy != null).map((e) => ({ day: e.day, value: e.energy! }))
-			}
-		];
-	});
-	const face = (v: number | null, k: 'mood' | 'energy') => (v ? s[k].faces[v - 1] : '·');
 	const saved = $derived(entries?.some((e) => e.day === day) ?? false);
 </script>
 
@@ -190,17 +174,12 @@
 	{#if entries.length}
 		<section class="card" aria-labelledby="month-title">
 			<h2 id="month-title">{t('The last 30 days')}</h2>
-			{#if series[0].points.length > 1}
-				<LineChart title={t('Mood and energy, from 1 to 5')} {series} />
-			{/if}
 			<ul class="days">
 				{#each entries as e (e.day)}
 					<li>
 						<button type="button" class="link" onclick={() => open(e.day)}
 							>{formatDate(e.day, { weekday: 'short', day: 'numeric', month: 'short' })}</button
 						>
-						<span aria-label={t('Mood')}>{face(e.mood, 'mood')}</span>
-						<span aria-label={t('Energy')}>{face(e.energy, 'energy')}</span>
 						{#if e.sleep_hours != null}<span class="small"
 								>{t('{hours} h of sleep', { hours: e.sleep_hours })}</span
 							>{/if}
