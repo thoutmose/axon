@@ -4654,6 +4654,43 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/watch/podcast/voices': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * The natural voices of the operator's speech server (AXON_TTS_URL), if one is set
+		 * @description A server that speaks the OpenAI speech API, such as Kokoro-FastAPI (EP-132). Kokoro's names say the language: a and b English, f French, e Spanish, i Italian, p Portuguese, j Japanese, z Chinese, h Hindi.
+		 */
+		get: operations['listPodcastVoices'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/watch/podcast/speech': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Speak one part of an episode with a natural voice, as MP3 */
+		post: operations['speakPodcastPart'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/watch/shares': {
 		parameters: {
 			query?: never;
@@ -6797,8 +6834,12 @@ export interface components {
 				minutes?: number;
 				/** @enum {integer} */
 				days?: 1 | 7;
+				/** @description A voice of the speech server (AXON_TTS_URL) when it has one by that name, else the device's. */
 				voice?: string;
 				rate?: number;
+				/** @description 1, or 2 for a conversation where voice and voice2 take turns (EP-132); 0 reads as 1. */
+				hosts?: number;
+				voice2?: string;
 			};
 			/** @description Left out on update, it keeps its current defaults. */
 			keyboard?: {
@@ -18162,6 +18203,71 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	listPodcastVoices: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Whether a server is set, and its voices. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						available: boolean;
+						voices: {
+							/** @example af_heart */
+							id: string;
+							/**
+							 * @description en, fr…, or empty when the name does not say.
+							 * @example en
+							 */
+							lang: string;
+						}[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	speakPodcastPart: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					text: string;
+					voice: string;
+					/** @default 1 */
+					speed?: number;
+				};
+			};
+		};
+		responses: {
+			/** @description The spoken part. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'audio/mpeg': string;
+				};
+			};
+			401: components['responses']['Problem'];
+			409: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+			502: components['responses']['Problem'];
 		};
 	};
 	listWatchShares: {

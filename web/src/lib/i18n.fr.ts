@@ -3769,5 +3769,25 @@ export const fr: Record<string, string> = {
 	'Net worth today': 'Patrimoine aujourd’hui',
 	'Where it came from': 'D’où il est venu',
 	'The year to {month}': 'L’année jusqu’à {month}',
-	'Show the figures as a table': 'Afficher les chiffres en tableau'
+	'Show the figures as a table': 'Afficher les chiffres en tableau',
+	'Something went wrong. Try again.': 'Un problème est survenu. Réessayez.',
+	Hosts: 'Animateurs',
+	'One host': 'Un animateur',
+	'A conversation: two hosts take turns': 'Une conversation : deux animateurs se relaient',
+	'Voice of host {n}': 'Voix de l’animateur {n}',
+	'Natural voices from your speech server.':
+		'Des voix naturelles, de votre serveur de synthèse vocale.',
+	'This device’s voices. For natural voices, the operator runs a speech server such as Kokoro and sets AXON_TTS_URL.':
+		'Les voix de cet appareil. Pour des voix naturelles, l’opérateur lance un serveur de synthèse vocale comme Kokoro et définit AXON_TTS_URL.',
+	'Preparing the voice…': 'Préparation de la voix…',
+	American: 'américain',
+	British: 'britannique',
+	Spanish: 'espagnol',
+	Italian: 'italien',
+	Portuguese: 'portugais',
+	Japanese: 'japonais',
+	Chinese: 'chinois',
+	Hindi: 'hindi',
+	woman: 'femme',
+	man: 'homme'
 };

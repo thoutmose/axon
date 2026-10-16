@@ -7745,6 +7745,57 @@ paths:
             application/pdf: { schema: { type: string, format: binary } }
         "401": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/watch/podcast/voices:
+    get:
+      tags: [watch]
+      operationId: listPodcastVoices
+      summary: The natural voices of the operator's speech server (AXON_TTS_URL), if one is set
+      description: "A server that speaks the OpenAI speech API, such as Kokoro-FastAPI (EP-132). Kokoro's names say the language: a and b English, f French, e Spanish, i Italian, p Portuguese, j Japanese, z Chinese, h Hindi."
+      responses:
+        "200":
+          description: Whether a server is set, and its voices.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [available, voices]
+                properties:
+                  available: { type: boolean }
+                  voices:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, lang]
+                      properties:
+                        id: { type: string, example: af_heart }
+                        lang: { type: string, description: "en, fr…, or empty when the name does not say.", example: en }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/watch/podcast/speech:
+    post:
+      tags: [watch]
+      operationId: speakPodcastPart
+      summary: Speak one part of an episode with a natural voice, as MP3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, voice]
+              properties:
+                text: { type: string, minLength: 1, maxLength: 3000 }
+                voice: { type: string, maxLength: 64 }
+                speed: { type: number, minimum: 0.5, maximum: 2, default: 1 }
+      responses:
+        "200":
+          description: The spoken part.
+          content:
+            audio/mpeg:
+              schema: { type: string, format: binary }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
   /v1/watch/shares:
     get:
       tags: [watch]
@@ -10029,8 +10080,10 @@ components:
             lang: { enum: [en, fr] }
             minutes: { type: integer, minimum: 3, maximum: 30 }
             days: { type: integer, enum: [1, 7] }
-            voice: { type: string, maxLength: 200 }
+            voice: { type: string, maxLength: 200, description: "A voice of the speech server (AXON_TTS_URL) when it has one by that name, else the device's." }
             rate: { type: number, minimum: 0.5, maximum: 2 }
+            hosts: { type: integer, minimum: 0, maximum: 2, description: "1, or 2 for a conversation where voice and voice2 take turns (EP-132); 0 reads as 1." }
+            voice2: { type: string, maxLength: 200 }
         keyboard:
           type: object
           required: [shortcuts, vim]

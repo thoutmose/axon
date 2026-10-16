@@ -180,7 +180,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-129 | One set of icons | One set of line icons in SVG replaces the emoji: the kinds of items (goal, skill, note, project…), the notes' side links, and the journal's scales. | SHOULD | 2 pts | EP-38 | Done |
 | EP-130 | A journal without the past moods | The journal stops showing past moods and energy: no chart, no faces in the last 30 days, which stay listed to reopen. | SHOULD | 1 pt | EP-91 | Done |
 | EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Done |
-| EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
+| EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Done |
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
 | EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
 | EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
@@ -2218,8 +2218,8 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "Improve drastically the podcast: the voices are really too robotic." (Owner's choice: a self-hosted Kokoro. Voices of real, famous people are not offered: copying a person's voice without consent is impersonation.)
 
-- [ ] **EP-132/IS-132.01** · 2 pts · SHOULD — `compose.yaml` gains an optional `tts` service (Kokoro-FastAPI, CPU image, profile `tts`); `AXON_TTS_URL` points the API at any server speaking the OpenAI speech API. `GET /v1/watch/podcast/voices` lists its voices; `POST /v1/watch/podcast/speech` speaks one part (at most 4,000 characters, MP3). Without the server, the device's voices as before.
-- [ ] **EP-132/IS-132.02** · 1 pt · SHOULD — The podcast page offers the natural voices first, a **Conversation** format where two hosts take turns, a player that plays parts back to back with the next one fetched ahead, and a speed control.
+- [x] **EP-132/IS-132.01** · 2 pts · SHOULD — `compose.yaml` gains an optional `tts` service (Kokoro-FastAPI v0.2.4, CPU image, profile `tts`; 7.8 GB on disk); `AXON_TTS_URL` (with `AXON_TTS_MODEL`, `AXON_TTS_TOKEN`) points the API at any server speaking the OpenAI speech API. `GET /v1/watch/podcast/voices` lists its voices with the language Kokoro's names say; `POST /v1/watch/podcast/speech` speaks one part (at most 3,000 characters, MP3, three minutes to answer). Without the server, the device's voices as before. Settings gain `podcast.hosts` (1 or 2) and `podcast.voice2`.
+- [x] **EP-132/IS-132.02** · 1 pt · SHOULD — The podcast page offers the natural voices first (named by voice, accent, and sex), **Hosts: a conversation** where the first host opens and closes and the two take turns between, a player that plays parts back to back with the next one spoken ahead, and the pace sent to the server.
 
 **Tests.** The speech handler against a fake server (size limit, error); the conversation's turns; the e2e test with a fake voice.
 
