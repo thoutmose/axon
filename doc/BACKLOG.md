@@ -183,7 +183,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
 | EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
-| EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Planned |
+| EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Done |
 | EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Planned |
 | EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Planned |
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Planned |
@@ -2243,7 +2243,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "The cards are too small and not really useful."
 
-- [ ] **EP-135/IS-135.01** · 2 pts · SHOULD — The media page shows larger cards: the cover, the title, the creator and year, the rating as stars, the progress with what is left, and the next step (start, update, finish, rate). Each opens the item's page: the cover large, the overview, genres, progress to change, rating, its note (EP-136), and its links.
+- [x] **EP-135/IS-135.01** · 2 pts · SHOULD — The media page shows larger cards: the cover, the title, the creator and year, the rating as stars, the progress with what is left, and the next step (start, update, finish, rate). Each opens the item's page (`/media/{id}`, where links now lead): the cover large, the overview, genres, progress with quick steps (+10, +20, +50 pages; +1 episode; +30 minutes), status, rating, review, and its connections.
 
 **Tests.** e2e: open an item from its card, change its progress.
 

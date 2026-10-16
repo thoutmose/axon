@@ -3746,5 +3746,7 @@ export const fr: Record<string, string> = {
 	'Raise next: {axis}.': 'À relever ensuite : {axis}.',
 	'Nothing logged today for: {axes}.': 'Rien de noté aujourd’hui pour : {axes}.',
 	'Last week, on average': 'La semaine passée, en moyenne',
-	Sleep: 'Sommeil'
+	Sleep: 'Sommeil',
+	'{n} left': '{n} restant(s)',
+	'Where you are': 'Où vous en êtes'
 };

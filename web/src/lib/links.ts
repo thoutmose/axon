@@ -56,7 +56,7 @@ export function href(e: { id: string; type: string }): string | null {
 		roadmap: '/roadmaps/',
 		area: '/areas/',
 		resource: '/resources/',
-		media: '/media?open=',
+		media: '/media/',
 		feed_item: '/watch?item='
 	};
 	return pages[e.type] ? pages[e.type] + e.id : null;

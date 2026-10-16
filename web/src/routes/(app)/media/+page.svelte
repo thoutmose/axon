@@ -7,7 +7,8 @@
 	import { goto } from '$app/navigation';
 	import { api, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
-	import { coverHue } from '$lib/media';
+	import { left, stars } from '$lib/media';
+	import MediaCover from '$lib/MediaCover.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -379,53 +380,60 @@
 				<h2 id="col-{col.status}">{t(col.label)} <span class="muted">({list.length})</span></h2>
 				<ul class="shelf">
 					{#each list as it (it.id)}
+						{@const rest = left(it)}
 						<li class="item">
-							<div class="poster">
-								<button class="cover" onclick={() => edit(it)} aria-label="{t('Edit')} {it.title}">
-									{#if it.cover_id}
-										<img src="/api/v1/media/covers/{it.cover_id}" alt="" loading="lazy" />
-									{:else}
-										<span class="generated" style:--hue={coverHue(it.title)} aria-hidden="true">
-											<span class="g-kind">{t(kindName[it.kind])}</span>
-											<span class="g-title">{it.title}</span>
-											{#if it.creators}<span class="g-by">{it.creators}</span>{/if}
-										</span>
-									{/if}
-								</button>
-								{#if it.rating}
-									<span class="badge rating"
-										><span aria-hidden="true">★ {it.rating}</span><span class="visually-hidden"
-											>{t('Rated')} {it.rating}/10</span
-										></span
-									>
-								{/if}
-							</div>
+							<a class="poster" href="/media/{it.id}" aria-label={it.title}>
+								<MediaCover item={it} kind={kindName[it.kind]} />
+							</a>
 							<div class="meta">
-								<strong class="title">{it.title}</strong>
+								<a class="title" href="/media/{it.id}">{it.title}</a>
 								<span class="small muted line"
 									>{t(kindName[it.kind])}{it.year ? ` · ${it.year}` : ''}{it.creators
 										? ` · ${it.creators}`
 										: ''}</span
 								>
+								{#if it.rating}
+									<span class="stars" title="{it.rating}/10"
+										><span aria-hidden="true">{stars(it.rating)}</span><span class="visually-hidden"
+											>{t('Rated')} {it.rating}/10</span
+										></span
+									>
+								{/if}
+								{#if it.genres.length}
+									<span class="genres">
+										{#each it.genres.slice(0, 3) as g (g)}<span class="chip">{g}</span>{/each}
+									</span>
+								{/if}
+								{#if it.overview}<p class="overview small">{it.overview}</p>{/if}
 								{#if it.total && it.status === 'doing'}
 									<progress
 										max={it.total}
 										value={it.progress}
 										aria-label="{it.title}: {it.progress} {t('of')} {it.total} {t(unit[it.kind])}"
 									></progress>
-									<span class="small muted" aria-hidden="true"
-										>{it.progress} / {it.total} {t(unit[it.kind])}</span
+									<span class="small muted"
+										>{it.progress} / {it.total}
+										{t(unit[it.kind])} · {t('{n} left', {
+											n: rest ?? 0
+										})}</span
 									>
 								{/if}
-								{#if it.status === 'want'}
-									<button class="link small" onclick={() => setStatus(it, 'doing')}
-										>{t('Start')}</button
+								<span class="actions">
+									{#if it.status === 'want'}
+										<Button variant="secondary" onclick={() => setStatus(it, 'doing')}
+											>{t('Start')}</Button
+										>
+									{:else if it.status === 'doing'}
+										<Button variant="secondary" onclick={() => setStatus(it, 'done')}
+											>{t('Finish')}</Button
+										>
+									{/if}
+									<Button
+										variant="ghost"
+										onclick={() => edit(it)}
+										aria-label="{t('Edit')} {it.title}">{t('Edit')}</Button
 									>
-								{:else if it.status === 'doing'}
-									<button class="link small" onclick={() => setStatus(it, 'done')}
-										>{t('Finish')}</button
-									>
-								{/if}
+								</span>
 							</div>
 						</li>
 					{/each}
@@ -567,91 +575,73 @@
 		list-style: none;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
-		gap: var(--space-6) var(--space-4);
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+		gap: var(--space-4);
 		margin-bottom: var(--space-6);
 	}
+	/* A card worth opening (EP-135): the cover beside what matters. */
 	.item {
 		display: grid;
-		gap: var(--space-2);
-		align-content: start;
+		grid-template-columns: 8.5rem minmax(0, 1fr);
+		gap: var(--space-4);
+		align-items: start;
+		padding: var(--space-3);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
 	}
 	.poster {
-		position: relative;
-	}
-	.cover {
-		width: 100%;
-		aspect-ratio: 2 / 3;
-		padding: 0;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--accent-soft);
-		overflow: hidden;
-		cursor: pointer;
 		display: block;
+		border-radius: var(--radius);
 		box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
 		transition:
-			transform 0.15s ease,
-			box-shadow 0.15s ease;
+			transform var(--motion-fast) var(--ease),
+			box-shadow var(--motion-fast) var(--ease);
 	}
-	.cover:hover,
-	.cover:focus-visible {
+	.poster:hover,
+	.poster:focus-visible {
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgb(0 0 0 / 0.35);
 	}
-	.cover img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
-	}
-	/* A cover made from the title, for items the catalogues do not know. */
-	.generated {
-		height: 100%;
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-		gap: var(--space-2);
-		padding: var(--space-3);
-		text-align: left;
-		color: #fff;
-		background: linear-gradient(
-			160deg,
-			hsl(var(--hue) 45% 30%),
-			hsl(calc(var(--hue) + 40) 50% 16%)
-		);
-	}
-	.g-kind {
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		opacity: 0.85;
-	}
-	.g-title {
-		font-weight: 700;
+	.title {
+		font-weight: 650;
 		font-size: var(--text-lg);
-		line-height: 1.2;
-		overflow-wrap: anywhere;
+		color: var(--fg);
+		text-decoration: none;
+		line-height: 1.25;
+	}
+	.title:hover {
+		text-decoration: underline;
+	}
+	.stars {
+		color: #d99a00;
+		letter-spacing: 0.1em;
+	}
+	.genres {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+	.chip {
+		font-size: 0.75rem;
+		border-radius: 999px;
+		padding: 0 var(--space-2);
+		background: var(--accent-soft);
+	}
+	.overview {
+		margin: 0;
+		color: var(--muted);
 		display: -webkit-box;
-		-webkit-line-clamp: 5;
-		line-clamp: 5;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
-	.g-by {
-		font-size: var(--text-sm);
-		opacity: 0.9;
-	}
-	.badge {
-		position: absolute;
-		top: var(--space-2);
-		right: var(--space-2);
-		padding: 0.1rem 0.5rem;
-		border-radius: 999px;
-		background: rgb(0 0 0 / 0.75);
-		color: #fff;
-		font-size: var(--text-sm);
-		font-weight: 600;
-		pointer-events: none;
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-1);
 	}
 	.meta {
 		display: grid;
