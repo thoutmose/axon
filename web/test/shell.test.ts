@@ -675,6 +675,11 @@ test('tasks open on a GTD board, and a Kanban board moves work along', async () 
 
 	await page.getByRole('link', { name: 'Kanban' }).click();
 	const kanban = page.getByRole('group', { name: 'Kanban board' });
+	// A long column folds after five cards (EP-128): open it to find the card.
+	const todo = kanban.getByRole('region', { name: /To do/ });
+	await expect(todo.getByRole('listitem').first()).toBeVisible();
+	const folded = todo.getByRole('button', { name: /^Show \d+ more$/ });
+	if (await folded.isVisible()) await folded.click();
 	await kanban.getByRole('button', { name: 'Plan the garden' }).focus();
 	await page.keyboard.press('Shift+ArrowRight');
 	await expect(
@@ -691,7 +696,6 @@ test('tasks open on a GTD board, and a Kanban board moves work along', async () 
 			data: { title: `Fold me ${n}`, status: 'next' }
 		});
 	await page.reload();
-	const todo = kanban.getByRole('region', { name: /To do/ });
 	await expect(todo.getByRole('listitem')).toHaveCount(5);
 	const more = todo.getByRole('button', { name: /^Show \d+ more$/ });
 	await more.click();

@@ -218,7 +218,7 @@
 		font-size: var(--text-sm);
 	}
 	.stars {
-		color: #d99a00;
+		color: var(--warn);
 		font-size: 1.25rem;
 		letter-spacing: 0.1em;
 		margin: var(--space-1) 0;
