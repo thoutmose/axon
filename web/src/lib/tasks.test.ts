@@ -33,7 +33,7 @@ describe('overdue', () => {
 
 describe('fold', () => {
 	const items = (n: number, p = '') => Array.from({ length: n }, (_, i) => ({ id: `${p}${i}` }));
-	it('shows the first five of each group and counts the rest', () => {
+	it('shows the first five across groups and counts the rest', () => {
 		const r = fold(
 			[
 				['@home', items(7, 'h')],
@@ -41,8 +41,8 @@ describe('fold', () => {
 			],
 			new Set()
 		);
-		expect(r.groups.map(([, x]) => x.length)).toEqual([5, 2]);
-		expect(r.hidden).toBe(2);
+		expect(r.groups.map(([k, x]) => [k, x.length])).toEqual([['@home', 5]]);
+		expect(r.hidden).toBe(4);
 	});
 	it('keeps a card just moved there in sight', () => {
 		const r = fold([['', items(8)]], new Set(['7']));

@@ -2179,7 +2179,7 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Goal.** "Reduce the size of the GTD view: hide when a column has more than a given number of elements." A column of twenty-two cards pushed the others off the screen.
 
-- [x] **EP-128/IS-128.01** · 1 pt · SHOULD — Each column of the GTD board and the kanban shows its first five cards (by context, the first five of each context), then a **Show N more** button that opens the rest, and **Show less**. The count in the header stays the whole column.
+- [x] **EP-128/IS-128.01** · 1 pt · SHOULD — Each column of the GTD board and the kanban shows its first five cards (across its contexts on the GTD board), then a **Show N more** button that opens the rest, and **Show less**. The count in the header stays the whole column.
 
 **Tests.** A unit test of the split; an e2e test on the demo's kanban (five shown, Show more, all shown).
 

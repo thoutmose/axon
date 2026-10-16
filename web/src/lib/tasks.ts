@@ -43,19 +43,22 @@ export function overdue(task: Task, today: string): boolean {
 export const BOARD_LIMIT = 5;
 
 /**
- * The cards of a folded column: the first `limit` of each group, and any card
- * in `keep` (one just moved there, so it never vanishes). `hidden` counts the rest.
+ * The cards of a folded column: the first `limit` across its groups, and any
+ * card in `keep` (one just moved there, so it never vanishes). `hidden` counts
+ * the rest; a group left empty is dropped.
  */
 export function fold<T extends { id: string }>(
 	groups: [string, T[]][],
 	keep: Set<string>,
 	limit = BOARD_LIMIT
 ): { groups: [string, T[]][]; hidden: number } {
+	let left = limit;
 	let hidden = 0;
-	const out = groups.map(([key, items]): [string, T[]] => {
-		const shown = items.filter((x, i) => i < limit || keep.has(x.id));
+	const out: [string, T[]][] = [];
+	for (const [key, items] of groups) {
+		const shown = items.filter((x) => (left > 0 && left--) || keep.has(x.id));
 		hidden += items.length - shown.length;
-		return [key, shown];
-	});
+		if (shown.length) out.push([key, shown]);
+	}
 	return { groups: out, hidden };
 }
