@@ -140,6 +140,8 @@
 }
 html {
 	-webkit-text-size-adjust: 100%;
+	/* A link to a part of a page lands below the sticky menu bar (EP-127). */
+	scroll-padding-top: 5rem;
 }
 body {
 	margin: 0;
