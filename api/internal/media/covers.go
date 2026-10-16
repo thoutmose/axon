@@ -88,19 +88,46 @@ func (c *Catalogs) FindCovers(ctx context.Context, userID uuid.UUID, allow func(
 // with a cover: the same title, and the same author or year whenever both
 // sides know one. A wrong cover is worse than none, so anything less is no
 // match.
+//
+// When no title is the same, a catalogue that names the work a little
+// differently (TMDB's "Dune" for "Dune: Part One") still matches if one title
+// starts the other at a word and both sides know the same year (EP-134).
 func bestMatch(it Item, cands []Candidate) *Candidate {
 	title := normal(it.Title)
 	mine := names(it.Creators)
-	for i, c := range cands {
+	fits := func(c Candidate) bool {
 		switch {
-		case !c.HasCover || normal(c.Title) != title:
+		case !c.HasCover:
 		case len(mine) > 0 && c.Creators != "" && !overlap(mine, names(c.Creators)):
 		case it.Year != nil && c.Year != nil && *it.Year != *c.Year:
 		default:
+			return true
+		}
+		return false
+	}
+	for i, c := range cands {
+		if normal(c.Title) == title && fits(c) {
+			return &cands[i]
+		}
+	}
+	if it.Year == nil {
+		return nil
+	}
+	for i, c := range cands {
+		if t := normal(c.Title); c.Year != nil && startsAtWord(title, t) && fits(c) {
 			return &cands[i]
 		}
 	}
 	return nil
+}
+
+// startsAtWord reports whether one of two normal titles begins the other,
+// ending at a word: "dune" and "dune part one", not "dun" and "dune".
+func startsAtWord(a, b string) bool {
+	if len(a) > len(b) {
+		a, b = b, a
+	}
+	return a != "" && strings.HasPrefix(b, a) && (len(b) == len(a) || b[len(a)] == ' ')
 }
 
 // normal lower-cases s and keeps its letters and digits, without accents,

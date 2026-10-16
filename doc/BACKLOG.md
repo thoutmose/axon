@@ -182,6 +182,13 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-131 | The life web | A radar ("spider web") of the day across food, water, sleep, activity, caffeine, and mood, scored from 0 to 100, with a level, its best day to beat, and last week behind it. | SHOULD | 2 pts | EP-18, EP-88, EP-117 | Done |
 | EP-132 | A podcast with real voices | The podcast is spoken by a self-hosted neural voice (Kokoro, `AXON_TTS_URL`), alone or as two hosts in conversation, falling back to the device's voices. | SHOULD | 3 pts | EP-110 | Planned |
 | EP-133 | Send the digest from its page | The Digest page shows where it goes (email and each chat app) and sets them up there, with a test. | SHOULD | 1 pt | EP-107 | Planned |
+| EP-134 | Every cover | Each film, series, and book gets its cover: a closer match when the catalogue names it differently (Dune for Dune: Part One, the year agreeing), and the search for missing covers runs by itself. | MUST | 1 pt | EP-17 | Done |
+| EP-135 | Media cards worth opening | Larger cards with the cover, the rating, the progress, and the next step at a glance, and a page per item. | SHOULD | 2 pts | EP-17 | Planned |
+| EP-136 | Notes for films, series, and books | Vault note templates for a film, a series, and a book, alongside literature, permanent, and resource notes, opened from the item. | SHOULD | 1 pt | EP-104, EP-17 | Planned |
+| EP-137 | A reading habit turns the pages | A habit linked to a book ("Read 20 pages") moves the book's page forward when checked, and the pages left go down. | SHOULD | 1 pt | EP-12, EP-17 | Planned |
+| EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Planned |
+| EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Planned |
+| EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -218,7 +225,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-132 → EP-133 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2224,6 +2231,58 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** The e2e digest test finds the channels on the Digest page.
 
+### EP-134 — Every cover
+
+**Goal.** "For films, series, and books, ensure each element has a cover!" The demo's Dune: Part One had none: TMDB calls it Dune (2021).
+
+- [x] **EP-134/IS-134.01** · 1 pt · MUST — When no candidate has the same title, one whose title starts the item's (or the other way round, at a word) matches if the year is the same on both sides, or the authors overlap. The media page looks for missing covers by itself when some lack one, once per visit; the demo's films carry their year.
+
+**Tests.** `TestBestMatch` with Dune and a near title of another year; the demo shows no drawn cover.
+
+### EP-135 — Media cards worth opening
+
+**Goal.** "The cards are too small and not really useful."
+
+- [ ] **EP-135/IS-135.01** · 2 pts · SHOULD — The media page shows larger cards: the cover, the title, the creator and year, the rating as stars, the progress with what is left, and the next step (start, update, finish, rate). Each opens the item's page: the cover large, the overview, genres, progress to change, rating, its note (EP-136), and its links.
+
+**Tests.** e2e: open an item from its card, change its progress.
+
+### EP-136 — Notes for films, series, and books
+
+**Goal.** "A movie, a series, and a book should have a template note, like the literature, permanent, and resource notes, made for their purpose."
+
+- [ ] **EP-136/IS-136.01** · 1 pt · SHOULD — Three vault templates, Film, Series, and Book: their details filled from the item (title, creator, year, genres, cover), and sections for why it, quotes and scenes, ideas, what it changes, the rating and a verdict; a book adds a reading log and chapters, a series its seasons. "Write a note" on the item creates it from its template, linked to the item.
+
+**Tests.** The templates fill their placeholders; e2e: a note from a book.
+
+### EP-137 — A reading habit turns the pages
+
+**Goal.** "If I have the habit Read 20 pages today, connected to a book like Dune, the pages read should increase and the pages to read decrease."
+
+- [ ] **EP-137/IS-137.01** · 1 pt · SHOULD — A habit linked to a book or series (Connections) with a number in its name or its target ("Read 20 pages", "Watch 1 episode") moves that item's progress forward by that number when checked in, back when unchecked, never past its total; the habit says so ("Dune: 230 of 611 pages").
+
+**Tests.** API: check in, the progress goes up; uncheck, it goes back; the total caps it.
+
+### EP-138 — Budget charts
+
+**Goal.** "A pie chart of the expenses of a period, by default a month, per category; the same for income; and a chart of expenses and income over a year."
+
+- [ ] **EP-138/IS-138.01** · 2 pts · SHOULD — Budget → Reports opens on a period (this month by default, any month or range) with two donuts, spending and income by category, each slice named with its amount and share, and a table for screen readers; below, a year of income and spending by month as paired bars with the balance.
+
+**Tests.** Unit tests of the slices; e2e on the demo's budget, with axe.
+
+### EP-139 — A clean start
+
+**Goal.** "By default, on one's own setup, there is no note, but still templates and courses; with the AI agents one can set up everything for one's needs in a few hours."
+
+- [ ] **EP-139/IS-139.01** · 1 pt · MUST — A new account starts with no notes, tasks, or items of its own (the demo keeps its sample); the note templates, roadmaps, courses, and Huberman protocols are there. `doc/getting-started.md` (and in French) walks through the first hours with the agents: the onboarding, the roadmap, the vault, the habits.
+
+**Tests.** A new account has zero notes and the templates; the docs check.
+
+### EP-140 — The life web on Today
+
+- [ ] **EP-140/IS-140.01** · 1 pt · SHOULD — An e2e test of the life web on the demo (the score, the level, the menu's link), with axe.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2430,6 +2489,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-12 | Owner request: "improve and fix everything, and other essential functionalities". Added and delivered EP-65 to EP-68: audit fixes, trash and undo, share to Axon, task reminders at a time. |
 | 2026-10-14 | Owner request: the tech watch, as EP-110 (sources, schedule, no duplicates, labels, feed notes, monitoring), EP-111 (analysis and its knowledge graph), EP-112 (exports and sharing), EP-113 (podcast, agent, digest template, scenery). |
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
+| 2026-10-16 | Owner requests: a cover for every film, series, and book; larger media cards; media note templates; a reading habit that turns a book's pages; budget charts; a clean start for a new install. Planned as EP-134 to EP-139, before EP-132 and EP-133. |
 | 2026-10-16 | Owner requests: a shorter board, one set of icons, no past moods in the journal, a life radar, natural podcast voices (self-hosted Kokoro; famous people's voices declined), and the digest's channels on its page. Planned as EP-128 to EP-133. |
 | 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
