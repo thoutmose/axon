@@ -221,3 +221,38 @@ func TestANewAccountStartsClean(t *testing.T) {
 		t.Error("the roadmap library offers nothing")
 	}
 }
+
+// The demo's roadmap and what surrounds it go to a real account on request
+// (axon demo starter), without the demo's history, and only once.
+func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	added, err := demo.Starter(t.Context(), pool, "Alice", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(added) != 1+len(demo.Schools)+len(demo.Protocols) {
+		t.Fatalf("added = %v", added)
+	}
+	var list struct {
+		Items []struct {
+			Title string `json:"title"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps", nil), &list)
+	if len(list.Items) != 1 || list.Items[0].Title != "Top-5% in 26 engineering domains" {
+		t.Fatalf("roadmaps = %+v", list.Items)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/habits", nil), &list)
+	if len(list.Items) < len(demo.Protocols) {
+		t.Fatalf("habits = %+v", list.Items)
+	}
+	again, err := demo.Starter(t.Context(), pool, "Alice", time.Now())
+	if err != nil || len(again) != 0 {
+		t.Fatalf("second run = %v, %v", again, err)
+	}
+	if _, err := demo.Starter(t.Context(), pool, "Nobody", time.Now()); err == nil {
+		t.Error("an unknown account is refused")
+	}
+}

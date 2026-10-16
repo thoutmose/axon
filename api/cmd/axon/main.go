@@ -67,10 +67,13 @@ func run(args []string) error {
 	case "notes-sync":
 		return notesSync(args[1:])
 	case "demo":
-		if len(args) != 2 || args[1] != "reset" {
-			return errors.New("usage: axon demo reset")
+		switch {
+		case len(args) == 2 && args[1] == "reset":
+			return demoReset()
+		case len(args) == 4 && args[1] == "starter" && args[2] == "--user":
+			return demoStarter(args[3])
 		}
-		return demoReset()
+		return errors.New("usage: axon demo reset | axon demo starter --user <id or display name>")
 	case "instance":
 		return instanceCmd(args[1:])
 	case "version":
@@ -226,6 +229,32 @@ func keepDemo(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 		case <-time.After(time.Minute):
 		}
 	}
+}
+
+// demoStarter gives a real account the demo's roadmap and what surrounds
+// it, without its invented history (demo.Starter).
+func demoStarter(who string) error {
+	dsn, err := databaseURL()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	added, err := demo.Starter(ctx, pool, who, time.Now())
+	if err != nil {
+		return err
+	}
+	if len(added) == 0 {
+		fmt.Println("nothing to add: the account already has it all")
+	}
+	for _, a := range added {
+		fmt.Println("added", a)
+	}
+	return nil
 }
 
 func demoReset() error {
