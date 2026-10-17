@@ -8,7 +8,9 @@ const [base, out] = process.argv.slice(2);
 mkdirSync(out, { recursive: true });
 
 // What each shot shows, and what to bring to the top before taking it.
-// path may be a function of the demo's data; open clicks before the shot.
+// path may be a function of the demo's data; open clicks before the shot;
+// region names a labelled section to bring up instead of a heading; close
+// clicks after it, so a panel that remembers being open leaves the next shots.
 const shots = [
 	{ name: 'today', path: '/today', heading: 'Your roadmap today', offset: 120 },
 	{ name: 'plan', path: (d) => `/roadmaps/${d.roadmap}?view=plan`, heading: 'The plan', offset: 110 },
@@ -16,11 +18,11 @@ const shots = [
 	{ name: 'notes', path: '/notes', heading: 'Knowledge graph' },
 	{ name: 'sketch', path: (d) => `/notes/${d.note}` },
 	{ name: 'learn', path: '/learn' },
-	{ name: 'jarvis', path: '/today', open: 'Open Jarvis' },
+	{ name: 'jarvis', path: '/today', open: 'Open Jarvis', close: 'Close Jarvis' },
 	{ name: 'graph', path: '/watch/graph', heading: 'News graph', offset: 160 },
-	{ name: 'media', path: '/media' },
+	{ name: 'media', path: '/media', heading: 'In progress' },
 	{ name: 'health', path: '/today', heading: 'Coffee and tea' },
-	{ name: 'budget', path: '/budget', heading: 'Where the money went' },
+	{ name: 'budget', path: '/budget', region: 'Where the money went' },
 	{ name: 'collection', path: '/progress', heading: 'Your collection' }
 ];
 
@@ -72,13 +74,14 @@ for (const s of shots) {
 		await page.getByRole('button', { name: s.open }).click();
 		await page.waitForTimeout(800);
 	}
-	if (s.heading) {
-		const h = page.getByRole('heading', { name: s.heading }).first();
+	if (s.heading || s.region) {
+		const h = page.getByRole(s.region ? 'region' : 'heading', { name: s.region ?? s.heading }).first();
 		await h.waitFor();
 		await h.evaluate((el, offset) => scrollTo(0, el.getBoundingClientRect().top + scrollY - offset), s.offset ?? 90);
 	}
 	await page.waitForTimeout(1200);
 	await page.screenshot({ path: `${out}/${s.name}.jpg`, type: 'jpeg', quality: 86 });
+	if (s.close) await page.getByRole('button', { name: s.close }).click();
 	console.log(s.name);
 }
 await browser.close();

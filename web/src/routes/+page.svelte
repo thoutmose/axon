@@ -111,7 +111,7 @@
 
 {#if status?.demo_available}
 	<section class="teaser" aria-labelledby="teaser-title">
-		<h2 id="teaser-title">{t('Axon in under a minute')}</h2>
+		<h2 id="teaser-title">{t('Axon in a minute')}</h2>
 		<p>{t('A tour of the demo, with music Axon composed itself.')}</p>
 		<!-- Played on request: nothing downloads until then, and nothing moves on its own.
 		     Its captions are drawn into the picture; the tracks hold the same text, in two languages. -->

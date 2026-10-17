@@ -207,7 +207,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Done (srv-secondbrain offline: the live check waits for it) |
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Done (fleet PRs #1 and #2 await review) |
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Done |
-| EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Planned |
+| EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Done |
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Planned |
 | EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Planned |
 | EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Planned |
@@ -2455,6 +2455,12 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 **Goal.** "On the README add a banner you create for this project, really aesthetic, professional, Apple-like", and "update the resource requirements section of the README to keep only srv-prod as an example of hardware requirements" (owner, 2026-10-17).
 
 - [x] **EP-158/IS-158.01** · 1 pt · SHOULD — `doc/assets/banner.svg` and its French twin open both READMEs: the wordmark in the system's display face over deep night, three soft lights, and a fine graph of what Axon connects (notes, goals, tasks, learning, habits, health); pure SVG, sharp at any size. **Hardware requirements** keeps one table: the minimum and `srv-prod` as the example (8 vCPU, 16 GB, 120 GB SSD) with what Axon uses there, measured on 2026-10-17 (under 1 % CPU and about 120 MB for six containers at rest, a 19 MB database), and where the optional speech servers can run instead.
+
+### EP-159 — The trailer, again
+
+**Goal.** The trailer shows Axon as it is after 2026-10-17's requests (owner, 2026-10-17).
+
+- [x] **EP-159/IS-159.01** · 1 pt · COULD — `make teaser` recorded from the srv-dev demo: twelve scenes (Today's roadmap, the plan, tasks, the notes graph, a note with a drawing and maths, learning, Jarvis, the news graph, media with their covers, health, the budget charts, the collection), 71 seconds, in WebM and MP4 with English and French captions. The shots find the budget charts by their labelled section, show the media from **In progress** so the covers are in frame, and close Jarvis after its own shot (its panel remembers being open); a headline beside its window takes the lines it needs and its subtitle follows it, where a guess from the headline's length overlapped two of them. The home page calls it **Axon in a minute**, no longer "under a minute".
 
 ### EP-20 — Analytics & insights
 
