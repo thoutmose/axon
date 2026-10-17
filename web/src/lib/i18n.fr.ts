@@ -2328,6 +2328,8 @@ export const fr: Record<string, string> = {
 	'Every three months': 'Tous les trois mois',
 	'Every year': 'Chaque année',
 	'Every day': 'Chaque jour',
+	Weekdays: 'En semaine',
+	Weekends: 'Le week-end',
 	'Run a 10 km race': 'Courir un 10 km',
 	'Finish a 10 km race without walking.': 'Finir une course de 10 km sans marcher.',
 	'Run 3 km without stopping': 'Courir 3 km sans m’arrêter',

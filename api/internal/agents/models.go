@@ -13,6 +13,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // The model each agent uses (EP-151). The provider is the person's (or the
@@ -87,16 +88,16 @@ func (r *Runner) ListModels(ctx context.Context, q db.Querier, userID uuid.UUID)
 	}
 	slices.Sort(names)
 	defaults := map[string]string{"food-photo": photoModel, "video-summary": summaryModel, "jarvis": jarvisModel}
-	titles := map[string]string{"food-photo": "Meal photos", "video-summary": "Video summaries", "jarvis": "Jarvis"}
+	titles := map[string]string{"food-photo": l10n.Mark("Meal photos"), "video-summary": l10n.Mark("Video summaries"), "jarvis": "Jarvis"}
 	for _, h := range helpers {
 		if _, ok := r.Skills[h]; !ok { // Jarvis is a skill too
 			names = append(names, h)
 		}
 	}
 	for _, n := range names {
-		def, title := defaults[n], titles[n]
+		def, title := defaults[n], l10n.T(ctx, titles[n])
 		if sk, ok := r.Skills[n]; ok {
-			def, title = sk.Model, sk.Title
+			def, title = sk.Model, sk.In(l10n.Lang(ctx)).Title
 		}
 		if s != nil { // the person's provider has one model for all
 			def = s.Model

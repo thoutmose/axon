@@ -706,6 +706,7 @@
 	}
 	.field {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr); /* a long option never widens the page */
 		gap: var(--space-1);
 		margin-bottom: var(--space-3);
 	}

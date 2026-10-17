@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { lastDays, scheduleLabel } from './habits';
+import { i18n } from './i18n.svelte';
 
 describe('scheduleLabel', () => {
 	it('names common schedules', () => {
 		expect(scheduleLabel([1, 2, 3, 4, 5, 6, 7])).toBe('Every day');
 		expect(scheduleLabel([5, 4, 3, 2, 1])).toBe('Weekdays');
 		expect(scheduleLabel([1, 3, 5])).toBe('Mon, Wed, Fri');
+	});
+	it('names them in French', () => {
+		i18n.locale = 'fr';
+		expect(scheduleLabel([1, 2, 3, 4, 5, 6, 7])).toBe('Chaque jour');
+		expect(scheduleLabel([1, 3, 5])).toBe('Lun, Mer, Ven');
+		i18n.locale = 'en';
 	});
 });
 

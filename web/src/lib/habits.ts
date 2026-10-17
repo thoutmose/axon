@@ -1,5 +1,6 @@
 import type { Schemas } from './api';
 import { addDays } from './dates';
+import { t } from './i18n.svelte';
 
 export type Habit = Schemas['Habit'];
 export type HabitCheckin = Schemas['HabitCheckin'];
@@ -17,10 +18,10 @@ export const weekdays = [
 /** "Every day", "Weekdays", or "Mon, Wed, Fri". */
 export function scheduleLabel(days: number[]): string {
 	const sorted = [...days].sort();
-	if (sorted.length === 7) return 'Every day';
-	if (sorted.join() === '1,2,3,4,5') return 'Weekdays';
-	if (sorted.join() === '6,7') return 'Weekends';
-	return sorted.map((d) => weekdays[d - 1].short).join(', ');
+	if (sorted.length === 7) return t('Every day');
+	if (sorted.join() === '1,2,3,4,5') return t('Weekdays');
+	if (sorted.join() === '6,7') return t('Weekends');
+	return sorted.map((d) => t(weekdays[d - 1].short)).join(', ');
 }
 
 /** The last n days ending today, oldest first, as ISO dates. */
