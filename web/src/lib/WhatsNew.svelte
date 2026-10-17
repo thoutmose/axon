@@ -31,6 +31,13 @@
 				'37 domains in 18 phases from Monday 19 October 2026, a certification for each (45 in all), and its 18 milestones readable before you start.'
 		},
 		{
+			href: '/media?kind=game',
+			icon: 'media',
+			title: 'Video games',
+			about:
+				'Beside films, series, and books: covers from Wikipedia, hours played, and a game note.'
+		},
+		{
 			href: '/today#roadmap-today-title',
 			icon: 'milestone',
 			title: 'Your roadmap today',

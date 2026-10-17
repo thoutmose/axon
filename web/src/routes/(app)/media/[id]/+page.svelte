@@ -21,9 +21,24 @@
 	let review = $state('');
 	let busy = $state(false);
 
-	const kindName = $derived({ film: t('Film'), series: t('Series'), book: t('Book') });
-	const unit = $derived({ film: t('minutes'), series: t('episodes'), book: t('pages') });
-	const steps: Record<Item['kind'], number[]> = { book: [10, 20, 50], series: [1], film: [30] };
+	const kindName = $derived({
+		film: t('Film'),
+		series: t('Series'),
+		book: t('Book'),
+		game: t('Video game')
+	});
+	const unit = $derived({
+		film: t('minutes'),
+		series: t('episodes'),
+		book: t('pages'),
+		game: t('hours')
+	});
+	const steps: Record<Item['kind'], number[]> = {
+		book: [10, 20, 50],
+		series: [1],
+		film: [30],
+		game: [1, 2]
+	};
 	const statusName = $derived({
 		want: t('Want to'),
 		doing: t('In progress'),
@@ -87,7 +102,7 @@
 
 <svelte:head><title>{item?.title ?? t('Media')} · Axon</title></svelte:head>
 
-<p><a href="/media">← {t('Films, series, and books')}</a></p>
+<p><a href="/media">← {t('Films, series, books, and games')}</a></p>
 
 {#if error}
 	<Status kind="error" message={error} retry={load} />

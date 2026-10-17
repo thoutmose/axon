@@ -429,7 +429,7 @@ func init() {
 		},
 	})
 
-	register(kind{entity: media.Type, types: []string{"film", "series", "book"},
+	register(kind{entity: media.Type, types: []string{"film", "series", "book", "game"},
 		render: func(ctx context.Context, q db.Querier, user, id uuid.UUID, _ time.Time) (rendered, error) {
 			it, err := media.Get(ctx, q, user, id)
 			if err != nil {
@@ -453,7 +453,7 @@ func init() {
 				secs = append(secs, section{heading: "Overview", body: it.Overview, readOnly: true})
 			}
 			secs = append(secs, section{heading: "Review", body: it.Review})
-			folder := map[string]string{"film": "Media/Films", "series": "Media/Series", "book": "Media/Books"}[it.Kind]
+			folder := map[string]string{"film": "Media/Films", "series": "Media/Series", "book": "Media/Books", "game": "Media/Games"}[it.Kind]
 			return rendered{folder: folder, page: page{fm: fm, title: it.Title, footer: footer, sections: secs}}, nil
 		},
 		apply: func(ctx context.Context, tx pgx.Tx, user, id uuid.UUID, p parsed, _ bool, now time.Time) error {

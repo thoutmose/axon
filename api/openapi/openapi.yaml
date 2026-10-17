@@ -5173,7 +5173,7 @@ paths:
       operationId: listMedia
       summary: Films, series, and books, most recently changed first
       parameters:
-        - { name: kind, in: query, schema: { type: string, enum: [film, series, book] } }
+        - { name: kind, in: query, schema: { type: string, enum: [film, series, book, game] } }
         - { name: status, in: query, schema: { type: string, enum: [want, doing, done, dropped] } }
       responses:
         "200":
@@ -5209,7 +5209,7 @@ paths:
                       required: [source, source_id]
                       additionalProperties: false
                       properties:
-                        source: { enum: [tmdb, openlibrary] }
+                        source: { enum: [tmdb, openlibrary, wikipedia] }
                         source_id: { type: string, maxLength: 100 }
       responses:
         "201":
@@ -5248,7 +5248,7 @@ paths:
       summary: Search Open Library (books) or TMDB (films and series)
       description: "Needs the external_metadata consent, since the search text goes to the provider. Results are cached for a week. Each person has 30 lookups a minute."
       parameters:
-        - { name: kind, in: query, required: true, schema: { type: string, enum: [film, series, book] } }
+        - { name: kind, in: query, required: true, schema: { type: string, enum: [film, series, book, game] } }
         - { name: q, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 200 } }
       responses:
         "200":
@@ -5272,7 +5272,7 @@ paths:
       summary: What to watch or read next from your own list, each with its reasons
       description: "No AI and no catalogue: reasons come from what you rated 8 or more and what you started."
       parameters:
-        - { name: kind, in: query, schema: { type: string, enum: [film, series, book] } }
+        - { name: kind, in: query, schema: { type: string, enum: [film, series, book, game] } }
       responses:
         "200":
           description: Up to 10 recommendations, best first.
@@ -9610,7 +9610,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
-        kind: { enum: [film, series, book] }
+        kind: { enum: [film, series, book, game] }
         status: { enum: [want, doing, done, dropped] }
         year: { type: [integer, "null"] }
         creators: { type: string, description: "Authors, directors, or creators, comma-separated." }
@@ -9621,7 +9621,7 @@ components:
         started_on: { type: [string, "null"], format: date }
         finished_on: { type: [string, "null"], format: date }
         review: { type: string }
-        source: { enum: [manual, tmdb, openlibrary] }
+        source: { enum: [manual, tmdb, openlibrary, wikipedia] }
         source_id: { type: string }
         overview: { type: string, description: "From the catalogue; TMDB text is dropped after six months." }
         cover_id: { type: [string, "null"], format: uuid, description: "Fetch it from /v1/media/covers/{id}." }
@@ -9632,7 +9632,7 @@ components:
       description: Unknown fields are refused by the server.
       properties:
         title: { type: string, minLength: 1, maxLength: 500 }
-        kind: { enum: [film, series, book] }
+        kind: { enum: [film, series, book, game] }
         status: { enum: [want, doing, done, dropped] }
         year: { type: integer, description: "0 clears it." }
         creators: { type: string, maxLength: 500 }
@@ -9647,9 +9647,9 @@ components:
       type: object
       required: [source, source_id, kind, title, year, creators, genres, overview, total, has_cover]
       properties:
-        source: { enum: [tmdb, openlibrary] }
+        source: { enum: [tmdb, openlibrary, wikipedia] }
         source_id: { type: string }
-        kind: { enum: [film, series, book] }
+        kind: { enum: [film, series, book, game] }
         title: { type: string }
         year: { type: [integer, "null"] }
         creators: { type: string }

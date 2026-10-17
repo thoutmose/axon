@@ -3938,5 +3938,20 @@ export const fr: Record<string, string> = {
 	'Income and expenses in {year}': 'Revenus et dépenses en {year}',
 	'Its words become five to ten key sentences and keywords.':
 		'Ses paroles deviennent cinq à dix phrases clés et des mots-clés.',
-	'In a few words': 'En quelques mots'
+	'In a few words': 'En quelques mots',
+	'Video games': 'Jeux vidéo',
+	'Video game': 'Jeu vidéo',
+	'Films, series, books, and games': 'Films, séries, livres et jeux',
+	'To search, Axon sends the title you type to Open Library (books), TMDB (films and series), or Wikipedia (games). Nothing else about you is sent.':
+		'Pour chercher, Axon envoie le titre que vous tapez à Open Library (livres), TMDB (films et séries) ou Wikipédia (jeux). Rien d’autre sur vous n’est envoyé.',
+	'Nothing here yet. Add a film, a series, a book, or a game you want to enjoy.':
+		'Rien ici pour l’instant. Ajoutez un film, une série, un livre ou un jeu qui vous fait envie.',
+	hours: 'heures',
+	'Game note': 'Note de jeu',
+	'A video game: how it plays, the moments that stay, its design ideas, a play log, and your verdict.':
+		'Un jeu vidéo : comment il se joue, les moments qui restent, ses idées de conception, un journal de partie et votre verdict.',
+	'Game to play': 'Jeu à jouer',
+	'Add game': 'Ajouter le jeu',
+	'Beside films, series, and books: covers from Wikipedia, hours played, and a game note.':
+		'À côté des films, séries et livres : couvertures de Wikipédia, heures de jeu et une note de jeu.'
 };

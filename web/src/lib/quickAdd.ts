@@ -18,7 +18,7 @@
 import { addDays, localDate } from './dates';
 
 export type Kind =
-	'task' | 'note' | 'book' | 'film' | 'series' | 'habit' | 'goal' | 'project' | 'card';
+	'task' | 'note' | 'book' | 'film' | 'series' | 'game' | 'habit' | 'goal' | 'project' | 'card';
 
 export type Parsed = {
 	kind: Kind;
@@ -47,6 +47,8 @@ const prefixes: Record<string, Kind> = {
 	show: 'series',
 	série: 'series',
 	serie: 'series',
+	game: 'game',
+	jeu: 'game',
 	habit: 'habit',
 	habitude: 'habit',
 	goal: 'goal',
@@ -171,6 +173,7 @@ export function describe(p: Parsed): string[] {
 		book: 'Book to read',
 		film: 'Film to watch',
 		series: 'Series to watch',
+		game: 'Game to play',
 		habit: 'Habit, every day',
 		goal: 'Goal',
 		project: 'Project',
@@ -198,6 +201,7 @@ export function action(kind: Kind): string {
 		book: 'Add book',
 		film: 'Add film',
 		series: 'Add series',
+		game: 'Add game',
 		habit: 'Add habit',
 		goal: 'Add goal',
 		project: 'Add project',

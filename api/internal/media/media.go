@@ -32,11 +32,11 @@ func (e ValidationError) Error() string { return e.Msg }
 
 // Kinds and statuses.
 var (
-	Kinds    = []string{"film", "series", "book"}
+	Kinds    = []string{"film", "series", "book", "game"}
 	Statuses = []string{"want", "doing", "done", "dropped"}
 )
 
-// Item is one film, series, or book.
+// Item is one film, series, book, or video game (EP-149).
 type Item struct {
 	ID         uuid.UUID  `json:"id"`
 	Title      string     `json:"title"`
@@ -139,7 +139,7 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 		return Item{}, ValidationError{"Give it a title."}
 	}
 	if f.Kind == nil {
-		return Item{}, ValidationError{"Say whether it is a film, a series, or a book."}
+		return Item{}, ValidationError{"Say whether it is a film, a series, a book, or a game."}
 	}
 	it := Item{Status: "want", Genres: []string{}, Source: "manual"}
 	if err := apply(&it, f, now); err != nil {
@@ -196,7 +196,7 @@ func apply(it *Item, f Fields, now time.Time) error {
 	}
 	if f.Kind != nil {
 		if !slices.Contains(Kinds, *f.Kind) {
-			return ValidationError{"Kind is film, series, or book."}
+			return ValidationError{"Kind is film, series, book, or game."}
 		}
 		it.Kind = *f.Kind
 	}

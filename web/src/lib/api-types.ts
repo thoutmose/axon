@@ -6277,7 +6277,7 @@ export interface components {
 			id: string;
 			title: string;
 			/** @enum {unknown} */
-			kind: 'film' | 'series' | 'book';
+			kind: 'film' | 'series' | 'book' | 'game';
 			/** @enum {unknown} */
 			status: 'want' | 'doing' | 'done' | 'dropped';
 			year: number | null;
@@ -6294,7 +6294,7 @@ export interface components {
 			finished_on: string | null;
 			review: string;
 			/** @enum {unknown} */
-			source: 'manual' | 'tmdb' | 'openlibrary';
+			source: 'manual' | 'tmdb' | 'openlibrary' | 'wikipedia';
 			source_id: string;
 			/** @description From the catalogue; TMDB text is dropped after six months. */
 			overview: string;
@@ -6312,7 +6312,7 @@ export interface components {
 		MediaFields: {
 			title?: string;
 			/** @enum {unknown} */
-			kind?: 'film' | 'series' | 'book';
+			kind?: 'film' | 'series' | 'book' | 'game';
 			/** @enum {unknown} */
 			status?: 'want' | 'doing' | 'done' | 'dropped';
 			/** @description 0 clears it. */
@@ -6332,10 +6332,10 @@ export interface components {
 		};
 		MediaCandidate: {
 			/** @enum {unknown} */
-			source: 'tmdb' | 'openlibrary';
+			source: 'tmdb' | 'openlibrary' | 'wikipedia';
 			source_id: string;
 			/** @enum {unknown} */
-			kind: 'film' | 'series' | 'book';
+			kind: 'film' | 'series' | 'book' | 'game';
 			title: string;
 			year: number | null;
 			creators: string;
@@ -14576,7 +14576,7 @@ export interface operations {
 	listMedia: {
 		parameters: {
 			query?: {
-				kind?: 'film' | 'series' | 'book';
+				kind?: 'film' | 'series' | 'book' | 'game';
 				status?: 'want' | 'doing' | 'done' | 'dropped';
 			};
 			header?: never;
@@ -14615,7 +14615,7 @@ export interface operations {
 				'application/json': components['schemas']['MediaFields'] & {
 					catalog?: {
 						/** @enum {unknown} */
-						source: 'tmdb' | 'openlibrary';
+						source: 'tmdb' | 'openlibrary' | 'wikipedia';
 						source_id: string;
 					};
 				};
@@ -14668,7 +14668,7 @@ export interface operations {
 	searchMediaCatalog: {
 		parameters: {
 			query: {
-				kind: 'film' | 'series' | 'book';
+				kind: 'film' | 'series' | 'book' | 'game';
 				q: string;
 			};
 			header?: never;
@@ -14698,7 +14698,7 @@ export interface operations {
 	getMediaRecommendations: {
 		parameters: {
 			query?: {
-				kind?: 'film' | 'series' | 'book';
+				kind?: 'film' | 'series' | 'book' | 'game';
 			};
 			header?: never;
 			path?: never;

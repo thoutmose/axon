@@ -65,7 +65,7 @@ func TestApplyFillsDatesAndChecksBounds(t *testing.T) {
 		t.Fatalf("done: %+v", it)
 	}
 	for _, f := range []Fields{
-		{Rating: ptr(11)}, {Progress: ptr(11)}, {Kind: ptr("game")}, {Year: ptr(99)},
+		{Rating: ptr(11)}, {Progress: ptr(11)}, {Kind: ptr("podcast")}, {Year: ptr(99)},
 		{StartedOn: ptr("yesterday")}, {Genres: ptr(strings.Split("a,b,c,d,e,f,g,h,i,j,k,l,m", ","))},
 	} {
 		c := it
