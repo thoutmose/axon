@@ -220,14 +220,14 @@ func (h *Handlers) daily(ctx context.Context, sql string, userID uuid.UUID, tz s
 
 func (h *Handlers) series(ctx context.Context, userID uuid.UUID, tz string, w window) ([]Series, error) {
 	defs := []struct{ id, label, sql string }{
-		{"tasks_done", "Tasks done", `SELECT (t.completed_at AT TIME ZONE $2)::date AS d, count(*) FROM tasks t JOIN entities e ON e.id = t.id
+		{"tasks_done", l10n.Mark("Tasks done"), `SELECT (t.completed_at AT TIME ZONE $2)::date AS d, count(*) FROM tasks t JOIN entities e ON e.id = t.id
 			WHERE e.user_id = $1 AND t.status = 'done' AND (t.completed_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
-		{"habit_checkins", "Habit check-ins", `SELECT c.day AS d, count(*) FROM habit_checkins c JOIN entities e ON e.id = c.habit_id
+		{"habit_checkins", l10n.Mark("Habit check-ins"), `SELECT c.day AS d, count(*) FROM habit_checkins c JOIN entities e ON e.id = c.habit_id
 			WHERE e.user_id = $1 AND c.status IN ('done', 'two_minute') AND c.day BETWEEN $3 AND $4
 			AND $2::text IS NOT NULL GROUP BY d`}, // check-in days are already local; $2 keeps the parameters uniform
-		{"focus_minutes", "Focus minutes", `SELECT (f.started_at AT TIME ZONE $2)::date AS d, sum(f.worked_minutes)::int FROM focus_sessions f JOIN entities e ON e.id = f.id
+		{"focus_minutes", l10n.Mark("Focus minutes"), `SELECT (f.started_at AT TIME ZONE $2)::date AS d, sum(f.worked_minutes)::int FROM focus_sessions f JOIN entities e ON e.id = f.id
 			WHERE e.user_id = $1 AND (f.started_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 GROUP BY d`},
-		{"notes_written", "Notes written", `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM entities ne
+		{"notes_written", l10n.Mark("Notes written"), `SELECT (created_at AT TIME ZONE $2)::date AS d, count(*) FROM entities ne
 			WHERE user_id = $1 AND type = 'note' AND (created_at AT TIME ZONE $2)::date BETWEEN $3 AND $4 AND NOT EXISTS (SELECT 1 FROM vault_mirror m WHERE m.note_id = ne.id) GROUP BY d`},
 	}
 	out := []Series{}
@@ -236,7 +236,7 @@ func (h *Handlers) series(ctx context.Context, userID uuid.UUID, tz string, w wi
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, Series{d.id, d.label, pts})
+		out = append(out, Series{d.id, l10n.T(ctx, d.label), pts})
 	}
 	return out, nil
 }

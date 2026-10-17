@@ -209,7 +209,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Done |
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Done |
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Done |
-| EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Planned |
+| EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Done |
 | EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
@@ -2470,6 +2470,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-160/IS-160.02** · 1 pt · MUST — Resources measured on srv-dev on 2026-10-17: at rest, five containers use about 165 MB and under 2 % CPU, with a 34 MB database; 360 API requests, 16 at a time over the tailnet, answered in 4.7 s, all 200, with the API at 51 MB and 8 % CPU and PostgreSQL at 56 MB and 13 % at their peaks.
 - [x] **EP-160/IS-160.03** · 1 pt · SHOULD — Dead code, found with `deadcode` rather than by eye: `Schedule.String` (and the source text it alone kept) and `wsclient.Conn.SetReadDeadline` go. Functions only tests call stay, as the seams they are (`WriteTools`, `Balances`, `Stem`, `Tokens`, `pickTrack`); every `web/src/lib` module is imported somewhere.
 - [x] **EP-160/IS-160.04** · 1 pt · MUST — Documentation: the user guide already describes everything that came on 2026-10-17 (9a790c2); the configuration table in both READMEs gains the variables operators set but could not find there (`AXON_PORT`, `AXON_VERSION`, `AXON_ADDR`, `AXON_METRICS_ADDR`).
+
+### EP-161 — Everything checked
+
+**Goal.** "Check every feature in the demo and fix what fails" (owner, 2026-10-17).
+
+- [x] **EP-161/IS-161.01** · 2 pts · MUST — A walk of the srv-dev demo: every page reachable by links from Today, two of each kind (200 pages), in English and in French on a laptop screen and in English on a 390-pixel phone, recording failed requests, console and page errors, alerts, pages without a heading, pages wider than the screen, and, in French, interface text left in English. No page failed, alerted, or lost its heading. The only requests answered with an error are expected ones (no household yet, search by meaning off), and the only console error is SvelteKit's page-title announcer, whose inline style the CSP refuses and `app.css` already hides.
+- [x] **EP-161/IS-161.02** · 1 pt · MUST — What it found, fixed: Today's activity charts named their series in English (`Tasks done`, `Focus minutes`…) whatever the language; the model per agent in Preferences listed the agents by their English names (`Tech watch`, `Meal photos`, `Video summaries`); a habit's schedule read `Every day`, `Weekdays`, or `Mon, Wed, Fri` in French too; on a phone, Preferences scrolled sideways because a select took the width of its longest option. The trailer's home-page heading changed with EP-159, and its end-to-end test with it.
+
+**Tests.** `scheduleLabel` in French; the server's catalogue test now sees the chart and agent names.
 
 ### EP-20 — Analytics & insights
 
