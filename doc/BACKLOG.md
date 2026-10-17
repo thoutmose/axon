@@ -211,7 +211,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Done |
 | EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Done |
 | EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Done on staging (prod deploy, merge, and tag are the owner's) |
-| EP-163 | The radar by domain | One spoke per domain of the roadmap (maths, DSA, OS, Python, Rust, Kubernetes…), placed by the assessment and the skills done, instead of its sections. | MUST | 3 pts | EP-82, EP-141 | Planned |
+| EP-163 | The radar by domain | One spoke per domain of the roadmap (maths, DSA, OS, Python, Rust, Kubernetes…), placed by the assessment and the skills done, instead of its sections. | MUST | 3 pts | EP-82, EP-141 | Done |
 | EP-164 | The collection in reach | The collection says how to turn progress rewards on, and turns them on, instead of an error. | MUST | 1 pt | EP-119 | Planned |
 | EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Planned |
 | EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Planned |
@@ -2492,6 +2492,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 **Goal.** "Then 1.0" (owner, 2026-10-17).
 
 - [x] **EP-162/IS-162.01** · 1 pt · MUST — The CHANGELOG's 1.0.0 gathers everything since 0.1.0 (the release candidate of 11 October, kept as 1.0.0-rc.1, and EP-47 to EP-161) with what the tag waits for; the upgrade guide covers migrations 6 to 71. `fe67b21` passed CI (run 39044704175, 12 of 12 jobs) and serves on staging. Production's deploy was refused to the agent by its permission check, so the owner runs it (`deploy/deploy.sh prod`, after a backup); the merge of pull request #86 and the `v1.0.0` tag are the owner's.
+
+### EP-163 — The radar by domain
+
+**Goal.** "The spider chart's foundations say nothing … maths, CS, DSA, OS, Python, C/C++, Java, Rust, cloud, Linux, Bash, Docker, Podman, Kubernetes, API design, web development, DevOps, DevSecOps, DataOps… the domains on the roadmap" (owner, 2026-10-17).
+
+- [x] **EP-163/IS-163.01** · 3 pts · MUST — With a roadmap's plan (the Top-5% roadmap), the radar has one spoke per domain, 37 hard and 6 soft, in the plan's order, none folded into "Other"; each spoke carries the level (0 to 5) the latest assessment gave its domain (`level`, `by: domain` in the API). Once a domain is assessed, the filled shape is the level and the dashed one the domains done; a chart of more than 12 spokes grows and writes each label along its spoke. Roadmaps without a plan keep a spoke per roadmap or per section.
+
+**Tests.** `TestRadarHasOneSpokePerDomainOfAPlan` beside the radar's existing tests; checked on the srv-dev demo.
 
 ### EP-20 — Analytics & insights
 

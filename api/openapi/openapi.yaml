@@ -10161,19 +10161,20 @@ components:
       type: object
       required: [by, spokes]
       properties:
-        by: { type: string, enum: [roadmap, section], description: What one spoke stands for. }
+        by: { type: string, enum: [roadmap, section, domain], description: "What one spoke stands for: a domain is a skill of a roadmap's plan." }
         spokes:
           type: array
-          maxItems: 9
+          maxItems: 60
           items:
             type: object
             required: [label, roadmap, done, learning, total]
             properties:
-              label: { type: string, example: Python, description: "The roadmap, or by section the section." }
+              label: { type: string, example: Python, description: "The roadmap, or by section the section, or by domain the skill." }
               roadmap: { type: string, description: "The roadmap's title; empty for Other." }
               done: { type: integer, description: Skills acquired. }
               learning: { type: integer, description: Skills being learnt. }
               total: { type: integer, description: "Skills in the area, skipped ones aside." }
+              level: { type: integer, minimum: 0, maximum: 5, description: "By domain, the level the latest assessment of the domain gave, when there is one." }
     Roadmap:
       type: object
       required: [id, title, description, source, attribution, license_url, done, total, plan_id, plan_current, created_at, updated_at]

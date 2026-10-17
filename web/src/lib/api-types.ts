@@ -6836,13 +6836,13 @@ export interface components {
 		};
 		RadarKind: {
 			/**
-			 * @description What one spoke stands for.
+			 * @description What one spoke stands for: a domain is a skill of a roadmap's plan.
 			 * @enum {string}
 			 */
-			by: 'roadmap' | 'section';
+			by: 'roadmap' | 'section' | 'domain';
 			spokes: {
 				/**
-				 * @description The roadmap, or by section the section.
+				 * @description The roadmap, or by section the section, or by domain the skill.
 				 * @example Python
 				 */
 				label: string;
@@ -6854,6 +6854,8 @@ export interface components {
 				learning: number;
 				/** @description Skills in the area, skipped ones aside. */
 				total: number;
+				/** @description By domain, the level the latest assessment of the domain gave, when there is one. */
+				level?: number;
 			}[];
 		};
 		Roadmap: {

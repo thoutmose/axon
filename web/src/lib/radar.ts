@@ -9,6 +9,8 @@ export type Spoke = {
 	done: number;
 	learning: number;
 	total: number;
+	/** The assessed level, 0 to 5, of a roadmap plan's domain (EP-163). */
+	level?: number;
 };
 
 /** The share of an area acquired. */
@@ -37,6 +39,9 @@ export function anchor(i: number, n: number): 'start' | 'middle' | 'end' {
 	const x = Math.cos((2 * Math.PI * i) / n - Math.PI / 2);
 	return Math.abs(x) < 0.2 ? 'middle' : x > 0 ? 'start' : 'end';
 }
+
+/** A domain's assessed level as a share of the top level, 5. */
+export const level = (s: Spoke) => (s.level ?? 0) / 5;
 
 /** Whole percent, as people read it. */
 export const percent = (v: number) => `${Math.round(v * 100)}%`;

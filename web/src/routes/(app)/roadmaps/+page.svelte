@@ -31,7 +31,10 @@
 	let radar = $state<{ hard: RadarKind; soft: RadarKind } | null>(null);
 	const by = $derived({
 		roadmap: t('One spoke per roadmap.'),
-		section: t('One spoke per section.')
+		section: t('One spoke per section.'),
+		domain: t(
+			'One spoke per domain of your plan: once assessed, the filled shape is your level, out of 5, and the dashed one the domains done.'
+		)
 	});
 	let sources = $state<Source[]>([]);
 	let error = $state('');
@@ -126,11 +129,13 @@
 	{#if radar && radar.hard.spokes.length + radar.soft.spokes.length}
 		<section class="card glass skills" aria-labelledby="skills-title">
 			<h2 id="skills-title">{t('Skills acquired')}</h2>
-			<p class="muted small">
-				{t(
-					'How much of each area you have learnt: the filled shape is skills done, the dashed one adds those you are learning. Skipped skills are not counted.'
-				)}
-			</p>
+			{#if radar.hard.by !== 'domain' && radar.soft.by !== 'domain'}
+				<p class="muted small">
+					{t(
+						'How much of each area you have learnt: the filled shape is skills done, the dashed one adds those you are learning. Skipped skills are not counted.'
+					)}
+				</p>
+			{/if}
 			<div class="radars">
 				{#each [{ title: t('Hard skills'), kind: radar.hard }, { title: t('Soft skills'), kind: radar.soft }] as r (r.title)}
 					{#if r.kind.spokes.length}
