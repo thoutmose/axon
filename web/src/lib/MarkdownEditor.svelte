@@ -300,8 +300,13 @@
 			/>
 		{/if}
 	</div>
-	{#if pictures}<SketchPad bind:open={drawing} shapes={sketch} onsave={saveDrawing} />{/if}
-	<MathHelper bind:open={writingMaths} oninsert={insert} />
+	<!-- Mounted while open only, so the editor's own textarea comes first. -->
+	{#if pictures && drawing}<SketchPad
+			bind:open={drawing}
+			shapes={sketch}
+			onsave={saveDrawing}
+		/>{/if}
+	{#if writingMaths}<MathHelper bind:open={writingMaths} oninsert={insert} />{/if}
 	<label for={id} class="visually-hidden">{label}</label>
 	<textarea
 		{id}

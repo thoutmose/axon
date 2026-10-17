@@ -14,6 +14,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/thoutmose/axon/api/internal/clip"
+
+	"github.com/thoutmose/axon/api/internal/telemetry"
 )
 
 // Metrics for monitoring: fetches by result, news by outcome, fetch time.
@@ -45,7 +47,10 @@ type Worker struct {
 // Run checks every minute until ctx ends.
 func (w *Worker) Run(ctx context.Context) {
 	for {
-		if err := w.Step(ctx, time.Now()); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("watch")
+		err := w.Step(ctx, time.Now())
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			w.Log.Error("tech watch step failed", "err", err)
 		}
 		select {

@@ -255,6 +255,7 @@ Alerts and what to do about them: [runbooks.md](runbooks.md).
 
 Monitoring is the fleet stack on `srv-monitoring` (Prometheus, Grafana, Loki, Alertmanager → ntfy), configured in [`terraform-proxmox`](https://github.com/thoutmose/terraform-proxmox). Axon contributes:
 
-- API metrics on port 9464 of each host (`/metrics`, separate from the public routes).
+- API metrics on port 9464 of each host (`/metrics`, separate from the public routes): requests and latency by route, `axon_feature_busy_seconds_total{feature}` (time spent serving tasks, notes, watch, agents…), `axon_worker_runs_total{worker,result}` and `axon_worker_run_seconds{worker}` for the background workers (watch, reminders, vault-mirror, semantic-index, video-summaries, calendars, maintenance), `axon_storage_bytes{feature}` and `axon_database_bytes` (read from the catalogue at most once a minute), the database pool, and the Go process (CPU, memory, goroutines, GC).
+- Per-container CPU, memory, disk, and network (api, web, db, caddy, anki, backup) come from the fleet's cAdvisor; the **Axon** dashboard puts them beside the features and workers, and alerts cover a worker that keeps failing and a container over 1.5 GB ([runbooks](runbooks.md)). The scrape job, dashboard, and alerts are in the fleet repository's pull request #1.
 - Backup freshness through the host's node_exporter textfile collector (`axon_backup.prom`).
 - JSON request logs (method, route pattern, status, duration, request ID; never paths, queries, headers, or bodies), shipped to Loki by the fleet's Promtail.

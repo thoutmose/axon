@@ -54,3 +54,19 @@ No successful nightly backup for more than 26 hours while the host was up.
 2. Run one by hand: `docker compose exec -T backup axon-backup now`.
 3. Off-site copy errors (`rsync`/`ssh`): check that `srv-services` is up and that its `~/.ssh/authorized_keys` still holds the host's backup key; re-run `deploy/setup-offsite.sh prod` if not.
 4. Local dumps are kept even when the off-site copy fails: `ls -l /opt/axon/backups`.
+
+## AxonWorkerFailing
+
+A background worker (`watch`, `reminders`, `vault-mirror`, `semantic-index`, `video-summaries`, `calendars`, `maintenance`) failed more than five runs in 30 minutes.
+
+1. Read why: `docker compose logs --since 1h api | grep '"level":"ERROR"'` on the host; each worker logs its failure with its name ("tech watch step failed", "reminders step failed", …).
+2. The **Axon** dashboard's *Background workers* panels show when it started and how long runs take.
+3. A source, a mail server, or the AI provider being down is retried on the next run; a database error points to [AxonDatabaseUnreachable](#axondatabaseunreachable).
+
+## AxonContainerMemoryHigh
+
+One of Axon's containers has used more than 1.5 GB for 15 minutes.
+
+1. The **Axon** dashboard's *Memory by container* says which one; *Time serving each feature* and *Background workers* say what it was doing.
+2. `api`: look at *Go heap and GC*; a long tech watch fetch or a large import can raise it for a while. `db`: PostgreSQL uses its shared buffers and the page cache by design; act only if the host runs short (`node_exporter`'s memory alerts).
+3. Restarting the container (`docker compose restart api`) frees it; if it climbs again, keep the dashboard's view of the hour before and open an issue.

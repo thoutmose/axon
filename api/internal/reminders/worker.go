@@ -20,6 +20,8 @@ import (
 	"github.com/thoutmose/axon/api/internal/notify"
 	"github.com/thoutmose/axon/api/internal/push"
 	"github.com/thoutmose/axon/api/internal/settings"
+
+	"github.com/thoutmose/axon/api/internal/telemetry"
 )
 
 // Client sends to push services; tests replace it.
@@ -63,7 +65,10 @@ func NewWorker(pool *pgxpool.Pool, log *slog.Logger, sealer *auth.Sealer, mail *
 // Run checks every minute until ctx ends.
 func (w *Worker) Run(ctx context.Context) {
 	for {
-		if err := w.Step(ctx, w.now()); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("reminders")
+		err := w.Step(ctx, w.now())
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			w.log.Error("reminders step failed", "err", err)
 		}
 		select {

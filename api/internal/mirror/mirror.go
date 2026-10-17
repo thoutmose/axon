@@ -34,6 +34,8 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/privacy"
 	"github.com/thoutmose/axon/api/internal/settings"
+
+	"github.com/thoutmose/axon/api/internal/telemetry"
 )
 
 func enqueue(ctx context.Context, q db.Querier, user uuid.UUID, key string) error {
@@ -65,7 +67,10 @@ func New(pool *pgxpool.Pool, log *slog.Logger) *Worker {
 // Run steps every few seconds until ctx ends.
 func (w *Worker) Run(ctx context.Context) {
 	for {
-		if err := w.Step(ctx); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("vault-mirror")
+		err := w.Step(ctx)
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			w.log.Error("vault mirror step failed", "err", err)
 		}
 		select {

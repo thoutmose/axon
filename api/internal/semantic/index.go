@@ -12,6 +12,8 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/knowledge"
+
+	"github.com/thoutmose/axon/api/internal/telemetry"
 )
 
 // batch is how many notes go to the service in one request, and perStep
@@ -38,7 +40,10 @@ func NewIndexer(pool *pgxpool.Pool, log *slog.Logger, sealer *auth.Sealer) *Inde
 // Run indexes every minute until ctx ends.
 func (x *Indexer) Run(ctx context.Context) {
 	for {
-		if err := x.Step(ctx); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("semantic-index")
+		err := x.Step(ctx)
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			x.log.Error("semantic index step failed", "err", err)
 		}
 		select {
