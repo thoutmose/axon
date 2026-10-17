@@ -12,5 +12,7 @@ export default defineConfig({
 		baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
 		trace: 'retain-on-failure'
 	},
-	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+	// Full Chromium, not chrome-headless-shell: the shell's compositor crashes
+	// now and then ("Target crashed", a trap in its Compositor thread).
+	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chromium' } }]
 });

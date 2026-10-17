@@ -65,7 +65,8 @@ func TestOverviewHasKPIsChartsTablesAndASkillsNetwork(t *testing.T) {
 			t.Errorf("missing KPI %s", id)
 		}
 	}
-	if kpi["notes_written"] < 8 || kpi["projects_active"] != 3 || kpi["learning"] < 3 {
+	// Three demo projects and the plan's four portfolios under way (EP-171).
+	if kpi["notes_written"] < 8 || kpi["projects_active"] != 3+4 || kpi["learning"] < 3 {
 		t.Errorf("kpis = %v", kpi)
 	}
 	// A lived-in year: activity on many days, not all on the day of the seed (EP-99).
