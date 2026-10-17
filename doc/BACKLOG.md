@@ -206,7 +206,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Done |
 | EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Done (srv-secondbrain offline: the live check waits for it) |
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Done (fleet PRs #1 and #2 await review) |
-| EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Planned |
+| EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Done |
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Planned |
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Planned |
 | EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Planned |
@@ -2449,6 +2449,12 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-157/IS-157.02** · 2 pts · SHOULD — In the fleet repository, pull request #1 (scrape job, dashboard, alerts, from 2026-10-10) gains the per-container view (cAdvisor: CPU, memory, disk I/O, network of each Axon container), the API's CPU and heap, time by feature, workers, and storage panels, and the `AxonWorkerFailing` and `AxonContainerMemoryHigh` alerts (rules checked with promtool), with their runbooks; pull request #2 grows srv-dev's disk from 40 to 80 GB, which the CI runner and e2e images fill. Both wait for the owner's review and apply.
 
 **Tests.** A route's feature; the full suite with the new collectors registered.
+
+### EP-158 — A banner and the hardware needed
+
+**Goal.** "On the README add a banner you create for this project, really aesthetic, professional, Apple-like", and "update the resource requirements section of the README to keep only srv-prod as an example of hardware requirements" (owner, 2026-10-17).
+
+- [x] **EP-158/IS-158.01** · 1 pt · SHOULD — `doc/assets/banner.svg` and its French twin open both READMEs: the wordmark in the system's display face over deep night, three soft lights, and a fine graph of what Axon connects (notes, goals, tasks, learning, habits, health); pure SVG, sharp at any size. **Hardware requirements** keeps one table: the minimum and `srv-prod` as the example (8 vCPU, 16 GB, 120 GB SSD) with what Axon uses there, measured on 2026-10-17 (under 1 % CPU and about 120 MB for six containers at rest, a 19 MB database), and where the optional speech servers can run instead.
 
 ### EP-20 — Analytics & insights
 

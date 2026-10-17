@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" width="1600" height="520" role="img" aria-labelledby="t d">
+  <title id="t">Axon</title>
+  <desc id="d">Axon, votre vie auto-hébergée et connectée : le nom sur un doux graphe de lumière.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05060b"/>
+      <stop offset="1" stop-color="#0b0e1a"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.28" cy="0.18" r="0.55">
+      <stop offset="0" stop-color="#6d5dfc" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#6d5dfc" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.78" cy="0.9" r="0.6">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowC" cx="0.92" cy="0.08" r="0.35">
+      <stop offset="0" stop-color="#f472b6" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#e6e9ff"/>
+      <stop offset="1" stop-color="#a5b4fc"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a5b4fc" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#c7d2fe" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#67e8f9" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="node">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.4" stop-color="#c7d2fe"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="card"><rect width="1600" height="520" rx="28"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#card)">
+
+  <rect width="1600" height="520" fill="url(#sky)"/>
+  <rect width="1600" height="520" fill="url(#glowA)"/>
+  <rect width="1600" height="520" fill="url(#glowB)"/>
+  <rect width="1600" height="520" fill="url(#glowC)"/>
+
+  <!-- A quiet graph of what Axon connects: notes, tasks, goals, habits, learning, health. -->
+  <g fill="none" stroke="url(#edge)" stroke-width="1.2">
+    <path d="M980 120 C1080 160 1140 120 1250 170"/>
+    <path d="M1250 170 C1320 205 1360 270 1450 280"/>
+    <path d="M1050 300 C1130 250 1190 230 1250 170"/>
+    <path d="M1050 300 C1150 340 1250 360 1340 400"/>
+    <path d="M1340 400 C1400 360 1420 320 1450 280"/>
+    <path d="M980 120 C1000 200 1010 250 1050 300"/>
+    <path d="M1180 450 C1230 420 1290 410 1340 400"/>
+    <path d="M1450 280 C1510 240 1540 200 1560 150"/>
+    <path d="M950 420 C990 380 1010 340 1050 300"/>
+  </g>
+  <g>
+    <circle cx="980" cy="120" r="14" fill="url(#node)"/>
+    <circle cx="1250" cy="170" r="20" fill="url(#node)"/>
+    <circle cx="1050" cy="300" r="16" fill="url(#node)"/>
+    <circle cx="1450" cy="280" r="18" fill="url(#node)"/>
+    <circle cx="1340" cy="400" r="13" fill="url(#node)"/>
+    <circle cx="1180" cy="450" r="9" fill="url(#node)"/>
+    <circle cx="1560" cy="150" r="8" fill="url(#node)"/>
+    <circle cx="950" cy="420" r="8" fill="url(#node)"/>
+  </g>
+  <g fill="#e0e7ff" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Inter, Arial, sans-serif" font-size="17" letter-spacing="0.6" opacity="0.62">
+    <text x="1000" y="106">Notes</text>
+    <text x="1276" y="158">Objectifs</text>
+    <text x="1072" y="328">Tâches</text>
+    <text x="1474" y="276">Apprendre</text>
+    <text x="1360" y="430">Habitudes</text>
+    <text x="1150" y="482">Santé</text>
+  </g>
+
+  <!-- The wordmark and the line under it. -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Inter, Arial, sans-serif">
+    <text x="120" y="292" font-size="168" font-weight="600" letter-spacing="-6" fill="url(#word)">Axon</text>
+    <text x="126" y="352" font-size="34" font-weight="500" letter-spacing="-0.3" fill="#f5f7ff">Votre vie, auto-hébergée et connectée.</text>
+    <text x="126" y="398" font-size="22" font-weight="400" letter-spacing="0.2" fill="#a3acc8">Notes, action, apprentissage, santé, projets et réflexion dans un seul graphe, à taille humaine.</text>
+  </g>
+  </g>
+</svg>

@@ -1,12 +1,10 @@
+<p align="center"><img src="doc/assets/banner.fr.svg" alt="Axon — Votre vie, auto-hébergée et connectée. Notes, action, apprentissage, santé, projets et réflexion dans un seul graphe, à taille humaine." width="100%"></p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/statut-d%C3%A9veloppement%20actif-blue" alt="Développement actif">
   <img src="https://img.shields.io/badge/licence-AGPL--3.0-purple" alt="AGPL-3.0">
   <img src="https://img.shields.io/badge/API-OpenAPI%203.1-6BA539" alt="OpenAPI 3.1">
 </p>
-
-<h1 align="center">Axon</h1>
-
-<p align="center"><strong>Votre vie, auto-hébergée et connectée.</strong><br>Notes, action, apprentissage, santé, projets et réflexion dans un seul graphe, à taille humaine.</p>
 
 <p align="center"><a href="README.md">English</a> · <strong>Français</strong></p>
 
@@ -367,17 +365,18 @@ Là où le tableau laisse un choix, l’[ADR 0002](doc/adr/0002-initial-technolo
 
 ## Matériel requis
 
-| Hôte | Minimum | Confortable | Charge |
-|---|---:|---:|---|
-| `srv-staging` | 2 vCPU / 4 Go / 40 Go SSD | 4 / 8 Go / 80 Go | La version avant la production : même pile, migrations répétées. |
-| `srv-prod` | 2 vCPU / 4 Go / 60 Go SSD | 4 / 8 Go / 160 Go | Caddy, API et ses workers, web, PostgreSQL + pgvector, passerelle Anki, sauvegardes. |
-| `srv-services` | 1 vCPU / 1 Go / 20 Go | 2 / 2 Go / 50 Go | Service de synchronisation Anki existant ; reçoit les sauvegardes chiffrées. |
-| `srv-secondbrain` | 1 vCPU / 1 Go / 50 Go | 2 / 2 Go / 100 Go | Le coffre Markdown, synchronisé par `notes-sync -watch`. |
+Un seul hôte fait tout tourner : Caddy, l’API et ses tâches de fond, l’application web, PostgreSQL avec pgvector, la passerelle Anki et les sauvegardes ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)). `srv-prod` sert d’exemple :
 
-Chaque environnement tient sur un hôte ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)) ; mesurée le 11 octobre 2026, toute la pile utilise environ 300 Mo de mémoire et sert 700 requêtes par seconde ([ADR 0021](doc/adr/0021-single-host-measured.md)). Un hôte de base de données séparé ne se justifie que si une mesure le montre.
+| | Minimum | `srv-prod` (l’exemple) | Ce qu’Axon y utilise (mesuré le 17 octobre 2026) |
+|---|---:|---:|---|
+| Processeur | 2 vCPU | 8 vCPU | Moins de 1 % au repos ; une récupération de la veille ou un import occupe un cœur quelques secondes. |
+| Mémoire | 4 Go | 16 Go | Environ 120 Mo pour les six conteneurs au repos ; 300 Mo en charge ([ADR 0021](doc/adr/0021-single-host-measured.md)). |
+| Disque | 40 Go SSD | 120 Go SSD | 1,8 Go d’images, une base de 19 Mo, 1 Mo de sauvegardes chiffrées ; les images des notes et les couvertures s’ajoutent à la base. |
+
+Mesuré le 11 octobre 2026, un hôte sert 700 requêtes par seconde. Un hôte de base de données séparé ne se justifie que si une mesure le montre. Le serveur de synthèse vocale facultatif (Kokoro, pour des voix naturelles dans le podcast) demande environ 8 Go de disque et 2 Go de mémoire en plus ; Whisper, pour les vidéos sans sous-titres, davantage : faites-les tourner sur une autre machine via `AXON_TTS_URL` et `AXON_WHISPER_URL` si l’hôte est petit.
 
 > [!NOTE]
-> Les petites configurations supposent des workers bornés, un pool de connexions, la pagination et aucune inférence de modèle locale. Les appels aux modèles externes sont limités en débit et en budget.
+> Les petits hôtes suffisent parce que les tâches de fond sont bornées, les connexions mutualisées, les listes paginées, et les modèles tournent ailleurs : les appels d’IA vont au fournisseur que chacun choisit, un serveur Ollama local compris, limités en débit et dans un budget mensuel.
 
 ## Démarrage rapide
 
