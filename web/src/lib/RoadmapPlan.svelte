@@ -126,14 +126,20 @@
 	async function complete() {
 		completing = true;
 		try {
-			const r = await api<{ areas: number; goals: number; habits: number }>(
-				`/v1/roadmaps/${roadmapId}/plan/complete`,
-				{ method: 'POST' }
-			);
+			const r = await api<{
+				areas: number;
+				goals: number;
+				habits: number;
+				milestones: number;
+				projects: number;
+			}>(`/v1/roadmaps/${roadmapId}/plan/complete`, { method: 'POST' });
 			toast(
-				r.areas + r.goals + r.habits
-					? t('Added {goals} goals, {habits} habits, and {areas} areas.', r)
-					: t('You already have every goal, habit, and area of the plan.')
+				r.areas + r.goals + r.habits + r.milestones + r.projects
+					? t(
+							'Added {goals} goals, {milestones} milestones, {projects} projects, {habits} habits, and {areas} areas.',
+							r
+						)
+					: t('You already have every goal, milestone, project, habit, and area of the plan.')
 			);
 		} catch (err) {
 			toast(message(err), 'error');
@@ -243,7 +249,7 @@
 					>{t('Write its resources as notes')}</Button
 				>
 				<Button variant="secondary" busy={completing} onclick={complete}
-					>{t('Add its goals, habits, and areas')}</Button
+					>{t('Add its goals, milestones, projects, habits, and areas')}</Button
 				>
 			</div>
 		{/if}

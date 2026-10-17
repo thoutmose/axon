@@ -219,7 +219,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Done (the switch is the owner's) |
 | EP-169 | Claude Code on Axon | An MCP server in Axon gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code prompt. | MUST | 5 pts | EP-19, EP-153 | Done |
 | EP-170 | A bigger collection | A card per roadmap, goal, and project raised by its progress, and cards for milestones reached, projects shipped, goals achieved, habit check-ins, and certifications passed. | MUST | 3 pts | EP-119 | Done |
-| EP-171 | More projects and milestones in the plan | Each phase's plan gains its own milestones per domain and a project per track, created at the start and added to a plan started earlier. | MUST | 5 pts | EP-166 | Planned |
+| EP-171 | More projects and milestones in the plan | A milestone per domain under its group's goal, and a portfolio project per group of domains with each domain's proof and the group's exams, created at the start and added to a plan started earlier. | MUST | 5 pts | EP-166 | Done |
 | EP-172 | Jarvis, nicer to use | A larger, clearer panel: suggestions to start, a conversation that reads well, proposals to approve in place, keyboard and mobile friendly. | MUST | 3 pts | EP-153 | Planned |
 | EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -2564,6 +2564,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-170/IS-170.01** · 3 pts · MUST — A card per roadmap (the share of its skills learned), per goal (the share of its milestones reached; gold when achieved), and per project (the share of its cards done; gold when done), at 25, 50, and 100 %; and counters for milestones reached (1, 10, 30), projects shipped (1, 5, 15), goals achieved (1, 3, 10), habit check-ins (50, 500, 2,000), and certifications passed (1, 5, 15). The collection groups them as Roadmap trophies, Roadmaps, Goals, Projects, Habit cards, and Milestones, each with its emblem, next step, and a sentence to share. With the Top-5% plan started, that is some 60 more cards.
 
 **Tests.** The collection test counts a goal half-way and the first milestone; the cards' names, next steps, and groups in unit tests.
+
+### EP-171 — More projects and milestones in the plan
+
+**Goal.** "Add more projects following the roadmap, and the same for milestones" (owner, 2026-10-17).
+
+- [x] **EP-171/IS-171.01** · 5 pts · MUST — Each group of domains' goal (EP-166) gains a milestone per domain, "Rust proven", due at the end of the last phase working on it and related to its skill: 43 milestones beside the 18 of the phases. Each group also gets its portfolio project ("Foundations portfolio" … "Self-management portfolio"), supporting its goal and in its area, whose backlog holds each domain's proof (the roadmap's own proof criteria, due with its milestone) and the group's exams (due at the end of their phase): 11 projects beside the 18 of the phases and the 42 cursus; those with a domain in phase 1 start active, the others on hold. Starting the plan creates them; **Add its goals, milestones, projects, habits, and areas** gives them to a plan started earlier, nothing repeated.
+
+**Tests.** The plan's start test counts the portfolios, reads the infrastructure portfolio's board, and completes a plan missing a goal (its two milestones come back with it).
 
 ### EP-20 — Analytics & insights
 
