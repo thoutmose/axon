@@ -2,11 +2,17 @@
 
 All notable changes to Axon. Versions follow [Semantic Versioning](https://semver.org/); the support and deprecation policy is in [doc/support.md](doc/support.md).
 
-## Unreleased (1.1)
+## 1.0.0 (prepared; tagged by the owner)
 
-Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the vault server, digests on every channel and answering them, sign-in with other accounts, and the tech watch) are on the `dev` branch, on top of the stack; EP-47 to EP-68 are merged into `main` (12 October 2026); EP-69 is in review in pull request #81, EP-70 to EP-85 in pull request #82, EP-86 and EP-87 in #83, EP-88 to EP-90 in #84, EP-91 to EP-105 in #85.
+The first release meant for someone other than its author to install, operate, upgrade, and recover: everything since 0.1.0, which is the release candidate of 11 October 2026 (below) and the owner requests that came after it, EP-47 to EP-162. It is the head of `dev`, served by staging and production, and reaches `main` through pull request #86. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)).
 
-### Added
+Before the tag:
+
+- The owner merges pull request #86 and tags `v1.0.0` on `main`.
+- External security review with no open high-severity issue (see [doc/security/review-2026-10.md](doc/security/review-2026-10.md)).
+- A new operator installs from [doc/install.md](doc/install.md) while observed.
+
+### Added since the release candidate
 
 - **Monitoring of every feature** (EP-157): Axon exports the time spent on each feature, its background workers' runs and failures, and the storage of each feature; the fleet's dashboard (pull request #1 there) adds each container's CPU, memory, disk, and network, with alerts.
 - **A news digest** (EP-155): general news sources (a FreshRSS import, for one) stay apart from the tech watch in a News tab, and a daily news digest tells the last day's top stories, ranked by how many outlets carry them.
@@ -87,6 +93,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Fixed
 
+- In French, Today's activity charts, the model per agent, and a habit's schedule spoke English; on a phone, Preferences scrolled sideways (EP-161).
 - Saving Preferences reset the coffee, digest, and podcast settings to their defaults; the settings now come back whole and are sent back whole (EP-153).
 - Edits of a note or an item large enough to be compressed failed with "changed somewhere else" on their first save: the proxy suffixes the entity tag with its encoding, and the API now reads it through (since EP-74, found in EP-100).
 - Aligned columns in Markdown tables align again: the alignment was a style attribute, which the Content Security Policy blocks.
@@ -97,11 +104,16 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Changed
 
+- The trailer is recorded again from the current demo: twelve scenes in 71 seconds, with English and French captions (EP-159).
 - Shared, tested helpers for the person's day, dates, and stored text replace their copies; see "Shared helpers" in [CONTRIBUTING.md](CONTRIBUTING.md) (EP-69).
 
-## 1.0.0 (release candidate)
+### Security
 
-The first release meant for someone other than its author to install, operate, upgrade, and recover. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)).
+- No HIGH or CRITICAL flaw in the api, web, or caddy images, none reachable in Go, none in production npm dependencies; the database image drops gnupg and SQLite, which only served its build, and its two remaining CRITICAL flaws (no Debian 12 fix) are out of reach (EP-160, [the review's 2026-10-17 update](doc/security/review-2026-10.md)).
+
+## 1.0.0-rc.1 (11 October 2026)
+
+The release candidate, never tagged: what 1.0.0 above builds on.
 
 ### Added since 0.1.0
 
@@ -118,11 +130,6 @@ The first release meant for someone other than its author to install, operate, u
 - Caddy is rebuilt with the patched Go (four denial-of-service fixes) and PostgreSQL gets Debian's security updates and a rebuilt `gosu` (54 HIGH or CRITICAL fixed); both images are now scanned in CI and shipped by `deploy.sh` like Axon's own (EP-102).
 - Recovery sign-in locks for 15 minutes after five wrong authenticator codes for an account, and the failures are audited.
 - `Permissions-Policy` header; reachable-vulnerability scanning (govulncheck) in CI; the Go toolchain is pinned to 1.26.9.
-
-### Before tagging
-
-- External security review with no open high-severity issue (see [doc/security/review-2026-10.md](doc/security/review-2026-10.md)).
-- A new operator installs from [doc/install.md](doc/install.md) while observed.
 
 ## 0.1.0
 
