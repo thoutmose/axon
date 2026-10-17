@@ -50,7 +50,7 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 	alice.register("Alice")
 
 	qs := alice.mustDo(200, "GET", "/v1/assessment/questions", nil)
-	if bytes.Contains(qs, []byte(`"answer"`)) || bytes.Count(qs, []byte(`"question"`)) != 81 { // three per library domain
+	if bytes.Contains(qs, []byte(`"answer"`)) || bytes.Count(qs, []byte(`"question"`)) != 185 { // five per domain, easy to hard
 		t.Fatalf("questions leak answers or are incomplete: %d", bytes.Count(qs, []byte(`"question"`)))
 	}
 
@@ -66,14 +66,14 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 
 	key := answerKey(t)
 	answers := map[string]int{"rust-1": (key["rust-1"] + 1) % 4} // python all right, rust wrong
-	for _, id := range []string{"python-1", "python-2", "python-3"} {
+	for _, id := range []string{"python-1", "python-2", "python-3", "python-4", "python-5"} {
 		answers[id] = key[id]
 	}
 	ab, _ := json.Marshal(answers)
 	var a assessmentJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/assessments", []byte(`{`+profile+`,"interests":["python","rust"],"ratings":{"python":4,"rust":1},"answers":`+string(ab)+`}`)), &a)
-	if len(a.Results) != 2 || a.Results[0].Level != 5 || a.Results[0].Correct != 3 || a.Results[1].Level != 1 ||
-		!strings.Contains(a.Results[0].Reason, "answered 3 of 3") || len(a.Suggested) != 1 || a.Suggested[0] != "rust" {
+	if len(a.Results) != 2 || a.Results[0].Level != 5 || a.Results[0].Correct != 5 || a.Results[1].Level != 1 ||
+		!strings.Contains(a.Results[0].Reason, "answered 5 of 5") || len(a.Suggested) != 1 || a.Suggested[0] != "rust" {
 		t.Fatalf("assessment = %+v", a)
 	}
 
@@ -108,7 +108,7 @@ func TestAssessmentPlacesYouOnRoadmapsAndInformsTheTutor(t *testing.T) {
 	}
 	reqs := fake.lastRequests()
 	sent, _ := json.Marshal(reqs[1].Messages)
-	if !bytes.Contains(sent, []byte("Support engineer")) || !bytes.Contains(sent, []byte("answered 3 of 3")) {
+	if !bytes.Contains(sent, []byte("Support engineer")) || !bytes.Contains(sent, []byte("answered 5 of 5")) {
 		t.Fatalf("the tutor did not get the assessment: %s", sent)
 	}
 

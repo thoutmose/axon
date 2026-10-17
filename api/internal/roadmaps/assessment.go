@@ -21,7 +21,7 @@ import (
 
 // The skills assessment (EP-41): before a roadmap, the person describes their
 // situation and rates themselves in the domains they care about, and answers
-// three quick check questions per domain. Each domain gets an explained level
+// five check questions per domain, from easy to hard (EP-141). Each domain gets an explained level
 // from 0 to 5, used to place them on library roadmaps and read by the Tutor.
 
 // AssessmentType is the entity type of an assessment.

@@ -20,8 +20,10 @@ import (
 	"github.com/thoutmose/axon/api/internal/roadmaps"
 )
 
-// The demo's roadmap (EP-95): the Top-5% plan, started on the Monday a
-// week or more ago, so the demo always shows it under way: the first
+// The demo's roadmap (EP-95): the Top-5% plan, started as a person
+// starting it today would (EP-141): on its own dates, Monday 19 October
+// 2026, while its first phase runs. Once that phase is over, it starts on
+// the Monday a week or more ago, so the demo shows it under way: the first
 // phase's skills being learnt, the first week's tasks done, the habits
 // checked in, and flashcards from the first course with their diagrams.
 
@@ -30,9 +32,12 @@ var diagrams embed.FS
 
 func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time.Time) (roadmaps.Started, error) {
 	d := roadmaps.Library()[0]
-	week := today.AddDate(0, 0, -7)
-	start := week.AddDate(0, 0, -((int(week.Weekday()) + 6) % 7)) // that week's Monday
 	planStart, _ := time.Parse(time.DateOnly, d.Plan.Start)
+	start := planStart
+	if d.Plan.Shift(today) != 0 {
+		week := today.AddDate(0, 0, -7)
+		start = week.AddDate(0, 0, -((int(week.Weekday()) + 6) % 7)) // that week's Monday
+	}
 	plan, err := roadmaps.StartPlan(ctx, tx, user, graph.UserActor, d, int(start.Sub(planStart).Hours()/24), now)
 	if err != nil {
 		return plan, err

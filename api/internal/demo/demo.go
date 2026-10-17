@@ -92,11 +92,11 @@ var LearningNotes = [][2]string{
 	{"4-Zettelkasten/The Feynman technique.md", "---\ntype: permanent\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n"},
 }
 
-// Funds are the roadmap's pots (EP-95): about 3,000 € of exams by 2030, and
-// 20 € a month of rewards; the demo puts one month in each.
+// Funds are the roadmap's pots (EP-95, EP-141): about 7,500 € of exams and certificates by
+// 2031, and 20 € a month of rewards; the demo puts one month in each.
 var Funds = []budget.PotFields{
-	{Name: ptr("Certification fund"), TargetCents: ptr(int64(300000)), TargetDate: ptr("2030-02-24"),
-		Note: ptr("LFCS, CCNA, CKA, CKS, AWS SAA, GCP ACE, AZ-104, OCP Java, BSCP: 100 € a month.")},
+	{Name: ptr("Certification fund"), TargetCents: ptr(int64(750000)), TargetDate: ptr("2031-01-05"),
+		Note: ptr("The roadmap's 43 certifications, from PCPP1 to the Google Professional Data Engineer: 150 € a month.")},
 	{Name: ptr("Reward fund"), TargetCents: ptr(int64(24000)), TargetDate: ptr(""),
 		Note: ptr("Streak rewards for the study block, and one for every milestone: 20 € a month.")},
 }
@@ -105,7 +105,7 @@ var Funds = []budget.PotFields{
 func assessment() roadmaps.AssessmentInput {
 	return roadmaps.AssessmentInput{
 		Profile: roadmaps.Profile{Role: "Data engineer", Experience: "Python, SQL, ELT/ETL, Snowflake, Airflow, dbt Core, Docker, Linux, Bash",
-			Goals: "Top 5% in 26 engineering domains by February 2030.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
+			Goals: "Top 5% in 35 engineering domains by January 2031.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
 		Interests: []string{"python", "dsa", "maths", "linux-bash", "databases", "data-engineering"},
 		Ratings:   map[string]int{"python": 4, "dsa": 2, "maths": 2, "linux-bash": 3, "databases": 3, "data-engineering": 4},
 		Answers:   map[string]int{},
@@ -340,7 +340,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 				pot, s.err = budget.CreatePot(ctx, tx, user, f, s.today)
 			}
 			if s.err == nil {
-				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: []int64{10000, 2000}[i]}, s.today)
+				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: []int64{15000, 2000}[i]}, s.today)
 			}
 		}
 	}
@@ -511,7 +511,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		doc.Gamification.Enabled = true
 		doc.Focus.Sound = "music"
 		doc.Podcast.Enabled = true
-		doc.Today.Sections = []string{"kpis", "tasks", "habits", "milestones", "goals", "journal", "water", "caffeine", "notes", "overview"}
+		doc.Today.Sections = []string{"kpis", "roadmap", "tasks", "habits", "milestones", "goals", "journal", "water", "caffeine", "notes", "overview"}
 		s.err = settings.Put(ctx, tx, user, doc)
 	}
 	if s.err == nil {

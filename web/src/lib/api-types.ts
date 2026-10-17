@@ -4206,6 +4206,66 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/roadmaps/today': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * What the started plan asks of today
+		 * @description From the person's latest started plan: the phase under way (or the first, before the start), its week, the days to its milestone, today's study block, and the next certification not yet passed. Plan is null without a started plan.
+		 */
+		get: operations['getRoadmapToday'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/sources/{source}/plan': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * A library roadmap's plan before it is started
+		 * @description The phases, milestones to be, projects, exit checks, and certifications at the dates starting the roadmap today would give: its own dates while its first phase runs, else from the coming Monday. Started is false, and no phase has a milestone or a project id.
+		 */
+		get: operations['previewRoadmapPlan'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/roadmaps/{id}/plan': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * The plan of a started roadmap, phase by phase
+		 * @description Each phase with its dates (moved to when the plan was started), whether it is past, current, or future, the milestone and project it created and how far the project's board is, its exit check, 42 projects, and the certifications taken at its end with their status. A roadmap without a plan returns started false and no phases. Outdated says the roadmap was started from an earlier version of the plan (none of its milestones is one of the phases); newer is a roadmap started since from the same plan.
+		 */
+		get: operations['getRoadmapPlan'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}': {
 		parameters: {
 			query?: never;
@@ -4907,6 +4967,97 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		/** @enum {unknown} */
+		TodaySection:
+			| 'kpis'
+			| 'roadmap'
+			| 'tasks'
+			| 'milestones'
+			| 'goals'
+			| 'notes'
+			| 'learning'
+			| 'habits'
+			| 'calendar'
+			| 'household'
+			| 'journal'
+			| 'water'
+			| 'caffeine'
+			| 'overview';
+		RoadmapPlan: {
+			started: boolean;
+			start: string;
+			end: string;
+			/** Format: uuid */
+			goal_id: string | null;
+			/** @description Started from an earlier version of the plan. */
+			outdated: boolean;
+			/**
+			 * Format: uuid
+			 * @description A roadmap started since from the same plan.
+			 */
+			newer: string | null;
+			phases: components['schemas']['RoadmapPlanPhase'][];
+		};
+		RoadmapPlanPhase: {
+			n: number;
+			title: string;
+			/** Format: date */
+			start: string;
+			/** Format: date */
+			end: string;
+			/** @enum {string} */
+			state: 'past' | 'current' | 'future';
+			tracks: string;
+			domains: string[];
+			milestone: {
+				/** Format: uuid */
+				id: string;
+				done: boolean;
+			} | null;
+			project: {
+				/**
+				 * Format: uuid
+				 * @description Null in a preview.
+				 */
+				id: string | null;
+				title: string;
+				outcome: string;
+				status: string;
+				/** @description Cards done on its board. */
+				done: number;
+				/** @description Cards on its board that are not cancelled. */
+				total: number;
+			} | null;
+			exit: {
+				title: string;
+				parts?: string[] | null;
+			}[];
+			fortytwo: {
+				title: string;
+				hours: number;
+				optional: boolean;
+				note: string;
+			}[];
+			certifications: components['schemas']['RoadmapPlanCert'][];
+		};
+		RoadmapPlanCert: {
+			name: string;
+			code: string;
+			provider: string;
+			url: string;
+			cost_cents: number | null;
+			validity_months: number | null;
+			phase: number;
+			skill: string;
+			/**
+			 * Format: uuid
+			 * @description The person's certification, while it exists.
+			 */
+			id: string | null;
+			/** @description Its status; empty without one. */
+			status: string;
+			target_on: string | null;
+		};
 		WatchTopic: {
 			/** Format: uuid */
 			id: string;
@@ -6737,23 +6888,11 @@ export interface components {
 				interleave: boolean;
 				type_answer: boolean;
 			};
-			/** @description The sections Today shows, in order (counts stay at the top, progress at the bottom). Default: kpis, tasks, milestones, goals, notes, overview. */
+			/** @description The sections Today shows, in order (counts stay at the top, progress at the bottom), and those turned off. A section in neither list is new in this release and shows. Default: kpis, roadmap, tasks, milestones, goals, notes, overview. */
 			today?: {
-				sections: (
-					| 'kpis'
-					| 'tasks'
-					| 'milestones'
-					| 'goals'
-					| 'notes'
-					| 'learning'
-					| 'habits'
-					| 'calendar'
-					| 'household'
-					| 'journal'
-					| 'water'
-					| 'caffeine'
-					| 'overview'
-				)[];
+				sections: components['schemas']['TodaySection'][];
+				/** @description The sections turned off in Customise Today. */
+				hidden?: components['schemas']['TodaySection'][];
 			};
 			/** @description The pages left out of the navigation (they still open from a link or a search), and whether the person has said what they want Axon for. Default: none hidden, not chosen. */
 			menu?: {
@@ -17225,6 +17364,96 @@ export interface operations {
 						skills: components['schemas']['FocusMinutes'][];
 						projects: components['schemas']['FocusMinutes'][];
 					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getRoadmapToday: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Today's part of the plan. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						plan: {
+							/** Format: uuid */
+							roadmap_id: string;
+							title: string;
+							/** Format: date */
+							start: string;
+							phases: number;
+							/** @description Milestones reached. */
+							reached: number;
+							phase: components['schemas']['RoadmapPlanPhase'] | null;
+							/** @description The phase's week, from 1; 0 before it starts. */
+							week: number;
+							weeks: number;
+							/** @description Days to the phase's milestone. */
+							days_left: number;
+							/** @description Today's study block. */
+							block: string | null;
+							next_certification: components['schemas']['RoadmapPlanCert'] | null;
+						} | null;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	previewRoadmapPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				/** @example top5-engineer */
+				source: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The plan. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RoadmapPlan'];
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	getRoadmapPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The plan. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['RoadmapPlan'];
 				};
 			};
 			401: components['responses']['Problem'];

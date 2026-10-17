@@ -78,14 +78,26 @@
 	const byDate = $derived(new Map(byDay(events ?? [])));
 	// Drag and drop (EP-64): a task moves to another day, keeping what the
 	// date means (scheduled or due); undated next actions can be dropped on a
-	// day to schedule them. Each has a date field too, for the keyboard.
-	type TaskLite = { id: string; title: string; scheduled_on: string | null; due_on: string | null };
+	// day to schedule them. Each has a date field too, for the keyboard. The
+	// newest come first: a started roadmap adds many undated exit checks.
+	type TaskLite = {
+		id: string;
+		title: string;
+		scheduled_on: string | null;
+		due_on: string | null;
+		created_at: string;
+	};
 	let undated = $state<TaskLite[]>([]);
+	let undatedMore = $state(0);
 	let overDay = $state('');
 	async function loadUndated() {
 		try {
 			const r = await api<{ items: TaskLite[] }>('/v1/tasks?view=next&limit=100');
-			undated = r.items.filter((t) => !t.scheduled_on && !t.due_on).slice(0, 20);
+			const all = r.items
+				.filter((t) => !t.scheduled_on && !t.due_on)
+				.sort((a, b) => b.created_at.localeCompare(a.created_at));
+			undated = all.slice(0, 20);
+			undatedMore = all.length - undated.length;
 		} catch {
 			undated = [];
 		}
@@ -433,6 +445,9 @@
 				</li>
 			{/each}
 		</ul>
+		{#if undatedMore}<a class="small" href="/tasks?view=next"
+				>{t('{n} more in Next actions', { n: undatedMore })}</a
+			>{/if}
 	</section>
 {/if}
 

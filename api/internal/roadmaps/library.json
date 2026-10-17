@@ -3,38 +3,38 @@
 	"roadmaps": [
 		{
 			"id": "top5-engineer",
-			"title": "Top-5% in 26 engineering domains",
-			"description": "Top 5% in all of: CS, DSA, OS, data engineering, data analysis, machine learning, maths, statistics, probability, web development, DevOps, DataOps, Linux, C/C++, Java, Rust, Python, software engineering, Bash, network, API design, containerization (Docker, Podman, Kubernetes), cloud (Google, AWS, Azure), cybersecurity, databases, and database administration.\n\n14 phases, about 3,700 hours at 22 hours a week, from 2026-10-05 to 2030-02-24. Each phase has a project that builds on the previous one, and each domain has an external proof. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday maths, Tuesday CS, Wednesday the language track, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
+			"title": "Top-5% in 35 engineering domains",
+			"description": "Top 5% in all of: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, Cloud, Cybersecurity, DevSecOps.\n\n18 phases, about 4,840 hours at 22 hours a week, from 2026-10-19 (a Monday) to 2031-01-05. Each phase has a project that builds on the previous one, and each domain has a certification (43 in all) and project work that proves it. The skills assessment is retaken at every phase's end. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday theory, Tuesday the core track, Wednesday practice, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
 			"skills": [
 				{
 					"title": "Computer science",
 					"section": "1 · Foundations",
-					"description": "Architecture, compilers, theory, and distributed systems (phases 2, 3, 6, 13). Proof: nand2tetris 12 projects, CS:APP labs, MIT 6.5840 all labs, both Crafting Interpreters interpreters, 18.404 problem sets.",
+					"description": "Architecture, compilers, and theory (phases 2, 17). Proof: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.",
 					"assess": "cs"
 				},
 				{
 					"title": "Data structures and algorithms",
 					"section": "1 · Foundations",
-					"description": "Phases 1 and 2, then 3–5 problems a week in every phase. Proof: at least 400 LeetCode problems and a contest rating in the top 5%, shown on the profile.",
+					"description": "Phases 1 and 2, then 3–5 problems a week in every phase. Proof: the Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.",
 					"assess": "dsa"
 				},
 				{
 					"title": "Maths",
 					"section": "1 · Foundations",
-					"description": "Discrete maths, calculus, linear algebra, theory (phases 1, 2, 3, 11, 13). Proof: 6.042J, 18.01, 18.02, 18.06, and 18.404 finals at 80% or more.",
+					"description": "Discrete maths, calculus, linear algebra, maths for ML (phases 1–3, 14). Proof: the Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.",
 					"assess": "maths"
 				},
 				{
 					"title": "Probability",
 					"section": "1 · Foundations",
-					"description": "Phases 3 and 5. Proof: Stat 110 final at 80% or more.",
-					"assess": "maths"
+					"description": "Phases 3 and 4. Proof: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.",
+					"assess": "probability"
 				},
 				{
 					"title": "Statistics",
 					"section": "1 · Foundations",
-					"description": "Phases 5, 6, 7. Proof: 18.650 final at 80% or more, Bayesian and experimentation projects.",
-					"assess": "data-science",
+					"description": "Phases 5, 6, 9. Proof: MITx 18.6501x verified certificate; a Bayesian A/B project.",
+					"assess": "statistics",
 					"requires": [
 						"Probability"
 					]
@@ -42,13 +42,13 @@
 				{
 					"title": "C and C++",
 					"section": "2 · Systems",
-					"description": "Phases 2, 5, 13. Proof: CS:APP labs, all BusTub projects (C++), the sqlc-cpp compiler clang-tidy clean.",
+					"description": "Phases 2, 3, 17. Proof: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.",
 					"assess": "c-cpp"
 				},
 				{
 					"title": "Operating systems",
 					"section": "2 · Systems",
-					"description": "Phases 2 and 3. Proof: every MIT 6.1810 xv6 lab passes make grade.",
+					"description": "Phases 2 and 3. Proof: the Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.",
 					"assess": "os",
 					"requires": [
 						"C and C++"
@@ -57,14 +57,14 @@
 				{
 					"title": "Linux",
 					"section": "2 · Systems",
-					"description": "Phases 1 and 4. Proof: LFCS.",
+					"description": "Phases 1, 4, 10. Proof: LFCS.",
 					"assess": "linux-bash"
 				},
 				{
 					"title": "Bash",
 					"section": "2 · Systems",
-					"description": "Phases 1 and 4. Proof: OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.",
-					"assess": "linux-bash",
+					"description": "Phases 1 and 4. Proof: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.",
+					"assess": "bash",
 					"requires": [
 						"Linux"
 					]
@@ -72,52 +72,79 @@
 				{
 					"title": "Network",
 					"section": "2 · Systems",
-					"description": "Phases 3, 4, 12. Proof: CCNA.",
+					"description": "Phases 3, 4, 16. Proof: CCNA.",
 					"assess": "networking"
 				},
 				{
 					"title": "Python",
 					"section": "3 · Languages",
-					"description": "Phase 1. Proof: pipekit on PyPI and merged pull requests in Python open source.",
+					"description": "Phases 1, 8, 9. Proof: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.",
 					"assess": "python"
 				},
 				{
 					"title": "Java",
 					"section": "3 · Languages",
-					"description": "Phase 10. Proof: OCP Java SE 21 (1Z0-830).",
+					"description": "Phases 7 and 13. Proof: Oracle OCP Java SE 21 (1Z0-830).",
 					"assess": "java"
 				},
 				{
 					"title": "Rust",
 					"section": "3 · Languages",
-					"description": "Phase 5. Proof: rustkv and a merged pull request in a Rust data project.",
+					"description": "Phase 5. Proof: a course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.",
 					"assess": "rust"
 				},
 				{
 					"title": "Databases",
 					"section": "4 · Data",
-					"description": "Phases 5 and 6. Proof: all CMU 15-445 projects and an advanced SQL portfolio.",
+					"description": "Phases 5, 6, 17. Proof: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.",
 					"assess": "databases"
 				},
 				{
 					"title": "Database administration",
 					"section": "4 · Data",
-					"description": "Phases 5 and 6. Proof: PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.",
-					"assess": "databases",
+					"description": "Phases 5 and 6. Proof: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.",
+					"assess": "dba",
 					"requires": [
 						"Databases"
 					]
 				},
 				{
+					"title": "Data-intensive systems",
+					"section": "4 · Data",
+					"description": "Replication, partitioning, consensus, transactions (phase 6). Proof: the Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.",
+					"assess": "distributed-systems",
+					"requires": [
+						"Databases"
+					]
+				},
+				{
+					"title": "Kafka and streaming",
+					"section": "4 · Data",
+					"description": "Kafka, Kafka Streams, Flink, CDC, exactly-once (phase 7). Proof: Confluent CCDAK.",
+					"assess": "kafka-streaming",
+					"requires": [
+						"Data-intensive systems"
+					]
+				},
+				{
+					"title": "Spark and batch processing",
+					"section": "4 · Data",
+					"description": "Spark SQL, Structured Streaming, lakehouse tables (phase 8). Proof: Databricks Certified Associate Developer for Apache Spark.",
+					"assess": "spark",
+					"requires": [
+						"Data-intensive systems"
+					]
+				},
+				{
 					"title": "Data engineering",
 					"section": "4 · Data",
-					"description": "Phases 1, 5, 6, 7. Proof: streamhouse in production on Kubernetes and at least 3 merged pull requests in data engineering open source (Airflow, dbt, Iceberg, DuckDB, Polars…).",
+					"description": "Phases 1, 7, 8, 18. Proof: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.",
 					"assess": "data-engineering"
 				},
 				{
 					"title": "DataOps",
 					"section": "4 · Data",
-					"description": "Phase 7. Proof: contracts, data CI/CD, and observability in streamhouse, and a merged pull request in Great Expectations or OpenLineage.",
+					"description": "Contracts, data CI/CD, lineage, observability (phase 8). Proof: dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.",
 					"assess": "dataops",
 					"requires": [
 						"Data engineering"
@@ -126,113 +153,167 @@
 				{
 					"title": "Data analysis",
 					"section": "4 · Data",
-					"description": "Phases 7 and 11. Proof: 3 published analyses (EDA, visualisation, dashboard, A/B test) and a Kaggle silver.",
+					"description": "Phase 9. Proof: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).",
 					"assess": "data-analysis",
 					"requires": [
 						"Statistics"
 					]
 				},
 				{
-					"title": "Machine learning",
+					"title": "Data science",
 					"section": "4 · Data",
-					"description": "Phases 11 and 14. Proof: a Kaggle silver medal in a competition of 1,000+ teams (the top 5%).",
+					"description": "Phases 9 and 14. Proof: the MITx MicroMasters in Statistics and Data Science.",
+					"assess": "data-science",
+					"requires": [
+						"Statistics"
+					]
+				},
+				{
+					"title": "Machine learning",
+					"section": "5 · AI",
+					"description": "Phase 14. Proof: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.",
 					"assess": "machine-learning",
 					"requires": [
 						"Statistics"
 					]
 				},
 				{
+					"title": "Deep learning",
+					"section": "5 · AI",
+					"description": "Phase 15. Proof: the DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.",
+					"assess": "deep-learning",
+					"requires": [
+						"Machine learning"
+					]
+				},
+				{
+					"title": "MLOps",
+					"section": "5 · AI",
+					"description": "Phase 14. Proof: Google Professional Machine Learning Engineer; a model in production with drift monitoring.",
+					"assess": "mlops",
+					"requires": [
+						"Machine learning"
+					]
+				},
+				{
 					"title": "Software engineering",
-					"section": "5 · Software",
-					"description": "Phases 1 and 10. Proof: design docs and reviewed open-source pull requests, Software Engineering at Google practices applied.",
-					"assess": "system-design"
+					"section": "6 · Software",
+					"description": "Phases 1 and 13. Proof: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.",
+					"assess": "software-engineering"
+				},
+				{
+					"title": "System design",
+					"section": "6 · Software",
+					"description": "Phases 6 and 18. Proof: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.",
+					"assess": "system-design",
+					"requires": [
+						"Data-intensive systems"
+					]
 				},
 				{
 					"title": "API design",
-					"section": "5 · Software",
-					"description": "Phase 10. Proof: REST and gRPC APIs clean against the Google AIP and Zalando rules, with a public design doc.",
+					"section": "6 · Software",
+					"description": "Phase 13. Proof: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.",
 					"assess": "api-design"
 				},
 				{
 					"title": "Web development",
-					"section": "5 · Software",
-					"description": "Phase 10. Proof: Full Stack Open, every part, with the certificate.",
+					"section": "6 · Software",
+					"description": "Phase 13. Proof: the Full Stack Open certificate (University of Helsinki), all parts.",
 					"assess": "web"
 				},
 				{
-					"title": "Containerization",
-					"section": "6 · Infrastructure",
-					"description": "Docker, Podman, Kubernetes (phases 8 and 12). Proof: CKA and CKS, and a rootless Podman build pipeline.",
+					"title": "Docker and Podman",
+					"section": "7 · Infrastructure",
+					"description": "Phase 10. Proof: Red Hat EX188 (containers with Podman); a rootless build pipeline.",
 					"assess": "containers",
 					"requires": [
 						"Linux"
 					]
 				},
 				{
+					"title": "Kubernetes",
+					"section": "7 · Infrastructure",
+					"description": "Phases 10, 11, 16. Proof: CKAD, CKA, and CKS.",
+					"assess": "kubernetes",
+					"requires": [
+						"Docker and Podman"
+					]
+				},
+				{
 					"title": "DevOps",
-					"section": "6 · Infrastructure",
-					"description": "Phases 8 and 9. Proof: CKA and your own pipelines at DORA elite level (deploys on demand, lead time under an hour).",
+					"section": "7 · Infrastructure",
+					"description": "Phase 11. Proof: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.",
 					"assess": "devops",
 					"requires": [
-						"Containerization"
+						"Docker and Podman"
 					]
 				},
 				{
 					"title": "Cloud",
-					"section": "6 · Infrastructure",
-					"description": "Google Cloud, AWS, Azure (phases 8 and 9). Proof: AWS SAA, GCP ACE, and AZ-104.",
+					"section": "7 · Infrastructure",
+					"description": "Phases 12 and 18. Proof: AWS SAA, Google Cloud ACE, and Azure AZ-104.",
 					"assess": "cloud",
 					"requires": [
-						"Containerization"
+						"Kubernetes"
 					]
 				},
 				{
 					"title": "Cybersecurity",
-					"section": "7 · Security",
-					"description": "Phase 12. Proof: BSCP, every PortSwigger lab, and the MIT 6.566 labs.",
+					"section": "8 · Security",
+					"description": "Phase 16. Proof: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.",
 					"assess": "security",
 					"requires": [
 						"Network"
 					]
 				},
 				{
+					"title": "DevSecOps",
+					"section": "8 · Security",
+					"description": "Phases 11 and 16. Proof: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.",
+					"assess": "devsecops",
+					"requires": [
+						"DevOps"
+					]
+				},
+				{
 					"title": "Technical writing",
-					"section": "8 · Communication",
+					"section": "9 · Communication",
 					"description": "Design docs, 14 project write-ups, and permanent notes a stranger can follow.",
 					"assess": "",
 					"kind": "soft"
 				},
 				{
 					"title": "Explaining simply",
-					"section": "8 · Communication",
+					"section": "9 · Communication",
 					"description": "Feynman tests every three months: explain each idea to a twelve-year-old, then study the gaps.",
 					"assess": "",
 					"kind": "soft"
 				},
 				{
 					"title": "Code review and open source",
-					"section": "9 · Collaboration",
+					"section": "10 · Collaboration",
 					"description": "Reviewed, merged pull requests in projects other people maintain.",
 					"assess": "",
 					"kind": "soft"
 				},
 				{
 					"title": "Consistency",
-					"section": "10 · Self-management",
+					"section": "11 · Self-management",
 					"description": "A daily study block with a streak and earned rest days: never miss twice.",
 					"assess": "",
 					"kind": "soft"
 				},
 				{
 					"title": "Planning and reflection",
-					"section": "10 · Self-management",
+					"section": "11 · Self-management",
 					"description": "A weekly reflection and a monthly roadmap check: hours against plan, the matrix, the next phase resized.",
 					"assess": "",
 					"kind": "soft"
 				},
 				{
 					"title": "Learning how to learn",
-					"section": "10 · Self-management",
+					"section": "11 · Self-management",
 					"description": "Literature notes, permanent notes, spaced tests, interleaving, and a running project.",
 					"assess": "",
 					"kind": "soft"
@@ -240,11 +321,74 @@
 			],
 			"resources": [
 				{
+					"title": "Nand to Tetris",
+					"kind": "course",
+					"by": "Noam Nisan and Shimon Schocken",
+					"free": true,
+					"url": "https://www.nand2tetris.org/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
+					"title": "Crafting Interpreters",
+					"kind": "book",
+					"by": "Robert Nystrom",
+					"free": true,
+					"url": "https://www.craftinginterpreters.com/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
+					"title": "MIT 18.404J Theory of Computation",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
 					"title": "MIT 6.006 Introduction to Algorithms",
 					"kind": "course",
 					"by": "MIT OpenCourseWare",
 					"free": true,
 					"url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "Hello Algo",
+					"kind": "book",
+					"by": "krahets and contributors",
+					"free": true,
+					"url": "https://github.com/krahets/hello-algo",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "Algorithms",
+					"kind": "book",
+					"by": "Jeff Erickson",
+					"free": true,
+					"url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "Algorithms Specialization",
+					"kind": "course",
+					"by": "Tim Roughgarden, Stanford (Coursera)",
+					"free": false,
+					"url": "https://www.coursera.org/specializations/algorithms",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "LeetCode",
+					"kind": "practice",
+					"by": "LeetCode",
+					"free": true,
+					"url": "https://leetcode.com/problemset/",
 					"section": "1 · Foundations",
 					"skill": "Data structures and algorithms"
 				},
@@ -258,22 +402,139 @@
 					"skill": "Maths"
 				},
 				{
-					"title": "Fluent Python, 2nd edition",
-					"kind": "book",
-					"by": "Luciano Ramalho",
-					"free": false,
-					"url": "https://www.oreilly.com/library/view/-/9781492056348",
-					"section": "3 · Languages",
-					"skill": "Python"
+					"title": "MIT 18.01SC Single Variable Calculus",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
 				},
 				{
-					"title": "Cosmic Python: Architecture Patterns with Python",
-					"kind": "book",
-					"by": "Harry Percival and Bob Gregory",
+					"title": "MIT 18.02SC Multivariable Calculus",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
 					"free": true,
-					"url": "https://cosmicpython.com/",
-					"section": "5 · Software",
-					"skill": "Software engineering"
+					"url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Exo7: exercises in French",
+					"kind": "practice",
+					"by": "Exo7",
+					"free": true,
+					"url": "http://exo7.emath.fr/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "MIT 18.06SC Linear Algebra",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
+					"title": "Stat 110: Probability",
+					"kind": "course",
+					"by": "Joe Blitzstein, Harvard",
+					"free": true,
+					"url": "https://stat110.hsites.harvard.edu/",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
+					"title": "Introduction to Probability",
+					"kind": "book",
+					"by": "Joe Blitzstein and Jessica Hwang",
+					"free": true,
+					"url": "http://probabilitybook.net",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
+					"title": "MIT 18.650 Statistics for Applications",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/18-650-statistics-for-applications-fall-2016/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "Think Bayes 2",
+					"kind": "book",
+					"by": "Allen Downey",
+					"free": true,
+					"url": "https://allendowney.github.io/ThinkBayes2/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "Computer Systems: A Programmer's Perspective, 3rd edition, and its labs",
+					"kind": "book",
+					"by": "Randal Bryant and David O'Hallaron",
+					"free": false,
+					"url": "https://csapp.cs.cmu.edu/3e/labs.html",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "Modern C",
+					"kind": "book",
+					"by": "Jens Gustedt",
+					"free": true,
+					"url": "https://gustedt.gitlabpages.inria.fr/modern-c/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "LearnCpp",
+					"kind": "site",
+					"by": "Alex",
+					"free": true,
+					"url": "https://www.learncpp.com/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "A Tour of C++, 3rd edition",
+					"kind": "book",
+					"by": "Bjarne Stroustrup",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/a-tour-of/9780136823575/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "C++ Core Guidelines",
+					"kind": "site",
+					"by": "Bjarne Stroustrup and Herb Sutter",
+					"free": true,
+					"url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
+					"title": "Operating Systems: Three Easy Pieces",
+					"kind": "book",
+					"by": "Remzi and Andrea Arpaci-Dusseau",
+					"free": true,
+					"url": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
+					"title": "MIT 6.1810 Operating System Engineering (xv6 labs)",
+					"kind": "course",
+					"by": "MIT PDOS",
+					"free": true,
+					"url": "https://pdos.csail.mit.edu/6.1810/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
 				},
 				{
 					"title": "The Linux Command Line",
@@ -281,6 +542,24 @@
 					"by": "William Shotts",
 					"free": true,
 					"url": "https://linuxcommand.org/tlcl.php",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "UNIX and Linux System Administration Handbook, 5th edition",
+					"kind": "book",
+					"by": "Evi Nemeth and others",
+					"free": false,
+					"url": "https://www.pearson.com/en-us/subject-catalog/p/Nemeth-UNIX-and-Linux-System-Administration-Handbook-5th-Edition/P200000000513",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "LFCS: Linux Foundation Certified System Administrator",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
 					"section": "2 · Systems",
 					"skill": "Linux"
 				},
@@ -330,96 +609,6 @@
 					"skill": "Bash"
 				},
 				{
-					"title": "Hello Algo",
-					"kind": "book",
-					"by": "krahets and contributors",
-					"free": true,
-					"url": "https://github.com/krahets/hello-algo",
-					"section": "1 · Foundations",
-					"skill": "Data structures and algorithms"
-				},
-				{
-					"title": "Nand to Tetris",
-					"kind": "course",
-					"by": "Noam Nisan and Shimon Schocken",
-					"free": true,
-					"url": "https://www.nand2tetris.org/",
-					"section": "1 · Foundations",
-					"skill": "Computer science"
-				},
-				{
-					"title": "Computer Systems: A Programmer's Perspective, 3rd edition, and its labs",
-					"kind": "book",
-					"by": "Randal Bryant and David O'Hallaron",
-					"free": false,
-					"url": "https://csapp.cs.cmu.edu/3e/labs.html",
-					"section": "2 · Systems",
-					"skill": "C and C++"
-				},
-				{
-					"title": "Modern C",
-					"kind": "book",
-					"by": "Jens Gustedt",
-					"free": true,
-					"url": "https://gustedt.gitlabpages.inria.fr/modern-c/",
-					"section": "2 · Systems",
-					"skill": "C and C++"
-				},
-				{
-					"title": "Algorithms",
-					"kind": "book",
-					"by": "Jeff Erickson",
-					"free": true,
-					"url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
-					"section": "1 · Foundations",
-					"skill": "Data structures and algorithms"
-				},
-				{
-					"title": "MIT 18.01SC Single Variable Calculus",
-					"kind": "course",
-					"by": "MIT OpenCourseWare",
-					"free": true,
-					"url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
-					"section": "1 · Foundations",
-					"skill": "Maths"
-				},
-				{
-					"title": "MIT 18.02SC Multivariable Calculus",
-					"kind": "course",
-					"by": "MIT OpenCourseWare",
-					"free": true,
-					"url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/",
-					"section": "1 · Foundations",
-					"skill": "Maths"
-				},
-				{
-					"title": "Exo7: exercises in French",
-					"kind": "practice",
-					"by": "Exo7",
-					"free": true,
-					"url": "http://exo7.emath.fr/",
-					"section": "1 · Foundations",
-					"skill": "Maths"
-				},
-				{
-					"title": "Operating Systems: Three Easy Pieces",
-					"kind": "book",
-					"by": "Remzi and Andrea Arpaci-Dusseau",
-					"free": true,
-					"url": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
-					"section": "2 · Systems",
-					"skill": "Operating systems"
-				},
-				{
-					"title": "MIT 6.1810 Operating System Engineering (xv6 labs)",
-					"kind": "course",
-					"by": "MIT PDOS",
-					"free": true,
-					"url": "https://pdos.csail.mit.edu/6.1810/",
-					"section": "2 · Systems",
-					"skill": "Operating systems"
-				},
-				{
 					"title": "Computer Networking: A Top-Down Approach, with the Wireshark labs",
 					"kind": "book",
 					"by": "James Kurose and Keith Ross",
@@ -436,51 +625,6 @@
 					"url": "https://beej.us/guide/bgnet/",
 					"section": "2 · Systems",
 					"skill": "Network"
-				},
-				{
-					"title": "MIT 18.06SC Linear Algebra",
-					"kind": "course",
-					"by": "MIT OpenCourseWare",
-					"free": true,
-					"url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
-					"section": "1 · Foundations",
-					"skill": "Maths"
-				},
-				{
-					"title": "Stat 110: Probability",
-					"kind": "course",
-					"by": "Joe Blitzstein, Harvard",
-					"free": true,
-					"url": "https://stat110.hsites.harvard.edu/",
-					"section": "1 · Foundations",
-					"skill": "Probability"
-				},
-				{
-					"title": "Introduction to Probability",
-					"kind": "book",
-					"by": "Joe Blitzstein and Jessica Hwang",
-					"free": true,
-					"url": "http://probabilitybook.net",
-					"section": "1 · Foundations",
-					"skill": "Probability"
-				},
-				{
-					"title": "UNIX and Linux System Administration Handbook, 5th edition",
-					"kind": "book",
-					"by": "Evi Nemeth and others",
-					"free": false,
-					"url": "https://www.pearson.com/en-us/subject-catalog/p/Nemeth-UNIX-and-Linux-System-Administration-Handbook-5th-Edition/P200000000513",
-					"section": "2 · Systems",
-					"skill": "Linux"
-				},
-				{
-					"title": "LFCS: Linux Foundation Certified System Administrator",
-					"kind": "site",
-					"by": "The Linux Foundation",
-					"free": false,
-					"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
-					"section": "2 · Systems",
-					"skill": "Linux"
 				},
 				{
 					"title": "Jeremy's IT Lab free CCNA course",
@@ -501,31 +645,31 @@
 					"skill": "Network"
 				},
 				{
-					"title": "CMU 15-445/645 Database Systems, with BusTub",
-					"kind": "course",
-					"by": "Andy Pavlo, Carnegie Mellon",
-					"free": true,
-					"url": "https://15445.courses.cs.cmu.edu/fall2025/",
-					"section": "4 · Data",
-					"skill": "Databases"
-				},
-				{
-					"title": "Designing Data-Intensive Applications, 2nd edition",
+					"title": "Fluent Python, 2nd edition",
 					"kind": "book",
-					"by": "Martin Kleppmann",
+					"by": "Luciano Ramalho",
 					"free": false,
-					"url": "https://martin.kleppmann.com/",
-					"section": "4 · Data",
-					"skill": "Databases"
+					"url": "https://www.oreilly.com/library/view/-/9781492056348",
+					"section": "3 · Languages",
+					"skill": "Python"
 				},
 				{
-					"title": "PostgreSQL 14 Internals",
-					"kind": "book",
-					"by": "Egor Rogov",
+					"title": "dev.java: learn Java",
+					"kind": "site",
+					"by": "Oracle",
 					"free": true,
-					"url": "https://edu.postgrespro.com/postgresql_internals-14_parts1-4_en.pdf",
-					"section": "4 · Data",
-					"skill": "Database administration"
+					"url": "https://dev.java/learn/",
+					"section": "3 · Languages",
+					"skill": "Java"
+				},
+				{
+					"title": "Effective Java, 3rd edition",
+					"kind": "book",
+					"by": "Joshua Bloch",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/",
+					"section": "3 · Languages",
+					"skill": "Java"
 				},
 				{
 					"title": "The Rust Programming Language",
@@ -546,22 +690,22 @@
 					"skill": "Rust"
 				},
 				{
-					"title": "MIT 18.650 Statistics for Applications",
-					"kind": "course",
-					"by": "MIT OpenCourseWare",
-					"free": true,
-					"url": "https://ocw.mit.edu/courses/18-650-statistics-for-applications-fall-2016/",
-					"section": "1 · Foundations",
-					"skill": "Statistics"
+					"title": "Rust for Rustaceans",
+					"kind": "book",
+					"by": "Jon Gjengset",
+					"free": false,
+					"url": "https://rust-for-rustaceans.com/",
+					"section": "3 · Languages",
+					"skill": "Rust"
 				},
 				{
-					"title": "MIT 6.5840 Distributed Systems",
+					"title": "CMU 15-445/645 Database Systems, with BusTub",
 					"kind": "course",
-					"by": "MIT PDOS",
+					"by": "Andy Pavlo, Carnegie Mellon",
 					"free": true,
-					"url": "https://pdos.csail.mit.edu/6.824/",
-					"section": "1 · Foundations",
-					"skill": "Computer science"
+					"url": "https://15445.courses.cs.cmu.edu/fall2025/",
+					"section": "4 · Data",
+					"skill": "Databases"
 				},
 				{
 					"title": "Use The Index, Luke",
@@ -571,6 +715,15 @@
 					"url": "https://use-the-index-luke.com/",
 					"section": "4 · Data",
 					"skill": "Databases"
+				},
+				{
+					"title": "PostgreSQL 14 Internals",
+					"kind": "book",
+					"by": "Egor Rogov",
+					"free": true,
+					"url": "https://edu.postgrespro.com/postgresql_internals-14_parts1-4_en.pdf",
+					"section": "4 · Data",
+					"skill": "Database administration"
 				},
 				{
 					"title": "MySQL 8.4 Reference Manual",
@@ -609,22 +762,31 @@
 					"skill": "Database administration"
 				},
 				{
-					"title": "Think Bayes 2",
+					"title": "Designing Data-Intensive Applications, 2nd edition",
 					"kind": "book",
-					"by": "Allen Downey",
-					"free": true,
-					"url": "https://allendowney.github.io/ThinkBayes2/",
-					"section": "1 · Foundations",
-					"skill": "Statistics"
+					"by": "Martin Kleppmann",
+					"free": false,
+					"url": "https://martin.kleppmann.com/",
+					"section": "4 · Data",
+					"skill": "Data-intensive systems"
 				},
 				{
-					"title": "Fundamentals of Data Engineering",
-					"kind": "book",
-					"by": "Joe Reis and Matt Housley",
-					"free": false,
-					"url": "https://books.google.com/books/about/Fundamentals_of_Data_Engineering.html?id=Z_TFzgEACAAJ",
+					"title": "MIT 6.5840 Distributed Systems",
+					"kind": "course",
+					"by": "MIT PDOS",
+					"free": true,
+					"url": "https://pdos.csail.mit.edu/6.824/",
 					"section": "4 · Data",
-					"skill": "Data engineering"
+					"skill": "Data-intensive systems"
+				},
+				{
+					"title": "Database Internals",
+					"kind": "book",
+					"by": "Alex Petrov",
+					"free": false,
+					"url": "https://www.databass.dev/",
+					"section": "4 · Data",
+					"skill": "Data-intensive systems"
 				},
 				{
 					"title": "Apache Kafka documentation",
@@ -633,7 +795,52 @@
 					"free": true,
 					"url": "https://kafka.apache.org/documentation/",
 					"section": "4 · Data",
-					"skill": "Data engineering"
+					"skill": "Kafka and streaming"
+				},
+				{
+					"title": "Kafka: The Definitive Guide, 2nd edition",
+					"kind": "book",
+					"by": "Shapira, Palino, Sivaram, Petty",
+					"free": true,
+					"url": "https://www.confluent.io/resources/kafka-the-definitive-guide-v2/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
+				},
+				{
+					"title": "Confluent Developer courses",
+					"kind": "course",
+					"by": "Confluent",
+					"free": true,
+					"url": "https://developer.confluent.io/courses/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
+				},
+				{
+					"title": "Streaming Systems",
+					"kind": "book",
+					"by": "Akidau, Chernyak, Lax",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/streaming-systems/9781491983867/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
+				},
+				{
+					"title": "Apache Flink documentation",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://nightlies.apache.org/flink/flink-docs-stable/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
+				},
+				{
+					"title": "Debezium documentation",
+					"kind": "site",
+					"by": "Debezium",
+					"free": true,
+					"url": "https://debezium.io/documentation/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
 				},
 				{
 					"title": "Spark Structured Streaming guide",
@@ -641,6 +848,33 @@
 					"by": "The Apache Software Foundation",
 					"free": true,
 					"url": "https://spark.apache.org/docs/latest/streaming/index.html",
+					"section": "4 · Data",
+					"skill": "Spark and batch processing"
+				},
+				{
+					"title": "Learning Spark, 2nd edition",
+					"kind": "book",
+					"by": "Damji, Wenig, Das, Lee",
+					"free": true,
+					"url": "https://www.databricks.com/resources/ebook/learning-spark-from-oreilly",
+					"section": "4 · Data",
+					"skill": "Spark and batch processing"
+				},
+				{
+					"title": "Apache Spark documentation",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://spark.apache.org/docs/latest/",
+					"section": "4 · Data",
+					"skill": "Spark and batch processing"
+				},
+				{
+					"title": "Fundamentals of Data Engineering",
+					"kind": "book",
+					"by": "Joe Reis and Matt Housley",
+					"free": false,
+					"url": "https://books.google.com/books/about/Fundamentals_of_Data_Engineering.html?id=Z_TFzgEACAAJ",
 					"section": "4 · Data",
 					"skill": "Data engineering"
 				},
@@ -672,6 +906,24 @@
 					"skill": "DataOps"
 				},
 				{
+					"title": "dbt documentation",
+					"kind": "site",
+					"by": "dbt Labs",
+					"free": true,
+					"url": "https://docs.getdbt.com/",
+					"section": "4 · Data",
+					"skill": "DataOps"
+				},
+				{
+					"title": "Apache Airflow documentation",
+					"kind": "site",
+					"by": "The Apache Software Foundation",
+					"free": true,
+					"url": "https://airflow.apache.org/docs/",
+					"section": "4 · Data",
+					"skill": "DataOps"
+				},
+				{
 					"title": "Python for Data Analysis, 3rd edition",
 					"kind": "book",
 					"by": "Wes McKinney",
@@ -699,175 +951,31 @@
 					"skill": "Data analysis"
 				},
 				{
-					"title": "Kubernetes documentation",
-					"kind": "site",
-					"by": "The Kubernetes project",
-					"free": true,
-					"url": "https://kubernetes.io/docs/home/",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "Kubernetes The Hard Way",
-					"kind": "practice",
-					"by": "Kelsey Hightower",
-					"free": true,
-					"url": "https://github.com/kelseyhightower/kubernetes-the-hard-way",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "Docker: get started",
-					"kind": "site",
-					"by": "Docker",
-					"free": true,
-					"url": "https://docs.docker.com/get-started/",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "Podman tutorials",
-					"kind": "site",
-					"by": "The Podman project",
-					"free": true,
-					"url": "https://docs.podman.io/en/latest/Tutorials.html",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "CKA: Certified Kubernetes Administrator",
-					"kind": "site",
-					"by": "The Linux Foundation",
-					"free": false,
-					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "Terraform tutorials",
+					"title": "PL-300 learning path: Power BI data analyst",
 					"kind": "course",
-					"by": "HashiCorp",
+					"by": "Microsoft",
 					"free": true,
-					"url": "https://developer.hashicorp.com/terraform/tutorials",
-					"section": "6 · Infrastructure",
-					"skill": "DevOps"
+					"url": "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
+					"section": "4 · Data",
+					"skill": "Data analysis"
 				},
 				{
-					"title": "Google SRE books",
-					"kind": "book",
-					"by": "Google",
-					"free": true,
-					"url": "https://sre.google/books/",
-					"section": "6 · Infrastructure",
-					"skill": "DevOps"
-				},
-				{
-					"title": "The DevOps Handbook, 2nd edition",
-					"kind": "book",
-					"by": "Gene Kim, Jez Humble, Patrick Debois, John Willis, Nicole Forsgren",
-					"free": false,
-					"url": "https://itrevolution.com/product/the-devops-handbook-second-edition/",
-					"section": "6 · Infrastructure",
-					"skill": "DevOps"
-				},
-				{
-					"title": "AWS Certified Solutions Architect – Associate exam guide",
-					"kind": "site",
-					"by": "Amazon Web Services",
-					"free": true,
-					"url": "https://d1.awsstatic.com/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide_C03.pdf",
-					"section": "6 · Infrastructure",
-					"skill": "Cloud"
-				},
-				{
-					"title": "Google Skills (formerly Cloud Skills Boost)",
+					"title": "MITx MicroMasters in Statistics and Data Science",
 					"kind": "course",
-					"by": "Google Cloud",
-					"free": true,
-					"url": "https://www.skills.google/",
-					"section": "6 · Infrastructure",
-					"skill": "Cloud"
-				},
-				{
-					"title": "Associate Cloud Engineer certification",
-					"kind": "site",
-					"by": "Google Cloud",
-					"free": true,
-					"url": "https://cloud.google.com/learn/certification/cloud-engineer",
-					"section": "6 · Infrastructure",
-					"skill": "Cloud"
-				},
-				{
-					"title": "AZ-104 study guide",
-					"kind": "site",
-					"by": "Microsoft Learn",
-					"free": true,
-					"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
-					"section": "6 · Infrastructure",
-					"skill": "Cloud"
-				},
-				{
-					"title": "dev.java: learn Java",
-					"kind": "site",
-					"by": "Oracle",
-					"free": true,
-					"url": "https://dev.java/learn/",
-					"section": "3 · Languages",
-					"skill": "Java"
-				},
-				{
-					"title": "Effective Java, 3rd edition",
-					"kind": "book",
-					"by": "Joshua Bloch",
+					"by": "MIT (edX)",
 					"free": false,
-					"url": "https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/",
-					"section": "3 · Languages",
-					"skill": "Java"
+					"url": "https://micromasters.mit.edu/ds/",
+					"section": "4 · Data",
+					"skill": "Data science"
 				},
 				{
-					"title": "Google API Improvement Proposals",
-					"kind": "site",
-					"by": "Google",
-					"free": true,
-					"url": "https://google.aip.dev/1",
-					"section": "5 · Software",
-					"skill": "API design"
-				},
-				{
-					"title": "Zalando RESTful API Guidelines",
-					"kind": "site",
-					"by": "Zalando",
-					"free": true,
-					"url": "https://opensource.zalando.com/restful-api-guidelines/",
-					"section": "5 · Software",
-					"skill": "API design"
-				},
-				{
-					"title": "Full Stack Open",
-					"kind": "course",
-					"by": "University of Helsinki",
-					"free": true,
-					"url": "https://fullstackopen.com/en/",
-					"section": "5 · Software",
-					"skill": "Web development"
-				},
-				{
-					"title": "MDN: learn web development",
-					"kind": "site",
-					"by": "Mozilla",
-					"free": true,
-					"url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
-					"section": "5 · Software",
-					"skill": "Web development"
-				},
-				{
-					"title": "Software Engineering at Google",
+					"title": "Trustworthy Online Controlled Experiments",
 					"kind": "book",
-					"by": "Titus Winters, Tom Manshreck, Hyrum Wright",
-					"free": true,
-					"url": "https://abseil.io/resources/swe-book",
-					"section": "5 · Software",
-					"skill": "Software engineering"
+					"by": "Kohavi, Tang, Xu",
+					"free": false,
+					"url": "https://experimentguide.com/",
+					"section": "4 · Data",
+					"skill": "Data science"
 				},
 				{
 					"title": "An Introduction to Statistical Learning with Python",
@@ -875,7 +983,7 @@
 					"by": "Gareth James and others",
 					"free": true,
 					"url": "https://www.statlearning.com/",
-					"section": "4 · Data",
+					"section": "5 · AI",
 					"skill": "Machine learning"
 				},
 				{
@@ -884,7 +992,7 @@
 					"by": "Marc Deisenroth, Aldo Faisal, Cheng Soon Ong",
 					"free": true,
 					"url": "https://mml-book.github.io/",
-					"section": "4 · Data",
+					"section": "5 · AI",
 					"skill": "Machine learning"
 				},
 				{
@@ -893,25 +1001,7 @@
 					"by": "Stanford",
 					"free": true,
 					"url": "https://cs229.stanford.edu/",
-					"section": "4 · Data",
-					"skill": "Machine learning"
-				},
-				{
-					"title": "Neural Networks: Zero to Hero",
-					"kind": "video",
-					"by": "Andrej Karpathy",
-					"free": true,
-					"url": "https://karpathy.ai/zero-to-hero.html",
-					"section": "4 · Data",
-					"skill": "Machine learning"
-				},
-				{
-					"title": "Practical Deep Learning for Coders",
-					"kind": "course",
-					"by": "fast.ai",
-					"free": true,
-					"url": "https://course.fast.ai/",
-					"section": "4 · Data",
+					"section": "5 · AI",
 					"skill": "Machine learning"
 				},
 				{
@@ -920,8 +1010,62 @@
 					"by": "Aurélien Géron",
 					"free": false,
 					"url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9798341607972/colophon01.html",
-					"section": "4 · Data",
+					"section": "5 · AI",
 					"skill": "Machine learning"
+				},
+				{
+					"title": "Neural Networks: Zero to Hero",
+					"kind": "video",
+					"by": "Andrej Karpathy",
+					"free": true,
+					"url": "https://karpathy.ai/zero-to-hero.html",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
+					"title": "Practical Deep Learning for Coders",
+					"kind": "course",
+					"by": "fast.ai",
+					"free": true,
+					"url": "https://course.fast.ai/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
+					"title": "Understanding Deep Learning",
+					"kind": "book",
+					"by": "Simon J. D. Prince",
+					"free": true,
+					"url": "https://udlbook.github.io/udlbook/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
+					"title": "Stanford CS231n: Deep Learning for Computer Vision",
+					"kind": "course",
+					"by": "Stanford",
+					"free": true,
+					"url": "https://cs231n.stanford.edu/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
+					"title": "Stanford CS224n: NLP with Deep Learning",
+					"kind": "course",
+					"by": "Stanford",
+					"free": true,
+					"url": "https://web.stanford.edu/class/cs224n/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
+					"title": "Dive into Deep Learning",
+					"kind": "book",
+					"by": "Zhang, Lipton, Li, Smola",
+					"free": true,
+					"url": "https://d2l.ai/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
 				},
 				{
 					"title": "Designing Machine Learning Systems",
@@ -929,8 +1073,278 @@
 					"by": "Chip Huyen",
 					"free": false,
 					"url": "https://github.com/chiphuyen/dmls-book",
-					"section": "4 · Data",
-					"skill": "Machine learning"
+					"section": "5 · AI",
+					"skill": "MLOps"
+				},
+				{
+					"title": "MLflow documentation",
+					"kind": "site",
+					"by": "MLflow",
+					"free": true,
+					"url": "https://mlflow.org/docs/latest/",
+					"section": "5 · AI",
+					"skill": "MLOps"
+				},
+				{
+					"title": "Made With ML",
+					"kind": "course",
+					"by": "Goku Mohandas",
+					"free": true,
+					"url": "https://madewithml.com/",
+					"section": "5 · AI",
+					"skill": "MLOps"
+				},
+				{
+					"title": "Cosmic Python: Architecture Patterns with Python",
+					"kind": "book",
+					"by": "Harry Percival and Bob Gregory",
+					"free": true,
+					"url": "https://cosmicpython.com/",
+					"section": "6 · Software",
+					"skill": "Software engineering"
+				},
+				{
+					"title": "Software Engineering at Google",
+					"kind": "book",
+					"by": "Titus Winters, Tom Manshreck, Hyrum Wright",
+					"free": true,
+					"url": "https://abseil.io/resources/swe-book",
+					"section": "6 · Software",
+					"skill": "Software engineering"
+				},
+				{
+					"title": "A Philosophy of Software Design, 2nd edition",
+					"kind": "book",
+					"by": "John Ousterhout",
+					"free": false,
+					"url": "https://web.stanford.edu/~ouster/cgi-bin/book.php",
+					"section": "6 · Software",
+					"skill": "Software engineering"
+				},
+				{
+					"title": "The System Design Primer",
+					"kind": "site",
+					"by": "Donne Martin",
+					"free": true,
+					"url": "https://github.com/donnemartin/system-design-primer",
+					"section": "6 · Software",
+					"skill": "System design"
+				},
+				{
+					"title": "The Architecture of Open Source Applications",
+					"kind": "book",
+					"by": "Brown, Wilson",
+					"free": true,
+					"url": "https://aosabook.org/",
+					"section": "6 · Software",
+					"skill": "System design"
+				},
+				{
+					"title": "Google API Improvement Proposals",
+					"kind": "site",
+					"by": "Google",
+					"free": true,
+					"url": "https://google.aip.dev/1",
+					"section": "6 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "Zalando RESTful API Guidelines",
+					"kind": "site",
+					"by": "Zalando",
+					"free": true,
+					"url": "https://opensource.zalando.com/restful-api-guidelines/",
+					"section": "6 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "gRPC documentation",
+					"kind": "site",
+					"by": "gRPC Authors",
+					"free": true,
+					"url": "https://grpc.io/docs/",
+					"section": "6 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "API Design Patterns",
+					"kind": "book",
+					"by": "JJ Geewax",
+					"free": false,
+					"url": "https://www.manning.com/books/api-design-patterns",
+					"section": "6 · Software",
+					"skill": "API design"
+				},
+				{
+					"title": "Full Stack Open",
+					"kind": "course",
+					"by": "University of Helsinki",
+					"free": true,
+					"url": "https://fullstackopen.com/en/",
+					"section": "6 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "MDN: learn web development",
+					"kind": "site",
+					"by": "Mozilla",
+					"free": true,
+					"url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+					"section": "6 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "Docker: get started",
+					"kind": "site",
+					"by": "Docker",
+					"free": true,
+					"url": "https://docs.docker.com/get-started/",
+					"section": "7 · Infrastructure",
+					"skill": "Docker and Podman"
+				},
+				{
+					"title": "Podman tutorials",
+					"kind": "site",
+					"by": "The Podman project",
+					"free": true,
+					"url": "https://docs.podman.io/en/latest/Tutorials.html",
+					"section": "7 · Infrastructure",
+					"skill": "Docker and Podman"
+				},
+				{
+					"title": "Podman in Action",
+					"kind": "book",
+					"by": "Daniel Walsh",
+					"free": true,
+					"url": "https://developers.redhat.com/e-books/podman-action",
+					"section": "7 · Infrastructure",
+					"skill": "Docker and Podman"
+				},
+				{
+					"title": "Kubernetes documentation",
+					"kind": "site",
+					"by": "The Kubernetes project",
+					"free": true,
+					"url": "https://kubernetes.io/docs/home/",
+					"section": "7 · Infrastructure",
+					"skill": "Kubernetes"
+				},
+				{
+					"title": "Kubernetes The Hard Way",
+					"kind": "practice",
+					"by": "Kelsey Hightower",
+					"free": true,
+					"url": "https://github.com/kelseyhightower/kubernetes-the-hard-way",
+					"section": "7 · Infrastructure",
+					"skill": "Kubernetes"
+				},
+				{
+					"title": "CKA: Certified Kubernetes Administrator",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
+					"section": "7 · Infrastructure",
+					"skill": "Kubernetes"
+				},
+				{
+					"title": "CKS: Certified Kubernetes Security Specialist",
+					"kind": "site",
+					"by": "The Linux Foundation",
+					"free": false,
+					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/",
+					"section": "7 · Infrastructure",
+					"skill": "Kubernetes"
+				},
+				{
+					"title": "Terraform tutorials",
+					"kind": "course",
+					"by": "HashiCorp",
+					"free": true,
+					"url": "https://developer.hashicorp.com/terraform/tutorials",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "Google SRE books",
+					"kind": "book",
+					"by": "Google",
+					"free": true,
+					"url": "https://sre.google/books/",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "The DevOps Handbook, 2nd edition",
+					"kind": "book",
+					"by": "Gene Kim, Jez Humble, Patrick Debois, John Willis, Nicole Forsgren",
+					"free": false,
+					"url": "https://itrevolution.com/product/the-devops-handbook-second-edition/",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "Argo CD documentation",
+					"kind": "site",
+					"by": "Argo Project",
+					"free": true,
+					"url": "https://argo-cd.readthedocs.io/",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "OpenTelemetry documentation",
+					"kind": "site",
+					"by": "OpenTelemetry Authors",
+					"free": true,
+					"url": "https://opentelemetry.io/docs/",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "DORA research",
+					"kind": "site",
+					"by": "DORA",
+					"free": true,
+					"url": "https://dora.dev/",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
+					"title": "AWS Certified Solutions Architect – Associate exam guide",
+					"kind": "site",
+					"by": "Amazon Web Services",
+					"free": true,
+					"url": "https://d1.awsstatic.com/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide_C03.pdf",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Google Skills (formerly Cloud Skills Boost)",
+					"kind": "course",
+					"by": "Google Cloud",
+					"free": true,
+					"url": "https://www.skills.google/",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Associate Cloud Engineer certification",
+					"kind": "site",
+					"by": "Google Cloud",
+					"free": true,
+					"url": "https://cloud.google.com/learn/certification/cloud-engineer",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "AZ-104 study guide",
+					"kind": "site",
+					"by": "Microsoft Learn",
+					"free": true,
+					"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
 				},
 				{
 					"title": "MIT 6.566 Computer Systems Security",
@@ -938,7 +1352,7 @@
 					"by": "MIT CSAIL",
 					"free": true,
 					"url": "https://css.csail.mit.edu/6.5660/2024/",
-					"section": "7 · Security",
+					"section": "8 · Security",
 					"skill": "Cybersecurity"
 				},
 				{
@@ -947,7 +1361,7 @@
 					"by": "PortSwigger",
 					"free": true,
 					"url": "https://portswigger.net/web-security",
-					"section": "7 · Security",
+					"section": "8 · Security",
 					"skill": "Cybersecurity"
 				},
 				{
@@ -956,90 +1370,80 @@
 					"by": "PortSwigger",
 					"free": false,
 					"url": "https://portswigger.net/web-security/certification",
-					"section": "7 · Security",
+					"section": "8 · Security",
 					"skill": "Cybersecurity"
 				},
 				{
-					"title": "CKS: Certified Kubernetes Security Specialist",
-					"kind": "site",
-					"by": "The Linux Foundation",
-					"free": false,
-					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/",
-					"section": "6 · Infrastructure",
-					"skill": "Containerization"
-				},
-				{
-					"title": "LearnCpp",
-					"kind": "site",
-					"by": "Alex",
-					"free": true,
-					"url": "https://www.learncpp.com/",
-					"section": "2 · Systems",
-					"skill": "C and C++"
-				},
-				{
-					"title": "A Tour of C++, 3rd edition",
-					"kind": "book",
-					"by": "Bjarne Stroustrup",
-					"free": false,
-					"url": "https://www.oreilly.com/library/view/a-tour-of/9780136823575/",
-					"section": "2 · Systems",
-					"skill": "C and C++"
-				},
-				{
-					"title": "C++ Core Guidelines",
-					"kind": "site",
-					"by": "Bjarne Stroustrup and Herb Sutter",
-					"free": true,
-					"url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
-					"section": "2 · Systems",
-					"skill": "C and C++"
-				},
-				{
-					"title": "Crafting Interpreters",
-					"kind": "book",
-					"by": "Robert Nystrom",
-					"free": true,
-					"url": "https://www.craftinginterpreters.com/",
-					"section": "1 · Foundations",
-					"skill": "Computer science"
-				},
-				{
-					"title": "MIT 18.404J Theory of Computation",
+					"title": "OffSec PEN-200 (OSCP+)",
 					"kind": "course",
-					"by": "MIT OpenCourseWare",
+					"by": "OffSec",
+					"free": false,
+					"url": "https://www.offsec.com/courses/pen-200/",
+					"section": "8 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "Hack The Box Academy",
+					"kind": "practice",
+					"by": "Hack The Box",
+					"free": false,
+					"url": "https://academy.hackthebox.com/",
+					"section": "8 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "OWASP DevSecOps Guideline",
+					"kind": "site",
+					"by": "OWASP",
 					"free": true,
-					"url": "https://ocw.mit.edu/courses/18-404j-theory-of-computation-fall-2020/",
-					"section": "1 · Foundations",
-					"skill": "Computer science"
+					"url": "https://owasp.org/www-project-devsecops-guideline/",
+					"section": "8 · Security",
+					"skill": "DevSecOps"
+				},
+				{
+					"title": "SLSA: supply-chain levels for software artifacts",
+					"kind": "site",
+					"by": "OpenSSF",
+					"free": true,
+					"url": "https://slsa.dev/",
+					"section": "8 · Security",
+					"skill": "DevSecOps"
+				},
+				{
+					"title": "Sigstore documentation",
+					"kind": "site",
+					"by": "OpenSSF",
+					"free": true,
+					"url": "https://docs.sigstore.dev/",
+					"section": "8 · Security",
+					"skill": "DevSecOps"
 				}
 			],
 			"plan": {
-				"start": "2026-10-05",
-				"end": "2030-02-24",
+				"start": "2026-10-19",
+				"end": "2031-01-05",
 				"hours_per_week": "22-26",
 				"budget": "200 EUR/month",
 				"note_path": "Roadmaps/top5-engineer.md",
 				"goal": {
-					"title": "Top-5% in 26 engineering domains",
-					"outcome": "By 2030-02-24, every domain has its proof (the full matrix is in the roadmap):\n\n- [ ] CS: nand2tetris 1–12 · CS:APP labs · MIT 6.5840 all labs · Crafting\n      Interpreters (jlox + clox) · 18.404 problem sets\n- [ ] DSA: ≥ 400 LeetCode problems, contest rating top 5%\n- [ ] OS: all xv6 (MIT 6.1810) labs\n- [ ] Data engineering: streamhouse in production on K8s · ≥ 3 merged PRs in DE\n      OSS\n- [ ] Data analysis: 3 published analyses (EDA, viz, dashboard, A/B)\n- [ ] Machine learning: Kaggle silver in a 1000+ team competition\n- [ ] Maths: 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%\n- [ ] Stats: 18.650 final ≥ 80% · Bayesian A/B project\n- [ ] Probability: Stat 110 final ≥ 80%\n- [ ] Web development: Full Stack Open, all parts\n- [ ] DevOps: CKA · DORA-elite pipelines\n- [ ] DataOps: contracts + data CI/CD + observability · merged PR in GX or\n      OpenLineage\n- [ ] Linux: LFCS\n- [ ] C/C++: CS:APP labs · all BusTub projects · sqlc-cpp clang-tidy clean\n- [ ] Java: OCP Java SE 21 (1Z0-830)\n- [ ] Rust: rustkv · merged PR in a Rust project\n- [ ] Python: pipekit on PyPI · merged PRs in Python OSS\n- [ ] Software engineering: public design docs + reviewed OSS PRs\n- [ ] Bash: OverTheWire Bandit 0–33 · tested ShellCheck-clean library\n- [ ] Network: CCNA\n- [ ] API design: lint-clean REST + gRPC APIs with a public design doc\n- [ ] Containerization: CKA + CKS · rootless Podman pipeline\n- [ ] Cloud: AWS SAA + GCP ACE + AZ-104\n- [ ] Cybersecurity: BSCP · all PortSwigger labs · MIT 6.566 labs\n- [ ] Databases: all CMU 15-445 projects · advanced SQL portfolio\n- [ ] Database administration: PostgreSQL, MySQL, MongoDB, Redis, Cassandra\n      runbooks with recorded drills\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
+					"title": "Top-5% in 35 engineering domains",
+					"outcome": "By 2031-01-05, every domain has its proof (the full matrix and the 43 certifications are in the roadmap):\n\n- [ ] Computer science: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.\n- [ ] Data structures and algorithms: The Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.\n- [ ] Maths: The Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.\n- [ ] Probability: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.\n- [ ] Statistics: MITx 18.6501x verified certificate; a Bayesian A/B project.\n- [ ] C and C++: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.\n- [ ] Operating systems: The Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.\n- [ ] Linux: LFCS.\n- [ ] Bash: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.\n- [ ] Network: CCNA.\n- [ ] Python: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.\n- [ ] Java: Oracle OCP Java SE 21 (1Z0-830).\n- [ ] Rust: A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.\n- [ ] Databases: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.\n- [ ] Database administration: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.\n- [ ] Data-intensive systems: The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.\n- [ ] Kafka and streaming: Confluent CCDAK.\n- [ ] Spark and batch processing: Databricks Certified Associate Developer for Apache Spark.\n- [ ] Data engineering: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.\n- [ ] DataOps: Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.\n- [ ] Data analysis: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).\n- [ ] Data science: The MITx MicroMasters in Statistics and Data Science.\n- [ ] Machine learning: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.\n- [ ] Deep learning: The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.\n- [ ] MLOps: Google Professional Machine Learning Engineer; a model in production with drift monitoring.\n- [ ] Software engineering: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.\n- [ ] System design: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.\n- [ ] API design: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.\n- [ ] Web development: The Full Stack Open certificate (University of Helsinki), all parts.\n- [ ] Docker and Podman: Red Hat EX188 (containers with Podman); a rootless build pipeline.\n- [ ] Kubernetes: CKAD, CKA, and CKS.\n- [ ] DevOps: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.\n- [ ] Cloud: AWS SAA, Google Cloud ACE, and Azure AZ-104.\n- [ ] Cybersecurity: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.\n- [ ] DevSecOps: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
 				},
 				"phases": [
 					{
 						"n": 1,
 						"slug": "p01-python-dsa-linux",
 						"title": "Phase 1: Python, DSA I, discrete maths, Bash & Linux CLI",
-						"start": "2026-10-05",
-						"end": "2026-12-27",
-						"tracks": "M = MIT 6.042J discrete maths · C = MIT 6.006 algorithms · L = Fluent Python + Cosmic Python · R = TLCL + BashGuide + Missing Semester",
+						"start": "2026-10-19",
+						"end": "2027-01-10",
+						"tracks": "M = MIT 6.042J discrete maths · C = MIT 6.006 algorithms + Stanford Algorithms 1 · L = Fluent Python + Cosmic Python; PCPP1 prep · R = TLCL + BashGuide + Missing Semester",
 						"domains": [
 							"Python",
 							"Data structures and algorithms",
 							"Maths",
 							"Software engineering",
 							"Bash",
-							"Linux",
-							"Data engineering"
+							"Linux"
 						],
 						"project": {
 							"slug": "pipekit",
@@ -1072,6 +1476,12 @@
 							},
 							{
 								"title": "OverTheWire Bandit 0–15"
+							},
+							{
+								"title": "PCPP1 passed"
+							},
+							{
+								"title": "Skills assessment retaken for Python, Data structures and algorithms, Maths, Software engineering, Bash, Linux, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1091,9 +1501,9 @@
 						"n": 2,
 						"slug": "p02-systems-c-calculus",
 						"title": "Phase 2: Computer architecture, C & systems, DSA II, calculus",
-						"start": "2026-12-28",
-						"end": "2027-03-21",
-						"tracks": "M = 18.01SC → 18.02SC calculus (+ Exo7) · C = CS:APP + labs; Nand to Tetris 1–6 · L = Modern C · R = Erickson Algorithms",
+						"start": "2027-01-11",
+						"end": "2027-04-04",
+						"tracks": "M = 18.01SC → 18.02SC calculus (+ Exo7) · C = CS:APP + labs; Nand to Tetris 1–6 · L = Modern C · R = Erickson Algorithms + Stanford Algorithms 2–4",
 						"domains": [
 							"Computer science",
 							"C and C++",
@@ -1129,6 +1539,15 @@
 							},
 							{
 								"title": "18.01SC final ≥ 80%"
+							},
+							{
+								"title": "Stanford Algorithms Specialization certificate"
+							},
+							{
+								"title": "Nand to Tetris part I certificate (Coursera)"
+							},
+							{
+								"title": "Skills assessment retaken for Computer science, C and C++, Operating systems, Data structures and algorithms, Maths, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1170,8 +1589,8 @@
 						"n": 3,
 						"slug": "p03-os-networks-linalg",
 						"title": "Phase 3: Operating systems, network theory, linear algebra, probability I",
-						"start": "2027-03-22",
-						"end": "2027-06-13",
+						"start": "2027-04-05",
+						"end": "2027-06-27",
 						"tracks": "M = 18.06SC linear algebra; Stat 110 first half · C = OSTEP + xv6 labs · L = Kurose & Ross + Beej sockets in C",
 						"domains": [
 							"Operating systems",
@@ -1208,6 +1627,12 @@
 							},
 							{
 								"title": "18.02 + 18.06 finals ≥ 80%; Stat 110 first half"
+							},
+							{
+								"title": "LFD103 Linux kernel development certificate, and a patch sent upstream"
+							},
+							{
+								"title": "Skills assessment retaken for Operating systems, Network, C and C++, Maths, Probability, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1265,9 +1690,9 @@
 						"n": 4,
 						"slug": "p04-linux-network-ops",
 						"title": "Phase 4: Linux administration, network operations, Bash automation, probability II",
-						"start": "2027-06-14",
-						"end": "2027-09-05",
-						"tracks": "M = Stat 110 second half · C = ULSAH Linux administration + LFCS prep · L = CCNA (Jeremy's IT Lab + Packet Tracer); Bash library",
+						"start": "2027-06-28",
+						"end": "2027-09-19",
+						"tracks": "M = Stat 110 second half + MITx 6.431x · C = ULSAH Linux administration + LFCS prep · L = CCNA (Jeremy's IT Lab + Packet Tracer); Bash library",
 						"domains": [
 							"Linux",
 							"Bash",
@@ -1294,6 +1719,15 @@
 							},
 							{
 								"title": "Stat 110 final ≥ 80%"
+							},
+							{
+								"title": "MITx 6.431x verified certificate"
+							},
+							{
+								"title": "LPIC-1 passed (101 and 102)"
+							},
+							{
+								"title": "Skills assessment retaken for Linux, Bash, Network, Probability, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1318,9 +1752,9 @@
 						"n": 5,
 						"slug": "p05-databases-rust-stats",
 						"title": "Phase 5: Database internals, PostgreSQL DBA, Rust, statistics",
-						"start": "2027-09-06",
-						"end": "2027-11-28",
-						"tracks": "M = MIT 18.650 statistics · C = CMU 15-445 + BusTub; DDIA · L = Rust Book + Rustlings; PostgreSQL 14 Internals",
+						"start": "2027-09-20",
+						"end": "2027-12-12",
+						"tracks": "M = MIT 18.650 + MITx 18.6501x statistics · C = CMU 15-445 + BusTub · L = Rust Book + Rustlings + Rust for Rustaceans; PostgreSQL 14 Internals",
 						"domains": [
 							"Databases",
 							"Database administration",
@@ -1344,29 +1778,43 @@
 								"title": "PG failover + PITR drill recorded"
 							},
 							{
-								"title": "DDIA ch. 1–9 permanent notes"
-							},
-							{
 								"title": "Rustlings complete"
 							},
 							{
 								"title": "18.650 final ≥ 80%"
+							},
+							{
+								"title": "MITx 18.6501x verified certificate"
+							},
+							{
+								"title": "First merged PR in a Rust project"
+							},
+							{
+								"title": "Rust course certificate from an accredited trainer"
+							},
+							{
+								"title": "Oracle 1Z0-071 passed"
+							},
+							{
+								"title": "EDB PostgreSQL Associate passed"
+							},
+							{
+								"title": "Skills assessment retaken for Databases, Database administration, Rust, C and C++, Statistics, each up a level"
 							}
-						],
-						"fortytwo": []
+						]
 					},
 					{
 						"n": 6,
-						"slug": "p06-sql-nosql-distributed",
-						"title": "Phase 6: Advanced SQL, polyglot DBA, distributed systems, Bayesian stats",
-						"start": "2027-11-29",
-						"end": "2028-02-20",
-						"tracks": "M = Think Bayes 2 · C = MIT 6.5840 distributed systems (Go) · L = Use The Index, Luke + MySQL/MongoDB/Redis/Cassandra DBA",
+						"slug": "p06-data-intensive-system-design",
+						"title": "Phase 6: Data-intensive & distributed systems, system design, polyglot DBA, Bayesian stats",
+						"start": "2027-12-13",
+						"end": "2028-03-05",
+						"tracks": "M = Think Bayes 2 · C = MIT 6.5840 distributed systems (Go) + DDIA 2e · L = System Design Primer + Database Internals; MySQL/MongoDB/Redis/Cassandra DBA · R = The Architecture of Open Source Applications",
 						"domains": [
+							"Data-intensive systems",
+							"System design",
 							"Databases",
 							"Database administration",
-							"Computer science",
-							"Data engineering",
 							"Statistics"
 						],
 						"project": {
@@ -1402,28 +1850,85 @@
 							},
 							{
 								"title": "Bayesian A/B notebook (Think Bayes)"
+							},
+							{
+								"title": "DDIA permanent notes, every chapter"
+							},
+							{
+								"title": "2 design docs reviewed by peers",
+								"parts": [
+									"a URL shortener at 100k QPS",
+									"a metrics pipeline with late events"
+								]
+							},
+							{
+								"title": "Cloud Computing Concepts 1 and 2 certificates"
+							},
+							{
+								"title": "EDB PostgreSQL Professional passed"
+							},
+							{
+								"title": "Skills assessment retaken for Data-intensive systems, System design, Databases, Database administration, Statistics, each up a level"
 							}
-						],
-						"fortytwo": []
+						]
 					},
 					{
 						"n": 7,
-						"slug": "p07-data-platform-dataops",
-						"title": "Phase 7: Advanced data engineering, DataOps, data analysis & experimentation",
-						"start": "2028-02-21",
-						"end": "2028-05-14",
-						"tracks": "M = Think Stats + Kohavi experimentation · C = Fundamentals of DE + Kafka/Spark/Iceberg docs · L = Python for Data Analysis + Wilke dataviz; GX + OpenLineage",
+						"slug": "p07-kafka-streaming",
+						"title": "Phase 7: Kafka, stream processing, CDC",
+						"start": "2028-03-06",
+						"end": "2028-05-28",
+						"tracks": "M = Streaming Systems (windows, watermarks, exactly-once) · C = Kafka: The Definitive Guide + Confluent Developer courses · L = Kafka Streams in Java + Flink + Debezium",
 						"domains": [
+							"Kafka and streaming",
 							"Data engineering",
-							"DataOps",
-							"Data analysis",
-							"Statistics",
-							"Python"
+							"Data-intensive systems",
+							"Java"
 						],
 						"project": {
 							"slug": "streamhouse",
-							"title": "streamhouse: a streaming lakehouse",
-							"outcome": "Kafka → Spark → Iceberg → dbt → DuckDB/Trino, with a DataOps layer (data contracts, GX, OpenLineage, data CI/CD, freshness/volume SLOs), a BI dashboard, and 3 published analyses (EDA, viz, A/B with power analysis)."
+							"title": "streamhouse: an event-streaming backbone",
+							"outcome": "A 3-broker KRaft Kafka cluster with Schema Registry and ACLs, Debezium CDC from PostgreSQL, a Kafka Streams and a Flink job with exactly-once sinks, consumer-lag and end-to-end latency dashboards, and a chaos test that kills a broker under load."
+						},
+						"exit": [
+							{
+								"title": "CCDAK passed"
+							},
+							{
+								"title": "streamhouse survives a broker loss with no lost or duplicated events",
+								"parts": [
+									"chaos test",
+									"exactly-once audit"
+								]
+							},
+							{
+								"title": "CDC from PostgreSQL with schema evolution"
+							},
+							{
+								"title": "Windowed aggregation with late events, written up with diagrams"
+							},
+							{
+								"title": "Skills assessment retaken for Kafka and streaming, Data engineering, Data-intensive systems, Java, each up a level"
+							}
+						]
+					},
+					{
+						"n": 8,
+						"slug": "p08-spark-lakehouse-dataops",
+						"title": "Phase 8: Spark, lakehouse, DataOps",
+						"start": "2028-05-29",
+						"end": "2028-08-20",
+						"tracks": "M = Learning Spark (execution model, shuffles, AQE) · C = Fundamentals of DE + Iceberg spec · L = dbt + Airflow + GX + OpenLineage",
+						"domains": [
+							"Spark and batch processing",
+							"Data engineering",
+							"DataOps",
+							"Python"
+						],
+						"project": {
+							"slug": "streamhouse-lakehouse",
+							"title": "streamhouse-lakehouse: Spark and Iceberg on the stream",
+							"outcome": "Kafka → Spark Structured Streaming → Iceberg → dbt → DuckDB/Trino, orchestrated by Airflow, with a DataOps layer: data contracts, GX checks, OpenLineage, data CI/CD, freshness and volume SLOs."
 						},
 						"exit": [
 							{
@@ -1436,6 +1941,42 @@
 								"title": "Lineage graph end-to-end"
 							},
 							{
+								"title": "Databricks Spark Developer Associate passed"
+							},
+							{
+								"title": "dbt Analytics Engineering certification passed"
+							},
+							{
+								"title": "Astronomer Airflow certification passed"
+							},
+							{
+								"title": "First OSS PR opened in a DE/DataOps project"
+							},
+							{
+								"title": "Skills assessment retaken for Spark and batch processing, Data engineering, DataOps, Python, each up a level"
+							}
+						]
+					},
+					{
+						"n": 9,
+						"slug": "p09-analysis-data-science",
+						"title": "Phase 9: Data analysis, data science, experimentation",
+						"start": "2028-08-21",
+						"end": "2028-11-12",
+						"tracks": "M = Trustworthy Online Controlled Experiments + Think Stats · C = MITx 6.419x data analysis · L = Python for Data Analysis + Wilke dataviz; Power BI (PL-300)",
+						"domains": [
+							"Data analysis",
+							"Data science",
+							"Statistics",
+							"Python"
+						],
+						"project": {
+							"slug": "insights-lab",
+							"title": "insights-lab: analyses on streamhouse data",
+							"outcome": "Three published analyses on streamhouse data: an EDA, a dashboard with a semantic model, and an A/B test with power analysis and CUPED; each reproducible from one command."
+						},
+						"exit": [
+							{
 								"title": "3 analyses published",
 								"parts": [
 									"EDA",
@@ -1444,7 +1985,13 @@
 								]
 							},
 							{
-								"title": "First OSS PR opened in a DE/DataOps project"
+								"title": "PL-300 passed"
+							},
+							{
+								"title": "MITx 6.419x verified certificate"
+							},
+							{
+								"title": "Skills assessment retaken for Data analysis, Data science, Statistics, Python, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1456,37 +2003,43 @@
 						]
 					},
 					{
-						"n": 8,
-						"slug": "p08-k8s-devops-aws",
-						"title": "Phase 8: Containers, Kubernetes, DevOps, AWS",
-						"start": "2028-05-15",
-						"end": "2028-08-06",
-						"tracks": "M = SRE books (SLOs, error budgets) · C = Kubernetes docs + Kubernetes The Hard Way · L = Terraform + Docker/Podman; AWS SAA prep",
+						"n": 10,
+						"slug": "p10-docker-podman-kubernetes",
+						"title": "Phase 10: Docker, Podman, Kubernetes",
+						"start": "2028-11-13",
+						"end": "2029-02-04",
+						"tracks": "M = Google SRE book (SLOs, error budgets) · C = Kubernetes docs + Kubernetes The Hard Way · L = Docker docs + Podman in Action; EX188, CKAD, CKA prep",
 						"domains": [
-							"Containerization",
-							"DevOps",
-							"Cloud"
+							"Docker and Podman",
+							"Kubernetes",
+							"Linux"
 						],
 						"project": {
 							"slug": "streamhouse-on-k8s",
-							"title": "streamhouse-on-k8s: GitOps on Kubernetes",
-							"outcome": "k3s → EKS via Terraform, GitOps, rootless Podman builds, Prometheus/Grafana, SLOs, DORA metrics."
+							"title": "streamhouse-on-k8s: the platform on Kubernetes",
+							"outcome": "streamhouse on a k3s cluster then a kubeadm cluster: rootless Podman builds, multi-stage images under 100 MB, Helm charts, operators for Kafka and PostgreSQL, Prometheus and Grafana, SLOs."
 						},
 						"exit": [
 							{
 								"title": "Kubernetes The Hard Way done"
 							},
 							{
-								"title": "CKA passed"
+								"title": "EX188 passed"
 							},
 							{
-								"title": "AWS SAA passed"
+								"title": "CKAD passed"
+							},
+							{
+								"title": "CKA passed"
 							},
 							{
 								"title": "Cluster rebuilt from zero in under 30 min, then destroyed"
 							},
 							{
 								"title": "Game-day post-mortem written"
+							},
+							{
+								"title": "Skills assessment retaken for Docker and Podman, Kubernetes, Linux, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1498,12 +2051,50 @@
 						]
 					},
 					{
-						"n": 9,
-						"slug": "p09-gcp-azure-multicloud",
-						"title": "Phase 9: Google Cloud, Azure, multi-cloud & platform engineering",
-						"start": "2028-08-07",
-						"end": "2028-10-29",
-						"tracks": "M = DevOps Handbook + cloud cost modeling · C = GCP: Google Skills + ACE guide · L = Azure: AZ-104 learning paths; Terraform GCP/Azure",
+						"n": 11,
+						"slug": "p11-devops-devsecops",
+						"title": "Phase 11: DevOps, GitOps, observability, DevSecOps",
+						"start": "2029-02-05",
+						"end": "2029-04-29",
+						"tracks": "M = The DevOps Handbook + Accelerate (DORA) · C = Terraform + Argo CD + OpenTelemetry · L = GitHub Actions + OWASP DevSecOps Guideline + SLSA + Sigstore",
+						"domains": [
+							"DevOps",
+							"DevSecOps",
+							"Kubernetes"
+						],
+						"project": {
+							"slug": "platform-gitops",
+							"title": "platform-gitops: a secure delivery platform",
+							"outcome": "Terraform-provisioned environments, GitOps with Argo CD, OpenTelemetry traces, metrics, and logs; every image scanned, signed with cosign, with an SBOM and SLSA provenance; Kyverno policies refuse anything unsigned; DORA metrics on a dashboard."
+						},
+						"exit": [
+							{
+								"title": "Terraform Associate passed"
+							},
+							{
+								"title": "GitHub Actions (GH-200) passed"
+							},
+							{
+								"title": "CDP passed"
+							},
+							{
+								"title": "An unsigned image is refused by the cluster"
+							},
+							{
+								"title": "DORA elite: on-demand deploys, lead time under 1 hour"
+							},
+							{
+								"title": "Skills assessment retaken for DevOps, DevSecOps, Kubernetes, each up a level"
+							}
+						]
+					},
+					{
+						"n": 12,
+						"slug": "p12-cloud-aws-gcp-azure",
+						"title": "Phase 12: Cloud: AWS, Google Cloud, Azure",
+						"start": "2029-04-30",
+						"end": "2029-07-22",
+						"tracks": "M = cloud cost modelling + Well-Architected frameworks · C = AWS SAA prep; GCP: Google Skills + ACE guide · L = Azure: AZ-104 learning paths; Terraform on 3 clouds",
 						"domains": [
 							"Cloud",
 							"DevOps",
@@ -1515,6 +2106,9 @@
 							"outcome": "One Terraform codebase deploying streamhouse to GKE (BigQuery/GCS), AKS (ADLS), and EKS, with a cost and an IAM/networking comparison write-up."
 						},
 						"exit": [
+							{
+								"title": "AWS SAA passed"
+							},
 							{
 								"title": "GCP ACE passed"
 							},
@@ -1531,17 +2125,19 @@
 							},
 							{
 								"title": "Cost/IAM/networking comparison published"
+							},
+							{
+								"title": "Skills assessment retaken for Cloud, DevOps, Data engineering, each up a level"
 							}
-						],
-						"fortytwo": []
+						]
 					},
 					{
-						"n": 10,
-						"slug": "p10-java-api-web",
-						"title": "Phase 10: Software engineering, API design, web development, Java",
-						"start": "2028-10-30",
-						"end": "2029-01-21",
-						"tracks": "M = SWE at Google + A Philosophy of Software Design · C = Google AIPs + Zalando API guidelines · L = Java: dev.java + Effective Java + OCP prep · R = Full Stack Open",
+						"n": 13,
+						"slug": "p13-swe-api-web-java",
+						"title": "Phase 13: Software engineering, API design, web development, Java",
+						"start": "2029-07-23",
+						"end": "2029-10-14",
+						"tracks": "M = SWE at Google + A Philosophy of Software Design · C = Google AIPs + Zalando API guidelines + gRPC · L = Java: dev.java + Effective Java + OCP prep · R = Full Stack Open",
 						"domains": [
 							"Java",
 							"API design",
@@ -1565,6 +2161,15 @@
 							},
 							{
 								"title": "Catalog shows lineage from a real streamhouse run"
+							},
+							{
+								"title": "IEEE CS Professional Software Developer passed"
+							},
+							{
+								"title": "MuleSoft API Design Associate passed"
+							},
+							{
+								"title": "Skills assessment retaken for Java, API design, Web development, Software engineering, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1577,17 +2182,18 @@
 						]
 					},
 					{
-						"n": 11,
-						"slug": "p11-ml-mlops",
-						"title": "Phase 11: Machine learning & MLOps, maths for ML",
-						"start": "2029-01-22",
-						"end": "2029-04-15",
-						"tracks": "M = MML book + CS229 notes · C = ISLP + Zero to Hero · L = Hands-On ML (PyTorch) + Designing ML Systems; fast.ai",
+						"n": 14,
+						"slug": "p14-ml-mlops",
+						"title": "Phase 14: Machine learning, MLOps, maths for ML",
+						"start": "2029-10-15",
+						"end": "2030-01-06",
+						"tracks": "M = MML book + CS229 notes · C = ISLP + MITx 6.86x · L = Hands-On ML (PyTorch) + Designing ML Systems + MLflow",
 						"domains": [
 							"Machine learning",
+							"MLOps",
+							"Data science",
 							"Maths",
-							"Statistics",
-							"Data analysis"
+							"Statistics"
 						],
 						"project": {
 							"slug": "ml-on-streamhouse",
@@ -1596,9 +2202,6 @@
 						},
 						"exit": [
 							{
-								"title": "micrograd + small GPT from scratch"
-							},
-							{
 								"title": "ISLP labs + MML exercises ch. 2–7"
 							},
 							{
@@ -1606,6 +2209,21 @@
 							},
 							{
 								"title": "Kaggle bronze or top 10%"
+							},
+							{
+								"title": "MITx 6.86x verified certificate"
+							},
+							{
+								"title": "MITx MicroMasters in Statistics and Data Science awarded"
+							},
+							{
+								"title": "Google Professional ML Engineer passed"
+							},
+							{
+								"title": "Mathematics for Machine Learning Specialization certificate"
+							},
+							{
+								"title": "Skills assessment retaken for Machine learning, MLOps, Data science, Maths, Statistics, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1627,17 +2245,58 @@
 						]
 					},
 					{
-						"n": 12,
-						"slug": "p12-security",
-						"title": "Phase 12: Cybersecurity, network security, container security",
-						"start": "2029-04-16",
-						"end": "2029-07-08",
-						"tracks": "M = threat modeling + crypto (6.566 lectures) · C = MIT 6.566 labs · L = PortSwigger Academy → BSCP; CKS prep; OverTheWire",
+						"n": 15,
+						"slug": "p15-deep-learning",
+						"title": "Phase 15: Deep learning",
+						"start": "2030-01-07",
+						"end": "2030-03-31",
+						"tracks": "M = Understanding Deep Learning (Prince) · C = Neural Networks: Zero to Hero + CS231n · L = Practical Deep Learning (fast.ai) + CS224n + Dive into Deep Learning",
+						"domains": [
+							"Deep learning",
+							"Machine learning",
+							"Maths",
+							"Python"
+						],
+						"project": {
+							"slug": "dl-lab",
+							"title": "dl-lab: deep learning from scratch to production",
+							"outcome": "micrograd and a small GPT from scratch, a vision model trained on your own data, a fine-tuned open model with evaluations, served behind datacatalog with latency and cost budgets."
+						},
+						"exit": [
+							{
+								"title": "micrograd + small GPT from scratch",
+								"parts": [
+									"micrograd",
+									"makemore",
+									"nanoGPT"
+								]
+							},
+							{
+								"title": "CS231n and CS224n assignments"
+							},
+							{
+								"title": "Fine-tuned model served with evaluations"
+							},
+							{
+								"title": "Deep Learning Specialization certificate"
+							},
+							{
+								"title": "Skills assessment retaken for Deep learning, Machine learning, Maths, Python, each up a level"
+							}
+						]
+					},
+					{
+						"n": 16,
+						"slug": "p16-security",
+						"title": "Phase 16: Cybersecurity, network security, container security",
+						"start": "2030-04-01",
+						"end": "2030-06-23",
+						"tracks": "M = threat modelling + cryptography (6.566 lectures) · C = MIT 6.566 labs + PEN-200 · L = PortSwigger Academy → BSCP; CKS prep; OverTheWire",
 						"domains": [
 							"Cybersecurity",
+							"DevSecOps",
 							"Network",
-							"Containerization",
-							"Linux"
+							"Kubernetes"
 						],
 						"project": {
 							"slug": "secure-streamhouse",
@@ -1667,6 +2326,12 @@
 							},
 							{
 								"title": "Pentest report, all high findings fixed"
+							},
+							{
+								"title": "OSCP+ passed"
+							},
+							{
+								"title": "Skills assessment retaken for Cybersecurity, DevSecOps, Network, Kubernetes, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1694,12 +2359,12 @@
 						]
 					},
 					{
-						"n": 13,
-						"slug": "p13-cpp-compilers-theory",
-						"title": "Phase 13: C++, compilers, theory of computation",
-						"start": "2029-07-09",
-						"end": "2029-09-30",
-						"tracks": "M = MIT 18.404J theory of computation · C = Crafting Interpreters; Nand to Tetris 7–12 · L = LearnCpp + A Tour of C++ + C++ Core Guidelines",
+						"n": 17,
+						"slug": "p17-cpp-compilers-theory",
+						"title": "Phase 17: C++, compilers, theory of computation",
+						"start": "2030-06-24",
+						"end": "2030-09-15",
+						"tracks": "M = MIT 18.404J theory of computation · C = Crafting Interpreters; Nand to Tetris 7–12 · L = LearnCpp + A Tour of C++ + C++ Core Guidelines; CPP prep",
 						"domains": [
 							"C and C++",
 							"Computer science",
@@ -1727,6 +2392,12 @@
 							},
 							{
 								"title": "sqlc-cpp clang-tidy/ASan clean with benchmark"
+							},
+							{
+								"title": "C++ Institute CPP passed"
+							},
+							{
+								"title": "Skills assessment retaken for C and C++, Computer science, Maths, Databases, each up a level"
 							}
 						],
 						"fortytwo": [
@@ -1748,17 +2419,22 @@
 						]
 					},
 					{
-						"n": 14,
-						"slug": "p14-mastery-proof",
-						"title": "Phase 14: Mastery & proof",
-						"start": "2029-10-01",
-						"end": "2030-02-24",
-						"tracks": "M = weakest maths/theory domain from monthly tests · C = LeetCode contests + Kaggle · L = OSS PRs + portfolio write-ups",
-						"domains": [],
+						"n": 18,
+						"slug": "p18-mastery-proof",
+						"title": "Phase 18: System design at scale & proof",
+						"start": "2030-09-16",
+						"end": "2031-01-05",
+						"tracks": "M = weakest domain from the monthly tests · C = LeetCode contests + Kaggle · L = AWS SAP + GCP PDE prep; OSS PRs + portfolio write-ups",
+						"domains": [
+							"System design",
+							"Cloud",
+							"Data engineering",
+							"Data structures and algorithms"
+						],
 						"project": {
 							"slug": "oss-and-portfolio",
 							"title": "oss-and-portfolio: proof of every domain",
-							"outcome": "Weekly LeetCode contests, a Kaggle silver push, at least 3 merged OSS PRs (DE, Rust/Python, DataOps), and a portfolio site with 14 project write-ups. Retake any failed exam."
+							"outcome": "Weekly LeetCode contests, a Kaggle silver push, at least 3 merged OSS PRs (data, Rust/Python, DataOps), 5 public design docs, and a portfolio site with 17 project write-ups. Retake any failed exam."
 						},
 						"exit": [
 							{
@@ -1771,13 +2447,21 @@
 								"title": "LeetCode contest rating top 5%"
 							},
 							{
-								"title": "Portfolio live with 14 write-ups"
+								"title": "AWS Solutions Architect – Professional passed"
+							},
+							{
+								"title": "Google Professional Data Engineer passed"
+							},
+							{
+								"title": "Portfolio live with 17 write-ups"
 							},
 							{
 								"title": "Every domain-matrix row proven"
+							},
+							{
+								"title": "Skills assessment retaken for System design, Cloud, Data engineering, Data structures and algorithms, each up a level"
 							}
-						],
-						"fortytwo": []
+						]
 					}
 				],
 				"habits": [
@@ -1857,6 +2541,16 @@
 						"context": "@computer"
 					},
 					{
+						"title": "Take the skills assessment, then press “Start at my level” on the roadmap",
+						"day": 0,
+						"context": "@computer"
+					},
+					{
+						"title": "Choose where notes live: Axon only, or also a Markdown vault kept in step both ways (Notes → Where your notes live)",
+						"day": 0,
+						"context": "@computer"
+					},
+					{
 						"title": "pipekit: create repo (uv, pytest, mypy, ruff, GitHub Actions CI)",
 						"day": 0,
 						"context": "@computer",
@@ -1929,7 +2623,7 @@
 					{
 						"title": "Certification exams",
 						"url": "https://training.linuxfoundation.org/certification/",
-						"description": "About $3,000 of exams over 3.4 years, paid from the 100 €/month certification fund. Watch for Linux Foundation discounts.\n\n- LFCS $445 (phase 4)\n- CCNA $300 (phase 4)\n- CKA $445 (phase 8)\n- AWS SAA $150 (phase 8)\n- GCP ACE $125 (phase 9)\n- AZ-104: check the price for your region (phase 9)\n- Oracle 1Z0-830 $245 (phase 10)\n- BSCP $99, plus a Burp Pro subscription (phase 12)\n- CKS $445 (phase 12)"
+						"description": "43 certifications over 220 weeks, paid from the certification fund. Listed prices add up to about $4,893; the others (and OSCP+, sold with its course) vary by region and bundle: check them when you book. Watch for Linux Foundation, Red Hat, and Cyber Monday discounts. If the fund runs short, the domain's proof without the exam still counts.\n\n- PCPP1: Certified Professional in Python Programming 1 (phase 1)\n- Stanford Algorithms: Algorithms Specialization (Stanford) (phase 2)\n- Nand2Tetris I: Nand to Tetris, part I (phase 2)\n- LFD103: A Beginner's Guide to Linux Kernel Development (phase 3)\n- MITx 6.431x: Probability: the science of uncertainty and data (phase 4)\n- LFCS: Linux Foundation Certified System Administrator (phase 4) $445\n- CCNA 200-301: Cisco Certified Network Associate (phase 4) $300\n- LPIC-1: LPIC-1: Linux Administrator (exams 101 and 102) (phase 4) $400\n- RFTT course: Rust course certificate from a Rust Foundation Trusted Training provider (phase 5)\n- 1Z0-071: Oracle Database SQL Certified Associate (phase 5) $245\n- EDB PG Associate: EDB PostgreSQL Associate Certification (phase 5) $200\n- MITx 18.6501x: Fundamentals of Statistics (phase 5)\n- EDB PG Professional: EDB PostgreSQL Professional Certification (phase 6) $200\n- UIUC CCC: Cloud Computing Concepts, parts 1 and 2 (phase 6)\n- CCDAK: Confluent Certified Developer for Apache Kafka (phase 7) $150\n- Spark Developer Associate: Databricks Certified Associate Developer for Apache Spark (phase 8) $200\n- dbt AE: dbt Analytics Engineering Certification (phase 8)\n- Airflow Fundamentals: Astronomer Certification for Apache Airflow Fundamentals (phase 8)\n- PL-300: Microsoft Power BI Data Analyst (phase 9)\n- EX188: Red Hat Certified Specialist in Containers (phase 10)\n- CKAD: Certified Kubernetes Application Developer (phase 10) $445\n- CKA: Certified Kubernetes Administrator (phase 10) $445\n- Terraform Associate: HashiCorp Certified: Terraform Associate (phase 11)\n- GH-200: GitHub Actions (phase 11) $99\n- CDP: Certified DevSecOps Professional (phase 11)\n- SAA-C03: AWS Certified Solutions Architect – Associate (phase 12) $150\n- ACE: Google Cloud Associate Cloud Engineer (phase 12) $125\n- AZ-104: Microsoft Azure Administrator (phase 12)\n- 1Z0-830: Oracle Certified Professional: Java SE 21 Developer (phase 13) $245\n- FSO: Full Stack Open certificate (phase 13)\n- PSD: IEEE CS Professional Software Developer (phase 13)\n- MCD API Design: MuleSoft Certified Developer – API Design Associate (phase 13)\n- Imperial MML: Mathematics for Machine Learning Specialization (phase 14)\n- MITx 6.86x: Machine Learning with Python (phase 14)\n- MITx SDS: MicroMasters in Statistics and Data Science (phase 14)\n- PMLE: Google Cloud Professional Machine Learning Engineer (phase 14) $200\n- DL Specialization: Deep Learning Specialization (phase 15)\n- BSCP: Burp Suite Certified Practitioner (phase 16) $99\n- CKS: Certified Kubernetes Security Specialist (phase 16) $445\n- OSCP+: OffSec Certified Professional+ (phase 16)\n- CPP: C++ Certified Professional Programmer (phase 17)\n- SAP-C02: AWS Certified Solutions Architect – Professional (phase 18) $300\n- PDE: Google Cloud Professional Data Engineer (phase 18) $200"
 					},
 					{
 						"title": "Books platform",
@@ -1941,17 +2635,17 @@
 					{
 						"day": 1,
 						"hours": "2–3 h",
-						"block": "Maths: {M}"
+						"block": "Theory: {M}"
 					},
 					{
 						"day": 2,
 						"hours": "2–3 h",
-						"block": "Computer science: {C}"
+						"block": "Core: {C}"
 					},
 					{
 						"day": 3,
 						"hours": "2–3 h",
-						"block": "Language: {L}"
+						"block": "Practice: {L}"
 					},
 					{
 						"day": 4,
@@ -1976,6 +2670,46 @@
 				],
 				"certifications": [
 					{
+						"name": "Certified Professional in Python Programming 1",
+						"code": "PCPP1",
+						"provider": "Python Institute",
+						"url": "https://pythoninstitute.org/pcpp1",
+						"phase": 1,
+						"skill": "Python"
+					},
+					{
+						"name": "Algorithms Specialization (Stanford)",
+						"code": "Stanford Algorithms",
+						"provider": "Coursera",
+						"url": "https://www.coursera.org/specializations/algorithms",
+						"phase": 2,
+						"skill": "Data structures and algorithms"
+					},
+					{
+						"name": "Nand to Tetris, part I",
+						"code": "Nand2Tetris I",
+						"provider": "Coursera",
+						"url": "https://www.coursera.org/learn/build-a-computer",
+						"phase": 2,
+						"skill": "Computer science"
+					},
+					{
+						"name": "A Beginner's Guide to Linux Kernel Development",
+						"code": "LFD103",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/",
+						"phase": 3,
+						"skill": "Operating systems"
+					},
+					{
+						"name": "Probability: the science of uncertainty and data",
+						"code": "MITx 6.431x",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 4,
+						"skill": "Probability"
+					},
+					{
 						"name": "Linux Foundation Certified System Administrator",
 						"code": "LFCS",
 						"provider": "The Linux Foundation",
@@ -1996,23 +2730,175 @@
 						"skill": "Network"
 					},
 					{
+						"name": "LPIC-1: Linux Administrator (exams 101 and 102)",
+						"code": "LPIC-1",
+						"provider": "Linux Professional Institute",
+						"url": "https://www.lpi.org/our-certifications/lpic-1-overview/",
+						"cost_cents": 40000,
+						"validity_months": 60,
+						"phase": 4,
+						"skill": "Bash"
+					},
+					{
+						"name": "Rust course certificate from a Rust Foundation Trusted Training provider",
+						"code": "RFTT course",
+						"provider": "Rust Foundation accredited trainer",
+						"url": "https://rustfoundation.org/training/",
+						"phase": 5,
+						"skill": "Rust"
+					},
+					{
+						"name": "Oracle Database SQL Certified Associate",
+						"code": "1Z0-071",
+						"provider": "Oracle",
+						"url": "https://education.oracle.com/oracle-database-sql/pexam_1Z0-071",
+						"cost_cents": 24500,
+						"phase": 5,
+						"skill": "Databases"
+					},
+					{
+						"name": "EDB PostgreSQL Associate Certification",
+						"code": "EDB PG Associate",
+						"provider": "EDB",
+						"url": "https://www.enterprisedb.com/training",
+						"cost_cents": 20000,
+						"phase": 5,
+						"skill": "Database administration"
+					},
+					{
+						"name": "Fundamentals of Statistics",
+						"code": "MITx 18.6501x",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 5,
+						"skill": "Statistics"
+					},
+					{
+						"name": "EDB PostgreSQL Professional Certification",
+						"code": "EDB PG Professional",
+						"provider": "EDB",
+						"url": "https://www.enterprisedb.com/training",
+						"cost_cents": 20000,
+						"phase": 6,
+						"skill": "Database administration"
+					},
+					{
+						"name": "Cloud Computing Concepts, parts 1 and 2",
+						"code": "UIUC CCC",
+						"provider": "University of Illinois (Coursera)",
+						"url": "https://www.coursera.org/learn/cloud-computing",
+						"phase": 6,
+						"skill": "Data-intensive systems"
+					},
+					{
+						"name": "Confluent Certified Developer for Apache Kafka",
+						"code": "CCDAK",
+						"provider": "Confluent",
+						"url": "https://www.confluent.io/certification/",
+						"cost_cents": 15000,
+						"validity_months": 24,
+						"phase": 7,
+						"skill": "Kafka and streaming"
+					},
+					{
+						"name": "Databricks Certified Associate Developer for Apache Spark",
+						"code": "Spark Developer Associate",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/apache-spark-developer-associate",
+						"cost_cents": 20000,
+						"validity_months": 24,
+						"phase": 8,
+						"skill": "Spark and batch processing"
+					},
+					{
+						"name": "dbt Analytics Engineering Certification",
+						"code": "dbt AE",
+						"provider": "dbt Labs",
+						"url": "https://www.getdbt.com/certifications",
+						"phase": 8,
+						"skill": "DataOps"
+					},
+					{
+						"name": "Astronomer Certification for Apache Airflow Fundamentals",
+						"code": "Airflow Fundamentals",
+						"provider": "Astronomer",
+						"url": "https://www.astronomer.io/certification/",
+						"phase": 8,
+						"skill": "DataOps"
+					},
+					{
+						"name": "Microsoft Power BI Data Analyst",
+						"code": "PL-300",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
+						"validity_months": 12,
+						"phase": 9,
+						"skill": "Data analysis"
+					},
+					{
+						"name": "Red Hat Certified Specialist in Containers",
+						"code": "EX188",
+						"provider": "Red Hat",
+						"url": "https://www.redhat.com/en/services/training/ex188-red-hat-certified-specialist-containers-exam",
+						"validity_months": 36,
+						"phase": 10,
+						"skill": "Docker and Podman"
+					},
+					{
+						"name": "Certified Kubernetes Application Developer",
+						"code": "CKAD",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-application-developer-ckad/",
+						"cost_cents": 44500,
+						"validity_months": 24,
+						"phase": 10,
+						"skill": "Kubernetes"
+					},
+					{
 						"name": "Certified Kubernetes Administrator",
 						"code": "CKA",
 						"provider": "The Linux Foundation",
 						"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
 						"cost_cents": 44500,
 						"validity_months": 24,
-						"phase": 8,
-						"skill": "Containerization"
+						"phase": 10,
+						"skill": "Kubernetes"
+					},
+					{
+						"name": "HashiCorp Certified: Terraform Associate",
+						"code": "Terraform Associate",
+						"provider": "HashiCorp",
+						"url": "https://developer.hashicorp.com/certifications/infrastructure-automation",
+						"validity_months": 24,
+						"phase": 11,
+						"skill": "DevOps"
+					},
+					{
+						"name": "GitHub Actions",
+						"code": "GH-200",
+						"provider": "GitHub",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/github-actions/",
+						"cost_cents": 9900,
+						"validity_months": 24,
+						"phase": 11,
+						"skill": "DevOps"
+					},
+					{
+						"name": "Certified DevSecOps Professional",
+						"code": "CDP",
+						"provider": "Practical DevSecOps",
+						"url": "https://www.practical-devsecops.com/certified-devsecops-professional/",
+						"phase": 11,
+						"skill": "DevSecOps"
 					},
 					{
 						"name": "AWS Certified Solutions Architect – Associate",
 						"code": "SAA-C03",
 						"provider": "Amazon Web Services",
-						"url": "https://d1.awsstatic.com/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide_C03.pdf",
+						"url": "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
 						"cost_cents": 15000,
 						"validity_months": 36,
-						"phase": 8,
+						"phase": 12,
 						"skill": "Cloud"
 					},
 					{
@@ -2022,7 +2908,7 @@
 						"url": "https://cloud.google.com/learn/certification/cloud-engineer",
 						"cost_cents": 12500,
 						"validity_months": 36,
-						"phase": 9,
+						"phase": 12,
 						"skill": "Cloud"
 					},
 					{
@@ -2031,16 +2917,85 @@
 						"provider": "Microsoft",
 						"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
 						"validity_months": 12,
-						"phase": 9,
+						"phase": 12,
 						"skill": "Cloud"
 					},
 					{
 						"name": "Oracle Certified Professional: Java SE 21 Developer",
 						"code": "1Z0-830",
 						"provider": "Oracle",
+						"url": "https://education.oracle.com/",
 						"cost_cents": 24500,
-						"phase": 10,
+						"phase": 13,
 						"skill": "Java"
+					},
+					{
+						"name": "Full Stack Open certificate",
+						"code": "FSO",
+						"provider": "University of Helsinki",
+						"url": "https://fullstackopen.com/en/",
+						"phase": 13,
+						"skill": "Web development"
+					},
+					{
+						"name": "IEEE CS Professional Software Developer",
+						"code": "PSD",
+						"provider": "IEEE Computer Society",
+						"url": "https://www.computer.org/product/education/professional-software-developer-certification",
+						"validity_months": 36,
+						"phase": 13,
+						"skill": "Software engineering"
+					},
+					{
+						"name": "MuleSoft Certified Developer – API Design Associate",
+						"code": "MCD API Design",
+						"provider": "MuleSoft",
+						"url": "https://training.mulesoft.com/exam/mcd-raml",
+						"validity_months": 24,
+						"phase": 13,
+						"skill": "API design"
+					},
+					{
+						"name": "Mathematics for Machine Learning Specialization",
+						"code": "Imperial MML",
+						"provider": "Imperial College London (Coursera)",
+						"url": "https://www.coursera.org/specializations/mathematics-machine-learning",
+						"phase": 14,
+						"skill": "Maths"
+					},
+					{
+						"name": "Machine Learning with Python",
+						"code": "MITx 6.86x",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 14,
+						"skill": "Machine learning"
+					},
+					{
+						"name": "MicroMasters in Statistics and Data Science",
+						"code": "MITx SDS",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 14,
+						"skill": "Data science"
+					},
+					{
+						"name": "Google Cloud Professional Machine Learning Engineer",
+						"code": "PMLE",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/machine-learning-engineer",
+						"cost_cents": 20000,
+						"validity_months": 24,
+						"phase": 14,
+						"skill": "MLOps"
+					},
+					{
+						"name": "Deep Learning Specialization",
+						"code": "DL Specialization",
+						"provider": "DeepLearning.AI",
+						"url": "https://www.coursera.org/specializations/deep-learning",
+						"phase": 15,
+						"skill": "Deep learning"
 					},
 					{
 						"name": "Burp Suite Certified Practitioner",
@@ -2048,7 +3003,7 @@
 						"provider": "PortSwigger",
 						"url": "https://portswigger.net/web-security/certification",
 						"cost_cents": 9900,
-						"phase": 12,
+						"phase": 16,
 						"skill": "Cybersecurity"
 					},
 					{
@@ -2058,8 +3013,45 @@
 						"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/",
 						"cost_cents": 44500,
 						"validity_months": 24,
-						"phase": 12,
-						"skill": "Containerization"
+						"phase": 16,
+						"skill": "Kubernetes"
+					},
+					{
+						"name": "OffSec Certified Professional+",
+						"code": "OSCP+",
+						"provider": "OffSec",
+						"url": "https://www.offsec.com/courses/pen-200/",
+						"validity_months": 36,
+						"phase": 16,
+						"skill": "Cybersecurity"
+					},
+					{
+						"name": "C++ Certified Professional Programmer",
+						"code": "CPP",
+						"provider": "C++ Institute",
+						"url": "https://cppinstitute.org/cpp",
+						"phase": 17,
+						"skill": "C and C++"
+					},
+					{
+						"name": "AWS Certified Solutions Architect – Professional",
+						"code": "SAP-C02",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-solutions-architect-professional/",
+						"cost_cents": 30000,
+						"validity_months": 36,
+						"phase": 18,
+						"skill": "System design"
+					},
+					{
+						"name": "Google Cloud Professional Data Engineer",
+						"code": "PDE",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/data-engineer",
+						"cost_cents": 20000,
+						"validity_months": 24,
+						"phase": 18,
+						"skill": "Data engineering"
 					}
 				]
 			}

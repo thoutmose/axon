@@ -98,7 +98,7 @@ func TestTodaySections(t *testing.T) {
 	e := newEnv(t, true)
 	alice := e.client()
 	alice.register("Alice")
-	put := func(sections string, want int) []byte {
+	put := func(sections string, want int, hidden ...string) []byte {
 		t.Helper()
 		var doc map[string]any
 		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
@@ -106,6 +106,9 @@ func TestTodaySections(t *testing.T) {
 		var secs []string
 		_ = json.Unmarshal([]byte(sections), &secs)
 		doc["today"] = map[string]any{"sections": secs}
+		if hidden != nil {
+			doc["today"] = map[string]any{"sections": secs, "hidden": hidden}
+		}
 		body, _ := json.Marshal(doc)
 		code, out := alice.do("PUT", "/v1/me/settings", body)
 		if code != want {
@@ -113,11 +116,16 @@ func TestTodaySections(t *testing.T) {
 		}
 		return out
 	}
-	if out := put(`["learning","kpis","tasks"]`, 200); !bytes.Contains(out, []byte(`"today":{"sections":["learning","kpis","tasks"]}`)) {
+	if out := put(`["learning","kpis","tasks"]`, 200); !bytes.Contains(out, []byte(`"today":{"sections":["learning","kpis","tasks"],"hidden":[]}`)) {
 		t.Fatalf("saved = %s", out)
 	}
 	put(`["tasks","tasks"]`, 422)
 	put(`["weather"]`, 422)
+	// The sections turned off are kept (EP-145), so a new one can show.
+	if out := put(`["roadmap","tasks"]`, 200, "notes", "goals"); !bytes.Contains(out, []byte(`"today":{"sections":["roadmap","tasks"],"hidden":["notes","goals"]}`)) {
+		t.Fatalf("saved = %s", out)
+	}
+	put(`["tasks"]`, 422, "tasks")
 }
 
 // The menu shows the pages a person uses (EP-94): any page but Today can
@@ -163,7 +171,7 @@ func TestTodaySectionsAreNeverNull(t *testing.T) {
 	e := newEnv(t, false)
 	alice := e.client()
 	alice.register("Alice")
-	defaults := `"today":{"sections":["kpis","tasks","milestones","goals","notes","overview"]}`
+	defaults := `"today":{"sections":["kpis","roadmap","tasks","milestones","goals","notes","overview"],"hidden":[]}`
 	var doc map[string]any
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
 	delete(doc, "ai")
@@ -178,7 +186,7 @@ func TestTodaySectionsAreNeverNull(t *testing.T) {
 	// An empty list is a choice: Today shows only what is always there.
 	doc["today"] = map[string]any{"sections": []string{}}
 	body, _ = json.Marshal(doc)
-	if out := alice.mustDo(200, "PUT", "/v1/me/settings", body); !bytes.Contains(out, []byte(`"today":{"sections":[]}`)) {
+	if out := alice.mustDo(200, "PUT", "/v1/me/settings", body); !bytes.Contains(out, []byte(`"today":{"sections":[],"hidden":[]}`)) {
 		t.Fatalf("saved with no sections: %s", out)
 	}
 }

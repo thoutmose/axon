@@ -8,6 +8,11 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **The Top-5% roadmap, version 2** (EP-141): 35 domains in 18 phases from Monday 19 October 2026 to January 2031, a certification for every domain (43 in all) with the project work that proves it, the skills assessment with a domain each (37) and retaken at every phase's end.
+- **The plan and its milestones in sight** (EP-142): the roadmap's page shows the plan phase by phase, and the library shows it before a start (`GET /v1/roadmaps/sources/{source}/plan`); a roadmap started from an earlier version of the plan says so and starts the new one, and the calendar shows only the latest.
+- **Drawing in notes, and where notes live** (EP-143): a sketch sheet in the editor saves an SVG the vault shows too, and opens again for more drawing; the top of Notes says whether notes live in Axon only or also in a vault kept in step.
+- **YouTube and Podcasts their own pages** (EP-144): each tab has its scenery, title, and a follow panel with suggestions for the roadmap.
+- **Your roadmap today** (EP-145): Today shows the plan's phase, today's study block, its project, and the next certification (`GET /v1/roadmaps/today`); sections new in a release show on a saved Today until turned off (`today.hidden`).
 - **Today's what is new** (EP-140): the life web, natural podcast voices, films, series, and books, and the budget charts, each with a line icon.
 - **The digest's channels on its page** (EP-133): email, notifications, and the chat apps (Slack, Discord, Microsoft Teams, Telegram, ntfy, a web address) set up on the Digest page.
 - **A podcast with natural voices** (EP-132): the podcast is spoken by your own speech server (the bundled Kokoro with `docker compose --profile tts up -d` and `AXON_TTS_URL`, or any server with the OpenAI speech API), by one host or two in conversation; without it, the device's voices as before. Voices of real people are not offered.

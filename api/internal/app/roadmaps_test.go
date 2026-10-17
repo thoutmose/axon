@@ -168,16 +168,44 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	if bytes.Count(src, []byte(`"id":`)) != 1 || !bytes.Contains(src, []byte(`"id":"top5-engineer"`)) {
 		t.Fatalf("sources = %s", src)
 	}
+	// Its plan can be read before it is started: the phases at the dates
+	// starting it today gives, each with its project and exams (EP-142).
+	var preview struct {
+		Started bool   `json:"started"`
+		Start   string `json:"start"`
+		Phases  []struct {
+			Milestone *struct{} `json:"milestone"`
+			Project   *struct {
+				ID    *string `json:"id"`
+				Title string  `json:"title"`
+			} `json:"project"`
+			Exit  []struct{ Title string } `json:"exit"`
+			Certs []struct{ Code string }  `json:"certifications"`
+		} `json:"phases"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/sources/top5-engineer/plan", nil), &preview)
+	if preview.Started || len(preview.Phases) != 18 || preview.Phases[0].Milestone != nil || preview.Phases[0].Project == nil ||
+		preview.Phases[0].Project.ID != nil || !strings.HasPrefix(preview.Phases[0].Project.Title, "pipekit") || len(preview.Phases[0].Certs) != 1 {
+		t.Fatalf("preview = %+v", preview)
+	}
+	if last := preview.Phases[0].Exit[len(preview.Phases[0].Exit)-1].Title; !strings.HasPrefix(last, "Skills assessment retaken") {
+		t.Errorf("phase 1 ends with %q", last)
+	}
+	alice.mustDo(404, "GET", "/v1/roadmaps/sources/nope/plan", nil)
+	if out := alice.mustDo(200, "GET", "/v1/roadmaps/today", nil); string(out) != `{"plan":null}`+"\n" && string(out) != `{"plan":null}` {
+		t.Fatalf("today before a start = %s", out)
+	}
+
 	var rm roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
-	if rm.Source != "library" || len(rm.Skills) != 32 || len(rm.Edges) < 8 {
+	if rm.Source != "library" || len(rm.Skills) != 41 || len(rm.Edges) < 8 {
 		t.Fatalf("roadmap = %d skills, %d edges", len(rm.Skills), len(rm.Edges))
 	}
 	var radar struct {
 		Hard, Soft struct{ Spokes []struct{ Label string } }
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/radar", nil), &radar)
-	if len(radar.Hard.Spokes) != 7 || len(radar.Soft.Spokes) != 3 {
+	if len(radar.Hard.Spokes) != 8 || len(radar.Soft.Spokes) != 3 {
 		t.Fatalf("radar = %+v", radar)
 	}
 
@@ -197,7 +225,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals", nil), &goals)
-	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 26 || len(goals.Items[0].Milestones) != 14 {
+	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 35 || len(goals.Items[0].Milestones) != 18 {
 		t.Fatalf("goals = %+v", goals)
 	}
 	g := goals.Items[0]
@@ -229,7 +257,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 			side = p.ID
 		}
 	}
-	if len(later.Items) != 13 || active != 2 || pipekit == "" || side == "" {
+	if len(later.Items) != 17 || active != 2 || pipekit == "" || side == "" {
 		t.Fatalf("projects = %+v", projects.Items)
 	}
 	board := alice.mustDo(200, "GET", "/v1/projects/"+pipekit+"/board", nil)
@@ -274,25 +302,122 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/calendar?types=study&from="+start.Format(time.DateOnly)+"&to="+start.AddDate(0, 0, 6).Format(time.DateOnly), nil), &cal)
-	if len(cal.Items) != 7 || cal.Items[0].Title != "Maths: MIT 6.042J discrete maths · 2–3 h" || cal.Items[0].RoadmapID != rm.ID {
+	if len(cal.Items) != 7 || cal.Items[0].Title != "Theory: MIT 6.042J discrete maths · 2–3 h" || cal.Items[0].RoadmapID != rm.ID {
 		t.Fatalf("study blocks = %+v", cal.Items)
 	}
 	if n := alice.mustDo(200, "GET", "/v1/notes?q=mini+Airflow", nil); !bytes.Contains(n, []byte("1-Projects/pipekit/pipekit.md")) {
 		t.Errorf("pipekit's project note is missing: %.300s", n)
 	}
 
-	// The plan's nine exams, planned for the end of their phases (EP-104).
+	// The plan's 43 certifications, planned for the end of their phases (EP-104, EP-141).
 	var certs struct {
 		Items []certJSON `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
-	if len(certs.Items) != 9 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
+	if len(certs.Items) != 43 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
 		t.Fatalf("certifications = %+v", certs.Items)
+	}
+
+	// The roadmap's page shows the plan: each phase as its milestone, with
+	// its project's board and the exams at its end (EP-142).
+	var plan struct {
+		Started bool    `json:"started"`
+		GoalID  *string `json:"goal_id"`
+		Phases  []struct {
+			Title     string `json:"title"`
+			State     string `json:"state"`
+			Milestone *struct {
+				ID   string `json:"id"`
+				Done bool   `json:"done"`
+			} `json:"milestone"`
+			Project *struct {
+				ID          string `json:"id"`
+				Done, Total int
+			} `json:"project"`
+			Certs []struct {
+				Code   string  `json:"code"`
+				ID     *string `json:"id"`
+				Status string  `json:"status"`
+			} `json:"certifications"`
+		} `json:"phases"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/plan", nil), &plan)
+	if !plan.Started || plan.GoalID == nil || *plan.GoalID != g.ID || len(plan.Phases) != 18 {
+		t.Fatalf("plan = %+v", plan)
+	}
+	p1 := plan.Phases[0]
+	if p1.Milestone == nil || p1.Milestone.Done || p1.Project == nil || p1.Project.ID != pipekit || p1.Project.Total == 0 ||
+		len(p1.Certs) != 1 || p1.Certs[0].Code != "PCPP1" || p1.Certs[0].ID == nil || p1.Certs[0].Status != "planned" {
+		t.Fatalf("phase 1 = %+v", p1)
+	}
+	for _, ph := range plan.Phases {
+		if ph.Milestone == nil || ph.Project == nil {
+			t.Errorf("%s lacks its milestone or project", ph.Title)
+		}
+	}
+	// Today's part of it (EP-145): phase 1, its milestone ahead, PCPP1 next.
+	var today struct {
+		Plan *struct {
+			RoadmapID string `json:"roadmap_id"`
+			Phases    int    `json:"phases"`
+			Phase     *struct {
+				N int `json:"n"`
+			} `json:"phase"`
+			Weeks    int `json:"weeks"`
+			DaysLeft int `json:"days_left"`
+			NextCert *struct {
+				Code string `json:"code"`
+			} `json:"next_certification"`
+		} `json:"plan"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/today", nil), &today)
+	if today.Plan == nil || today.Plan.RoadmapID != rm.ID || today.Plan.Phases != 18 || today.Plan.Phase == nil ||
+		today.Plan.Weeks != 12 || today.Plan.DaysLeft <= 0 || today.Plan.NextCert == nil {
+		t.Fatalf("today = %+v", today.Plan)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/roadmaps/"+mine(t, alice)+"/plan", nil); !bytes.Contains(out, []byte(`"started":false`)) {
+		t.Errorf("a roadmap without a plan = %s", out)
 	}
 
 	// Once only.
 	if code, out := alice.do("POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)); code != 422 || !bytes.Contains(out, []byte("already started")) {
 		t.Fatalf("second start = %d %s", code, out)
+	}
+
+	// A roadmap started from an earlier version of the plan (other title,
+	// other phases) says so; starting the new version keeps the exams and
+	// habits it already planned, and the calendar shows the new one only.
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `UPDATE entities SET title = 'Top-5% in 26 engineering domains' WHERE id = $1`, rm.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE entities SET title = 'Old ' || title WHERE id IN (SELECT id FROM milestones)`); err != nil {
+		t.Fatal(err)
+	}
+	var old struct {
+		Outdated bool    `json:"outdated"`
+		Newer    *string `json:"newer"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/plan", nil), &old)
+	if !old.Outdated || old.Newer != nil {
+		t.Fatalf("old plan = %+v", old)
+	}
+	var again roadmapJSON
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &again)
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/plan", nil), &old)
+	if old.Newer == nil || *old.Newer != again.ID {
+		t.Fatalf("old plan after the new start = %+v", old)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
+	if len(certs.Items) != 43 {
+		t.Errorf("certifications after the new start = %d", len(certs.Items))
+	}
+	if h := alice.mustDo(200, "GET", "/v1/habits?status=active", nil); bytes.Count(h, []byte(`"title":`)) != 4 {
+		t.Errorf("habits after the new start = %s", h)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/calendar?types=study&from="+start.Format(time.DateOnly)+"&to="+start.AddDate(0, 0, 6).Format(time.DateOnly), nil), &cal)
+	if len(cal.Items) != 7 || cal.Items[0].RoadmapID != again.ID {
+		t.Errorf("study blocks after the new start = %+v", cal.Items)
 	}
 }
 
@@ -371,4 +496,12 @@ func TestStudyHoursAgainstThePlan(t *testing.T) {
 	if out := alice.mustDo(200, "GET", "/v1/roadmaps/"+mine.ID+"/hours", nil); !bytes.Contains(out, []byte(`"target_hours":null`)) {
 		t.Fatalf("a roadmap without a plan = %s", out)
 	}
+}
+
+// mine creates a roadmap by hand and returns its id.
+func mine(t *testing.T, c *client) string {
+	t.Helper()
+	var rm roadmapJSON
+	_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"By hand"}`)), &rm)
+	return rm.ID
 }

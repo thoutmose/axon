@@ -10,6 +10,7 @@
 	import Button from '$lib/ui/Button.svelte';
 	import ZettelGraph from '$lib/ZettelGraph.svelte';
 	import Status from '$lib/ui/Status.svelte';
+	import VaultServer from '$lib/VaultServer.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
 	type ImportResult = {
@@ -28,6 +29,19 @@
 	let quick = $state('');
 	let importing = $state(false);
 	let report = $state<ImportResult | null>(null);
+
+	// Where the notes live (EP-143): said at the top, so the choice between
+	// Axon only and a Markdown vault kept in step both ways is never hidden.
+	let vault = $state<{ host: string; dir: string; status: string } | null>(null);
+	api<{ source: { host: string; dir: string; status: string } | null }>('/v1/vault/source')
+		.then((r) => (vault = r.source))
+		.catch(() => {});
+	const vaultState: Record<string, string> = {
+		waiting: 'waiting for the server to pair',
+		connected: 'in step both ways',
+		silent: 'no news for 15 minutes',
+		failing: 'the last sync failed'
+	};
 
 	async function load(more = false) {
 		error = '';
@@ -116,6 +130,50 @@
 	{t('sort them into PARA.')}
 </p>
 
+<details class="where" open={page.url.searchParams.has('vault')}>
+	<summary>
+		{t('Where your notes live')}:
+		{#if vault}
+			<span class="state {vault.status}"
+				>{t('Axon and {host}:{dir}', { host: vault.host, dir: vault.dir })} · {t(
+					vaultState[vault.status] ?? vault.status
+				)}</span
+			>
+		{:else}
+			<span class="state">{t('In Axon only')}</span>
+		{/if}
+	</summary>
+	<p class="muted small">
+		{t(
+			'With a vault, a note created, edited, renamed, or deleted here or in the files is replicated on the other side within seconds. A note changed on both sides keeps both versions; nothing is overwritten.'
+		)}
+	</p>
+	<VaultServer />
+	<details class="sync">
+		<summary>{t('Or keep a folder on this computer in step by hand')}</summary>
+		<p>
+			{t(
+				'Keep a folder of Markdown files (for example an Obsidian vault in Git) and Axon in step. Create a write'
+			)} <a href="/account/tokens">{t('access token')}</a>{t(
+				', save it in a file on the machine with the vault, and run:'
+			)}
+		</p>
+		<pre><code
+				>axon notes-sync -dir ~/SecondBrain -url {page.url
+					.origin} -token-file ~/.axon-token -watch</code
+			></pre>
+		<p>
+			<code>-watch</code>
+			{t(
+				'keeps it running and replicates every change both ways within seconds. To sync once instead, use'
+			)} <code>-two-way</code>{t(', and')} <code>-git</code>
+			{t(
+				"to pull and push the repository around the run. When a note changed on both sides, Axon's version is saved next to yours as"
+			)} <code>.axon-conflict.md</code>{t('; nothing is overwritten.')}
+		</p>
+	</details>
+</details>
+
 <nav aria-label={t('Note folders')} class="tabs">
 	{#each paraViews as v (v.id)}
 		<a href="?para={v.id}" aria-current={para === v.id ? 'page' : undefined}>{t(v.label)}</a>
@@ -201,27 +259,6 @@
 	</ul>
 	{#if cursor}<Button variant="secondary" onclick={() => load(true)}>{t('Show more')}</Button>{/if}
 {/if}
-
-<details class="sync">
-	<summary>{t('Sync with a Markdown vault')}</summary>
-	<p>
-		{t(
-			'Keep a folder of Markdown files (for example an Obsidian vault in Git) and Axon in step. Create a write'
-		)} <a href="/account/tokens">{t('access token')}</a>{t(
-			', save it in a file on the machine with the vault, and run:'
-		)}
-	</p>
-	<pre><code
-			>axon notes-sync -dir ~/SecondBrain -url {page.url.origin} -token-file ~/.axon-token</code
-		></pre>
-	<p>
-		{t('By default this only imports files into Axon. Add')} <code>-two-way</code>
-		{t("to also write Axon's changes back, and")} <code>-git</code>
-		{t(
-			"to pull and push the repository around each run. When a note changed on both sides, Axon's version is saved next to yours as"
-		)} <code>.axon-conflict.md</code>{t('; nothing is overwritten.')}
-	</p>
-</details>
 
 <style>
 	.starters {
@@ -370,8 +407,30 @@
 		border-radius: 999px;
 		padding: 0 var(--space-2);
 	}
+	.where {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3) var(--space-4);
+		margin: var(--space-3) 0;
+	}
+	.where > summary {
+		cursor: pointer;
+		font-weight: 600;
+	}
+	.where .state {
+		font-weight: 400;
+		color: var(--muted);
+	}
+	.where .state.connected {
+		color: var(--ok);
+	}
+	.where .state.failing,
+	.where .state.silent {
+		color: var(--warn);
+	}
 	.sync {
-		margin-top: var(--space-8);
+		margin-top: var(--space-4);
 		color: var(--muted);
 	}
 	.sync summary {

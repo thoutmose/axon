@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import '../app.css';
 	import '$lib/spaces.css';
 	import { spaceFor, spaceInfo } from '$lib/spaces';
@@ -133,7 +134,10 @@
 	}
 
 	// The area's scenery, and a scroll offset for its parallax.
-	const space = $derived(spaceFor(page.url.pathname));
+	// The query is not there while prerendering (the offline page).
+	const space = $derived(
+		spaceFor(page.url.pathname, browser ? page.url.searchParams.get('kind') : null)
+	);
 	$effect(() => {
 		if (space) document.documentElement.dataset.space = space;
 		else delete document.documentElement.dataset.space;
