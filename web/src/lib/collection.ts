@@ -1,4 +1,5 @@
 // The collection (EP-119): how each card is named, and what its next tier takes.
+import { api } from './api';
 import { t } from './i18n.svelte';
 
 export type Card = {
@@ -90,4 +91,14 @@ export function achievement(c: Card): string {
 		default:
 			return t('{n} decisions reviewed against what happened.', { n });
 	}
+}
+
+/** Turns progress rewards on, keeping every other setting (the AI part has its own endpoints). */
+export async function turnOnRewards(): Promise<void> {
+	const { ai: _ai, ...doc } = await api<Record<string, unknown>>('/v1/me/settings');
+	void _ai;
+	await api('/v1/me/settings', {
+		method: 'PUT',
+		body: { ...doc, gamification: { enabled: true } }
+	});
 }

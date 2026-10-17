@@ -1978,6 +1978,8 @@ export const fr: Record<string, string> = {
 	'Progress rewards are off': 'Les récompenses de progression sont désactivées',
 	'When on, everything you do — tasks, habits, focus sessions, flashcards, notes, skills, goals, and projects — earns points you can trace one by one, levels, badges, and one daily streak. There are no notifications, no shame for missed days, and nothing you can buy with money.':
 		'Activées, tout ce que vous faites — tâches, habitudes, sessions de concentration, cartes mémoire, notes, compétences, objectifs et projets — rapporte des points que vous pouvez retracer un par un, des niveaux, des badges et une série quotidienne. Pas de notifications, pas de honte pour les jours manqués, et rien à acheter avec de l’argent.',
+	'The collection comes with progress rewards, which are off. Turn them on to see your trophies and cards; you can turn them off again in Preferences.':
+		'La collection va avec les récompenses de progression, qui sont désactivées. Activez-les pour voir vos trophées et vos cartes ; vous pourrez les désactiver dans les Préférences.',
 	'Turn on progress rewards': 'Activer les récompenses de progression',
 	'Level {level}': 'Niveau {level}',
 	'Progress to level {value}': 'Progression vers le niveau {value}',
