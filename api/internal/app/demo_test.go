@@ -232,7 +232,7 @@ func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(added) != 1+len(demo.Schools)+len(demo.Protocols) {
+	if len(added) != 3+len(demo.LearningNotes)+len(demo.Funds)+len(demo.Schools)+len(demo.Protocols) {
 		t.Fatalf("added = %v", added)
 	}
 	var list struct {
@@ -247,6 +247,11 @@ func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/habits", nil), &list)
 	if len(list.Items) < len(demo.Protocols) {
 		t.Fatalf("habits = %+v", list.Items)
+	}
+	var cards int
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM cards c JOIN entities e ON e.id = c.id
+		WHERE c.deck = 'MIT 6.042J: logic' AND e.user_id = (SELECT id FROM users WHERE display_name = 'Alice')`).Scan(&cards); err != nil || cards == 0 {
+		t.Fatalf("the literature note's cards = %d, %v", cards, err)
 	}
 	again, err := demo.Starter(t.Context(), pool, "Alice", time.Now())
 	if err != nil || len(again) != 0 {

@@ -81,45 +81,60 @@ func seedRoadmap(ctx context.Context, tx pgx.Tx, user uuid.UUID, today, now time
 	}
 
 	// The first course's literature note, and its flashcards with diagrams.
-	note, err := notes.Create(ctx, tx, user, graph.UserActor, "4-Zettelkasten/Literature/MIT 6.042J Mathematics for Computer Science.md", logicNote)
+	deckCards, err := seedLiterature(ctx, tx, user, plan.Roadmap.Skills, now)
 	if err != nil {
 		return plan, err
 	}
-	for _, sk := range plan.Roadmap.Skills {
-		if sk.Title == "Maths" {
-			if _, err := graph.CreateLink(ctx, tx, user, graph.UserActor, note.ID, graph.RelatesTo, sk.ID); err != nil {
-				return plan, err
-			}
-		}
-	}
-	deck := "MIT 6.042J: logic"
 	history := rand.New(rand.NewPCG(2026, 600)) //nolint:gosec // reproducible demo data, not security
-	for i, c := range logicCards {
-		card, err := cards.Create(ctx, tx, user, graph.UserActor, cards.Fields{Front: &c[0], Back: &c[1], Deck: &deck}, &note.ID, now)
-		if err != nil {
+	for i, card := range deckCards[:10] {
+		if err := reviewHistory(ctx, tx, user, card, now.AddDate(0, 0, -60).Add(time.Duration(i)*time.Hour), now, history); err != nil {
 			return plan, err
-		}
-		if c[2] != "" {
-			raw, err := diagrams.ReadFile("mit6042j/mit6042j-" + c[2] + ".svg")
-			if err != nil {
-				return plan, err
-			}
-			svg, err := images.SanitizeSVG(string(raw))
-			if err != nil {
-				return plan, fmt.Errorf("%s: %w", c[2], err)
-			}
-			if err := cards.SetImage(ctx, tx, user, card.ID, svg, "image/svg+xml"); err != nil {
-				return plan, err
-			}
-		}
-		if i < 10 {
-			if err := reviewHistory(ctx, tx, user, card.ID, now.AddDate(0, 0, -60).Add(time.Duration(i)*time.Hour), now, history); err != nil {
-				return plan, err
-			}
 		}
 	}
 	return plan, nil
 }
+
+// seedLiterature writes the first course's literature note, linked to the
+// Maths skill, and its flashcards with their diagrams. It returns the cards.
+func seedLiterature(ctx context.Context, tx pgx.Tx, user uuid.UUID, skills []roadmaps.Skill, now time.Time) ([]uuid.UUID, error) {
+	note, err := notes.Create(ctx, tx, user, graph.UserActor, LiteratureNote, logicNote)
+	if err != nil {
+		return nil, err
+	}
+	for _, sk := range skills {
+		if sk.Title == "Maths" {
+			if _, err := graph.CreateLink(ctx, tx, user, graph.UserActor, note.ID, graph.RelatesTo, sk.ID); err != nil {
+				return nil, err
+			}
+		}
+	}
+	deck := "MIT 6.042J: logic"
+	ids := make([]uuid.UUID, 0, len(logicCards))
+	for _, c := range logicCards {
+		card, err := cards.Create(ctx, tx, user, graph.UserActor, cards.Fields{Front: &c[0], Back: &c[1], Deck: &deck}, &note.ID, now)
+		if err != nil {
+			return nil, err
+		}
+		if c[2] != "" {
+			raw, err := diagrams.ReadFile("mit6042j/mit6042j-" + c[2] + ".svg")
+			if err != nil {
+				return nil, err
+			}
+			svg, err := images.SanitizeSVG(string(raw))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", c[2], err)
+			}
+			if err := cards.SetImage(ctx, tx, user, card.ID, svg, "image/svg+xml"); err != nil {
+				return nil, err
+			}
+		}
+		ids = append(ids, card.ID)
+	}
+	return ids, nil
+}
+
+// LiteratureNote is the path of the first course's literature note.
+const LiteratureNote = "4-Zettelkasten/Literature/MIT 6.042J Mathematics for Computer Science.md"
 
 // reviewHistory reviews a card from at until now, at or after each
 // due date, so recall calibration has predictions to compare (EP-77). A

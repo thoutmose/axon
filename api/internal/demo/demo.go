@@ -83,6 +83,35 @@ var Schools = [][3]string{
 	{"42 school: piscine and common core", "https://42.fr/en/what-is-42/", "Peer learning without teachers: the C piscine, then the common core (libft, ft_printf, get_next_line, minishell, cub3D, ft_transcendence), self-taught here."},
 }
 
+// LearningNotes are the map of how to learn and its notes: path and
+// content. The map relates to the roadmap and its "Learning how to learn" skill.
+var LearningNotes = [][2]string{
+	{"3-Resources/Learning/Learning MOC.md", "---\ntags: [moc, learning]\n---\n# Learning MOC\n\nA map of how I learn.\n\n- [[Spaced repetition]]\n- [[Retrieval practice]]\n- [[The Feynman technique]]\n"},
+	{"4-Zettelkasten/Spaced repetition.md", "---\ntype: permanent\ntags: [learning, memory]\n---\n# Spaced repetition\n\nReviewing just before forgetting makes memories last longer. Intervals grow with each successful review.\n\n> [!tip] Pair it with [[Retrieval practice]]: test yourself instead of rereading.\n\nSource: Ebbinghaus' forgetting curve.\n"},
+	{"4-Zettelkasten/Retrieval practice.md", "---\ntype: permanent\ntags: [learning]\n---\n# Retrieval practice\n\nPulling information out of memory strengthens it more than putting it in again. See [[Spaced repetition]].\n"},
+	{"4-Zettelkasten/The Feynman technique.md", "---\ntype: permanent\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n"},
+}
+
+// Funds are the roadmap's pots (EP-95): about 3,000 € of exams by 2030, and
+// 20 € a month of rewards; the demo puts one month in each.
+var Funds = []budget.PotFields{
+	{Name: ptr("Certification fund"), TargetCents: ptr(int64(300000)), TargetDate: ptr("2030-02-24"),
+		Note: ptr("LFCS, CCNA, CKA, CKS, AWS SAA, GCP ACE, AZ-104, OCP Java, BSCP: 100 € a month.")},
+	{Name: ptr("Reward fund"), TargetCents: ptr(int64(24000)), TargetDate: ptr(""),
+		Note: ptr("Streak rewards for the study block, and one for every milestone: 20 € a month.")},
+}
+
+// assessment is the skills assessment taken before starting the roadmap.
+func assessment() roadmaps.AssessmentInput {
+	return roadmaps.AssessmentInput{
+		Profile: roadmaps.Profile{Role: "Data engineer", Experience: "Python, SQL, ELT/ETL, Snowflake, Airflow, dbt Core, Docker, Linux, Bash",
+			Goals: "Top 5% in 26 engineering domains by February 2030.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
+		Interests: []string{"python", "dsa", "maths", "linux-bash", "databases", "data-engineering"},
+		Ratings:   map[string]int{"python": 4, "dsa": 2, "maths": 2, "linux-bash": 3, "databases": 3, "data-engineering": 4},
+		Answers:   map[string]int{},
+	}
+}
+
 type seeder struct {
 	ctx   context.Context
 	tx    pgx.Tx
@@ -160,10 +189,11 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 
 	// Notes: PARA folders, Zettelkasten with wikilinks, a daily note.
-	moc := s.note("3-Resources/Learning/Learning MOC.md", "---\ntags: [moc, learning]\n---\n# Learning MOC\n\nA map of how I learn.\n\n- [[Spaced repetition]]\n- [[Retrieval practice]]\n- [[The Feynman technique]]\n")
-	spaced := s.note("4-Zettelkasten/Spaced repetition.md", "---\ntype: permanent\ntags: [learning, memory]\n---\n# Spaced repetition\n\nReviewing just before forgetting makes memories last longer. Intervals grow with each successful review.\n\n> [!tip] Pair it with [[Retrieval practice]]: test yourself instead of rereading.\n\nSource: Ebbinghaus' forgetting curve.\n")
-	s.note("4-Zettelkasten/Retrieval practice.md", "---\ntype: permanent\ntags: [learning]\n---\n# Retrieval practice\n\nPulling information out of memory strengthens it more than putting it in again. See [[Spaced repetition]].\n")
-	s.note("4-Zettelkasten/The Feynman technique.md", "---\ntype: permanent\ntags: [learning, writing]\n---\n# The Feynman technique\n\nExplain it to a twelve-year-old; the gaps you find are what to study next. Linked to [[Learning MOC]].\n")
+	moc := s.note(LearningNotes[0][0], LearningNotes[0][1])
+	spaced := s.note(LearningNotes[1][0], LearningNotes[1][1])
+	for _, n := range LearningNotes[2:] {
+		s.note(n[0], n[1])
+	}
 	// A small Zettelkasten in three themes, so the knowledge graph has communities.
 	for _, z := range [][2]string{
 		{"4-Zettelkasten/Literature/Make It Stick.md", "---\ntype: literature\ntags: [learning]\n---\n# Make It Stick\n\nBrown, Roediger, and McDaniel show that retrieval practice, spaced repetition, and interleaving beat rereading. Effortful recall feels slower but memory lasts longer; the forgetting curve flattens with each review.\n"},
@@ -304,19 +334,13 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: c}, s.today)
 			}
 		}
-		// The roadmap's funds: about $3,000 of exams by 2030, and 20 € a month of rewards (EP-95).
-		for _, f := range []struct {
-			name, note, due string
-			target, month   int64
-		}{
-			{"Certification fund", "LFCS, CCNA, CKA, CKS, AWS SAA, GCP ACE, AZ-104, OCP Java, BSCP: 100 € a month.", "2030-02-24", 300000, 10000},
-			{"Reward fund", "Streak rewards for the study block, and one for every milestone: 20 € a month.", "", 24000, 2000},
-		} {
+		// The roadmap's funds, a month in each.
+		for i, f := range Funds {
 			if s.err == nil {
-				pot, s.err = budget.CreatePot(ctx, tx, user, budget.PotFields{Name: ptr(f.name), TargetCents: ptr(f.target), Note: ptr(f.note), TargetDate: ptr(f.due)}, s.today)
+				pot, s.err = budget.CreatePot(ctx, tx, user, f, s.today)
 			}
 			if s.err == nil {
-				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: f.month}, s.today)
+				_, s.err = budget.MovePot(ctx, tx, user, pot.ID, budget.PotMove{AmountCents: []int64{10000, 2000}[i]}, s.today)
 			}
 		}
 	}
@@ -496,13 +520,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 
 	// A skills assessment, as taken before starting the roadmap.
 	if s.err == nil {
-		_, s.err = roadmaps.CreateAssessment(ctx, tx, user, graph.UserActor, roadmaps.AssessmentInput{
-			Profile: roadmaps.Profile{Role: "Data engineer", Experience: "Python, SQL, ELT/ETL, Snowflake, Airflow, dbt Core, Docker, Linux, Bash",
-				Goals: "Top 5% in 26 engineering domains by February 2030.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
-			Interests: []string{"python", "dsa", "maths", "linux-bash", "databases", "data-engineering"},
-			Ratings:   map[string]int{"python": 4, "dsa": 2, "maths": 2, "linux-bash": 3, "databases": 3, "data-engineering": 4},
-			Answers:   map[string]int{},
-		}, now)
+		_, s.err = roadmaps.CreateAssessment(ctx, tx, user, graph.UserActor, assessment(), now)
 	}
 
 	// Everything connects.

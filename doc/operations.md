@@ -179,7 +179,7 @@ With `AXON_DEMO=1` (on for staging and production in the settings files), the la
 - To turn it off, set `AXON_DEMO=` in the settings file and deploy. The demo user stays in the database, unused, until you run `axon demo reset` again or remove it with `DELETE FROM users WHERE demo`.
 
 
-To give a real account what the demo is built on, without its invented history (the library roadmap started as a plan, the universities and schools as resources, Huberman's protocols as habits), run on the server `docker compose exec -T api axon demo starter --user '<display name or id>'`. It skips what the account already has, so it can run again.
+To give a real account what the demo is built on, without its invented history (the library roadmap started as a plan, the first course's literature note and flashcards, the learning notes, the universities and schools as resources, the roadmap's funds without money in them, the skills assessment, Huberman's protocols as habits), run on the server `docker compose exec -T api axon demo starter --user '<display name or id>'`. It skips what the account already has, so it can run again.
 
 ## Media catalogues (EP-17)
 
