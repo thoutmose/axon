@@ -1,12 +1,10 @@
+<p align="center"><img src="doc/assets/banner.svg" alt="Axon — Your self-hosted life, connected. Notes, action, learning, health, projects, and reflection in one humane graph." width="100%"></p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/status-active%20development-blue" alt="Active development">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-purple" alt="AGPL-3.0">
   <img src="https://img.shields.io/badge/API-OpenAPI%203.1-6BA539" alt="OpenAPI 3.1">
 </p>
-
-<h1 align="center">Axon</h1>
-
-<p align="center"><strong>Your self-hosted life, connected.</strong><br>Notes, action, learning, health, projects, and reflection in one humane graph.</p>
 
 <p align="center"><strong>English</strong> · <a href="README.fr.md">Français</a></p>
 
@@ -367,17 +365,18 @@ Where the table offers a choice, [ADR 0002](doc/adr/0002-initial-technology-stac
 
 ## Hardware requirements
 
-| Host | Baseline | Comfortable | Workload rationale |
-|---|---:|---:|---|
-| `srv-staging` | 2 vCPU / 4 GB / 40 GB SSD | 4 / 8 GB / 80 GB | The release before production: same stack, migrations rehearsed. |
-| `srv-prod` | 2 vCPU / 4 GB / 60 GB SSD | 4 / 8 GB / 160 GB | Caddy, API with its workers, web, PostgreSQL + pgvector, Anki bridge, backups. |
-| `srv-services` | 1 vCPU / 1 GB / 20 GB | 2 / 2 GB / 50 GB | Existing Anki sync service; receives encrypted backups. |
-| `srv-secondbrain` | 1 vCPU / 1 GB / 50 GB | 2 / 2 GB / 100 GB | The Markdown vault, kept in step by `notes-sync -watch`. |
+One host runs everything: Caddy, the API with its background workers, the web app, PostgreSQL with pgvector, the Anki bridge, and the backups ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)). `srv-prod` is the example:
 
-Each environment is one host ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)); measured on 2026-10-11, the whole stack uses about 300 MB of memory and serves 700 requests a second ([ADR 0021](doc/adr/0021-single-host-measured.md)). A separate database host is only worth it if a measurement shows the need.
+| | Minimum | `srv-prod` (the example) | Axon uses there (measured 2026-10-17) |
+|---|---:|---:|---|
+| CPU | 2 vCPU | 8 vCPU | Under 1 % at rest; a tech watch fetch or an import uses one core for a few seconds. |
+| Memory | 4 GB | 16 GB | About 120 MB for all six containers at rest; 300 MB under load ([ADR 0021](doc/adr/0021-single-host-measured.md)). |
+| Disk | 40 GB SSD | 120 GB SSD | 1.8 GB of images, a 19 MB database, 1 MB of encrypted backups; notes' pictures and covers add to the database. |
+
+Measured on 2026-10-11, one host serves 700 requests a second. A separate database host is only worth it if a measurement shows the need. The optional speech server (Kokoro, for natural podcast voices) needs about 8 GB of disk and 2 GB of memory more; Whisper, for videos without captions, more still: run them on another machine through `AXON_TTS_URL` and `AXON_WHISPER_URL` if the host is small.
 
 > [!NOTE]
-> Low-memory targets assume bounded workers, connection pooling, pagination, and no local model inference. External-model calls are rate-limited and budgeted.
+> Small hosts work because workers are bounded, connections are pooled, lists are paginated, and models run elsewhere: AI calls go to the provider each person chooses, a local Ollama server included, rate-limited and within a monthly budget.
 
 ## Quick start
 
