@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BudgetCharts from '$lib/BudgetCharts.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { localDate } from '$lib/dates';
 	import { page } from '$app/state';
@@ -292,6 +293,8 @@
 				>{/if}
 		</div>
 	</section>
+
+	<BudgetCharts {month} />
 
 	<div class="layout">
 		<div class="col">

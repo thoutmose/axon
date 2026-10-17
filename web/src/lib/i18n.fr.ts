@@ -3935,5 +3935,6 @@ export const fr: Record<string, string> = {
 	'{n} more in Next actions': '{n} de plus dans Prochaines actions',
 	'{code} is planned for {date}.': '{code} est prévue pour le {date}.',
 	'Plan {code}': 'Prévoir {code}',
-	'Plan it': 'La prévoir'
+	'Plan it': 'La prévoir',
+	'Income and expenses in {year}': 'Revenus et dépenses en {year}'
 };

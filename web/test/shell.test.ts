@@ -843,6 +843,15 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 	await page.getByText('Show the figures as a table').click();
 	await expect(page.getByRole('columnheader', { name: 'Balance' })).toBeVisible();
 	await noSeriousA11yViolations(page);
+	// The Budget page itself opens on them too, the bars for this year (EP-147).
+	await page
+		.getByRole('navigation', { name: 'Finance' })
+		.getByRole('link', { name: 'Overview' })
+		.click();
+	await expect(page.getByRole('region', { name: 'Where it came from' })).toBeVisible();
+	await expect(
+		page.getByRole('heading', { name: `Income and expenses in ${new Date().getFullYear()}` })
+	).toBeVisible();
 });
 
 test('themed spaces keep AA contrast in light and dark, and can be turned off', async () => {
