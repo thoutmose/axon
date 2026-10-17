@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Maths in notes** (EP-150): `$…$` and `$$…$$` LaTeX rendered as MathML by KaTeX, as in Obsidian, and a **Write maths** helper in the editor with structures, symbols, Greek letters, and a live preview.
 - **Video games** (EP-149): a fourth media kind, looked up in Wikipedia with its cover, year, genre, and developer, its progress in hours played, a Game note template, and a place in the vault under `Axon/Media/Games/`.
 - **YouTube in a few words** (EP-148): a video or an episode shows 5 to 10 of its own central sentences and 5 to 10 keywords instead of its subtitles, worked out locally; the words still feed its analysis.
 - **Budget charts on the Budget page** (EP-147): the month's spending and income pies by category and the current year's income and expense bars, January to December, open the Budget page as well as Reports.

@@ -137,3 +137,36 @@ describe('pictures', () => {
 		expect(out).not.toContain('class="tag"');
 	});
 });
+
+describe('maths in notes (EP-150)', () => {
+	const none = () => undefined;
+	it('renders $…$ inline and $$…$$ blocks as MathML, as Obsidian writes them', () => {
+		const html = render(
+			'Euler: $e^{i\\pi} + 1 = 0$, done.\n\n$$\n\\int_0^1 x^2\\,dx = \\frac{1}{3}\n$$\n\n$$a^2+b^2=c^2$$',
+			none
+		);
+		expect(html).toContain('<math');
+		expect(html.match(/<math/g)?.length).toBe(3);
+		expect(html).toContain('display="block"');
+		expect(html).toContain('Euler: ');
+		expect(html).toContain(', done.');
+		expect(html).not.toContain('style=');
+	});
+	it('leaves prices, code, and escaped dollars alone', () => {
+		const html = render('It costs $5 and $10. In code: `$x$`.', none);
+		expect(html).not.toContain('<math');
+		expect(html).toContain('<code>$x$</code>');
+	});
+	it('can neither link nor inject markup', () => {
+		const html = render(
+			'$\\href{javascript:alert(1)}{x}$ and $<img src=x onerror=alert(1)>$',
+			none
+		);
+		// The source shows, escaped, as the formula's annotation; nothing runs.
+		expect(html).not.toMatch(/href=|<a\s|<img|<[^>]*\son\w+=/);
+	});
+	it('shows a formula it cannot read instead of failing', () => {
+		expect(() => render('$\\frac{1}{$', none)).not.toThrow();
+		expect(render('$$\\notacommand{x}$$', none)).toContain('notacommand');
+	});
+});
