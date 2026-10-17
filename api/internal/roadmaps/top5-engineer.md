@@ -1,6 +1,6 @@
 ---
 type: roadmap
-title: Top-5% in 35 engineering domains
+title: Top-5% in 37 engineering domains
 created: 2026-10-03 13:21
 updated: 2026-10-17
 status: active
@@ -13,12 +13,12 @@ target_end: 2031-01-05
 ---
 ## Why / end goal
 
-Top 5% in **all** of these 35 domains: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, Cloud, Cybersecurity, DevSecOps.
+Top 5% in **all** of these 37 domains: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Cybersecurity, DevSecOps.
 
 18 phases of 12 weeks (the last 16), ~4,840 h at 22 h/week,
 2026-10-19 (Monday) → 2031-01-05. Each phase has a project that builds on the
 previous one. Each domain has an external proof: a certification wherever a
-credible exam or certificate exists: 43 of them, at least one for every
+credible exam or certificate exists: 45 of them, at least one for every
 domain, each with the project work that proves it beyond the exam. Rust has no
 individual exam yet, so its proof is a course from a Rust Foundation accredited
 trainer; the skills assessment is retaken at the end of every phase.
@@ -41,33 +41,35 @@ trainer; the skills assessment is retaken at the end of every phase.
 | 12 | Java | 7, 13 | 1Z0-830 | Oracle OCP Java SE 21 (1Z0-830). |
 | 13 | Rust | 5 | RFTT course | A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project. |
 | 14 | Databases | 5, 6, 17 | 1Z0-071 | Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio. |
-| 15 | Database administration | 5, 6 | EDB PG Associate · EDB PG Professional | EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills. |
-| 16 | Data-intensive systems | 6, 7 | UIUC CCC | The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes. |
-| 17 | Kafka and streaming | 7 | CCDAK | Confluent CCDAK. |
-| 18 | Spark and batch processing | 8 | Spark Developer Associate | Databricks Certified Associate Developer for Apache Spark. |
-| 19 | Data engineering | 7, 8, 12, 18 | PDE | Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS. |
-| 20 | DataOps | 8 | dbt AE · Airflow Fundamentals | Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage. |
-| 21 | Data analysis | 9 | PL-300 | Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B). |
-| 22 | Data science | 9, 14 | MITx SDS | The MITx MicroMasters in Statistics and Data Science. |
-| 23 | Machine learning | 14, 15 | MITx 6.86x | MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition. |
-| 24 | Deep learning | 15 | DL Specialization | The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served. |
-| 25 | MLOps | 14 | PMLE | Google Professional Machine Learning Engineer; a model in production with drift monitoring. |
-| 26 | Software engineering | 1, 13 | PSD | IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs. |
-| 27 | System design | 6, 18 | SAP-C02 | AWS Solutions Architect – Professional; 5 public design docs reviewed by peers. |
-| 28 | API design | 13 | MCD API Design | MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc. |
-| 29 | Web development | 13 | FSO | The Full Stack Open certificate (University of Helsinki), all parts. |
-| 30 | Docker and Podman | 10 | EX188 | Red Hat EX188 (containers with Podman); a rootless build pipeline. |
-| 31 | Kubernetes | 10, 11, 16 | CKAD · CKA · CKS | CKAD, CKA, and CKS. |
-| 32 | DevOps | 11, 12 | Terraform Associate · GH-200 | HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level. |
-| 33 | Cloud | 12, 18 | SAA-C03 · ACE · AZ-104 | AWS SAA, Google Cloud ACE, and Azure AZ-104. |
-| 34 | Cybersecurity | 16 | BSCP · OSCP+ | BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs. |
-| 35 | DevSecOps | 11, 16 | CDP | Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy. |
+| 15 | Database architecture | 5, 6, 18 | PCDE | Google Cloud Professional Cloud Database Engineer; architecture decision records for every streamhouse store. |
+| 16 | Database administration | 5, 6 | EDB PG Associate · EDB PG Professional | EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills. |
+| 17 | Data-intensive systems | 6, 7 | UIUC CCC | The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes. |
+| 18 | Kafka and streaming | 7 | CCDAK | Confluent CCDAK. |
+| 19 | Spark and batch processing | 8 | Spark Developer Associate | Databricks Certified Associate Developer for Apache Spark. |
+| 20 | Data engineering | 7, 8, 12, 18 | PDE | Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS. |
+| 21 | DataOps | 8 | dbt AE · Airflow Fundamentals | Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage. |
+| 22 | Data analysis | 9 | PL-300 | Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B). |
+| 23 | Data science | 9, 14 | MITx SDS | The MITx MicroMasters in Statistics and Data Science. |
+| 24 | Machine learning | 14, 15 | MITx 6.86x | MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition. |
+| 25 | Deep learning | 15 | DL Specialization | The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served. |
+| 26 | MLOps | 14 | PMLE | Google Professional Machine Learning Engineer; a model in production with drift monitoring. |
+| 27 | Software engineering | 1, 13 | PSD | IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs. |
+| 28 | System design | 6, 18 | SAP-C02 | AWS Solutions Architect – Professional; 5 public design docs reviewed by peers. |
+| 29 | API design | 13 | MCD API Design | MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc. |
+| 30 | Web development | 13 | FSO | The Full Stack Open certificate (University of Helsinki), all parts. |
+| 31 | Docker and Podman | 10 | EX188 | Red Hat EX188 (containers with Podman); a rootless build pipeline. |
+| 32 | Kubernetes | 10, 11, 16 | CKAD · CKA · CKS | CKAD, CKA, and CKS. |
+| 33 | DevOps | 11, 12 | Terraform Associate · GH-200 | HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level. |
+| 34 | GitOps | 11, 12 | CGOA | CNCF GitOps Certified Associate (CGOA); every platform-gitops environment rebuilt from its repository alone. |
+| 35 | Cloud | 12, 18 | SAA-C03 · ACE · AZ-104 | AWS SAA, Google Cloud ACE, and Azure AZ-104. |
+| 36 | Cybersecurity | 16 | BSCP · OSCP+ | BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs. |
+| 37 | DevSecOps | 11, 16 | CDP | Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy. |
 
 ## Certifications
 
 Taken at the end of their phase; Axon lists them under Grow → Certifications
 with their target date, cost, and renewal. Listed prices add up to about
-$4,893; check the others when you book.
+$5,343; check the others when you book.
 
 | Phase | Code | Certification | Provider | Domain |
 | --- | --- | --- | --- | --- |
@@ -85,6 +87,7 @@ $4,893; check the others when you book.
 | 5 | MITx 18.6501x | [Fundamentals of Statistics](https://micromasters.mit.edu/ds/) | MITx on edX | Statistics |
 | 6 | EDB PG Professional | [EDB PostgreSQL Professional Certification](https://www.enterprisedb.com/training) | EDB | Database administration |
 | 6 | UIUC CCC | [Cloud Computing Concepts, parts 1 and 2](https://www.coursera.org/learn/cloud-computing) | University of Illinois (Coursera) | Data-intensive systems |
+| 6 | PCDE | [Google Cloud Professional Cloud Database Engineer](https://cloud.google.com/learn/certification/cloud-database-engineer) | Google Cloud | Database architecture |
 | 7 | CCDAK | [Confluent Certified Developer for Apache Kafka](https://www.confluent.io/certification/) | Confluent | Kafka and streaming |
 | 8 | Spark Developer Associate | [Databricks Certified Associate Developer for Apache Spark](https://www.databricks.com/learn/certification/apache-spark-developer-associate) | Databricks | Spark and batch processing |
 | 8 | dbt AE | [dbt Analytics Engineering Certification](https://www.getdbt.com/certifications) | dbt Labs | DataOps |
@@ -95,6 +98,7 @@ $4,893; check the others when you book.
 | 10 | CKA | [Certified Kubernetes Administrator](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/) | The Linux Foundation | Kubernetes |
 | 11 | Terraform Associate | [HashiCorp Certified: Terraform Associate](https://developer.hashicorp.com/certifications/infrastructure-automation) | HashiCorp | DevOps |
 | 11 | GH-200 | [GitHub Actions](https://learn.microsoft.com/en-us/credentials/certifications/github-actions/) | GitHub | DevOps |
+| 11 | CGOA | [GitOps Certified Associate](https://www.cncf.io/training/certification/cgoa/) | The Linux Foundation | GitOps |
 | 11 | CDP | [Certified DevSecOps Professional](https://www.practical-devsecops.com/certified-devsecops-professional/) | Practical DevSecOps | DevSecOps |
 | 12 | SAA-C03 | [AWS Certified Solutions Architect – Associate](https://aws.amazon.com/certification/certified-solutions-architect-associate/) | Amazon Web Services | Cloud |
 | 12 | ACE | [Google Cloud Associate Cloud Engineer](https://cloud.google.com/learn/certification/cloud-engineer) | Google Cloud | Cloud |
@@ -267,7 +271,7 @@ blocks on the calendar for the phase each day falls in.
 
 - Milestone: [[p05-databases-rust-stats]] · Project: [[rustkv]]
 - Tracks: M = MIT 18.650 + MITx 18.6501x statistics · C = CMU 15-445 + BusTub · L = Rust Book + Rustlings + Rust for Rustaceans; PostgreSQL 14 Internals
-- Domains: Databases, Database administration, Rust, C and C++, Statistics
+- Domains: Databases, Database architecture, Database administration, Rust, C and C++, Statistics
 - Certifications: RFTT course (Rust course certificate from a Rust Foundation Trusted Training provider), 1Z0-071 (Oracle Database SQL Certified Associate), EDB PG Associate (EDB PostgreSQL Associate Certification), MITx 18.6501x (Fundamentals of Statistics)
 - Project: **rustkv: an LSM key-value store in Rust**. WAL, SSTables, bloom filters, compaction, crash recovery. Plus a PostgreSQL lab: replication, failover, PITR, tuning.
 - Exit check:
@@ -281,14 +285,14 @@ blocks on the calendar for the phase each day falls in.
   - [ ] Rust course certificate from an accredited trainer
   - [ ] Oracle 1Z0-071 passed
   - [ ] EDB PostgreSQL Associate passed
-  - [ ] Skills assessment retaken for Databases, Database administration, Rust, C and C++, Statistics, each up a level
+  - [ ] Skills assessment retaken for Databases, Database architecture, Database administration, Rust, C and C++, Statistics, each up a level
 
 ### Phase 6: Data-intensive & distributed systems, system design, polyglot DBA, Bayesian stats (2027-12-13 → 2028-03-05, 12 wk)
 
 - Milestone: [[p06-data-intensive-system-design]] · Project: [[raft-polystore]]
 - Tracks: M = Think Bayes 2 · C = MIT 6.5840 distributed systems (Go) + DDIA 2e · L = System Design Primer + Database Internals; MySQL/MongoDB/Redis/Cassandra DBA · R = The Architecture of Open Source Applications
-- Domains: Data-intensive systems, System design, Databases, Database administration, Statistics
-- Certifications: EDB PG Professional (EDB PostgreSQL Professional Certification), UIUC CCC (Cloud Computing Concepts, parts 1 and 2)
+- Domains: Data-intensive systems, System design, Databases, Database architecture, Database administration, Statistics
+- Certifications: EDB PG Professional (EDB PostgreSQL Professional Certification), UIUC CCC (Cloud Computing Concepts, parts 1 and 2), PCDE (Google Cloud Professional Cloud Database Engineer)
 - Project: **raft-polystore: Raft and a polyglot DBA lab**. All 6.5840 labs (sharded fault-tolerant KV). Plus a DBA lab for MySQL (replication, backup), MongoDB (replica set), Redis (sentinel/cluster), and Cassandra (3 nodes, repair), each with a runbook and a recorded failure drill.
 - Exit check:
   - [ ] All 6.5840 labs pass repeated test runs (MapReduce, Raft, fault-tolerant KV, sharded KV)
@@ -300,7 +304,9 @@ blocks on the calendar for the phase each day falls in.
   - [ ] 2 design docs reviewed by peers (a URL shortener at 100k QPS, a metrics pipeline with late events)
   - [ ] Cloud Computing Concepts 1 and 2 certificates
   - [ ] EDB PostgreSQL Professional passed
-  - [ ] Skills assessment retaken for Data-intensive systems, System design, Databases, Database administration, Statistics, each up a level
+  - [ ] Architecture decision record for each raft-polystore store (PostgreSQL, MySQL, MongoDB, Redis, Cassandra)
+  - [ ] Google Professional Cloud Database Engineer passed
+  - [ ] Skills assessment retaken for Data-intensive systems, System design, Databases, Database architecture, Database administration, Statistics, each up a level
 
 ### Phase 7: Kafka, stream processing, CDC (2028-03-06 → 2028-05-28, 12 wk)
 
@@ -368,22 +374,24 @@ blocks on the calendar for the phase each day falls in.
 
 - Milestone: [[p11-devops-devsecops]] · Project: [[platform-gitops]]
 - Tracks: M = The DevOps Handbook + Accelerate (DORA) · C = Terraform + Argo CD + OpenTelemetry · L = GitHub Actions + OWASP DevSecOps Guideline + SLSA + Sigstore
-- Domains: DevOps, DevSecOps, Kubernetes
-- Certifications: Terraform Associate (HashiCorp Certified: Terraform Associate), GH-200 (GitHub Actions), CDP (Certified DevSecOps Professional)
+- Domains: DevOps, GitOps, DevSecOps, Kubernetes
+- Certifications: Terraform Associate (HashiCorp Certified: Terraform Associate), GH-200 (GitHub Actions), CGOA (GitOps Certified Associate), CDP (Certified DevSecOps Professional)
 - Project: **platform-gitops: a secure delivery platform**. Terraform-provisioned environments, GitOps with Argo CD, OpenTelemetry traces, metrics, and logs; every image scanned, signed with cosign, with an SBOM and SLSA provenance; Kyverno policies refuse anything unsigned; DORA metrics on a dashboard.
 - Exit check:
   - [ ] Terraform Associate passed
   - [ ] GitHub Actions (GH-200) passed
   - [ ] CDP passed
+  - [ ] CGOA passed
+  - [ ] Every environment rebuilt from its Git repository alone, rollback by revert
   - [ ] An unsigned image is refused by the cluster
   - [ ] DORA elite: on-demand deploys, lead time under 1 hour
-  - [ ] Skills assessment retaken for DevOps, DevSecOps, Kubernetes, each up a level
+  - [ ] Skills assessment retaken for DevOps, GitOps, DevSecOps, Kubernetes, each up a level
 
 ### Phase 12: Cloud: AWS, Google Cloud, Azure (2029-04-30 → 2029-07-22, 12 wk)
 
 - Milestone: [[p12-cloud-aws-gcp-azure]] · Project: [[multicloud-streamhouse]]
 - Tracks: M = cloud cost modelling + Well-Architected frameworks · C = AWS SAA prep; GCP: Google Skills + ACE guide · L = Azure: AZ-104 learning paths; Terraform on 3 clouds
-- Domains: Cloud, DevOps, Data engineering
+- Domains: Cloud, DevOps, GitOps, Data engineering
 - Certifications: SAA-C03 (AWS Certified Solutions Architect – Associate), ACE (Google Cloud Associate Cloud Engineer), AZ-104 (Microsoft Azure Administrator)
 - Project: **multicloud-streamhouse: one codebase, three clouds**. One Terraform codebase deploying streamhouse to GKE (BigQuery/GCS), AKS (ADLS), and EKS, with a cost and an IAM/networking comparison write-up.
 - Exit check:
@@ -392,7 +400,7 @@ blocks on the calendar for the phase each day falls in.
   - [ ] AZ-104 passed
   - [ ] Same pipeline green on 3 clouds (GKE, AKS, EKS)
   - [ ] Cost/IAM/networking comparison published
-  - [ ] Skills assessment retaken for Cloud, DevOps, Data engineering, each up a level
+  - [ ] Skills assessment retaken for Cloud, DevOps, GitOps, Data engineering, each up a level
 
 ### Phase 13: Software engineering, API design, web development, Java (2029-07-23 → 2029-10-14, 12 wk)
 
@@ -481,7 +489,7 @@ blocks on the calendar for the phase each day falls in.
 
 - Milestone: [[p18-mastery-proof]] · Project: [[oss-and-portfolio]]
 - Tracks: M = weakest domain from the monthly tests · C = LeetCode contests + Kaggle · L = AWS SAP + GCP PDE prep; OSS PRs + portfolio write-ups
-- Domains: System design, Cloud, Data engineering, Data structures and algorithms
+- Domains: System design, Database architecture, Cloud, Data engineering, Data structures and algorithms
 - Certifications: SAP-C02 (AWS Certified Solutions Architect – Professional), PDE (Google Cloud Professional Data Engineer)
 - Project: **oss-and-portfolio: proof of every domain**. Weekly LeetCode contests, a Kaggle silver push, at least 3 merged OSS PRs (data, Rust/Python, DataOps), 5 public design docs, and a portfolio site with 17 project write-ups. Retake any failed exam.
 - Exit check:
@@ -492,7 +500,7 @@ blocks on the calendar for the phase each day falls in.
   - [ ] Google Professional Data Engineer passed
   - [ ] Portfolio live with 17 write-ups
   - [ ] Every domain-matrix row proven
-  - [ ] Skills assessment retaken for System design, Cloud, Data engineering, Data structures and algorithms, each up a level
+  - [ ] Skills assessment retaken for System design, Database architecture, Cloud, Data engineering, Data structures and algorithms, each up a level
 
 ## Habits
 
@@ -539,8 +547,8 @@ blocks on the calendar for the phase each day falls in.
   42 resources added
 - 2026-10-03 per-phase Tracks added for the current-phase view (`<leader>zgp`);
   start confirmed Monday 2026-10-05
-- 2026-10-17 v2: 35 domains (Kafka, Spark, data-intensive systems, system
+- 2026-10-17 v2: 37 domains (Kafka, Spark, data-intensive systems, system
   design, data science, deep learning, MLOps, Docker and Podman, Kubernetes,
   DevSecOps each get their own track), 18 phases from Monday
-  2026-10-19, a certification or verifiable proof per domain (43
+  2026-10-19, a certification or verifiable proof per domain (45
   certifications), a harder skills assessment

@@ -3,8 +3,8 @@
 	"roadmaps": [
 		{
 			"id": "top5-engineer",
-			"title": "Top-5% in 35 engineering domains",
-			"description": "Top 5% in all of: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, Cloud, Cybersecurity, DevSecOps.\n\n18 phases, about 4,840 hours at 22 hours a week, from 2026-10-19 (a Monday) to 2031-01-05. Each phase has a project that builds on the previous one, and each domain has a certification (43 in all) and project work that proves it. The skills assessment is retaken at every phase's end. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday theory, Tuesday the core track, Wednesday practice, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
+			"title": "Top-5% in 37 engineering domains",
+			"description": "Top 5% in all of: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Cybersecurity, DevSecOps.\n\n18 phases, about 4,840 hours at 22 hours a week, from 2026-10-19 (a Monday) to 2031-01-05. Each phase has a project that builds on the previous one, and each domain has a certification (45 in all) and project work that proves it. The skills assessment is retaken at every phase's end. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday theory, Tuesday the core track, Wednesday practice, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
 			"skills": [
 				{
 					"title": "Computer science",
@@ -98,6 +98,15 @@
 					"section": "4 · Data",
 					"description": "Phases 5, 6, 17. Proof: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.",
 					"assess": "databases"
+				},
+				{
+					"title": "Database architecture",
+					"section": "4 · Data",
+					"description": "Data modelling, normalisation, indexing and partitioning strategy, polyglot persistence, schema evolution, and choosing the store for each workload (phases 5, 6, 18). Proof: Google Cloud Professional Cloud Database Engineer; architecture decision records for every streamhouse store.",
+					"assess": "database-architecture",
+					"requires": [
+						"Databases"
+					]
 				},
 				{
 					"title": "Database administration",
@@ -247,6 +256,15 @@
 					"assess": "devops",
 					"requires": [
 						"Docker and Podman"
+					]
+				},
+				{
+					"title": "GitOps",
+					"section": "7 · Infrastructure",
+					"description": "Declarative environments reconciled from Git with Argo CD and Flux, progressive delivery, rollback by revert, drift detection (phases 11, 12). Proof: CNCF GitOps Certified Associate (CGOA); every platform-gitops environment rebuilt from its repository alone.",
+					"assess": "gitops",
+					"requires": [
+						"DevOps"
 					]
 				},
 				{
@@ -715,6 +733,24 @@
 					"url": "https://use-the-index-luke.com/",
 					"section": "4 · Data",
 					"skill": "Databases"
+				},
+				{
+					"title": "PostgreSQL: table partitioning",
+					"kind": "site",
+					"by": "The PostgreSQL Global Development Group",
+					"free": true,
+					"url": "https://www.postgresql.org/docs/current/ddl-partitioning.html",
+					"section": "4 · Data",
+					"skill": "Database architecture"
+				},
+				{
+					"title": "SQL Antipatterns, volume 1",
+					"kind": "book",
+					"by": "Bill Karwin",
+					"free": false,
+					"url": "https://pragprog.com/titles/bksqla/sql-antipatterns-volume-1/",
+					"section": "4 · Data",
+					"skill": "Database architecture"
 				},
 				{
 					"title": "PostgreSQL 14 Internals",
@@ -1284,15 +1320,6 @@
 					"skill": "DevOps"
 				},
 				{
-					"title": "Argo CD documentation",
-					"kind": "site",
-					"by": "Argo Project",
-					"free": true,
-					"url": "https://argo-cd.readthedocs.io/",
-					"section": "7 · Infrastructure",
-					"skill": "DevOps"
-				},
-				{
 					"title": "OpenTelemetry documentation",
 					"kind": "site",
 					"by": "OpenTelemetry Authors",
@@ -1309,6 +1336,33 @@
 					"url": "https://dora.dev/",
 					"section": "7 · Infrastructure",
 					"skill": "DevOps"
+				},
+				{
+					"title": "Argo CD documentation",
+					"kind": "site",
+					"by": "Argo Project",
+					"free": true,
+					"url": "https://argo-cd.readthedocs.io/",
+					"section": "7 · Infrastructure",
+					"skill": "GitOps"
+				},
+				{
+					"title": "OpenGitOps principles",
+					"kind": "site",
+					"by": "CNCF OpenGitOps",
+					"free": true,
+					"url": "https://opengitops.dev/",
+					"section": "7 · Infrastructure",
+					"skill": "GitOps"
+				},
+				{
+					"title": "Flux documentation",
+					"kind": "site",
+					"by": "Flux Authors",
+					"free": true,
+					"url": "https://fluxcd.io/flux/",
+					"section": "7 · Infrastructure",
+					"skill": "GitOps"
 				},
 				{
 					"title": "AWS Certified Solutions Architect – Associate exam guide",
@@ -1426,8 +1480,8 @@
 				"budget": "200 EUR/month",
 				"note_path": "Roadmaps/top5-engineer.md",
 				"goal": {
-					"title": "Top-5% in 35 engineering domains",
-					"outcome": "By 2031-01-05, every domain has its proof (the full matrix and the 43 certifications are in the roadmap):\n\n- [ ] Computer science: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.\n- [ ] Data structures and algorithms: The Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.\n- [ ] Maths: The Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.\n- [ ] Probability: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.\n- [ ] Statistics: MITx 18.6501x verified certificate; a Bayesian A/B project.\n- [ ] C and C++: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.\n- [ ] Operating systems: The Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.\n- [ ] Linux: LFCS.\n- [ ] Bash: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.\n- [ ] Network: CCNA.\n- [ ] Python: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.\n- [ ] Java: Oracle OCP Java SE 21 (1Z0-830).\n- [ ] Rust: A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.\n- [ ] Databases: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.\n- [ ] Database administration: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.\n- [ ] Data-intensive systems: The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.\n- [ ] Kafka and streaming: Confluent CCDAK.\n- [ ] Spark and batch processing: Databricks Certified Associate Developer for Apache Spark.\n- [ ] Data engineering: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.\n- [ ] DataOps: Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.\n- [ ] Data analysis: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).\n- [ ] Data science: The MITx MicroMasters in Statistics and Data Science.\n- [ ] Machine learning: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.\n- [ ] Deep learning: The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.\n- [ ] MLOps: Google Professional Machine Learning Engineer; a model in production with drift monitoring.\n- [ ] Software engineering: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.\n- [ ] System design: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.\n- [ ] API design: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.\n- [ ] Web development: The Full Stack Open certificate (University of Helsinki), all parts.\n- [ ] Docker and Podman: Red Hat EX188 (containers with Podman); a rootless build pipeline.\n- [ ] Kubernetes: CKAD, CKA, and CKS.\n- [ ] DevOps: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.\n- [ ] Cloud: AWS SAA, Google Cloud ACE, and Azure AZ-104.\n- [ ] Cybersecurity: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.\n- [ ] DevSecOps: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
+					"title": "Top-5% in 37 engineering domains",
+					"outcome": "By 2031-01-05, every domain has its proof (the full matrix and the 45 certifications are in the roadmap):\n\n- [ ] Computer science: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.\n- [ ] Data structures and algorithms: The Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.\n- [ ] Maths: The Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.\n- [ ] Probability: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.\n- [ ] Statistics: MITx 18.6501x verified certificate; a Bayesian A/B project.\n- [ ] C and C++: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.\n- [ ] Operating systems: The Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.\n- [ ] Linux: LFCS.\n- [ ] Bash: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.\n- [ ] Network: CCNA.\n- [ ] Python: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.\n- [ ] Java: Oracle OCP Java SE 21 (1Z0-830).\n- [ ] Rust: A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.\n- [ ] Databases: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.\n- [ ] Database architecture: Google Cloud Professional Cloud Database Engineer; architecture decision records for every streamhouse store.\n- [ ] Database administration: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.\n- [ ] Data-intensive systems: The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.\n- [ ] Kafka and streaming: Confluent CCDAK.\n- [ ] Spark and batch processing: Databricks Certified Associate Developer for Apache Spark.\n- [ ] Data engineering: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.\n- [ ] DataOps: Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.\n- [ ] Data analysis: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).\n- [ ] Data science: The MITx MicroMasters in Statistics and Data Science.\n- [ ] Machine learning: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.\n- [ ] Deep learning: The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.\n- [ ] MLOps: Google Professional Machine Learning Engineer; a model in production with drift monitoring.\n- [ ] Software engineering: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.\n- [ ] System design: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.\n- [ ] API design: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.\n- [ ] Web development: The Full Stack Open certificate (University of Helsinki), all parts.\n- [ ] Docker and Podman: Red Hat EX188 (containers with Podman); a rootless build pipeline.\n- [ ] Kubernetes: CKAD, CKA, and CKS.\n- [ ] DevOps: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.\n- [ ] GitOps: CNCF GitOps Certified Associate (CGOA); every platform-gitops environment rebuilt from its repository alone.\n- [ ] Cloud: AWS SAA, Google Cloud ACE, and Azure AZ-104.\n- [ ] Cybersecurity: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.\n- [ ] DevSecOps: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
 				},
 				"phases": [
 					{
@@ -1757,6 +1811,7 @@
 						"tracks": "M = MIT 18.650 + MITx 18.6501x statistics · C = CMU 15-445 + BusTub · L = Rust Book + Rustlings + Rust for Rustaceans; PostgreSQL 14 Internals",
 						"domains": [
 							"Databases",
+							"Database architecture",
 							"Database administration",
 							"Rust",
 							"C and C++",
@@ -1799,7 +1854,7 @@
 								"title": "EDB PostgreSQL Associate passed"
 							},
 							{
-								"title": "Skills assessment retaken for Databases, Database administration, Rust, C and C++, Statistics, each up a level"
+								"title": "Skills assessment retaken for Databases, Database architecture, Database administration, Rust, C and C++, Statistics, each up a level"
 							}
 						]
 					},
@@ -1814,6 +1869,7 @@
 							"Data-intensive systems",
 							"System design",
 							"Databases",
+							"Database architecture",
 							"Database administration",
 							"Statistics"
 						],
@@ -1868,7 +1924,20 @@
 								"title": "EDB PostgreSQL Professional passed"
 							},
 							{
-								"title": "Skills assessment retaken for Data-intensive systems, System design, Databases, Database administration, Statistics, each up a level"
+								"title": "Architecture decision record for each raft-polystore store",
+								"parts": [
+									"PostgreSQL",
+									"MySQL",
+									"MongoDB",
+									"Redis",
+									"Cassandra"
+								]
+							},
+							{
+								"title": "Google Professional Cloud Database Engineer passed"
+							},
+							{
+								"title": "Skills assessment retaken for Data-intensive systems, System design, Databases, Database architecture, Database administration, Statistics, each up a level"
 							}
 						]
 					},
@@ -2059,6 +2128,7 @@
 						"tracks": "M = The DevOps Handbook + Accelerate (DORA) · C = Terraform + Argo CD + OpenTelemetry · L = GitHub Actions + OWASP DevSecOps Guideline + SLSA + Sigstore",
 						"domains": [
 							"DevOps",
+							"GitOps",
 							"DevSecOps",
 							"Kubernetes"
 						],
@@ -2078,13 +2148,19 @@
 								"title": "CDP passed"
 							},
 							{
+								"title": "CGOA passed"
+							},
+							{
+								"title": "Every environment rebuilt from its Git repository alone, rollback by revert"
+							},
+							{
 								"title": "An unsigned image is refused by the cluster"
 							},
 							{
 								"title": "DORA elite: on-demand deploys, lead time under 1 hour"
 							},
 							{
-								"title": "Skills assessment retaken for DevOps, DevSecOps, Kubernetes, each up a level"
+								"title": "Skills assessment retaken for DevOps, GitOps, DevSecOps, Kubernetes, each up a level"
 							}
 						]
 					},
@@ -2098,6 +2174,7 @@
 						"domains": [
 							"Cloud",
 							"DevOps",
+							"GitOps",
 							"Data engineering"
 						],
 						"project": {
@@ -2127,7 +2204,7 @@
 								"title": "Cost/IAM/networking comparison published"
 							},
 							{
-								"title": "Skills assessment retaken for Cloud, DevOps, Data engineering, each up a level"
+								"title": "Skills assessment retaken for Cloud, DevOps, GitOps, Data engineering, each up a level"
 							}
 						]
 					},
@@ -2427,6 +2504,7 @@
 						"tracks": "M = weakest domain from the monthly tests · C = LeetCode contests + Kaggle · L = AWS SAP + GCP PDE prep; OSS PRs + portfolio write-ups",
 						"domains": [
 							"System design",
+							"Database architecture",
 							"Cloud",
 							"Data engineering",
 							"Data structures and algorithms"
@@ -2459,7 +2537,7 @@
 								"title": "Every domain-matrix row proven"
 							},
 							{
-								"title": "Skills assessment retaken for System design, Cloud, Data engineering, Data structures and algorithms, each up a level"
+								"title": "Skills assessment retaken for System design, Database architecture, Cloud, Data engineering, Data structures and algorithms, each up a level"
 							}
 						]
 					}
@@ -2623,7 +2701,7 @@
 					{
 						"title": "Certification exams",
 						"url": "https://training.linuxfoundation.org/certification/",
-						"description": "43 certifications over 220 weeks, paid from the certification fund. Listed prices add up to about $4,893; the others (and OSCP+, sold with its course) vary by region and bundle: check them when you book. Watch for Linux Foundation, Red Hat, and Cyber Monday discounts. If the fund runs short, the domain's proof without the exam still counts.\n\n- PCPP1: Certified Professional in Python Programming 1 (phase 1)\n- Stanford Algorithms: Algorithms Specialization (Stanford) (phase 2)\n- Nand2Tetris I: Nand to Tetris, part I (phase 2)\n- LFD103: A Beginner's Guide to Linux Kernel Development (phase 3)\n- MITx 6.431x: Probability: the science of uncertainty and data (phase 4)\n- LFCS: Linux Foundation Certified System Administrator (phase 4) $445\n- CCNA 200-301: Cisco Certified Network Associate (phase 4) $300\n- LPIC-1: LPIC-1: Linux Administrator (exams 101 and 102) (phase 4) $400\n- RFTT course: Rust course certificate from a Rust Foundation Trusted Training provider (phase 5)\n- 1Z0-071: Oracle Database SQL Certified Associate (phase 5) $245\n- EDB PG Associate: EDB PostgreSQL Associate Certification (phase 5) $200\n- MITx 18.6501x: Fundamentals of Statistics (phase 5)\n- EDB PG Professional: EDB PostgreSQL Professional Certification (phase 6) $200\n- UIUC CCC: Cloud Computing Concepts, parts 1 and 2 (phase 6)\n- CCDAK: Confluent Certified Developer for Apache Kafka (phase 7) $150\n- Spark Developer Associate: Databricks Certified Associate Developer for Apache Spark (phase 8) $200\n- dbt AE: dbt Analytics Engineering Certification (phase 8)\n- Airflow Fundamentals: Astronomer Certification for Apache Airflow Fundamentals (phase 8)\n- PL-300: Microsoft Power BI Data Analyst (phase 9)\n- EX188: Red Hat Certified Specialist in Containers (phase 10)\n- CKAD: Certified Kubernetes Application Developer (phase 10) $445\n- CKA: Certified Kubernetes Administrator (phase 10) $445\n- Terraform Associate: HashiCorp Certified: Terraform Associate (phase 11)\n- GH-200: GitHub Actions (phase 11) $99\n- CDP: Certified DevSecOps Professional (phase 11)\n- SAA-C03: AWS Certified Solutions Architect – Associate (phase 12) $150\n- ACE: Google Cloud Associate Cloud Engineer (phase 12) $125\n- AZ-104: Microsoft Azure Administrator (phase 12)\n- 1Z0-830: Oracle Certified Professional: Java SE 21 Developer (phase 13) $245\n- FSO: Full Stack Open certificate (phase 13)\n- PSD: IEEE CS Professional Software Developer (phase 13)\n- MCD API Design: MuleSoft Certified Developer – API Design Associate (phase 13)\n- Imperial MML: Mathematics for Machine Learning Specialization (phase 14)\n- MITx 6.86x: Machine Learning with Python (phase 14)\n- MITx SDS: MicroMasters in Statistics and Data Science (phase 14)\n- PMLE: Google Cloud Professional Machine Learning Engineer (phase 14) $200\n- DL Specialization: Deep Learning Specialization (phase 15)\n- BSCP: Burp Suite Certified Practitioner (phase 16) $99\n- CKS: Certified Kubernetes Security Specialist (phase 16) $445\n- OSCP+: OffSec Certified Professional+ (phase 16)\n- CPP: C++ Certified Professional Programmer (phase 17)\n- SAP-C02: AWS Certified Solutions Architect – Professional (phase 18) $300\n- PDE: Google Cloud Professional Data Engineer (phase 18) $200"
+						"description": "45 certifications over 220 weeks, paid from the certification fund. Listed prices add up to about $5,343; the others (and OSCP+, sold with its course) vary by region and bundle: check them when you book. Watch for Linux Foundation, Red Hat, and Cyber Monday discounts. If the fund runs short, the domain's proof without the exam still counts.\n\n- PCPP1: Certified Professional in Python Programming 1 (phase 1)\n- Stanford Algorithms: Algorithms Specialization (Stanford) (phase 2)\n- Nand2Tetris I: Nand to Tetris, part I (phase 2)\n- LFD103: A Beginner's Guide to Linux Kernel Development (phase 3)\n- MITx 6.431x: Probability: the science of uncertainty and data (phase 4)\n- LFCS: Linux Foundation Certified System Administrator (phase 4) $445\n- CCNA 200-301: Cisco Certified Network Associate (phase 4) $300\n- LPIC-1: LPIC-1: Linux Administrator (exams 101 and 102) (phase 4) $400\n- RFTT course: Rust course certificate from a Rust Foundation Trusted Training provider (phase 5)\n- 1Z0-071: Oracle Database SQL Certified Associate (phase 5) $245\n- EDB PG Associate: EDB PostgreSQL Associate Certification (phase 5) $200\n- MITx 18.6501x: Fundamentals of Statistics (phase 5)\n- EDB PG Professional: EDB PostgreSQL Professional Certification (phase 6) $200\n- UIUC CCC: Cloud Computing Concepts, parts 1 and 2 (phase 6)\n- PCDE: Google Cloud Professional Cloud Database Engineer (phase 6) $200\n- CCDAK: Confluent Certified Developer for Apache Kafka (phase 7) $150\n- Spark Developer Associate: Databricks Certified Associate Developer for Apache Spark (phase 8) $200\n- dbt AE: dbt Analytics Engineering Certification (phase 8)\n- Airflow Fundamentals: Astronomer Certification for Apache Airflow Fundamentals (phase 8)\n- PL-300: Microsoft Power BI Data Analyst (phase 9)\n- EX188: Red Hat Certified Specialist in Containers (phase 10)\n- CKAD: Certified Kubernetes Application Developer (phase 10) $445\n- CKA: Certified Kubernetes Administrator (phase 10) $445\n- Terraform Associate: HashiCorp Certified: Terraform Associate (phase 11)\n- GH-200: GitHub Actions (phase 11) $99\n- CGOA: GitOps Certified Associate (phase 11) $250\n- CDP: Certified DevSecOps Professional (phase 11)\n- SAA-C03: AWS Certified Solutions Architect – Associate (phase 12) $150\n- ACE: Google Cloud Associate Cloud Engineer (phase 12) $125\n- AZ-104: Microsoft Azure Administrator (phase 12)\n- 1Z0-830: Oracle Certified Professional: Java SE 21 Developer (phase 13) $245\n- FSO: Full Stack Open certificate (phase 13)\n- PSD: IEEE CS Professional Software Developer (phase 13)\n- MCD API Design: MuleSoft Certified Developer – API Design Associate (phase 13)\n- Imperial MML: Mathematics for Machine Learning Specialization (phase 14)\n- MITx 6.86x: Machine Learning with Python (phase 14)\n- MITx SDS: MicroMasters in Statistics and Data Science (phase 14)\n- PMLE: Google Cloud Professional Machine Learning Engineer (phase 14) $200\n- DL Specialization: Deep Learning Specialization (phase 15)\n- BSCP: Burp Suite Certified Practitioner (phase 16) $99\n- CKS: Certified Kubernetes Security Specialist (phase 16) $445\n- OSCP+: OffSec Certified Professional+ (phase 16)\n- CPP: C++ Certified Professional Programmer (phase 17)\n- SAP-C02: AWS Certified Solutions Architect – Professional (phase 18) $300\n- PDE: Google Cloud Professional Data Engineer (phase 18) $200"
 					},
 					{
 						"title": "Books platform",
@@ -2791,6 +2869,16 @@
 						"skill": "Data-intensive systems"
 					},
 					{
+						"name": "Google Cloud Professional Cloud Database Engineer",
+						"code": "PCDE",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/cloud-database-engineer",
+						"cost_cents": 20000,
+						"validity_months": 24,
+						"phase": 6,
+						"skill": "Database architecture"
+					},
+					{
 						"name": "Confluent Certified Developer for Apache Kafka",
 						"code": "CCDAK",
 						"provider": "Confluent",
@@ -2882,6 +2970,16 @@
 						"validity_months": 24,
 						"phase": 11,
 						"skill": "DevOps"
+					},
+					{
+						"name": "GitOps Certified Associate",
+						"code": "CGOA",
+						"provider": "The Linux Foundation",
+						"url": "https://www.cncf.io/training/certification/cgoa/",
+						"cost_cents": 25000,
+						"validity_months": 24,
+						"phase": 11,
+						"skill": "GitOps"
 					},
 					{
 						"name": "Certified DevSecOps Professional",
@@ -3053,7 +3151,8 @@
 						"phase": 18,
 						"skill": "Data engineering"
 					}
-				]
+				],
+				"version": 2
 			}
 		}
 	]

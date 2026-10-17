@@ -566,12 +566,12 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 test('take the skills assessment, then start the roadmap at your level', async () => {
 	await page.goto('/roadmaps');
 	// The library is one roadmap, with its plan (EP-95).
-	const library = page.getByRole('region', { name: 'Top-5% in 35 engineering domains' });
+	const library = page.getByRole('region', { name: 'Top-5% in 37 engineering domains' });
 	await expect(library).toContainText('18 phases');
 	await expect(library.getByRole('button', { name: 'Start this roadmap' })).toBeVisible();
 	await page.getByRole('link', { name: 'Take the assessment' }).click();
 	await page.getByLabel('Your role or situation').fill('Data engineer');
-	await page.getByLabel('What do you want to achieve?').fill('Top 5% in 35 engineering domains');
+	await page.getByLabel('What do you want to achieve?').fill('Top 5% in 37 engineering domains');
 	await page.getByLabel('Practice and projects').check();
 	await page.getByRole('button', { name: 'Next' }).click();
 	await page.getByLabel('Python', { exact: true }).check();
@@ -588,7 +588,7 @@ test('take the skills assessment, then start the roadmap at your level', async (
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Start the roadmap at my level' }).click();
 	await expect(
-		page.getByRole('heading', { level: 1, name: 'Top-5% in 35 engineering domains' })
+		page.getByRole('heading', { level: 1, name: 'Top-5% in 37 engineering domains' })
 	).toBeVisible();
 	// It opens on its plan (EP-142); the skills are in the list.
 	await page.getByRole('navigation', { name: 'View' }).getByRole('link', { name: 'List' }).click();
@@ -633,10 +633,10 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(hours).toContainText('0 h of 22 h this week');
 	await hours.getByRole('link', { name: 'Focus on today’s block' }).click();
 	await expect(page).toHaveURL(/\/focus\?target=/);
-	await expect(page.getByText('Top-5% in 35 engineering domains').first()).toBeVisible();
+	await expect(page.getByText('Top-5% in 37 engineering domains').first()).toBeVisible();
 
 	await page.goto('/goals');
-	await expect(page.getByText('Top-5% in 35 engineering domains').first()).toBeVisible();
+	await expect(page.getByText('Top-5% in 37 engineering domains').first()).toBeVisible();
 	await page.goto('/projects');
 	await expect(
 		page.getByRole('link', { name: 'pipekit: mini orchestrator in Python' })
@@ -1072,7 +1072,7 @@ test('savings pots: put money aside for a later purchase', async () => {
 test('certifications: the plan exams, one booked with its countdown', async () => {
 	await page.goto('/learn/certifications');
 	await page.waitForLoadState('networkidle');
-	await expect(page.getByText('0 passed of 43')).toBeVisible();
+	await expect(page.getByText('0 passed of 45')).toBeVisible();
 	await page.getByRole('button', { name: 'Update Certified Kubernetes Administrator' }).click();
 	const card = page.getByRole('listitem').filter({ hasText: 'Certified Kubernetes Administrator' });
 	await card.getByLabel('Status').selectOption('booked');
@@ -2475,7 +2475,7 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await expect(page.getByRole('link', { name: 'Personal website' })).toBeVisible();
 	await page.goto('/roadmaps');
 	await expect(
-		page.getByRole('link', { name: 'Top-5% in 35 engineering domains', exact: true })
+		page.getByRole('link', { name: 'Top-5% in 37 engineering domains', exact: true })
 	).toBeVisible();
 	// The skills radar: one roadmap, so a spoke per section.
 	await expect(page.getByRole('img', { name: /^Hard skills: .*Foundations \d+%/ })).toBeVisible();

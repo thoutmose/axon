@@ -34,6 +34,9 @@ var top5Note string
 
 // Plan is what a roadmap's phases, habits, and first tasks are.
 type Plan struct {
+	// Version changes when the phases do (EP-146): a roadmap started from
+	// an earlier version is outdated, whatever its titles.
+	Version      int    `json:"version"`
 	Start        string `json:"start"`
 	End          string `json:"end"`
 	HoursPerWeek string `json:"hours_per_week"`
@@ -228,7 +231,7 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	p := *d.Plan
 	var exists bool
 	if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM roadmaps r JOIN entities e ON e.id = r.id
-		WHERE e.user_id = $1 AND r.source = 'library' AND e.title = $2)`, userID, d.Title).Scan(&exists); err != nil {
+		WHERE e.user_id = $1 AND r.plan_id = $2 AND r.plan_version = $3)`, userID, d.ID, p.Version).Scan(&exists); err != nil {
 		return Started{}, err
 	}
 	if exists {
@@ -241,7 +244,7 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	if err != nil {
 		return s, err
 	}
-	if _, err := tx.Exec(ctx, `UPDATE roadmaps SET plan_id = $2, plan_start = $3 WHERE id = $1`, rm.ID, d.ID, at(p.Start)); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE roadmaps SET plan_id = $2, plan_start = $3, plan_version = $4 WHERE id = $1`, rm.ID, d.ID, at(p.Start), p.Version); err != nil {
 		return s, err
 	}
 	link := func(from uuid.UUID, rel string, to uuid.UUID) error {

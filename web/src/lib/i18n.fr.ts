@@ -2994,8 +2994,8 @@ export const fr: Record<string, string> = {
 	'Credential link': 'Lien du certificat',
 	'Update {name}': 'Mettre à jour {name}',
 	Update: 'Mettre à jour',
-	'No certifications yet. Add one below, or start the roadmap: it plans its 43 certifications.':
-		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses 43 certifications.',
+	'No certifications yet. Add one below, or start the roadmap: it plans its 45 certifications.':
+		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses 45 certifications.',
 	'Add a certification': 'Ajouter une certification',
 	'Aim to take it by': 'À passer d’ici le',
 	'Valid for (months)': 'Valable (mois)',
@@ -3922,8 +3922,8 @@ export const fr: Record<string, string> = {
 	'See the plan: its milestones, projects, and certifications':
 		'Voir le plan : ses jalons, ses projets et ses certifications',
 	'The Top-5% roadmap, version 2': 'Le parcours Top 5 %, version 2',
-	'35 domains in 18 phases from Monday 19 October 2026, a certification for each (43 in all), and its 18 milestones readable before you start.':
-		'35 domaines en 18 phases à partir du lundi 19 octobre 2026, une certification pour chacun (43 en tout), et ses 18 jalons lisibles avant de commencer.',
+	'37 domains in 18 phases from Monday 19 October 2026, a certification for each (45 in all), and its 18 milestones readable before you start.':
+		'37 domaines en 18 phases à partir du lundi 19 octobre 2026, une certification pour chacun (45 en tout), et ses 18 jalons lisibles avant de commencer.',
 	'The phase, today’s study block, its project, and the next certification, on Today.':
 		'La phase, le créneau d’étude du jour, son projet et la prochaine certification, sur Aujourd’hui.',
 	'Draw in notes': 'Dessiner dans les notes',
@@ -3932,5 +3932,8 @@ export const fr: Record<string, string> = {
 	'Axon only, or a Markdown vault kept in step both ways: said at the top of Notes.':
 		'Axon seulement, ou un coffre Markdown tenu à jour dans les deux sens : indiqué en haut des Notes.',
 	'More about this roadmap': 'En savoir plus sur ce parcours',
-	'{n} more in Next actions': '{n} de plus dans Prochaines actions'
+	'{n} more in Next actions': '{n} de plus dans Prochaines actions',
+	'{code} is planned for {date}.': '{code} est prévue pour le {date}.',
+	'Plan {code}': 'Prévoir {code}',
+	'Plan it': 'La prévoir'
 };

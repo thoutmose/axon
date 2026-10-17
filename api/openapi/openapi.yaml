@@ -10045,7 +10045,7 @@ components:
               total: { type: integer, description: "Skills in the area, skipped ones aside." }
     Roadmap:
       type: object
-      required: [id, title, description, source, attribution, license_url, done, total, created_at, updated_at]
+      required: [id, title, description, source, attribution, license_url, done, total, plan_id, plan_current, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         title: { type: string }
@@ -10055,6 +10055,8 @@ components:
         license_url: { type: [string, "null"] }
         done: { type: integer }
         total: { type: integer, description: Skills not skipped. }
+        plan_id: { type: [string, "null"], description: The library plan it was started from. }
+        plan_current: { type: boolean, description: Started from the plan's current version. }
         skills: { type: array, items: { $ref: "#/components/schemas/Skill" } }
         edges:
           type: array

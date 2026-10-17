@@ -61,7 +61,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		}
 	}
 	// The one roadmap, under way (EP-95).
-	if r := visitor.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(r, []byte("Top-5% in 35 engineering domains")) {
+	if r := visitor.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(r, []byte("Top-5% in 37 engineering domains")) {
 		t.Errorf("roadmaps = %s", r)
 	}
 	// A tech watch on the roadmap's domains, in the morning digest (EP-110).
@@ -241,7 +241,7 @@ func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps", nil), &list)
-	if len(list.Items) != 1 || list.Items[0].Title != "Top-5% in 35 engineering domains" {
+	if len(list.Items) != 1 || list.Items[0].Title != "Top-5% in 37 engineering domains" {
 		t.Fatalf("roadmaps = %+v", list.Items)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/habits", nil), &list)

@@ -194,6 +194,23 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-143 | Notes drawn, in Axon or in the vault | Say where notes live (Axon only, or a vault kept in step) at the top of Notes; draw in a note, saved as an SVG the vault shows too. | MUST | 3 pts | EP-48, EP-51 | Done |
 | EP-144 | YouTube and Podcasts their own pages | Each tab has its own scenery, title, and follow panel with suggestions for the roadmap; line icons on the tabs. | SHOULD | 2 pts | EP-122, EP-129 | Done |
 | EP-145 | Your roadmap today | Today shows the plan's phase, today's study block, its project, and the next certification, with the next steps; sections new in a release show until turned off. | MUST | 2 pts | EP-63, EP-142 | Done |
+| EP-146 | Database architecture and GitOps | Two more domains in the roadmap, its certifications, projects, and assessment. | MUST | 2 pts | EP-141 | Done |
+| EP-147 | Budget charts where they are expected | The month's expense and income pies and the year's bars on the Budget page itself. | MUST | 1 pt | EP-138 | Planned |
+| EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Planned |
+| EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Planned |
+| EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Planned |
+| EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included. | MUST | 2 pts | EP-22 | Planned |
+| EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Planned |
+| EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Planned |
+| EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Planned |
+| EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Planned |
+| EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Planned |
+| EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Planned |
+| EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Planned |
+| EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Planned |
+| EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Planned |
+| EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Planned |
+| EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -230,7 +247,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2329,6 +2346,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** The endpoint before and after a start; settings keep and validate `today.hidden`, and their defaults include the roadmap.
 
+### EP-146 — Database architecture and GitOps
+
+**Goal.** "Add also to the roadmaps, certifications, projects: database architecture, database administration, GitOps, DevOps, DevSecOps" (owner, 2026-10-17). Database administration, DevOps, and DevSecOps were domains already.
+
+- [x] **EP-146/IS-146.01** · 1 pt · MUST — Database architecture (data modelling, indexing and partitioning strategy, polyglot persistence; phases 5, 6, 18) and GitOps (Argo CD, Flux, progressive delivery, rollback by revert; phases 11, 12) are domains 15 and 34 of 37, each with its resources, its assessment domain (database architecture is new: 38 domains, 190 questions), its exit checks (an architecture decision record per raft-polystore store; every environment rebuilt from Git alone), and its certification: Google Cloud Professional Cloud Database Engineer (phase 6) and the CNCF GitOps Certified Associate (phase 11): 45 in all.
+- [x] **EP-146/IS-146.02** · 1 pt · MUST — The plan has a version, and migration `00066` stores the one each roadmap was started from (1 for those started on 5 October 2026, version 1's own date, 2 after). Started, outdated, and the library card's "Open the roadmap" read the plan's id and version, never the title, so the roadmap can be renamed and version 1 (which shares five phase titles with version 2) is still recognised. A certification the plan gained after a start is planned from the plan view with **Plan it**.
+
+**Tests.** Every domain has a certification and an assessment domain (37 and 45); a roadmap set to version 1 is listed as not current and flagged outdated; the assessment serves 190 questions.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2538,6 +2564,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-16 | Owner requests: a cover for every film, series, and book; larger media cards; media note templates; a reading habit that turns a book's pages; budget charts; a clean start for a new install. Planned as EP-134 to EP-139, before EP-132 and EP-133. |
 | 2026-10-16 | Owner requests: a shorter board, one set of icons, no past moods in the journal, a life radar, natural podcast voices (self-hosted Kokoro; famous people's voices declined), and the digest's channels on its page. Planned as EP-128 to EP-133. |
 | 2026-10-17 | Owner request: a far better Top-5% roadmap (a certification for every domain, the assessment, projects, milestones, a start on Monday 19 October 2026), notes drawn in Axon or in the vault, YouTube and Podcasts their own pages, and a site that guides a self-learner. Planned and delivered as EP-141 to EP-145. |
+| 2026-10-17 | Owner requests: database architecture and GitOps in the roadmap, Jarvis, the vault verified, video games, YouTube keywords and summaries, the budget charts, token compaction (rtk itself compresses shell output for coding agents, so Axon compacts its agents' tool results instead), maths in notes, the roadmap's resources as notes, a model per agent, a clean-up, a news digest, a banner, the trailer, monitoring, a full check, then 1.0. Planned as EP-146 to EP-162. |
 | 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
