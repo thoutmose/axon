@@ -196,10 +196,10 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-145 | Your roadmap today | Today shows the plan's phase, today's study block, its project, and the next certification, with the next steps; sections new in a release show until turned off. | MUST | 2 pts | EP-63, EP-142 | Done |
 | EP-146 | Database architecture and GitOps | Two more domains in the roadmap, its certifications, projects, and assessment. | MUST | 2 pts | EP-141 | Done |
 | EP-147 | Budget charts where they are expected | The month's expense and income pies and the year's bars on the Budget page itself. | MUST | 1 pt | EP-138 | Done |
-| EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Planned |
+| EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Done |
 | EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Planned |
 | EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Planned |
-| EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included. | MUST | 2 pts | EP-22 | Planned |
+| EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Planned |
 | EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Planned |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Planned |
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Planned |
@@ -2362,6 +2362,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-147/IS-147.01** · 1 pt · MUST — `BudgetCharts` opens the Budget page under the month's counts: where the month's money went and where it came from, by category, and the bars of income and expenses from January to December of that month's year, with the figures as a table. Reports shows the same for the period it is set to, its bars for the calendar year too.
 
 **Tests.** The e2e budget walk finds the pies and "Income and expenses in" this year on the Budget page, and the donuts on Reports.
+
+### EP-148 — YouTube in a few words
+
+**Goal.** "On YouTube: no need to have all the subtitles; with the most advanced and appropriate NLP analysis provide at least 5 and at most 10 keywords, and a short summary really related to the video, not a generic one, of 5 to 10 lines" (owner, 2026-10-17).
+
+- [x] **EP-148/IS-148.01** · 2 pts · MUST — A video's or an episode's words are kept in `watch_items.transcript` (migration `00067`, which moves transcripts out of the shown text and has those items read again) and feed its analysis, but the item shows **In a few words**: 5 to 10 of the video's own sentences, the most central ones by TextRank over TF-IDF sentence similarity (neighbours within 80 sentences, near-repeats skipped), in the order they were said, and 5 to 10 keywords, TextRank phrases with the fillers and common words of speech ("you know", "actually", "going"…) excluded, topped up with the heaviest terms. Captions without punctuation are cut into runs of about 25 words, without fillers or stutters, each marked as an excerpt. All of it runs locally; prose summaries by an AI model come with EP-151.
+
+**Tests.** The summariser keeps 5 to 10 central sentences in order and leaves the asides; unpunctuated captions; 5 to 10 keywords, five even from a short text; a transcribed video shows its sentences and keywords, not its subtitles.
 
 ### EP-20 — Analytics & insights
 

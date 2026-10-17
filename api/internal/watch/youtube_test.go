@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -111,8 +110,5 @@ func TestVideoTranscript(t *testing.T) {
 	tr, err = VideoTranscript(ctx, "noCaptions1", w)
 	if err != nil || tr.Text != "Bonjour, voici Raft." || tr.Lang != "fr" || tr.Source != "whisper" || whisperGot != "opus-bytes|small" {
 		t.Fatalf("whisper = %+v, %v, sent %q", tr, err, whisperGot)
-	}
-	if !strings.HasPrefix(transcriptMarkdown(tr), "## Transcript\n\n") {
-		t.Fatal("markdown")
 	}
 }

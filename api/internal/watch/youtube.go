@@ -243,11 +243,6 @@ func VideoTranscript(ctx context.Context, id string, w *Whisper) (Transcript, er
 	return w.Transcribe(ctx, audio, name)
 }
 
-// transcriptMarkdown is the transcript as it is appended to the item.
-func transcriptMarkdown(t Transcript) string {
-	return "## Transcript\n\n" + t.Text + "\n"
-}
-
 // Whisper is the operator's speech-to-text server, one that speaks the
 // OpenAI transcription API (faster-whisper-server, speaches, LocalAI…).
 type Whisper struct {

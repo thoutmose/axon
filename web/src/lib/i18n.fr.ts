@@ -3663,7 +3663,6 @@ export const fr: Record<string, string> = {
 	'Scroll or pinch to zoom, drag to move.':
 		'Faites défiler ou pincez pour zoomer, glissez pour déplacer.',
 	Zoom: 'Zoom',
-	'Its words join the analysis and the graph.': 'Ses mots rejoignent l’analyse et le graphe.',
 	'Read the transcript': 'Lire la transcription',
 	'Transcript added.': 'Transcription ajoutée.',
 	'Transcript {source}': 'Transcription {source}',
@@ -3936,5 +3935,8 @@ export const fr: Record<string, string> = {
 	'{code} is planned for {date}.': '{code} est prévue pour le {date}.',
 	'Plan {code}': 'Prévoir {code}',
 	'Plan it': 'La prévoir',
-	'Income and expenses in {year}': 'Revenus et dépenses en {year}'
+	'Income and expenses in {year}': 'Revenus et dépenses en {year}',
+	'Its words become five to ten key sentences and keywords.':
+		'Ses paroles deviennent cinq à dix phrases clés et des mots-clés.',
+	'In a few words': 'En quelques mots'
 };
