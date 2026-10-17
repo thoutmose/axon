@@ -2757,6 +2757,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/me/ai-usage': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Tokens and cost of every AI call, and what compaction saved
+		 * @description From the run records (agents, meal photos, video summaries, Jarvis): this calendar month (UTC), all along, by agent, and the last twelve months. Tool results are compacted before they reach the model (empty fields left out, times to the minute, records as rows); their characters before and after are counted (EP-152).
+		 */
+		get: operations['getAIUsage'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/me/agent-models': {
 		parameters: {
 			query?: never;
@@ -6183,6 +6203,17 @@ export interface components {
 			spent_micros: number;
 			/** @description Videos and episodes are summarised in prose by your model. */
 			video_summaries: boolean;
+		};
+		AITally: {
+			runs: number;
+			input_tokens: number;
+			output_tokens: number;
+			/** @description US dollars × 1,000,000. */
+			cost_micros: number;
+			/** @description Characters of tool results before compaction. */
+			tool_chars_raw: number;
+			/** @description And as sent to the model. */
+			tool_chars_sent: number;
 		};
 		AgentModels: {
 			/** @description The model for all agents, empty for none. */
@@ -13919,6 +13950,37 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	getAIUsage: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The usage. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						this_month: components['schemas']['AITally'];
+						all_time: components['schemas']['AITally'];
+						by_agent: (components['schemas']['AITally'] & {
+							agent: string;
+						})[];
+						by_month: (components['schemas']['AITally'] & {
+							/** @example 2026-10 */
+							month: string;
+						})[];
+					};
+				};
+			};
+			401: components['responses']['Problem'];
 		};
 	};
 	getAgentModels: {

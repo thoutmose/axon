@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AIUsage from '$lib/AIUsage.svelte';
 	import AgentModels from '$lib/AgentModels.svelte';
 	import { install, promptInstall } from '$lib/install.svelte';
 	import { disablePush, enablePush } from '$lib/reminders';
@@ -681,6 +682,7 @@
 			</label>
 			<ProviderSettings onchange={load} />
 			<AgentModels />
+			<AIUsage />
 		</Section>
 
 		<div class="actions"><Button type="submit" busy={saving}>{t('Save preferences')}</Button></div>

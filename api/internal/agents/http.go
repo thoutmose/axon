@@ -31,6 +31,7 @@ func (r *Runner) Routes(m chi.Router) {
 	m.Post("/v1/agent-runs/{id}/continue", r.continueRun)
 	m.Get("/v1/proposals", r.proposals)
 	m.Get("/v1/agent-memories", r.memories)
+	m.Get("/v1/me/ai-usage", r.usage)
 }
 
 // UploadRoutes mounts the meal photo estimate, which needs a larger body

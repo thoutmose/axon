@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **AI tokens, measured and compacted** (EP-152): agents' tool results are compacted before they reach the model (empty fields out, times to the minute, records as rows), and Preferences → AI shows tokens and cost this month, by month, and by agent, with the measured saving.
 - **A model per agent** (EP-151): Preferences → AI → Models chooses one model for all agents or one per agent (Jarvis and video summaries included), priced by model; videos and episodes can be summarised in prose by your model, once each, within the budget.
 - **Maths in notes** (EP-150): `$…$` and `$$…$$` LaTeX rendered as MathML by KaTeX, as in Obsidian, and a **Write maths** helper in the editor with structures, symbols, Greek letters, and a live preview.
 - **Video games** (EP-149): a fourth media kind, looked up in Wikipedia with its cover, year, genre, and developer, its progress in hours played, a Game note template, and a place in the vault under `Axon/Media/Games/`.

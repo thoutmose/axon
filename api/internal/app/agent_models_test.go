@@ -112,3 +112,52 @@ func TestAgentModelsAndVideoSummaries(t *testing.T) {
 		t.Fatalf("runs = %s", runs)
 	}
 }
+
+// AI usage (EP-152): every run's tokens and cost, this month, by month, and
+// by agent, and the tool results' characters before and after compaction.
+func TestAIUsageCountsTokensAndCompaction(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	alice.mustDo(204, "PUT", "/v1/me/consents/ai_agents", []byte(`{"granted":true}`))
+	for _, title := range []string{"Plan the garden", "Book the train", "Call Ana", "Fix the bike"} {
+		alice.mustDo(201, "POST", "/v1/tasks", []byte(`{"title":"`+title+`","status":"next"}`))
+	}
+	fake.load(toolUse("list_tasks", `{"status":"next"}`), finalText("Four tasks."))
+	if r := alice.runAgent("task-manager", "What is next?"); r.Run.Status != "completed" {
+		t.Fatalf("run = %+v", r.Run)
+	}
+	var u struct {
+		ThisMonth struct {
+			Runs, InputTokens, OutputTokens int64
+		} `json:"this_month"`
+		AllTime struct {
+			Runs int64 `json:"runs"`
+		} `json:"all_time"`
+		ByAgent []struct {
+			Agent    string `json:"agent"`
+			Input    int64  `json:"input_tokens"`
+			ToolRaw  int64  `json:"tool_chars_raw"`
+			ToolSent int64  `json:"tool_chars_sent"`
+		} `json:"by_agent"`
+		ByMonth []struct {
+			Month string `json:"month"`
+			Runs  int64  `json:"runs"`
+		} `json:"by_month"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/ai-usage", nil), &u)
+	if u.AllTime.Runs != 1 || len(u.ByAgent) != 1 || u.ByAgent[0].Agent != "task-manager" || u.ByAgent[0].Input != 2500 {
+		t.Fatalf("usage = %+v", u)
+	}
+	if a := u.ByAgent[0]; a.ToolRaw == 0 || a.ToolSent == 0 || a.ToolSent >= a.ToolRaw {
+		t.Fatalf("compaction = %d → %d characters", a.ToolRaw, a.ToolSent)
+	}
+	if len(u.ByMonth) != 12 || u.ByMonth[11].Runs != 1 || u.ByMonth[0].Runs != 0 {
+		t.Fatalf("by month = %+v", u.ByMonth)
+	}
+	// The model was told how compact results read, and got rows.
+	reqs := fake.lastRequests()
+	if !strings.Contains(reqs[0].System[0].Text, `{"cols"`) {
+		t.Error("the system prompt does not explain compact results")
+	}
+}
