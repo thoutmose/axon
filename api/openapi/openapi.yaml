@@ -4357,7 +4357,7 @@ paths:
         - { name: to, in: query, required: true, schema: { type: string, format: date } }
         - name: types
           in: query
-          description: Comma-separated subset of task, goal, milestone, study, certification (default all).
+          description: "Comma-separated subset of task, goal, milestone, study, certification, and habit (default: all but habit). A habit to build is an event on each day it is scheduled, done with that day's check-in."
           schema: { type: string, example: "task,milestone" }
       responses:
         "200":
@@ -9630,8 +9630,8 @@ components:
       required: [date, type, kind, id, title, done]
       properties:
         date: { type: string, format: date }
-        type: { enum: [task, goal, milestone, study, certification] }
-        kind: { enum: [scheduled, due, target, milestone, block, exam, expiry] }
+        type: { enum: [task, goal, milestone, study, certification, habit] }
+        kind: { enum: [scheduled, due, target, milestone, block, exam, expiry, habit] }
         id: { type: string, format: uuid }
         title: { type: string }
         done: { type: boolean }

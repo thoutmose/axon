@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -65,6 +66,9 @@ func (h *Handlers) createFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	name := strings.TrimSpace(body.Name)
 	types, ok := parseTypes(strings.Join(body.Types, ","))
+	for _, t := range types { // what a feed's table allows
+		ok = ok && slices.Contains([]string{"task", "goal", "milestone"}, t)
+	}
 	switch {
 	case name == "" || utf8.RuneCountInString(name) > 100:
 		httpx.Problem(w, http.StatusUnprocessableEntity, "Name the feed in 1 to 100 characters, e.g. the calendar app it is for.")

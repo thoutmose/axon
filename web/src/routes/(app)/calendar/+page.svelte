@@ -23,15 +23,18 @@
 	type Source = Schemas['CalendarSource'];
 	type Event = Own | External;
 	type Feed = Schemas['CalendarFeed'];
-	type Kind = 'task' | 'goal' | 'milestone' | 'study' | 'certification';
+	type Kind = 'task' | 'goal' | 'milestone' | 'study' | 'certification' | 'habit';
 
 	const kinds: { id: Kind; label: string }[] = $derived([
 		{ id: 'task', label: t('Tasks') },
 		{ id: 'goal', label: t('Goal target dates') },
 		{ id: 'milestone', label: t('Milestones') },
 		{ id: 'study', label: t('Study blocks') },
-		{ id: 'certification', label: t('Certifications') }
+		{ id: 'certification', label: t('Certifications') },
+		{ id: 'habit', label: t('Habits') }
 	]);
+	// What an iCal feed can hold.
+	const feedKinds = $derived(kinds.filter((k) => ['task', 'goal', 'milestone'].includes(k.id)));
 	const prefix: Record<string, string> = $derived({
 		scheduled: '',
 		due: t('Due'),
@@ -39,7 +42,8 @@
 		milestone: t('Milestone'),
 		block: t('Study'),
 		exam: t('Exam'),
-		expiry: t('Expiry')
+		expiry: t('Expiry'),
+		habit: t('Habit')
 	});
 
 	const todayISO = localDate(new Date());
@@ -58,7 +62,7 @@
 		return `?${u}`;
 	};
 	const shown = $derived(
-		(page.url.searchParams.get('types') ?? 'task,goal,milestone,study,certification').split(
+		(page.url.searchParams.get('types') ?? 'task,goal,milestone,study,certification,habit').split(
 			','
 		) as Kind[]
 	);
@@ -76,6 +80,10 @@
 	);
 	const events = $derived<Event[] | null>(own ? [...external, ...own] : null);
 	const byDate = $derived(new Map(byDay(events ?? [])));
+	// In the month grid, a day's habits (EP-167) are one line: how many are
+	// done, each named in its tooltip; the agenda lists them one by one.
+	const listed = (d: string) => (byDate.get(d) ?? []).filter((e) => e.type !== 'habit');
+	const habitsOn = (d: string) => (byDate.get(d) ?? []).filter((e) => e.type === 'habit');
 	// Drag and drop (EP-64): a task moves to another day, keeping what the
 	// date means (scheduled or due); undated next actions can be dropped on a
 	// day to schedule them. Each has a date field too, for the keyboard. The
@@ -252,6 +260,7 @@
 		// A roadmap's weekly rhythm (EP-97): the day's block opens the roadmap.
 		if (e.type === 'study' && e.roadmap_id) return `/roadmaps/${e.roadmap_id}`;
 		if (e.type === 'certification') return '/learn/certifications';
+		if (e.type === 'habit') return `/habits/${e.id}`;
 		return null;
 	}
 
@@ -355,9 +364,9 @@
 							ondrop={(e) => drop(e, d)}
 						>
 							<span class="num" aria-label={dayLabel(d)}>{Number(d.slice(8))}</span>
-							{#if byDate.get(d)}
+							{#if listed(d).length}
 								<ul>
-									{#each byDate.get(d) ?? [] as e (e.id + e.kind)}
+									{#each listed(d) as e (e.id + e.kind)}
 										<li
 											class="ev {e.type}"
 											class:done={e.done}
@@ -380,6 +389,18 @@
 									{/each}
 								</ul>
 							{/if}
+							{#if habitsOn(d).length}
+								{@const hs = habitsOn(d)}
+								<a
+									class="ev habit"
+									href="/habits"
+									title={hs.map((h) => (h.done ? '✓ ' : '· ') + h.title).join('\n')}
+									>{t('Habits {done}/{n}', {
+										done: hs.filter((h) => h.done).length,
+										n: hs.length
+									})}</a
+								>
+							{/if}
 						</td>
 					{/each}
 				</tr>
@@ -391,7 +412,9 @@
 			class="ev milestone">{t('Milestone')}</span
 		><span class="ev study">{t('Study block')}</span><span class="ev certification"
 			>{t('Certification')}</span
-		>{#each sources as src (src.id)}<span class="ev external" style:--c={src.color}>{src.name}</span
+		><span class="ev habit">{t('Habit')}</span>{#each sources as src (src.id)}<span
+				class="ev external"
+				style:--c={src.color}>{src.name}</span
 			>{/each}
 	</p>
 {:else if events.length === 0}
@@ -573,7 +596,7 @@
 		/>
 		<fieldset class="filters">
 			<legend>{t('Include')}</legend>
-			{#each kinds as k (k.id)}
+			{#each feedKinds as k (k.id)}
 				<label><input type="checkbox" value={k.id} bind:group={feedTypes} /> {k.label}</label>
 			{/each}
 		</fieldset>
@@ -817,6 +840,11 @@
 	/* A study block is a plan, not a commitment: the task colour, dashed. */
 	.ev.certification {
 		border-left-color: var(--accent);
+	}
+	.ev.habit {
+		display: block;
+		border-left-color: var(--chart-2);
+		font-size: var(--text-xs, 0.75rem);
 	}
 	.ev.study {
 		border-left-style: dashed;

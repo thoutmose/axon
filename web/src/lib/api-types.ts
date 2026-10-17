@@ -6209,9 +6209,9 @@ export interface components {
 			/** Format: date */
 			date: string;
 			/** @enum {unknown} */
-			type: 'task' | 'goal' | 'milestone' | 'study' | 'certification';
+			type: 'task' | 'goal' | 'milestone' | 'study' | 'certification' | 'habit';
 			/** @enum {unknown} */
-			kind: 'scheduled' | 'due' | 'target' | 'milestone' | 'block' | 'exam' | 'expiry';
+			kind: 'scheduled' | 'due' | 'target' | 'milestone' | 'block' | 'exam' | 'expiry' | 'habit';
 			/** Format: uuid */
 			id: string;
 			title: string;
@@ -13596,7 +13596,7 @@ export interface operations {
 			query: {
 				from: string;
 				to: string;
-				/** @description Comma-separated subset of task, goal, milestone, study, certification (default all). */
+				/** @description Comma-separated subset of task, goal, milestone, study, certification, and habit (default: all but habit). A habit to build is an event on each day it is scheduled, done with that day's check-in. */
 				types?: string;
 			};
 			header?: never;
