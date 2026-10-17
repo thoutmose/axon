@@ -202,7 +202,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Done |
 | EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Done |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Done |
-| EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Planned |
+| EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Done |
 | EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Planned |
 | EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Planned |
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Planned |
@@ -2414,6 +2414,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-153/IS-153.03** · fix — Settings came back without their coffee part, and Preferences sent back only some parts, so a save reset coffee, the digest, and the podcast to their defaults. `GET /v1/me/settings` returns the whole document, and Preferences sends it back whole.
 
 **Tests.** Jarvis asks the Media agent, whose proposal (The Martian, being read, 369 pages, with its note) waits in the run; asking itself is refused; the media agent gets no `ask_agent`; approving creates the book and its literature note, linked; another agent asking is denied. Settings survive a read-change-write round trip.
+
+### EP-154 — The roadmap's resources as notes
+
+**Goal.** "To improve the efficiency of the roadmap, search the best websites, only resources related to the active roadmap, and create a resource note for each one, with a link to go to them (in a new tab by default); ensure these notes are related to the roadmap's projects, milestones, goals, certifications" (owner, 2026-10-17).
+
+- [x] **EP-154/IS-154.01** · 2 pts · MUST — Starting a library plan writes one resource note per resource in `3-Resources/<plan>/` (145 for the Top-5% roadmap, 19 added for its thinnest domains: Python, data engineering and science, databases and their architecture, Java, operating systems, probability, statistics, system design, web development, Rust, computer science): front matter (url, kind, author, free or paid, the domain, the phases, the certifications), an **Open it ↗** link (notes open outside links in a new tab), what it is for, and where it serves in the plan: each phase that works on its domain with its dates and its project note, and that domain's certifications in that phase. Each note is connected to the roadmap, its skill, the goal, and those phases' milestones and projects. A note that exists is never overwritten.
+- [x] **EP-154/IS-154.02** · 1 pt · MUST — `POST /v1/roadmaps/{id}/resource-notes` and the plan's **Write its resources as notes** add the notes a roadmap started earlier lacks; **Its resources as notes** opens Notes on Resources.
+
+**Tests.** A start writes the Nand to Tetris note with its link, phase 2, its project colstore-c, and its certification, connected to at least four items; writing again adds none; a roadmap without a plan is refused. Note lookups in tests use the exact path filter.
 
 ### EP-20 — Analytics & insights
 

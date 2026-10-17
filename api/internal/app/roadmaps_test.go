@@ -284,7 +284,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	if r := alice.mustDo(200, "GET", "/v1/resources", nil); !bytes.Contains(r, []byte("42 subjects and testers")) {
 		t.Errorf("resources = %s", r)
 	}
-	if n := alice.mustDo(200, "GET", "/v1/notes?q=Domain+coverage+matrix", nil); !bytes.Contains(n, []byte("Roadmaps/top5-engineer.md")) {
+	if n := alice.mustDo(200, "GET", "/v1/notes?path=Roadmaps/top5-engineer.md", nil); !bytes.Contains(n, []byte("Roadmaps/top5-engineer.md")) {
 		t.Errorf("the roadmap's note is missing: %s", n)
 	}
 	if links := alice.mustDo(200, "GET", "/v1/entities/"+g.ID+"/links?direction=incoming&limit=100", nil); bytes.Count(links, []byte(`"supports"`)) < 20 {
@@ -305,7 +305,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	if len(cal.Items) != 7 || cal.Items[0].Title != "Theory: MIT 6.042J discrete maths · 2–3 h" || cal.Items[0].RoadmapID != rm.ID {
 		t.Fatalf("study blocks = %+v", cal.Items)
 	}
-	if n := alice.mustDo(200, "GET", "/v1/notes?q=mini+Airflow", nil); !bytes.Contains(n, []byte("1-Projects/pipekit/pipekit.md")) {
+	if n := alice.mustDo(200, "GET", "/v1/notes?path=1-Projects/pipekit/pipekit.md", nil); !bytes.Contains(n, []byte("1-Projects/pipekit/pipekit.md")) {
 		t.Errorf("pipekit's project note is missing: %.300s", n)
 	}
 
@@ -317,6 +317,41 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	if len(certs.Items) != 45 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
 		t.Fatalf("certifications = %+v", certs.Items)
 	}
+
+	// Every resource of the plan as a note, connected to where it serves (EP-154).
+	var res struct {
+		Items []struct {
+			ID   string `json:"id"`
+			Path string `json:"path"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/notes?path=3-Resources/top5-engineer/nand-to-tetris.md", nil), &res)
+	var nand string
+	for _, n := range res.Items {
+		if n.Path == "3-Resources/top5-engineer/nand-to-tetris.md" {
+			nand = n.ID
+		}
+	}
+	if nand == "" {
+		t.Fatalf("no resource note for Nand to Tetris: %+v", res.Items)
+	}
+	var note struct {
+		Content string `json:"content"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/notes/"+nand, nil), &note)
+	for _, want := range []string{"url: https://www.nand2tetris.org/", "## Where it serves in the plan", "Phase 2:", "[[colstore-c]]",
+		"Certification: Nand2Tetris I", "[Open it ↗](https://www.nand2tetris.org/)"} {
+		if !strings.Contains(note.Content, want) {
+			t.Errorf("the note lacks %q:\n%s", want, note.Content)
+		}
+	}
+	if l := alice.mustDo(200, "GET", "/v1/entities/"+nand+"/links?limit=50", nil); bytes.Count(l, []byte(`"relates_to"`)) < 4 {
+		t.Errorf("the note's connections = %s", l)
+	}
+	if out := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/resource-notes", nil); string(bytes.TrimSpace(out)) != `{"written":0}` {
+		t.Errorf("writing them again = %s", out)
+	}
+	alice.mustDo(422, "POST", "/v1/roadmaps/"+mine(t, alice)+"/resource-notes", nil)
 
 	// The roadmap's page shows the plan: each phase as its milestone, with
 	// its project's board and the exams at its end (EP-142).

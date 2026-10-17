@@ -617,7 +617,7 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await page.goto('/roadmaps');
 	await page.getByRole('link', { name: 'Open the roadmap' }).click();
 	await page.getByRole('link', { name: 'Skill graph' }).click();
-	const graph = page.getByRole('group', { name: /Skill graph: 41 skills/ });
+	const graph = page.getByRole('group', { name: /Skill graph: 43 skills/ });
 	await graph.getByRole('link', { name: 'Operating systems, todo' }).click();
 	const detail = page.getByRole('complementary', { name: 'Operating systems' });
 	await expect(detail).toContainText('Needs first: C and C++');
@@ -910,7 +910,7 @@ test('explore notes with filters, charts, and a knowledge graph that says why', 
 test('track films by hand, rate them, and see recommendations that say why', async () => {
 	await page.goto('/media');
 	await expect(
-		page.getByRole('heading', { level: 1, name: 'Films, series, and books' })
+		page.getByRole('heading', { level: 1, name: 'Films, series, books, and games' })
 	).toBeVisible();
 	await page.getByLabel('Kind', { exact: true }).selectOption('film');
 	for (const title of ['Arrival', 'Dune: Part One']) {

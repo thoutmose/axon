@@ -40,6 +40,7 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/roadmaps/{id}", h.get)
 	r.Get("/v1/roadmaps/{id}/hours", h.hours)
 	r.Get("/v1/roadmaps/{id}/plan", h.plan)
+	r.Post("/v1/roadmaps/{id}/resource-notes", h.resourceNotes)
 	r.Patch("/v1/roadmaps/{id}", h.update)
 	r.Delete("/v1/roadmaps/{id}", h.delete)
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
@@ -346,6 +347,22 @@ func (h *Handlers) today(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{"plan": out})
+}
+
+func (h *Handlers) resourceNotes(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	rid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	h.tx(w, r, http.StatusOK, func(tx pgx.Tx) (any, error) {
+		n, err := ResourceNotes(r.Context(), tx, who.UserID, graph.UserActor, rid, time.Now())
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = graph.ErrNotFound
+		}
+		return map[string]int{"written": n}, err
+	})
 }
 
 func (h *Handlers) preview(w http.ResponseWriter, r *http.Request) {

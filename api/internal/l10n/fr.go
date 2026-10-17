@@ -360,6 +360,7 @@ var catalog = map[string]string{
 	"Role is checking, savings, cash, credit_card, loan, investment, or other.": "Le rôle est checking, savings, cash, credit_card, loan, investment ou other.",
 	"Say how many grams.": "Indiquez combien de grammes.",
 	"Send the models as {\"models\": {\"*\": \"…\", \"tutor\": \"…\"}}.":                                                                       "Envoyez les modèles ainsi : {\"models\": {\"*\": \"…\", \"tutor\": \"…\"}}.",
+	"Only a started library roadmap has resources to write as notes.":                                                                          "Seul un parcours de la bibliothèque démarré a des ressources à écrire en notes.",
 	"Say whether it is a film, a series, a book, or a game.":                                                                                   "Dites s’il s’agit d’un film, d’une série, d’un livre ou d’un jeu.",
 	"Scope must be \"read\" or \"write\".":                                                                                                     "La portée doit valoir \"read\" ou \"write\".",
 	"Search by meaning is off: choose an embedding service in Preferences.":                                                                    "La recherche par le sens est désactivée : choisissez un service d’embeddings dans Préférences.",

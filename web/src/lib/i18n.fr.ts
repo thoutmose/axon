@@ -4010,5 +4010,10 @@ export const fr: Record<string, string> = {
 	'Ask Jarvis': 'Demander à Jarvis',
 	'Ask Jarvis…': 'Demandez à Jarvis…',
 	'Show Jarvis, the master agent: a ⚡ button at the bottom right opens a side panel where it asks Axon’s agents for you, on this provider or a local model (Ollama).':
-		'Afficher Jarvis, l’agent maître : un bouton ⚡ en bas à droite ouvre un panneau latéral où il demande aux agents d’Axon pour vous, sur ce fournisseur ou un modèle local (Ollama).'
+		'Afficher Jarvis, l’agent maître : un bouton ⚡ en bas à droite ouvre un panneau latéral où il demande aux agents d’Axon pour vous, sur ce fournisseur ou un modèle local (Ollama).',
+	'{n} resource notes written in 3-Resources/.':
+		'{n} notes de ressource écrites dans 3-Resources/.',
+	'Every resource already has its note.': 'Chaque ressource a déjà sa note.',
+	'Its resources as notes': 'Ses ressources en notes',
+	'Write its resources as notes': 'Écrire ses ressources en notes'
 };
