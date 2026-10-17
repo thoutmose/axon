@@ -36,6 +36,28 @@
       "A data type"
      ],
      "answer": 2
+    },
+    {
+     "id": "cs-4",
+     "question": "In 8-bit two's complement, what is 11111110?",
+     "choices": [
+      "−126",
+      "254",
+      "−1",
+      "−2"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "cs-5",
+     "question": "Which problem is undecidable?",
+     "choices": [
+      "Whether an arbitrary program halts on a given input",
+      "Parsing a context-free language",
+      "Whether a graph is bipartite",
+      "Sorting n integers"
+     ],
+     "answer": 0
     }
    ]
   },
@@ -75,6 +97,28 @@
       "O(n)"
      ],
      "answer": 2
+    },
+    {
+     "id": "dsa-4",
+     "question": "What is the running time of Dijkstra's algorithm with a binary heap (V vertices, E edges)?",
+     "choices": [
+      "O(V · E)",
+      "O(E)",
+      "O(V²)",
+      "O((V + E) log V)"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "dsa-5",
+     "question": "Which technique solves 0/1 knapsack in pseudo-polynomial time?",
+     "choices": [
+      "Union-find",
+      "Dynamic programming over the capacity",
+      "Greedy by value per weight",
+      "Binary search"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -114,6 +158,150 @@
       "Applies a linear transformation to it"
      ],
      "answer": 3
+    },
+    {
+     "id": "maths-4",
+     "question": "A 3×3 matrix has determinant 0. What follows?",
+     "choices": [
+      "Its columns are linearly dependent",
+      "It is orthogonal",
+      "It is symmetric",
+      "All its eigenvalues are 0"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "maths-5",
+     "question": "In how many ways can you choose 3 items from 10, order ignored?",
+     "choices": [
+      "30",
+      "120",
+      "720",
+      "1,000"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "probability",
+   "title": "Probability",
+   "questions": [
+    {
+     "id": "probability-1",
+     "question": "A fair die is rolled. What is the probability of an even number?",
+     "choices": [
+      "1/2",
+      "2/3",
+      "1/3",
+      "1/6"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "probability-2",
+     "question": "What is the expected value of a fair six-sided die?",
+     "choices": [
+      "6",
+      "4",
+      "3.5",
+      "3"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "probability-3",
+     "question": "When are events A and B independent?",
+     "choices": [
+      "When P(A | B) = P(B | A)",
+      "When P(A ∩ B) = P(A) · P(B)",
+      "When they cannot both happen",
+      "When P(A ∪ B) = P(A) + P(B)"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "probability-4",
+     "question": "A test is 99% sensitive and 99% specific; 1% of people have the disease. Someone tests positive. How likely are they to have it?",
+     "choices": [
+      "1%",
+      "About 50%",
+      "99%",
+      "About 10%"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "probability-5",
+     "question": "X and Y are independent with variances 4 and 9. What is Var(X − Y)?",
+     "choices": [
+      "36",
+      "−5",
+      "5",
+      "13"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "statistics",
+   "title": "Statistics",
+   "questions": [
+    {
+     "id": "statistics-1",
+     "question": "Which measure describes spread?",
+     "choices": [
+      "Median",
+      "Mode",
+      "Standard deviation",
+      "Mean"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "statistics-2",
+     "question": "What does a 95% confidence interval procedure guarantee?",
+     "choices": [
+      "95% of the data lie in the interval",
+      "This interval contains the true value with probability 95%",
+      "The p-value is 0.05",
+      "Over repeated samples, 95% of such intervals contain the true value"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "statistics-3",
+     "question": "What does quadrupling the sample size do to the standard error of the mean?",
+     "choices": [
+      "Leaves it unchanged",
+      "Doubles it",
+      "Divides it by 4",
+      "Halves it"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "statistics-4",
+     "question": "You run 20 independent tests at α = 0.05 and no effect is real. How many false positives do you expect?",
+     "choices": [
+      "20",
+      "5",
+      "1",
+      "0"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "statistics-5",
+     "question": "What does a Bayesian posterior combine?",
+     "choices": [
+      "The p-value and the effect size",
+      "The prior and the likelihood of the data",
+      "The mean and the median",
+      "The training and test errors"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -153,12 +341,34 @@
       "A page fault"
      ],
      "answer": 2
+    },
+    {
+     "id": "os-4",
+     "question": "A process touches a valid page that is not in RAM. What happens?",
+     "choices": [
+      "A page fault: the kernel loads the page and the instruction runs again",
+      "Every process's TLB is flushed",
+      "The CPU skips the instruction",
+      "The process is killed"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "os-5",
+     "question": "What does a context switch save for the thread it stops?",
+     "choices": [
+      "Its whole address space, to disk",
+      "Its registers and program counter",
+      "Its open sockets",
+      "The file system cache"
+     ],
+     "answer": 1
     }
    ]
   },
   {
    "id": "linux-bash",
-   "title": "Linux and Bash",
+   "title": "Linux administration",
    "questions": [
     {
      "id": "linux-bash-1",
@@ -192,6 +402,89 @@
       "The number of arguments"
      ],
      "answer": 2
+    },
+    {
+     "id": "linux-bash-4",
+     "question": "What does `set -euo pipefail` do in a Bash script?",
+     "choices": [
+      "Stops on errors, on unset variables, and on failures inside pipelines",
+      "Makes variables read-only",
+      "Prints every command",
+      "Runs the script in parallel"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "linux-bash-5",
+     "question": "Which tool shows the system calls a running process makes?",
+     "choices": [
+      "strace",
+      "dmesg",
+      "top",
+      "lsof"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "bash",
+   "title": "Bash and shell scripting",
+   "questions": [
+    {
+     "id": "bash-1",
+     "question": "What does `ls | wc -l` do?",
+     "choices": [
+      "Counts the words in every file",
+      "Counts the lines `ls` prints, one per file",
+      "Lists files with their sizes",
+      "Sorts the files"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "bash-2",
+     "question": "Why write `\"$file\"` with quotes rather than `$file`?",
+     "choices": [
+      "To run it as a command",
+      "To make the variable read-only",
+      "So a name with spaces or wildcards stays one argument",
+      "Quotes are only for style"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "bash-3",
+     "question": "What does `$?` hold right after a command?",
+     "choices": [
+      "The number of arguments",
+      "Its exit status: 0 for success",
+      "The last line it printed",
+      "Its process ID"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "bash-4",
+     "question": "What does `cmd 2>&1 | grep err` send to grep?",
+     "choices": [
+      "Both the command's standard output and its errors",
+      "Only the errors",
+      "Only the standard output",
+      "Nothing: the redirection is invalid"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "bash-5",
+     "question": "Why is `for f in $(ls *.txt)` worse than `for f in *.txt`?",
+     "choices": [
+      "It only works in zsh",
+      "Word splitting breaks names with spaces; the glob gives each file intact",
+      "It is slower but correct",
+      "The glob skips hidden files, which is the bug"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -231,6 +524,28 @@
       "Throws an exception"
      ],
      "answer": 0
+    },
+    {
+     "id": "c-cpp-4",
+     "question": "What does `std::move` do?",
+     "choices": [
+      "Moves the object to another address",
+      "Copies the object",
+      "Casts to an rvalue reference, so a move constructor or assignment can be chosen",
+      "Frees the object"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "c-cpp-5",
+     "question": "Which tool finds use-after-free and buffer overflows at run time?",
+     "choices": [
+      "make",
+      "gprof",
+      "AddressSanitizer",
+      "clang-format"
+     ],
+     "answer": 2
     }
    ]
   },
@@ -270,6 +585,28 @@
       "It is thread-safe"
      ],
      "answer": 0
+    },
+    {
+     "id": "java-4",
+     "question": "What does `volatile` guarantee in Java?",
+     "choices": [
+      "That `count++` is atomic",
+      "That deadlocks cannot happen",
+      "That writes are visible to other threads",
+      "That the field is never collected"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "java-5",
+     "question": "What do virtual threads (Java 21) make cheap?",
+     "choices": [
+      "Garbage collection",
+      "Reflection",
+      "Floating-point maths",
+      "Blocking one thread per request, with millions of threads"
+     ],
+     "answer": 3
     }
    ]
   },
@@ -307,6 +644,28 @@
       "Type checking",
       "A new thread",
       "Faster code"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "python-4",
+     "question": "In the default CPython build, what does the GIL limit?",
+     "choices": [
+      "Running Python bytecode in more than one thread at a time",
+      "Memory use",
+      "Starting processes",
+      "Opening files"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "python-5",
+     "question": "What is wrong with `def add(item, items=[])`?",
+     "choices": [
+      "The default list is created once and shared between calls",
+      "Lists cannot be defaults",
+      "Nothing",
+      "It is a syntax error"
      ],
      "answer": 0
     }
@@ -348,6 +707,28 @@
       "A pointer"
      ],
      "answer": 0
+    },
+    {
+     "id": "rust-4",
+     "question": "What does a lifetime annotation tell the compiler?",
+     "choices": [
+      "How long references are valid relative to each other",
+      "The order of evaluation",
+      "When to free heap memory",
+      "How long a thread runs"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "rust-5",
+     "question": "Which type lets several threads share and mutate a value safely?",
+     "choices": [
+      "Rc<RefCell<T>>",
+      "Arc<Mutex<T>>",
+      "Box<T>",
+      "Cell<T>"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -387,6 +768,28 @@
       "8080"
      ],
      "answer": 0
+    },
+    {
+     "id": "networking-4",
+     "question": "How many usable host addresses does an IPv4 /26 subnet have?",
+     "choices": [
+      "254",
+      "26",
+      "62",
+      "64"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "networking-5",
+     "question": "What does TCP congestion control react to?",
+     "choices": [
+      "The receiver's MTU only",
+      "The DNS TTL",
+      "The size of the page",
+      "Loss or delay that signals a congested path"
+     ],
+     "answer": 3
     }
    ]
   },
@@ -426,12 +829,34 @@
       "The production server"
      ],
      "answer": 1
+    },
+    {
+     "id": "devops-4",
+     "question": "Which are the four DORA delivery metrics?",
+     "choices": [
+      "Uptime, CPU, memory, disk",
+      "Lines of code, story points, velocity, bugs",
+      "Coverage, bugs, reviews, commits",
+      "Deployment frequency, lead time for changes, change failure rate, time to restore"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "devops-5",
+     "question": "What is an error budget?",
+     "choices": [
+      "A quota of failing tests",
+      "The number of bugs allowed",
+      "Money set aside for outages",
+      "The unreliability an SLO allows, spent on releases and risk"
+     ],
+     "answer": 3
     }
    ]
   },
   {
    "id": "containers",
-   "title": "Docker, Podman, and Kubernetes",
+   "title": "Docker and Podman",
    "questions": [
     {
      "id": "containers-1",
@@ -446,14 +871,14 @@
     },
     {
      "id": "containers-2",
-     "question": "What is a Kubernetes Pod?",
+     "question": "What does Podman run without, unlike Docker's usual setup?",
      "choices": [
-      "A user",
-      "A cluster",
-      "A storage volume",
-      "The smallest deployable unit, holding one or more containers"
+      "Linux namespaces",
+      "A container image",
+      "A long-running root daemon",
+      "An OCI runtime"
      ],
-     "answer": 3
+     "answer": 2
     },
     {
      "id": "containers-3",
@@ -465,6 +890,89 @@
       "Each has its own kernel"
      ],
      "answer": 2
+    },
+    {
+     "id": "containers-4",
+     "question": "Why use a multi-stage Dockerfile?",
+     "choices": [
+      "To run several containers",
+      "To share volumes",
+      "Build with full tooling, then copy only the result into a small final image",
+      "To use several base images at run time"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "containers-5",
+     "question": "What do rootless containers protect against?",
+     "choices": [
+      "Vulnerable packages in the image",
+      "Network latency",
+      "Large images",
+      "A container escape giving root on the host"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "id": "kubernetes",
+   "title": "Kubernetes",
+   "questions": [
+    {
+     "id": "kubernetes-1",
+     "question": "What keeps a set number of identical Pods running?",
+     "choices": [
+      "A ConfigMap",
+      "A Deployment, through its ReplicaSet",
+      "A Namespace",
+      "A Service"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "kubernetes-2",
+     "question": "What gives a set of Pods a stable address and load balancing?",
+     "choices": [
+      "A PersistentVolume",
+      "A Secret",
+      "A Service",
+      "A Job"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "kubernetes-3",
+     "question": "Where does Kubernetes keep the cluster's state?",
+     "choices": [
+      "CoreDNS",
+      "The container runtime",
+      "The kubelet",
+      "etcd"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "kubernetes-4",
+     "question": "A Pod is in CrashLoopBackOff. What do you look at first?",
+     "choices": [
+      "The cluster version",
+      "The container's logs, including the previous run (`kubectl logs --previous`)",
+      "The Service's port",
+      "The node's disk"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "kubernetes-5",
+     "question": "A Pod is selected by a NetworkPolicy. What traffic is allowed?",
+     "choices": [
+      "All traffic, encrypted",
+      "Only what the policies list, in the directions they cover",
+      "Nothing at all, ever",
+      "Traffic from the same node only"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -504,6 +1012,28 @@
       "Unauthorized"
      ],
      "answer": 2
+    },
+    {
+     "id": "web-4",
+     "question": "What does CORS control?",
+     "choices": [
+      "Cookie size",
+      "The server's CPU",
+      "Which origins a browser lets read responses from another origin",
+      "Caching"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "web-5",
+     "question": "What does the SameSite cookie attribute mainly protect against?",
+     "choices": [
+      "SQL injection",
+      "Cross-site request forgery",
+      "Clickjacking",
+      "Cross-site scripting"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -543,12 +1073,34 @@
       "Caching images"
      ],
      "answer": 0
+    },
+    {
+     "id": "api-design-4",
+     "question": "How can a client safely retry a POST that creates a payment?",
+     "choices": [
+      "Never retry",
+      "Send an idempotency key the server remembers",
+      "Retry until it succeeds",
+      "Use GET instead"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "api-design-5",
+     "question": "Which change to a JSON API is backward compatible?",
+     "choices": [
+      "Renaming a field",
+      "Changing a field's type",
+      "Adding an optional field to a response",
+      "Removing an endpoint"
+     ],
+     "answer": 2
     }
    ]
   },
   {
    "id": "system-design",
-   "title": "System design and data-intensive applications",
+   "title": "System design",
    "questions": [
     {
      "id": "system-design-1",
@@ -582,12 +1134,156 @@
       "Backups"
      ],
      "answer": 1
+    },
+    {
+     "id": "system-design-4",
+     "question": "A read-heavy service has a few very hot keys. What helps most?",
+     "choices": [
+      "A cache in front with sensible expiry, and read replicas",
+      "More write shards",
+      "Longer timeouts",
+      "Bigger batch jobs"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "system-design-5",
+     "question": "What does consistent hashing reduce when nodes join or leave?",
+     "choices": [
+      "The number of replicas",
+      "Latency",
+      "How many keys move",
+      "Disk use"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "software-engineering",
+   "title": "Software engineering",
+   "questions": [
+    {
+     "id": "software-engineering-1",
+     "question": "What is a unit test?",
+     "choices": [
+      "A load test",
+      "A test of the whole system by users",
+      "A test of one small piece of code on its own",
+      "A code review"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "software-engineering-2",
+     "question": "Why keep changes small in code review?",
+     "choices": [
+      "Reviewers catch more defects and merge sooner",
+      "To raise the commit count",
+      "Small changes need no tests",
+      "Git refuses large commits"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "software-engineering-3",
+     "question": "What does semantic versioning's major number signal?",
+     "choices": [
+      "The build number",
+      "A new feature that keeps compatibility",
+      "A change that breaks compatibility",
+      "A bug fix"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "software-engineering-4",
+     "question": "A module with a small interface hiding a lot of functionality is, in Ousterhout's words:",
+     "choices": [
+      "Coupled",
+      "Leaky",
+      "Shallow",
+      "Deep"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "software-engineering-5",
+     "question": "A test fails one run in fifty with no code change. What is it, and what do you do?",
+     "choices": [
+      "A flaky test: quarantine it and find the hidden dependency (time, order, shared state)",
+      "A slow test: give it a longer timeout",
+      "Normal noise: retry until green",
+      "A compiler bug: upgrade"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "distributed-systems",
+   "title": "Data-intensive and distributed systems",
+   "questions": [
+    {
+     "id": "distributed-systems-1",
+     "question": "What does replication give a database?",
+     "choices": [
+      "Copies on several nodes, for availability and read scaling",
+      "Faster writes on one node",
+      "Smaller indexes",
+      "Encryption at rest"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "distributed-systems-2",
+     "question": "What does partitioning (sharding) do?",
+     "choices": [
+      "Locks tables",
+      "Copies all data to every node",
+      "Compresses rows",
+      "Splits data across nodes by key"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "distributed-systems-3",
+     "question": "A Raft cluster has 5 nodes. How many can fail while it still makes progress?",
+     "choices": [
+      "4",
+      "3",
+      "2",
+      "1"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "distributed-systems-4",
+     "question": "Which anomaly can snapshot isolation still allow?",
+     "choices": [
+      "Write skew",
+      "Non-repeatable reads",
+      "Dirty reads",
+      "Reading uncommitted deletes"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "distributed-systems-5",
+     "question": "Why are wall-clock timestamps unsafe for ordering events across machines?",
+     "choices": [
+      "They cannot be sorted",
+      "They take too much space",
+      "Clocks drift and jump, so a later event can get an earlier time",
+      "Time zones differ"
+     ],
+     "answer": 2
     }
    ]
   },
   {
    "id": "databases",
-   "title": "Database architecture and administration",
+   "title": "Databases and SQL",
    "questions": [
     {
      "id": "databases-1",
@@ -621,6 +1317,89 @@
       "HAVING"
      ],
      "answer": 3
+    },
+    {
+     "id": "databases-4",
+     "question": "What does `EXPLAIN ANALYZE` show in PostgreSQL?",
+     "choices": [
+      "The chosen plan with the actual rows and time of each step",
+      "The locks held",
+      "Index sizes",
+      "The table's DDL"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "databases-5",
+     "question": "Why does PostgreSQL need VACUUM?",
+     "choices": [
+      "To take backups",
+      "MVCC leaves dead row versions that must be reclaimed",
+      "To rebuild indexes",
+      "To compress tables"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "dba",
+   "title": "Database administration",
+   "questions": [
+    {
+     "id": "dba-1",
+     "question": "What is a database backup for?",
+     "choices": [
+      "Restoring the data after a loss or a mistake",
+      "Adding users",
+      "Compressing tables",
+      "Making queries faster"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "dba-2",
+     "question": "In PostgreSQL, what does VACUUM reclaim?",
+     "choices": [
+      "Unused indexes",
+      "Space held by dead row versions left by updates and deletes",
+      "Memory of idle connections",
+      "Old log files on disk"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dba-3",
+     "question": "What does point-in-time recovery need, besides a base backup?",
+     "choices": [
+      "A copy of every index",
+      "The write-ahead log archived since that backup",
+      "A full dump every hour",
+      "A replica in another region"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dba-4",
+     "question": "Asynchronous replication: what can a failover lose?",
+     "choices": [
+      "The schema",
+      "Nothing, ever",
+      "The last transactions the primary committed but had not yet sent",
+      "Every transaction since the last backup"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "dba-5",
+     "question": "Thousands of short-lived connections overload PostgreSQL. What helps most?",
+     "choices": [
+      "A connection pooler such as PgBouncer in transaction mode",
+      "A bigger disk",
+      "Turning off autovacuum",
+      "More shared_buffers"
+     ],
+     "answer": 0
     }
    ]
   },
@@ -660,6 +1439,150 @@
       "A fact table joined to dimension tables"
      ],
      "answer": 3
+    },
+    {
+     "id": "data-engineering-4",
+     "question": "What makes a pipeline step idempotent?",
+     "choices": [
+      "It uses Spark",
+      "It runs fast",
+      "It never fails",
+      "Running it twice gives the same result as running it once"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "data-engineering-5",
+     "question": "What does a type 2 slowly changing dimension keep?",
+     "choices": [
+      "Aggregates only",
+      "Only the latest value",
+      "A new row per change, with validity dates",
+      "No history"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "id": "kafka-streaming",
+   "title": "Kafka and stream processing",
+   "questions": [
+    {
+     "id": "kafka-streaming-1",
+     "question": "What is a Kafka topic split into for parallelism?",
+     "choices": [
+      "Brokers",
+      "Schemas",
+      "Partitions",
+      "Consumers"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "kafka-streaming-2",
+     "question": "What does Kafka guarantee within one partition?",
+     "choices": [
+      "Exactly-once delivery by default",
+      "The order of records",
+      "That records never expire",
+      "A global order across the topic"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "kafka-streaming-3",
+     "question": "In a consumer group, how many consumers read a given partition at a time?",
+     "choices": [
+      "Two, for redundancy",
+      "One",
+      "All of them",
+      "One per broker"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "kafka-streaming-4",
+     "question": "What does an idempotent producer prevent?",
+     "choices": [
+      "Consumer lag",
+      "Schema changes",
+      "Duplicates in a partition caused by producer retries",
+      "Reordering across partitions"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "kafka-streaming-5",
+     "question": "In stream processing, what does a watermark express?",
+     "choices": [
+      "The highest offset read",
+      "That no events older than a given event time are expected any more",
+      "The size of a window",
+      "The retention period"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "spark",
+   "title": "Spark and batch processing",
+   "questions": [
+    {
+     "id": "spark-1",
+     "question": "What happens when you call a transformation such as `filter` in Spark?",
+     "choices": [
+      "It writes to disk",
+      "It runs immediately",
+      "It is recorded in a plan and runs only when an action is called",
+      "It sends all rows to the driver"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "spark-2",
+     "question": "Which operation causes a shuffle?",
+     "choices": [
+      "filter",
+      "map",
+      "groupBy on a key",
+      "select"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "spark-3",
+     "question": "What is a Spark executor?",
+     "choices": [
+      "The cluster manager",
+      "The driver's scheduler",
+      "The query optimiser",
+      "A process on a worker that runs tasks and caches data"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "spark-4",
+     "question": "A join is slow because one key holds most of the rows. What is this called?",
+     "choices": [
+      "Broadcast",
+      "Speculation",
+      "Data skew",
+      "Spill"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "spark-5",
+     "question": "When does a broadcast hash join help?",
+     "choices": [
+      "Only with RDDs",
+      "When one side is small enough to copy to every executor",
+      "When both tables are huge",
+      "When the data are sorted"
+     ],
+     "answer": 1
     }
    ]
   },
@@ -699,6 +1622,28 @@
       "Pie chart"
      ],
      "answer": 1
+    },
+    {
+     "id": "data-analysis-4",
+     "question": "What is Simpson's paradox?",
+     "choices": [
+      "A biased sample",
+      "Outliers in a box plot",
+      "A trend in every group reverses when the groups are combined",
+      "The mean equals the median"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "data-analysis-5",
+     "question": "Which SQL feature computes a running total per customer?",
+     "choices": [
+      "A window function: SUM(…) OVER (PARTITION BY … ORDER BY …)",
+      "DISTINCT",
+      "GROUP BY",
+      "UNION"
+     ],
+     "answer": 0
     }
    ]
   },
@@ -736,6 +1681,28 @@
       "How surprising the data are if the null hypothesis holds",
       "Sample size",
       "The probability the hypothesis is true"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-science-4",
+     "question": "Why is accuracy misleading when 1% of cases are positive?",
+     "choices": [
+      "It is never misleading",
+      "It needs a test set",
+      "It ignores the threshold",
+      "Predicting all negatives already scores 99%"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "data-science-5",
+     "question": "What is data leakage?",
+     "choices": [
+      "Using too little data",
+      "Training with information that will not be there at prediction time",
+      "Losing data on disk",
+      "Encrypting features"
      ],
      "answer": 1
     }
@@ -777,6 +1744,89 @@
       "Transformers"
      ],
      "answer": 3
+    },
+    {
+     "id": "machine-learning-4",
+     "question": "What does L2 regularisation do?",
+     "choices": [
+      "Raises variance",
+      "Penalises large weights, shrinking them",
+      "Removes features",
+      "Adds layers"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "machine-learning-5",
+     "question": "What is k-fold cross-validation for?",
+     "choices": [
+      "Estimating performance with limited data, each fold held out in turn",
+      "Tuning the GPU",
+      "Replacing the test set in production",
+      "Training faster"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "id": "deep-learning",
+   "title": "Deep learning",
+   "questions": [
+    {
+     "id": "deep-learning-1",
+     "question": "What does backpropagation compute?",
+     "choices": [
+      "The number of layers",
+      "The gradients of the loss with respect to the weights",
+      "The learning rate",
+      "The training data"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "deep-learning-2",
+     "question": "Why put a non-linear activation such as ReLU between layers?",
+     "choices": [
+      "To save memory",
+      "To slow training down",
+      "Without it, stacked linear layers collapse into one linear map",
+      "To normalise the inputs"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "deep-learning-3",
+     "question": "What does dropout do during training?",
+     "choices": [
+      "Prunes the network for good",
+      "Removes training examples",
+      "Randomly zeroes activations, to reduce overfitting",
+      "Lowers the learning rate"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "deep-learning-4",
+     "question": "In scaled dot-product attention, why divide by √d_k?",
+     "choices": [
+      "To normalise the values",
+      "To speed up the matrix product",
+      "To make attention causal",
+      "So dot products do not grow with the dimension and saturate the softmax"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "deep-learning-5",
+     "question": "Training loss falls while validation loss rises. What do you try first?",
+     "choices": [
+      "Dropping the validation set",
+      "A higher learning rate",
+      "Regularisation, more data, or stopping early",
+      "Training longer"
+     ],
+     "answer": 2
     }
    ]
   },
@@ -816,6 +1866,28 @@
       "User passwords"
      ],
      "answer": 0
+    },
+    {
+     "id": "mlops-4",
+     "question": "What is training-serving skew?",
+     "choices": [
+      "GPU against CPU",
+      "Features computed differently in training and in production",
+      "The model's size",
+      "Slow serving"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "mlops-5",
+     "question": "How do you roll out a new model safely?",
+     "choices": [
+      "Turn off monitoring",
+      "Replace the old one at once",
+      "Shadow or canary it and compare metrics before full traffic",
+      "Retrain daily"
+     ],
+     "answer": 2
     }
    ]
   },
@@ -855,6 +1927,28 @@
       "Only before a yearly audit"
      ],
      "answer": 0
+    },
+    {
+     "id": "security-4",
+     "question": "What does a CSRF token prove?",
+     "choices": [
+      "The server's identity",
+      "That the request came from a page the site served to this user",
+      "The user's password",
+      "That the input has no SQL"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "security-5",
+     "question": "What does TLS certificate validation protect against?",
+     "choices": [
+      "Denial of service",
+      "SQL injection",
+      "A man-in-the-middle impersonating the server",
+      "Weak passwords"
+     ],
+     "answer": 2
     }
    ]
   },
@@ -894,6 +1988,28 @@
       "Large amounts of files and blobs"
      ],
      "answer": 3
+    },
+    {
+     "id": "cloud-4",
+     "question": "What does least privilege mean for IAM?",
+     "choices": [
+      "No passwords",
+      "One admin role for everything",
+      "Each identity gets only the permissions it needs",
+      "Root keys for automation"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "cloud-5",
+     "question": "Why spread instances across availability zones?",
+     "choices": [
+      "Faster DNS",
+      "Fewer IAM roles",
+      "To survive the loss of one data centre",
+      "Cheaper storage"
+     ],
+     "answer": 2
     }
    ]
   },
@@ -933,6 +2049,28 @@
       "Long sentences"
      ],
      "answer": 1
+    },
+    {
+     "id": "soft-skills-4",
+     "question": "Why write a design doc before building?",
+     "choices": [
+      "To surface alternatives and risks while change is cheap",
+      "To delay the work",
+      "Only for documentation",
+      "To replace code review"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "soft-skills-5",
+     "question": "What is deliberate practice?",
+     "choices": [
+      "Long sessions",
+      "Watching courses",
+      "Repeating what you already do well",
+      "Focused work at the edge of your ability, with feedback"
+     ],
+     "answer": 3
     }
    ]
   },
@@ -972,6 +2110,28 @@
       "Deletes the cluster"
      ],
      "answer": 2
+    },
+    {
+     "id": "gitops-4",
+     "question": "How should secrets be kept in a GitOps repository?",
+     "choices": [
+      "Typed by hand on each node",
+      "In plain YAML",
+      "Encrypted (SOPS, Sealed Secrets) or referenced from a secret manager",
+      "In commit messages"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "gitops-5",
+     "question": "How do you promote a release from staging to production with GitOps?",
+     "choices": [
+      "A pull request that changes the version production declares",
+      "kubectl apply from a laptop",
+      "Restart the agent",
+      "SSH to the node"
+     ],
+     "answer": 0
     }
    ]
   },
@@ -1011,6 +2171,28 @@
       "The table's disk size"
      ],
      "answer": 1
+    },
+    {
+     "id": "dataops-4",
+     "question": "What is a data contract?",
+     "choices": [
+      "A vendor agreement",
+      "A versioned schema and quality rules agreed between producer and consumer",
+      "A SQL view",
+      "A backup policy"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "dataops-5",
+     "question": "What should freshness monitoring alert on?",
+     "choices": [
+      "CPU use",
+      "Every row",
+      "Table size only",
+      "Data arriving later than its agreed SLA"
+     ],
+     "answer": 3
     }
    ]
   },
@@ -1050,6 +2232,28 @@
       "Once per decade"
      ],
      "answer": 1
+    },
+    {
+     "id": "devsecops-4",
+     "question": "What is an SBOM?",
+     "choices": [
+      "A secret store",
+      "A test report",
+      "A list of the components and versions inside an artifact",
+      "A firewall rule"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "devsecops-5",
+     "question": "Where should a rule refusing unsigned images be enforced?",
+     "choices": [
+      "In a wiki",
+      "In the IDE",
+      "In the commit message",
+      "At the cluster's admission control (Kyverno, Gatekeeper)"
+     ],
+     "answer": 3
     }
    ]
   }

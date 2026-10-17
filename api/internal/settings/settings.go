@@ -161,13 +161,16 @@ type Menu struct {
 var MenuPages = []string{"tasks", "projects", "calendar", "focus", "notes", "watch", "areas", "resources", "archive",
 	"learn", "goals", "habits", "health", "media", "budget", "household", "journal", "digest", "review", "decisions", "insights", "agents"}
 
-// Today (EP-63) lists the sections the Today page shows, in order.
+// Today (EP-63) lists the sections the Today page shows, in order, and
+// those the person turned off (EP-145): a section in neither list is new
+// in this release, and Today shows it.
 type Today struct {
 	Sections []string `json:"sections" yaml:"sections"`
+	Hidden   []string `json:"hidden" yaml:"hidden"`
 }
 
 // TodaySections are the sections Today can show.
-var TodaySections = []string{"kpis", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "journal", "water", "caffeine", "overview"}
+var TodaySections = []string{"kpis", "roadmap", "tasks", "milestones", "goals", "notes", "learning", "habits", "calendar", "household", "journal", "water", "caffeine", "overview"}
 
 // Reminders (EP-56): a morning digest and an evening nudge at local times
 // ("08:00"; empty for none), pushed to the devices the person turned them
@@ -227,7 +230,7 @@ func Defaults() Doc {
 		Vault:     Vault{Mirror: true, Folder: "Axon"},
 		Learning:  Learning{NewPerDay: 20, Retention: 0.9, Interleave: true},
 		Reminders: Reminders{Morning: "08:00", Evening: "20:00", WeeklyDay: "sunday", WeeklyAt: "18:00", MonthlyDay: 1, MonthlyAt: "09:00"},
-		Today:     Today{Sections: []string{"kpis", "tasks", "milestones", "goals", "notes", "overview"}},
+		Today:     Today{Sections: []string{"kpis", "roadmap", "tasks", "milestones", "goals", "notes", "overview"}, Hidden: []string{}},
 		Menu:      Menu{Hidden: []string{}},
 		Focus:     Focus{WorkMinutes: 25, ShortBreak: 5, LongBreak: 15, Rounds: 4, Sessions: 1, Sound: "none", Volume: 40, Music: []MusicLink{}},
 		Digest: Digest{Daily: []string{"tasks", "habits", "coming", "learn", "watch"}, Weekly: []string{"open", "week", "reflect", "watch"},
@@ -321,6 +324,12 @@ func (d Doc) Validate() error {
 		}
 		seen[sec] = true
 	}
+	for _, sec := range d.Today.Hidden {
+		if !slices.Contains(TodaySections, sec) || seen[sec] {
+			return FieldError{"today.hidden", "lists sections of " + strings.Join(TodaySections, ", ") + " that are not shown, each at most once"}
+		}
+		seen[sec] = true
+	}
 	seen = map[string]bool{}
 	for _, p := range d.Menu.Hidden {
 		if !slices.Contains(MenuPages, p) || seen[p] {
@@ -406,6 +415,9 @@ func (d *Doc) normalize() {
 	}
 	if d.Menu.Hidden == nil {
 		d.Menu.Hidden = []string{}
+	}
+	if d.Today.Hidden == nil {
+		d.Today.Hidden = []string{}
 	}
 }
 

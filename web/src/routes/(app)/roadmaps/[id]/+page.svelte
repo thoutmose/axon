@@ -1,5 +1,6 @@
 <script lang="ts">
 	import StudyHours from '$lib/StudyHours.svelte';
+	import RoadmapPlan from '$lib/RoadmapPlan.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -15,9 +16,17 @@
 
 	type Roadmap = Schemas['Roadmap'];
 	const id = $derived(page.params.id ?? '');
-	const view = $derived(page.url.searchParams.get('view') ?? 'list');
 	const selectedId = $derived(page.url.searchParams.get('skill'));
 	let roadmap = $state<Roadmap | null>(null);
+	// A roadmap started with a plan opens on it (EP-142); others on the list.
+	const view = $derived(
+		page.url.searchParams.get('view') ?? (roadmap?.source === 'library' ? 'plan' : 'list')
+	);
+	// The description's first paragraph stays in sight, with the assessment's
+	// placement; the rest folds so the plan comes first.
+	// The API writes this note in English; it is matched, not shown, here.
+	const placed = (para: string) => para.startsWith('Placed by your skills assessment');
+	const rest = $derived(roadmap?.description.split('\n\n').slice(1) ?? []);
 	let error = $state('');
 	let form = $state({ title: '', section: '', url: '', kind: 'hard', requires: [] as string[] });
 
@@ -183,8 +192,20 @@
 			<h1>{roadmap.title}</h1>
 			<p class="muted">
 				{t('{done} of {total} skills done', { done: roadmap.done, total: roadmap.total }) +
-					(roadmap.description ? ` · ${roadmap.description}` : '')}
+					(roadmap.description ? ` · ${roadmap.description.split('\n\n')[0]}` : '')}
 			</p>
+			<!-- A long description folds after its first paragraph, so the plan stays in sight. -->
+			{#each rest.filter((x) => placed(x)) as para, i (i)}
+				<p class="muted">{para}</p>
+			{/each}
+			{#if rest.some((x) => !placed(x))}
+				<details class="more">
+					<summary>{t('More about this roadmap')}</summary>
+					{#each rest.filter((x) => !placed(x)) as para, i (i)}
+						<p class="muted">{para}</p>
+					{/each}
+				</details>
+			{/if}
 			{#if roadmap.attribution}
 				<p class="attribution small">
 					{roadmap.attribution}
@@ -205,154 +226,167 @@
 	<StudyHours roadmapId={id} />
 
 	<nav class="tabs" aria-label={t('View')}>
+		{#if roadmap.source === 'library'}<a
+				href="?view=plan"
+				aria-current={view === 'plan' ? 'page' : undefined}>{t('Plan and milestones')}</a
+			>{/if}
 		<a href="?view=list" aria-current={view === 'list' ? 'page' : undefined}>{t('List')}</a>
 		<a href="?view=graph" aria-current={view === 'graph' ? 'page' : undefined}>{t('Skill graph')}</a
 		>
 	</nav>
 
-	<div class="layout" class:with-detail={!!selected}>
-		<div class="main">
-			{#if skills.length === 0}
-				<Status kind="empty" message={t('No skills yet. Add the first one below.')} />
-			{:else if view === 'graph'}
-				<SkillGraph {skills} {edges} selected={selectedId} onselect={(sid) => go({ skill: sid })} />
-			{:else}
-				{#each bySection(skills) as [section, items] (section)}
-					<section class="card glass" aria-labelledby="sec-{section}">
-						<h2 id="sec-{section}">
-							{section}
-							<span class="muted small"
-								>{items.filter((s) => s.status === 'done').length}/{items.length}</span
-							>
-						</h2>
-						<ul class="rows">
-							{#each items as s (s.id)}
-								<li class={s.status}>
-									<div class="grow">
-										<a href="?view=list&skill={s.id}">{s.title}</a>
-										{#if needs(s.id).length}<span class="muted small"
-												>{t('needs {value}', { value: needs(s.id).join(', ') })}</span
-											>{/if}
-									</div>
-									<label class="visually-hidden" for="status-{s.id}"
-										>{t('Status of {title}', { title: s.title })}</label
+	{#if view === 'plan'}
+		<RoadmapPlan roadmapId={id} />
+	{:else}
+		<div class="layout" class:with-detail={!!selected}>
+			<div class="main">
+				{#if skills.length === 0}
+					<Status kind="empty" message={t('No skills yet. Add the first one below.')} />
+				{:else if view === 'graph'}
+					<SkillGraph
+						{skills}
+						{edges}
+						selected={selectedId}
+						onselect={(sid) => go({ skill: sid })}
+					/>
+				{:else}
+					{#each bySection(skills) as [section, items] (section)}
+						<section class="card glass" aria-labelledby="sec-{section}">
+							<h2 id="sec-{section}">
+								{section}
+								<span class="muted small"
+									>{items.filter((s) => s.status === 'done').length}/{items.length}</span
+								>
+							</h2>
+							<ul class="rows">
+								{#each items as s (s.id)}
+									<li class={s.status}>
+										<div class="grow">
+											<a href="?view=list&skill={s.id}">{s.title}</a>
+											{#if needs(s.id).length}<span class="muted small"
+													>{t('needs {value}', { value: needs(s.id).join(', ') })}</span
+												>{/if}
+										</div>
+										<label class="visually-hidden" for="status-{s.id}"
+											>{t('Status of {title}', { title: s.title })}</label
+										>
+										<select
+											id="status-{s.id}"
+											value={s.status}
+											onchange={(e) => setStatus(s, e.currentTarget.value)}
+										>
+											{#each Object.entries(statusNames) as [k, label] (k)}<option value={k}
+													>{label}</option
+												>{/each}
+										</select>
+									</li>
+								{/each}
+							</ul>
+						</section>
+					{/each}
+				{/if}
+
+				<section class="card glass" aria-labelledby="add-skill-title">
+					<h2 id="add-skill-title">{t('Add a skill')}</h2>
+					<form onsubmit={add}>
+						<div class="grid">
+							<TextField
+								id="skill-title"
+								label={t('Skill')}
+								bind:value={form.title}
+								maxlength={500}
+								required
+							/>
+							<TextField
+								id="skill-section"
+								label={t('Section')}
+								list="sections"
+								bind:value={form.section}
+								maxlength={200}
+							/>
+							<TextField
+								id="skill-url"
+								label={t('Link (optional)')}
+								type="url"
+								placeholder="https://…"
+								bind:value={form.url}
+							/>
+							<div class="field">
+								<label for="skill-kind">{t('Kind')}</label>
+								<select id="skill-kind" bind:value={form.kind}>
+									<option value="hard">{t('Hard skill')}</option>
+									<option value="soft">{t('Soft skill')}</option>
+								</select>
+							</div>
+						</div>
+						<datalist id="sections"
+							>{#each sections as s (s)}<option value={s}></option>{/each}</datalist
+						>
+						{#if skills.length}
+							<div class="field">
+								<label for="skill-requires">{t('Needs first (optional)')}</label>
+								<select id="skill-requires" multiple size="4" bind:value={form.requires}>
+									{#each skills as s (s.id)}<option value={s.id}>{s.title}</option>{/each}
+								</select>
+							</div>
+						{/if}
+						<Button type="submit" variant="secondary">{t('Add skill')}</Button>
+					</form>
+				</section>
+			</div>
+
+			{#if selected}
+				<aside class="detail card glass" aria-labelledby="detail-title">
+					<div class="row">
+						<h2 id="detail-title">{selected.title}</h2>
+						<Button variant="ghost" onclick={() => selected && editSkill(selected)}
+							>{t('Edit')}</Button
+						>
+						<Button
+							variant="ghost"
+							onclick={() => go({ skill: null })}
+							aria-label={t('Close details')}>✕</Button
+						>
+					</div>
+					{#if selected.description}<p class="muted">{selected.description}</p>{/if}
+					{#if selected.resources.length}
+						<h3 class="small">{t('Learn it with')}</h3>
+						<ul class="resources">
+							{#each selected.resources as r (r.url + r.title)}
+								<li>
+									<a href={r.url} rel="noopener noreferrer" target="_blank">{r.title} ↗</a>
+									<span class="muted small"
+										>{[t(r.kind), r.by, r.free ? t('free') : '', r.note]
+											.filter(Boolean)
+											.join(' · ')}</span
 									>
-									<select
-										id="status-{s.id}"
-										value={s.status}
-										onchange={(e) => setStatus(s, e.currentTarget.value)}
-									>
-										{#each Object.entries(statusNames) as [k, label] (k)}<option value={k}
-												>{label}</option
-											>{/each}
-									</select>
 								</li>
 							{/each}
 						</ul>
-					</section>
-				{/each}
-			{/if}
-
-			<section class="card glass" aria-labelledby="add-skill-title">
-				<h2 id="add-skill-title">{t('Add a skill')}</h2>
-				<form onsubmit={add}>
-					<div class="grid">
-						<TextField
-							id="skill-title"
-							label={t('Skill')}
-							bind:value={form.title}
-							maxlength={500}
-							required
-						/>
-						<TextField
-							id="skill-section"
-							label={t('Section')}
-							list="sections"
-							bind:value={form.section}
-							maxlength={200}
-						/>
-						<TextField
-							id="skill-url"
-							label={t('Link (optional)')}
-							type="url"
-							placeholder="https://…"
-							bind:value={form.url}
-						/>
-						<div class="field">
-							<label for="skill-kind">{t('Kind')}</label>
-							<select id="skill-kind" bind:value={form.kind}>
-								<option value="hard">{t('Hard skill')}</option>
-								<option value="soft">{t('Soft skill')}</option>
-							</select>
-						</div>
-					</div>
-					<datalist id="sections"
-						>{#each sections as s (s)}<option value={s}></option>{/each}</datalist
-					>
-					{#if skills.length}
-						<div class="field">
-							<label for="skill-requires">{t('Needs first (optional)')}</label>
-							<select id="skill-requires" multiple size="4" bind:value={form.requires}>
-								{#each skills as s (s.id)}<option value={s.id}>{s.title}</option>{/each}
-							</select>
-						</div>
-					{/if}
-					<Button type="submit" variant="secondary">{t('Add skill')}</Button>
-				</form>
-			</section>
-		</div>
-
-		{#if selected}
-			<aside class="detail card glass" aria-labelledby="detail-title">
-				<div class="row">
-					<h2 id="detail-title">{selected.title}</h2>
-					<Button variant="ghost" onclick={() => selected && editSkill(selected)}
-						>{t('Edit')}</Button
-					>
-					<Button
-						variant="ghost"
-						onclick={() => go({ skill: null })}
-						aria-label={t('Close details')}>✕</Button
-					>
-				</div>
-				{#if selected.description}<p class="muted">{selected.description}</p>{/if}
-				{#if selected.resources.length}
-					<h3 class="small">{t('Learn it with')}</h3>
-					<ul class="resources">
-						{#each selected.resources as r (r.url + r.title)}
-							<li>
-								<a href={r.url} rel="noopener noreferrer" target="_blank">{r.title} ↗</a>
-								<span class="muted small"
-									>{[t(r.kind), r.by, r.free ? t('free') : '', r.note]
-										.filter(Boolean)
-										.join(' · ')}</span
-								>
-							</li>
+					{:else if selected.url}<p>
+							<a href={selected.url} rel="noopener noreferrer" target="_blank"
+								>{t('Open the course or resource ↗')}</a
+							>
+						</p>{/if}
+					{#if needs(selected.id).length}<p class="small">
+							{t('Needs first: {value}', { value: needs(selected.id).join(', ') })}
+						</p>{/if}
+					<div class="statuses" role="group" aria-label={t('Status')}>
+						{#each Object.entries(statusNames) as [k, label] (k)}
+							<Button
+								variant={selected.status === k ? 'primary' : 'secondary'}
+								onclick={() => selected && setStatus(selected, k)}>{label}</Button
+							>
 						{/each}
-					</ul>
-				{:else if selected.url}<p>
-						<a href={selected.url} rel="noopener noreferrer" target="_blank"
-							>{t('Open the course or resource ↗')}</a
-						>
-					</p>{/if}
-				{#if needs(selected.id).length}<p class="small">
-						{t('Needs first: {value}', { value: needs(selected.id).join(', ') })}
-					</p>{/if}
-				<div class="statuses" role="group" aria-label={t('Status')}>
-					{#each Object.entries(statusNames) as [k, label] (k)}
-						<Button
-							variant={selected.status === k ? 'primary' : 'secondary'}
-							onclick={() => selected && setStatus(selected, k)}>{label}</Button
-						>
-					{/each}
-				</div>
-				<Connections id={selected.id} type="skill" />
-				<Button variant="danger" onclick={() => selected && removeSkill(selected)}
-					>{t('Delete skill')}</Button
-				>
-			</aside>
-		{/if}
-	</div>
+					</div>
+					<Connections id={selected.id} type="skill" />
+					<Button variant="danger" onclick={() => selected && removeSkill(selected)}
+						>{t('Delete skill')}</Button
+					>
+				</aside>
+			{/if}
+		</div>
+	{/if}
 
 	<Connections id={roadmap.id} type="roadmap" />
 {/if}
@@ -435,6 +469,11 @@
 </Dialog>
 
 <style>
+	.more summary {
+		cursor: pointer;
+		color: var(--muted);
+		font-size: var(--text-sm);
+	}
 	.crumbs {
 		margin: 0 0 var(--space-2);
 	}

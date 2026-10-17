@@ -10,6 +10,7 @@
 	import { pageAgents } from '$lib/pageAgents';
 	import { t } from '$lib/i18n.svelte';
 	import Overview from '$lib/Overview.svelte';
+	import RoadmapToday from '$lib/RoadmapToday.svelte';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import { capturing } from '$lib/capture.svelte';
@@ -36,6 +37,7 @@
 	// the top and progress at the bottom.
 	const labels: Record<string, string> = $derived({
 		kpis: t('Counts (overdue, today, inbox)'),
+		roadmap: t('Your roadmap today'),
 		tasks: t("Today's tasks"),
 		milestones: t('Coming up (milestones)'),
 		goals: t('Active goals'),
@@ -50,8 +52,20 @@
 		overview: t('Your progress')
 	});
 	const all = $derived(Object.keys(labels));
-	let sections = $state<string[]>(['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']);
-	const cards = $derived(sections.filter((x) => x !== 'kpis' && x !== 'overview'));
+	let sections = $state<string[]>([
+		'kpis',
+		'roadmap',
+		'tasks',
+		'milestones',
+		'goals',
+		'notes',
+		'overview'
+	]);
+	const cards = $derived(
+		sections.filter((x) => x !== 'kpis' && x !== 'overview' && x !== 'roadmap')
+	);
+	// Sections new in a release show until they are turned off (EP-145).
+	const fresh = ['roadmap'];
 	let customising = $state(false);
 	let draft = $state<{ id: string; on: boolean }[]>([]);
 	type Plan = Schemas['LearningPlan'];
@@ -66,10 +80,17 @@
 
 	// A new account is first asked what it wants Axon for (EP-94).
 	let chosen = $state(true);
-	api<{ today?: { sections: string[] | null }; menu?: { chosen: boolean } }>('/v1/me/settings')
+	api<{ today?: { sections: string[] | null; hidden?: string[] }; menu?: { chosen: boolean } }>(
+		'/v1/me/settings'
+	)
 		.then((s) => {
 			// Without a list (an older document), the defaults stay.
-			if (Array.isArray(s.today?.sections)) sections = s.today.sections;
+			if (Array.isArray(s.today?.sections)) {
+				const hidden = s.today.hidden ?? [];
+				const list = s.today.sections;
+				const added = fresh.filter((x) => !list.includes(x) && !hidden.includes(x));
+				sections = list[0] === 'kpis' ? ['kpis', ...added, ...list.slice(1)] : [...added, ...list];
+			}
 			chosen = s.menu?.chosen ?? true;
 		})
 		.catch(() => {});
@@ -125,9 +146,10 @@
 			const doc = await api<Record<string, unknown>>('/v1/me/settings');
 			delete doc.ai;
 			const chosen = draft.filter((x) => x.on).map((x) => x.id);
+			const hidden = draft.filter((x) => !x.on).map((x) => x.id);
 			await api('/v1/me/settings', {
 				method: 'PUT',
-				body: { ...doc, today: { sections: chosen } }
+				body: { ...doc, today: { sections: chosen, hidden } }
 			});
 			sections = chosen;
 			customising = false;
@@ -303,6 +325,8 @@
 				{/each}
 			</ul>
 		{/if}
+
+		{#if sections.includes('roadmap')}<RoadmapToday today={d.today} />{/if}
 
 		<div class="columns">
 			{#each cards as id (id)}

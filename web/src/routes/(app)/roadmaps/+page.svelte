@@ -6,6 +6,7 @@
 	import Button from '$lib/ui/Button.svelte';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Radar from '$lib/charts/Radar.svelte';
+	import RoadmapPlan from '$lib/RoadmapPlan.svelte';
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 	import { t } from '$lib/i18n.svelte';
@@ -36,6 +37,8 @@
 	let error = $state('');
 	let title = $state('');
 	let importing = $state(false);
+	// The plan's milestones, readable before it is started (EP-142).
+	let planOpen = $state<Record<string, boolean>>({});
 	// The library is one roadmap with its plan (EP-95); once started, it opens.
 	const started = (s: Source) =>
 		roadmaps?.find((r) => r.source === 'library' && r.title === s.title);
@@ -192,6 +195,15 @@
 					>
 				{/if}
 			</div>
+			{#if !started(s)}
+				<details
+					class="plan"
+					ontoggle={(e) => (planOpen[s.id] = (e.currentTarget as HTMLDetailsElement).open)}
+				>
+					<summary>{t('See the plan: its milestones, projects, and certifications')}</summary>
+					{#if planOpen[s.id]}<RoadmapPlan source={s.id} />{/if}
+				</details>
+			{/if}
 			<p class="small attribution">{s.attribution}</p>
 		</section>
 	{/each}
@@ -268,6 +280,14 @@
 		gap: var(--space-6);
 	}
 	.skills h2,
+	.plan {
+		margin: var(--space-3) 0;
+	}
+	.plan > summary {
+		cursor: pointer;
+		font-weight: 600;
+		margin-bottom: var(--space-3);
+	}
 	.library h2 {
 		font-size: var(--text-lg);
 	}

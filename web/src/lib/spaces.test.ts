@@ -21,6 +21,10 @@ describe('spaceFor', () => {
 		expect(spaceFor('/watch/podcast')).toBe('studio');
 		expect(spaceFor('/digest')).toBe('dispatch');
 		expect(spaceFor('/watchlist')).toBeNull();
+		// YouTube and Podcasts are places of their own (EP-144).
+		expect(spaceFor('/watch', 'video')).toBe('screen');
+		expect(spaceFor('/watch', 'podcast')).toBe('radio');
+		expect(spaceFor('/watch', 'article')).toBe('signal');
 	});
 	it('leaves pages with their own scenery alone', () => {
 		expect(spaceFor('/today')).toBeNull();

@@ -17,6 +17,8 @@ export type Space =
 	| 'signal'
 	| 'constellation'
 	| 'studio'
+	| 'screen'
+	| 'radio'
 	| 'dispatch';
 
 const byPath: [string, Space][] = [
@@ -53,8 +55,13 @@ const byPath: [string, Space][] = [
 	['/digest', 'dispatch']
 ];
 
-/** The space for a page, or null for pages with their own scenery or none. */
-export function spaceFor(path: string): Space | null {
+/**
+ * The space for a page, or null for pages with their own scenery or none.
+ * The tech watch's YouTube and Podcasts tabs have their own (EP-144).
+ */
+export function spaceFor(path: string, kind?: string | null): Space | null {
+	if (path === '/watch' && kind === 'video') return 'screen';
+	if (path === '/watch' && kind === 'podcast') return 'radio';
 	for (const [prefix, space] of byPath) {
 		if (path === prefix || path.startsWith(prefix + '/')) return space;
 	}
@@ -150,6 +157,16 @@ export const spaceInfo: Record<Space, { title: string; about: string }> = {
 		title: 'A radio studio',
 		about:
 			'A ribbon microphone and the waveform of a voice, after the broadcast studios of the 1940s: the news, read to you.'
+	},
+	screen: {
+		title: 'A cinema screen',
+		about:
+			'A projector’s beam crossing a dark room to the screen, and a strip of film, after the Lumière brothers’ Cinématographe (1895): videos to learn from.'
+	},
+	radio: {
+		title: 'A wireless set',
+		about:
+			'A valve radio with its arched cabinet and tuning dial, sending waves across the room, after the wireless sets of the 1930s: shows to listen to on the way.'
 	},
 	dispatch: {
 		title: 'Paper planes at sunrise',

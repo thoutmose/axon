@@ -1,12 +1,13 @@
 package roadmaps
 
 import (
+	"slices"
 	"strings"
 	"testing"
 	"time"
 )
 
-// The library is one roadmap, the Top-5% plan (EP-95): its skills are
+// The library is one roadmap, the Top-5% plan (EP-95, EP-141): its skills are
 // competencies with resources, prerequisites point to earlier skills, and
 // every hard skill is placed by a domain of the skills assessment.
 func TestTheLibraryIsTheTop5Roadmap(t *testing.T) {
@@ -43,8 +44,8 @@ func TestTheLibraryIsTheTop5Roadmap(t *testing.T) {
 			}
 		}
 	}
-	if hard != 26 {
-		t.Errorf("%d hard skills, want the 26 domains", hard)
+	if hard != 35 {
+		t.Errorf("%d hard skills, want the 35 domains", hard)
 	}
 	for skill := range resources {
 		if !seen[skill] {
@@ -64,7 +65,7 @@ func TestThePlansPhasesFollowEachOther(t *testing.T) {
 	for _, s := range Library()[0].Skills {
 		skills[s.Title] = true
 	}
-	if len(p.Phases) != 14 || p.Phases[0].Start != p.Start || p.Phases[13].End != p.End {
+	if len(p.Phases) != 18 || p.Start != "2026-10-19" || p.Phases[0].Start != p.Start || p.Phases[17].End != p.End {
 		t.Fatalf("phases %d from %s to %s", len(p.Phases), p.Phases[0].Start, p.Phases[len(p.Phases)-1].End)
 	}
 	for i, ph := range p.Phases {
@@ -94,15 +95,34 @@ func TestThePlanStartsOnItsDatesOrTheComingMonday(t *testing.T) {
 		today string
 		start string
 	}{
-		{"2026-10-01", "2026-10-05"}, // before the start
-		{"2026-10-13", "2026-10-05"}, // during phase 1
-		{"2026-12-27", "2026-10-05"}, // its last day
-		{"2027-01-06", "2027-01-11"}, // a Wednesday: the coming Monday
-		{"2027-01-11", "2027-01-11"}, // a Monday: that day
-		{"2027-01-10", "2027-01-11"}, // a Sunday: the next day
+		{"2026-10-17", "2026-10-19"}, // before the start
+		{"2026-11-04", "2026-10-19"}, // during phase 1
+		{"2027-01-10", "2026-10-19"}, // its last day
+		{"2027-01-13", "2027-01-18"}, // a Wednesday: the coming Monday
+		{"2027-01-18", "2027-01-18"}, // a Monday: that day
+		{"2027-01-17", "2027-01-18"}, // a Sunday: the next day
 	} {
 		if got := at(p.Start).AddDate(0, 0, p.Shift(at(c.today))).Format(time.DateOnly); got != c.start {
 			t.Errorf("started on %s: plan from %s, want %s", c.today, got, c.start)
+		}
+	}
+}
+
+// Every certification is taken in a phase that works on its domain, so
+// each domain's exam comes with the phase that prepares it, and every
+// domain has one (EP-141).
+func TestEachCertificationBelongsToItsPhase(t *testing.T) {
+	p := *Library()[0].Plan
+	certified := map[string]bool{}
+	for _, c := range p.Certs {
+		if c.Phase < 1 || c.Phase > len(p.Phases) || !slices.Contains(p.Phases[c.Phase-1].Domains, c.Skill) {
+			t.Errorf("%s: phase %d does not work on %q", c.Code, c.Phase, c.Skill)
+		}
+		certified[c.Skill] = true
+	}
+	for _, s := range Library()[0].Skills {
+		if s.Kind != "soft" && !certified[s.Title] {
+			t.Errorf("%q has no certification", s.Title)
 		}
 	}
 }

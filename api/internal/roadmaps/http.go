@@ -33,10 +33,13 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Get("/v1/roadmaps", h.list)
 	r.Post("/v1/roadmaps", h.create)
 	r.Get("/v1/roadmaps/sources", h.sources)
+	r.Get("/v1/roadmaps/sources/{source}/plan", h.preview)
 	r.Get("/v1/roadmaps/radar", h.radar)
+	r.Get("/v1/roadmaps/today", h.today)
 	r.Post("/v1/roadmaps/import", h.importRoadmap)
 	r.Get("/v1/roadmaps/{id}", h.get)
 	r.Get("/v1/roadmaps/{id}/hours", h.hours)
+	r.Get("/v1/roadmaps/{id}/plan", h.plan)
 	r.Patch("/v1/roadmaps/{id}", h.update)
 	r.Delete("/v1/roadmaps/{id}", h.delete)
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
@@ -325,6 +328,47 @@ func (h *Handlers) hours(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out, err := StudyHours(r.Context(), h.db, who.UserID, rid, time.Now())
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = graph.ErrNotFound
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
+}
+
+func (h *Handlers) today(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	out, err := TodayPlan(r.Context(), h.db, who.UserID, time.Now())
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"plan": out})
+}
+
+func (h *Handlers) preview(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	out, err := PreviewPlan(r.Context(), h.db, who.UserID, chi.URLParam(r, "source"), time.Now())
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = graph.ErrNotFound
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
+}
+
+func (h *Handlers) plan(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	rid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	out, err := GetPlan(r.Context(), h.db, who.UserID, rid, time.Now())
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = graph.ErrNotFound
 	}

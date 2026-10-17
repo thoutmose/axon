@@ -263,7 +263,7 @@
 		<Status
 			kind="empty"
 			message={t(
-				'No certifications yet. Add one below, or start the roadmap: it plans its nine exams.'
+				'No certifications yet. Add one below, or start the roadmap: it plans its 43 certifications.'
 			)}
 		/>
 	{/if}

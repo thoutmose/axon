@@ -420,8 +420,27 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 		}
 	}
 
-	// The habits that drive it.
+	// The habits that drive it, and the exams, unless the person already
+	// has them (an earlier version of the plan, or their own).
+	have := map[string]bool{}
+	hs, err := habits.List(ctx, tx, userID, "active", now)
+	if err != nil {
+		return s, err
+	}
+	for _, h := range hs {
+		have["habit "+strings.ToLower(h.Title)] = true
+	}
+	cs, err := certs.List(ctx, tx, userID)
+	if err != nil {
+		return s, err
+	}
+	for _, c := range cs {
+		have["cert "+c.Code] = true
+	}
 	for _, h := range p.Habits {
+		if have["habit "+strings.ToLower(h.Title)] {
+			continue
+		}
 		habit, err := habits.Create(ctx, tx, userID, actor, habits.Fields{Title: str(h.Title), StackAfter: str(h.Stack), Cue: str(h.Cue),
 			Craving: str(h.Craving), TwoMinute: str(h.Two), Reward: str(h.Reward), Identity: str(h.Identity),
 			IntentionTime: str(h.Time), IntentionPlace: str(h.Place), Days: h.Days}, now)
@@ -460,6 +479,9 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 
 	// The exams, planned for the end of their phase (EP-104).
 	for _, c := range p.Certs {
+		if have["cert "+c.Code] {
+			continue
+		}
 		var target string
 		for _, ph := range p.Phases {
 			if ph.N == c.Phase {
@@ -552,8 +574,9 @@ type ScheduledBlock struct {
 
 // Schedule is the study blocks of the person's started plans in a range.
 func Schedule(ctx context.Context, q db.Querier, userID uuid.UUID, from, to time.Time) ([]ScheduledBlock, error) {
-	rows, err := q.Query(ctx, `SELECT r.id, r.plan_id, r.plan_start FROM roadmaps r JOIN entities e ON e.id = r.id
-		WHERE e.user_id = $1 AND r.plan_id IS NOT NULL`, userID)
+	// A plan started again (a newer version of it) replaces the earlier one.
+	rows, err := q.Query(ctx, `SELECT DISTINCT ON (r.plan_id) r.id, r.plan_id, r.plan_start FROM roadmaps r JOIN entities e ON e.id = r.id
+		WHERE e.user_id = $1 AND r.plan_id IS NOT NULL ORDER BY r.plan_id, e.created_at DESC`, userID)
 	if err != nil {
 		return nil, err
 	}

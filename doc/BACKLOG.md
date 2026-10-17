@@ -189,6 +189,11 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-138 | Budget charts | A pie of spending by category for a period (a month by default), the same for income, and a year of income against spending by month. | SHOULD | 2 pts | EP-39 | Done |
 | EP-139 | A clean start | A new install has no notes, only the templates and courses; a guide says how to set everything up with the agents in a few hours. | MUST | 1 pt | EP-28 | Done |
 | EP-140 | The life web on Today | The e2e tests walk the life web; Today links to it. | SHOULD | 1 pt | EP-131 | Done |
+| EP-141 | The Top-5% roadmap, version 2 | 35 domains in 18 phases from Monday 19 October 2026, a certification for every domain (43), the skills assessment with a domain each and retaken at every phase's end. | MUST | 5 pts | EP-95, EP-104 | Done |
+| EP-142 | The plan and its milestones in sight | The roadmap's page shows the plan phase by phase; the library shows it before it is started; a roadmap started from an earlier version says so and starts the new one. | MUST | 3 pts | EP-95, EP-141 | Done |
+| EP-143 | Notes drawn, in Axon or in the vault | Say where notes live (Axon only, or a vault kept in step) at the top of Notes; draw in a note, saved as an SVG the vault shows too. | MUST | 3 pts | EP-48, EP-51 | Done |
+| EP-144 | YouTube and Podcasts their own pages | Each tab has its own scenery, title, and follow panel with suggestions for the roadmap; line icons on the tabs. | SHOULD | 2 pts | EP-122, EP-129 | Done |
+| EP-145 | Your roadmap today | Today shows the plan's phase, today's study block, its project, and the next certification, with the next steps; sections new in a release show until turned off. | MUST | 2 pts | EP-63, EP-142 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -225,7 +230,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2283,6 +2288,47 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 - [x] **EP-140/IS-140.01** · 1 pt · SHOULD — An e2e test of the life web on the demo (the score, the radar, the menu's link), with axe. Today's **New in Axon** lists the life web, the podcast's natural voices, films, series, and books, and the budget charts, each with a line icon instead of an emoji, and shows again for this release.
 
+### EP-141 — The Top-5% roadmap, version 2
+
+**Goal.** "Improve drastically more this roadmap. It should be the best roadmap to be one of the best engineers (DSA, CS, OS, Linux, Bash, Python, C/C++, Java, Rust, Docker, Podman, Kubernetes, DevOps, DataOps, DevSecOps, data-intensive, Kafka, Spark, data engineering, data analysis, data science, machine learning, deep learning, maths, statistics, probability, API design, system design, web development, cybersecurity, cloud…), with the certifications (one for each domain), the skills assessment, projects… and it starts Monday 19 October 2026" (owner, 2026-10-17).
+
+- [x] **EP-141/IS-141.01** · 3 pts · MUST — The library roadmap has 35 hard domains in eight sections and its six soft skills, 122 resources, and 18 phases of 12 weeks (the last 16) from Monday 2026-10-19 to 2031-01-05, each with its tracks, a project that builds on the previous one, an exit check, and 42 projects where they fit. Every domain has a certification taken at the end of a phase that works on it, 43 in all: the nine new ones are the Mathematics for Machine Learning Specialization (Imperial College), LFD103 (Linux kernel development), LPIC-1 (Bash), a course from a Rust Foundation accredited trainer (no individual Rust exam exists), Oracle 1Z0-071 (SQL), EDB PostgreSQL Associate and Professional, Cloud Computing Concepts 1 and 2 (UIUC, distributed systems), IEEE CS Professional Software Developer, and MuleSoft API Design Associate. Each domain also has project work that proves it beyond the exam. The goal's outcome, the roadmap's note (domain matrix, certification table, budget), and the certification fund follow.
+- [x] **EP-141/IS-141.02** · 2 pts · MUST — The skills assessment has a domain for every hard domain: Bash, database administration, and software engineering are assessed apart (37 domains, five questions each from easy to hard). Every phase's exit check ends with retaking the assessment for its domains. Starting the plan again skips the certifications (by code) and habits (by title) the person already has.
+
+**Tests.** Every hard domain has a certification in a phase that works on it, and its own assessment domain; phases follow day after day from 2026-10-19; starting the plan plans 43 certifications; the assessment serves 185 questions without answers.
+
+### EP-142 — The plan and its milestones in sight
+
+**Goal.** "There is no milestones actually, why???" (owner, 2026-10-17): the milestones were only made when the roadmap was started, and shown on the goal.
+
+- [x] **EP-142/IS-142.01** · 2 pts · MUST — `GET /v1/roadmaps/{id}/plan` shows a started plan phase by phase: dates, past, current, or coming, the milestone (tick it from there), the project and its board's progress, the exit check, the 42 projects, and the certifications with their status. `GET /v1/roadmaps/sources/{source}/plan` lays out the library plan at the dates starting it today would give, so the library card's **See the plan** shows its 18 milestones, projects, and certifications before a start.
+- [x] **EP-142/IS-142.02** · 1 pt · MUST — A roadmap started from an earlier version of the plan (none of its milestones is a current phase) says so and offers **Start the new version**; the earlier one then points to the newer, and the calendar's study blocks come from the latest started roadmap of each plan only.
+
+**Tests.** The preview before a start (no milestone, projects without ids, PCPP1 in phase 1, the assessment retake last); a roadmap made outdated in the database is flagged, then names the newer one; the second start keeps 43 certifications and 4 habits; the calendar shows one week of blocks, from the new roadmap.
+
+### EP-143 — Notes drawn, in Axon or in the vault
+
+**Goal.** "Ensure the notes could be drawn on the website or in a Markdown vault; I should define it somewhere" (owner, 2026-10-17).
+
+- [x] **EP-143/IS-143.01** · 1 pt · MUST — **Where your notes live** opens the Notes page: Axon only, or Axon and a vault on a server (paired with the vault server, in step both ways within seconds) with its state, or a folder kept in step by hand with `axon notes-sync -watch`.
+- [x] **EP-143/IS-143.02** · 2 pts · MUST — The editor's **Draw** (✎) opens a sheet with a pen, a marker, lines, arrows, boxes, ellipses, text, an eraser, six colours, three thicknesses, undo and redo. It saves an SVG under `Attachments/` and embeds it, so it shows in Axon, in Obsidian, and in the vault's Git history; on a line with a drawing Axon made, Draw opens it again and the saved one replaces it. The shapes ride in the SVG's `<metadata>` and are rebuilt field by field when read back, since a file can come from anywhere.
+
+**Tests.** Unit tests: the SVG round trip with escaped text, a crafted file's shapes dropped, smoothing, the eraser's reach, finding a drawing's embed on a line.
+
+### EP-144 — YouTube and Podcasts their own pages
+
+- [x] **EP-144/IS-144.01** · 2 pts · SHOULD — The tech watch's YouTube and Podcasts tabs each get their own scenery (a cinema screen after the Lumière Cinématographe, a 1930s wireless set; light and dark, from `scripts/spaces.py`), their own title, and a follow panel: the channels or shows followed, a field to follow one more, and suggestions for the roadmap. The kind tabs and each story's badge use the line icons.
+
+**Tests.** The spaces test maps the tabs to their scenery; the e2e demo walk finds the badges.
+
+### EP-145 — Your roadmap today
+
+**Goal.** "Deliver the best website you can to guide a self-learner in their learning journey" (owner, 2026-10-17).
+
+- [x] **EP-145/IS-145.01** · 2 pts · MUST — `GET /v1/roadmaps/today` and Today's **Your roadmap today**: the phase of the latest started plan (or when it starts), its week, the days to its milestone, the milestones reached, today's study block, the phase's project with its board, and the next certification not passed, with **Focus on today's block**, review, practice, and the plan. Without a plan it points to the assessment and the roadmap. Settings keep `today.hidden`, the sections turned off, so a section new in a release (this one) shows on a saved Today until it is turned off; the onboarding's "Learning" adds it.
+
+**Tests.** The endpoint before and after a start; settings keep and validate `today.hidden`, and their defaults include the roadmap.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2491,6 +2537,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-14 | Owner requests: EP-106 (where the vault lives), EP-107 (digests on every channel), EP-108 (answering the digest), EP-109 (sign in with other accounts). |
 | 2026-10-16 | Owner requests: a cover for every film, series, and book; larger media cards; media note templates; a reading habit that turns a book's pages; budget charts; a clean start for a new install. Planned as EP-134 to EP-139, before EP-132 and EP-133. |
 | 2026-10-16 | Owner requests: a shorter board, one set of icons, no past moods in the journal, a life radar, natural podcast voices (self-hosted Kokoro; famous people's voices declined), and the digest's channels on its page. Planned as EP-128 to EP-133. |
+| 2026-10-17 | Owner request: a far better Top-5% roadmap (a certification for every domain, the assessment, projects, milestones, a start on Monday 19 October 2026), notes drawn in Axon or in the vault, YouTube and Podcasts their own pages, and a site that guides a self-learner. Planned and delivered as EP-141 to EP-145. |
 | 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |

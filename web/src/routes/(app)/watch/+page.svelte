@@ -7,6 +7,9 @@
 	import Connections from '$lib/Connections.svelte';
 	import { pageAgents } from '$lib/pageAgents';
 	import WatchExport from '$lib/WatchExport.svelte';
+	import WatchFollow from '$lib/WatchFollow.svelte';
+	import Icon from '$lib/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons';
 	import { t } from '$lib/i18n.svelte';
 	import { render } from '$lib/notes';
 	import Button from '$lib/ui/Button.svelte';
@@ -202,11 +205,11 @@
 		['saved', 'Saved'],
 		['archived', 'Archived']
 	];
-	const kinds: { kind: WatchFilter['kind']; label: string; icon: string }[] = [
-		{ kind: '', label: 'Everything', icon: '◎' },
-		{ kind: 'article', label: 'Articles', icon: '📰' },
-		{ kind: 'video', label: 'YouTube', icon: '▶' },
-		{ kind: 'podcast', label: 'Podcasts', icon: '🎧' }
+	const kinds: { kind: WatchFilter['kind']; label: string; icon: IconName }[] = [
+		{ kind: '', label: 'Everything', icon: 'web' },
+		{ kind: 'article', label: 'Articles', icon: 'note' },
+		{ kind: 'video', label: 'YouTube', icon: 'play' },
+		{ kind: 'podcast', label: 'Podcasts', icon: 'mic' }
 	];
 	const kindCount = (k: WatchFilter['kind']) => {
 		if (!stats) return null;
@@ -221,11 +224,25 @@
 </script>
 
 <svelte:window onkeydown={onKey} />
-<svelte:head><title>{t('Tech watch')} · Axon</title></svelte:head>
+<svelte:head
+	><title
+		>{filter.kind === 'video'
+			? t('YouTube')
+			: filter.kind === 'podcast'
+				? t('Podcasts')
+				: t('Tech watch')} · Axon</title
+	></svelte:head
+>
 
 <header class="head">
 	<div>
-		<h1>{t('Tech watch')}</h1>
+		<h1>
+			{filter.kind === 'video'
+				? t('YouTube')
+				: filter.kind === 'podcast'
+					? t('Podcasts')
+					: t('Tech watch')}
+		</h1>
 		{#if stats}
 			<p class="muted small">
 				{t('{unread} unread · {today} new today · {sources} sources', {
@@ -253,12 +270,24 @@
 			class={k.kind || 'all'}
 			aria-selected={filter.kind === k.kind}
 			onclick={() => pickKind(k.kind)}
-			><span aria-hidden="true">{k.icon}</span>
+			><Icon name={k.icon} />
 			{t(k.label)}
 			{#if kindCount(k.kind) != null}<span class="n">{kindCount(k.kind)}</span>{/if}</button
 		>
 	{/each}
 </div>
+
+{#if filter.kind === 'video' || filter.kind === 'podcast'}
+	{#key filter.kind}
+		<WatchFollow
+			kind={filter.kind}
+			onfollowed={() => {
+				load();
+				loadSide();
+			}}
+		/>
+	{/key}
+{/if}
 
 <div class="filters">
 	<div class="tabs" role="tablist" aria-label={t('Status')}>
@@ -332,8 +361,12 @@
 						<button type="button" class="item" onclick={() => show(it.id)}>
 							<span class="title">{it.title}</span>
 							<span class="meta muted small">
-								{#if it.kind === 'video'}<span class="kind video">▶ {t('YouTube')}</span>
-								{:else if it.kind === 'podcast'}<span class="kind podcast">🎧 {t('Podcast')}</span>
+								{#if it.kind === 'video'}<span class="kind video"
+										><Icon name="play" size={12} /> {t('YouTube')}</span
+									>
+								{:else if it.kind === 'podcast'}<span class="kind podcast"
+										><Icon name="mic" size={12} /> {t('Podcast')}</span
+									>
 								{/if}{it.source_title} · {ago(it.published_at)} · {it.reading_minutes} min
 								{#if it.also_in.length}
 									· <span title={it.also_in.join(', ')}

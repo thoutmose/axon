@@ -87,7 +87,7 @@ export const USES: { id: string; label: string; pages: string[]; sections: strin
 		pages: ['notes', 'areas', 'resources', 'archive'],
 		sections: ['notes']
 	},
-	{ id: 'learning', label: 'Learning', pages: ['learn'], sections: ['learning'] },
+	{ id: 'learning', label: 'Learning', pages: ['learn'], sections: ['roadmap', 'learning'] },
 	{ id: 'watch', label: 'A tech watch', pages: ['watch'], sections: [] },
 	{
 		id: 'goals',

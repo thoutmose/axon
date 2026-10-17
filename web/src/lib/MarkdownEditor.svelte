@@ -3,7 +3,9 @@
 	import { tick } from 'svelte';
 	import * as edit from './markdownEdit';
 	import type { Edit } from './markdownEdit';
-	import { canUpload, upload } from './noteFiles.svelte';
+	import { canUpload, noteFiles, refreshFiles, resolveFile, upload } from './noteFiles.svelte';
+	import SketchPad from './SketchPad.svelte';
+	import { fromSVG, svgEmbed, type Shape } from './sketch';
 	import { noteIndex } from './noteIndex.svelte';
 	import { stem } from './notes';
 	import { handle, newVim, type Mode } from './vim';
@@ -52,6 +54,45 @@
 			} finally {
 				uploading--;
 			}
+		}
+	}
+
+	// Drawing (EP-143): a new sketch at the caret, or the one embedded on
+	// the caret's line when Axon drew it, saved as a new SVG that replaces it.
+	let drawing = $state(false);
+	let sketch = $state<Shape[]>([]);
+	let replacing = $state<string | null>(null);
+	async function draw() {
+		uploadError = '';
+		sketch = [];
+		replacing = null;
+		const s = area.selectionStart;
+		const line = value.slice(value.lastIndexOf('\n', s - 1) + 1).split('\n')[0];
+		const embed = svgEmbed(line);
+		if (embed) {
+			try {
+				if (!noteFiles.loaded) await refreshFiles();
+				const f = resolveFile(embed.target);
+				const res = f && (await fetch(`/api/v1/notes/file?path=${encodeURIComponent(f.path)}`));
+				const shapes = res && res.ok ? fromSVG(await res.text()) : null;
+				if (shapes) {
+					sketch = shapes;
+					replacing = embed.text;
+				}
+			} catch {
+				// a new drawing instead
+			}
+		}
+		drawing = true;
+	}
+	async function saveDrawing(svg: string, title: string) {
+		const md = await upload(new File([svg], `${title}.svg`, { type: 'image/svg+xml' }));
+		if (replacing && value.includes(replacing)) {
+			value = value.replace(replacing, md);
+		} else {
+			const s = area.selectionStart;
+			const before = value.slice(0, s);
+			insert((before && !before.endsWith('\n') ? '\n' : '') + md + '\n');
 		}
 	}
 
@@ -237,6 +278,12 @@
 				aria-label={t('Insert a picture or PDF')}
 				title={t('Insert a picture or PDF (or paste, or drop it here)')}>🖼</button
 			>
+			<button
+				type="button"
+				onclick={draw}
+				aria-label={t('Draw')}
+				title={t('Draw a sketch (on a line with a drawing: edit it)')}>✎</button
+			>
 			<input
 				bind:this={picker}
 				type="file"
@@ -250,6 +297,7 @@
 			/>
 		{/if}
 	</div>
+	{#if pictures}<SketchPad bind:open={drawing} shapes={sketch} onsave={saveDrawing} />{/if}
 	<label for={id} class="visually-hidden">{label}</label>
 	<textarea
 		{id}

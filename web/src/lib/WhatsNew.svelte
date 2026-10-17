@@ -7,7 +7,7 @@
 	// What is new in Axon (EP-127): each recent feature one click away, until
 	// the person closes the card; a later release shows it again.
 	const key = 'axon-whats-new';
-	const release = '2026-10-16';
+	const release = '2026-10-17';
 	let shown = $state(false);
 	try {
 		shown = localStorage.getItem(key) !== release;
@@ -23,6 +23,31 @@
 		}
 	}
 	const news: { href: string; icon: IconName; title: string; about: string }[] = [
+		{
+			href: '/roadmaps',
+			icon: 'roadmap',
+			title: 'The Top-5% roadmap, version 2',
+			about:
+				'35 domains in 18 phases from Monday 19 October 2026, a certification for each (43 in all), and its 18 milestones readable before you start.'
+		},
+		{
+			href: '/today#roadmap-today-title',
+			icon: 'milestone',
+			title: 'Your roadmap today',
+			about: 'The phase, today’s study block, its project, and the next certification, on Today.'
+		},
+		{
+			href: '/notes',
+			icon: 'note',
+			title: 'Draw in notes',
+			about: 'Pen, arrows, boxes, and text in any note, saved as an SVG that the vault shows too.'
+		},
+		{
+			href: '/notes?vault',
+			icon: 'pin',
+			title: 'Where your notes live',
+			about: 'Axon only, or a Markdown vault kept in step both ways: said at the top of Notes.'
+		},
 		{
 			href: '/health#life-web-title',
 			icon: 'web',

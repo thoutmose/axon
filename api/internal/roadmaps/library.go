@@ -87,7 +87,8 @@ type LibraryMatch struct {
 }
 
 // SearchLibrary finds curated resources whose title, author, section, or
-// domain contains every word of the query (case-insensitive).
+// skill contains every word of the query (case-insensitive). The roadmap's
+// own description names every domain, so it would match everything.
 func SearchLibrary(query, kind string, limit int) []LibraryMatch {
 	words := strings.Fields(strings.ToLower(query))
 	var out []LibraryMatch
@@ -97,7 +98,7 @@ func SearchLibrary(query, kind string, limit int) []LibraryMatch {
 			if (kind != "" && r.Kind != kind) || seen[r.URL] {
 				continue
 			}
-			hay := strings.ToLower(strings.Join([]string{r.Title, r.By, r.Section, d.ID, d.Title, d.Description}, " "))
+			hay := strings.ToLower(strings.Join([]string{r.Title, r.By, r.Section, r.Skill}, " "))
 			ok := true
 			for _, w := range words {
 				if !strings.Contains(hay, w) {

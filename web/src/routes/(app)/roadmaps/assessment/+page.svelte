@@ -178,7 +178,7 @@
 			<h2>{t('Quick checks')}</h2>
 			<p class="muted">
 				{t(
-					'Rate yourself, then answer three questions per domain. Skip any you do not know: that is useful too.'
+					'Rate yourself, then answer five questions per domain, from easy to hard. Skip any you do not know: that is useful too.'
 				)}
 			</p>
 			{#each chosen as d (d.id)}

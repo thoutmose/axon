@@ -391,6 +391,76 @@ def studio(bg_hi, bg_lo, ink, wave, alpha):
     g.append('</g>')
     return svg(''.join(b + g), d)
 
+# --- Screen (YouTube): a cinema screen, the projector's beam, a film strip ---
+def screen(bg_hi, bg_lo, ink, beam, alpha):
+    d = grain('g', 0.7, 0.06, (0.3, 0.1, 0.1)) + f'<radialGradient id="p" cx="35%" cy="30%" r="90%"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></radialGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>', f'<rect width="{W}" height="{H}" filter="url(#g)"/>']
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha:.2f}" stroke-linecap="round" stroke-linejoin="round">']
+    # the screen (top right) with a play triangle, curtains folded at its sides
+    x0, y0, w, h = 1020, 120, 470, 270
+    g.append(f'<rect x="{x0}" y="{y0}" width="{w}" height="{h}" rx="10" stroke-width="2.4"/>')
+    g.append(f'<path d="M{x0+w/2-34} {y0+h/2-42} L{x0+w/2+46} {y0+h/2} L{x0+w/2-34} {y0+h/2+42} Z" stroke-width="2"/>')
+    for k in range(5):
+        g.append(f'<path d="M{x0-18-k*9} {y0-10} Q{x0-30-k*9} {y0+h/2} {x0-18-k*9} {y0+h+10}" stroke-width=".9"/>')
+        g.append(f'<path d="M{x0+w+18+k*9} {y0-10} Q{x0+w+30+k*9} {y0+h/2} {x0+w+18+k*9} {y0+h+10}" stroke-width=".9"/>')
+    # the projector (bottom left): two reels on a box, and its lens
+    px, py = 230, 760
+    g.append(f'<rect x="{px-90}" y="{py-40}" width="200" height="100" rx="12" stroke-width="2"/>')
+    for rx_, r in ((px-40, 62), (px+70, 50)):
+        g.append(f'<circle cx="{rx_}" cy="{py-110}" r="{r}" stroke-width="2"/>')
+        for k in range(6):
+            a = math.pi * k / 3
+            g.append(f'<line x1="{rx_}" y1="{py-110}" x2="{f(rx_+r*0.8*math.cos(a))}" y2="{f(py-110+r*0.8*math.sin(a))}" stroke-width=".9"/>')
+    g.append(f'<rect x="{px+110}" y="{py-8}" width="36" height="34" rx="6" stroke-width="1.8"/>')
+    g.append('</g>')
+    # the beam from the lens to the screen, faint and dusty
+    lx, ly = px + 146, py + 9
+    b.append(f'<path d="M{lx} {ly-12} L{x0} {y0} L{x0} {y0+h} L{lx} {ly+12} Z" fill="{beam}" fill-opacity="{alpha*0.35:.2f}"/>')
+    dust = [f'<circle cx="{f(lx+(x0-lx)*t)}" cy="{f(ly+(y0+h/2-ly)*t+random.uniform(-90, 90)*t)}" r="{random.choice([1, 1.4, 2])}" fill="{beam}" fill-opacity="{alpha*1.6:.2f}"/>'
+            for t in [random.random() for _ in range(60)]]
+    # a film strip along the bottom: frames and sprocket holes
+    strip = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha*0.9:.2f}">',
+             f'<path d="M0 900 L{W} 860 M0 980 L{W} 940" stroke-width="1.6"/>']
+    for i, x in enumerate(range(0, W, 80)):
+        yt = 900 - 40 * x / W
+        strip.append(f'<rect x="{x+12}" y="{f(yt+18)}" width="56" height="44" rx="4" stroke-width="1"/>')
+        strip.append(f'<rect x="{x+30}" y="{f(yt+5)}" width="10" height="7" rx="2" stroke-width=".8"/><rect x="{x+30}" y="{f(yt+68)}" width="10" height="7" rx="2" stroke-width=".8"/>')
+    strip.append('</g>')
+    return svg(''.join(b + g + dust + strip), d)
+
+# --- Radio (podcasts): a valve wireless set, its tuning dial, waves ---
+def radio(bg_hi, bg_lo, ink, wave, alpha):
+    d = grain('g', 0.75, 0.05, (0.3, 0.2, 0.05)) + f'<linearGradient id="p" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></linearGradient>'
+    b = [f'<rect width="{W}" height="{H}" fill="url(#p)"/>', f'<rect width="{W}" height="{H}" filter="url(#g)"/>']
+    g = [f'<g fill="none" stroke="{ink}" stroke-opacity="{alpha*1.4:.2f}" stroke-linecap="round">']
+    # the set (right): an arched cabinet, its speaker cloth, the dial and knobs
+    cx, top, w, bottom = 1290, 170, 340, 560
+    g.append(f'<path d="M{cx-w/2} {bottom} L{cx-w/2} {top+120} Q{cx-w/2} {top} {cx} {top} Q{cx+w/2} {top} {cx+w/2} {top+120} L{cx+w/2} {bottom} Z" stroke-width="2.4"/>')
+    for k in range(-5, 6):
+        x = cx + k * 22
+        g.append(f'<path d="M{x} {top+70} Q{x+k*3} {top+170} {x} {top+250}" stroke-width=".9"/>')
+    g.append(f'<path d="M{cx-120} {bottom-120} Q{cx} {bottom-180} {cx+120} {bottom-120}" stroke-width="1.6"/>')
+    for k in range(9):
+        a = math.pi * (1.15 + k * 0.0875)
+        g.append(f'<line x1="{f(cx+150*math.cos(a))}" y1="{f(bottom-40+150*math.sin(a)*0.55)}" x2="{f(cx+140*math.cos(a))}" y2="{f(bottom-40+140*math.sin(a)*0.55)}" stroke-width="1"/>')
+    g.append(f'<line x1="{cx}" y1="{bottom-40}" x2="{cx+40}" y2="{bottom-118}" stroke-width="1.6"/>')
+    for kx in (cx - 110, cx + 110):
+        g.append(f'<circle cx="{kx}" cy="{bottom-45}" r="20" stroke-width="1.8"/>')
+    g.append(f'<path d="M{cx-w/2+20} {bottom} L{cx-w/2+10} {bottom+30} M{cx+w/2-20} {bottom} L{cx+w/2-10} {bottom+30}" stroke-width="2"/>')
+    g.append('</g>')
+    # waves leaving it to the left, and a tuning band of station marks
+    waves = [f'<g fill="none" stroke="{wave}" stroke-opacity="{alpha:.2f}" stroke-linecap="round">']
+    for k in range(7):
+        r = 230 + k * 85
+        waves.append(f'<path d="M{f(cx-140-r*0.55)} {f(360-r*0.75)} A{r} {r} 0 0 0 {f(cx-140-r*0.55)} {f(360+r*0.75)}" stroke-width="{1.5-k*0.12:.2f}" stroke-dasharray="{4+k} {7+k}"/>')
+    for i, x in enumerate(range(60, W - 60, 14)):
+        h = 10 if i % 5 else 26
+        waves.append(f'<line x1="{x}" y1="{850}" x2="{x}" y2="{850-h}" stroke-width="1"/>')
+    waves.append(f'<line x1="60" y1="850" x2="{W-60}" y2="850" stroke-width="1.2"/>')
+    waves.append(f'<line x1="610" y1="800" x2="610" y2="880" stroke-width="2.4"/>')
+    waves.append('</g>')
+    return svg(''.join(b + g + waves), d)
+
 # --- Dispatch (digest): paper planes on their routes at sunrise ---
 def dispatch(bg_hi, bg_lo, sun, ink, alpha):
     d = f'<linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{bg_hi}"/><stop offset="1" stop-color="{bg_lo}"/></linearGradient>'
@@ -476,6 +546,10 @@ art = {
   'dispatch-dark': dispatch('#1d1622', '#0d0a10', '#e07a3a', '#e8c9a0', 0.26),
   'crossroads-light': crossroads('#fbf5e6', '#f3e6c8', '#c9a95a', '#e8d5a6', '#5a4220', '#e0a530', 0.26),
   'crossroads-dark': crossroads('#1c170f', '#0e0b07', '#5a4620', '#3a2f1a', '#d9c08a', '#c8861e', 0.30),
+  'screen-light': screen('#fbf2ef', '#f1e1dc', '#5a2a24', '#e0a050', 0.26),
+  'screen-dark': screen('#1f1212', '#0c0707', '#e6b8ae', '#ffd08a', 0.28),
+  'radio-light': radio('#f8f3e8', '#ede2cc', '#5e4422', '#b4782a', 0.26),
+  'radio-dark': radio('#1d1810', '#0d0b07', '#e0c290', '#e8a85a', 0.30),
 }
 for name, s in art.items():
     open(os.path.join(out, name + '.svg'), 'w').write(s)

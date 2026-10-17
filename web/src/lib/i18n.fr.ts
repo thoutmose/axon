@@ -1778,18 +1778,11 @@ export const fr: Record<string, string> = {
 		'Aucune note pour l’instant. Créez-en une ci-dessus, ou importez un ZIP de votre coffre Markdown.',
 	'No notes in this folder.': 'Aucune note dans ce dossier.',
 	'Show more': 'Afficher plus',
-	'Sync with a Markdown vault': 'Synchroniser avec un coffre Markdown',
 	'Keep a folder of Markdown files (for example an Obsidian vault in Git) and Axon in step. Create a write':
 		'Gardez un dossier de fichiers Markdown (par exemple un coffre Obsidian dans Git) et Axon au même pas. Créez un',
 	'access token': 'jeton d’accès',
 	', save it in a file on the machine with the vault, and run:':
 		'en écriture, enregistrez-le dans un fichier sur la machine du coffre, et lancez :',
-	'By default this only imports files into Axon. Add':
-		'Par défaut, cela ne fait qu’importer les fichiers dans Axon. Ajoutez',
-	"to also write Axon's changes back, and":
-		'pour écrire aussi en retour les modifications d’Axon, et',
-	"to pull and push the repository around each run. When a note changed on both sides, Axon's version is saved next to yours as":
-		'pour tirer et pousser le dépôt autour de chaque exécution. Quand une note a changé des deux côtés, la version d’Axon est enregistrée à côté de la vôtre sous',
 	'; nothing is overwritten.': ' ; rien n’est écrasé.',
 	'Leave without saving your changes?': 'Partir sans enregistrer vos modifications ?',
 	'Moved.': 'Déplacée.',
@@ -2161,8 +2154,8 @@ export const fr: Record<string, string> = {
 	'How do you like to learn?': 'Comment aimez-vous apprendre ?',
 	'What do you want to learn?': 'Que voulez-vous apprendre ?',
 	'Choose one or more domains': 'Choisissez un ou plusieurs domaines',
-	'Rate yourself, then answer three questions per domain. Skip any you do not know: that is useful too.':
-		'Évaluez-vous, puis répondez à trois questions par domaine. Passez celles que vous ne savez pas : c’est utile aussi.',
+	'Rate yourself, then answer five questions per domain, from easy to hard. Skip any you do not know: that is useful too.':
+		'Évaluez-vous, puis répondez à cinq questions par domaine, des plus simples aux plus difficiles. Passez celles que vous ne savez pas : c’est utile aussi.',
 	'How well do you know it?': 'À quel point le connaissez-vous ?',
 	'See my results': 'Voir mes résultats',
 	'Your results': 'Vos résultats',
@@ -3001,8 +2994,8 @@ export const fr: Record<string, string> = {
 	'Credential link': 'Lien du certificat',
 	'Update {name}': 'Mettre à jour {name}',
 	Update: 'Mettre à jour',
-	'No certifications yet. Add one below, or start the roadmap: it plans its nine exams.':
-		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses neuf examens.',
+	'No certifications yet. Add one below, or start the roadmap: it plans its 43 certifications.':
+		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses 43 certifications.',
 	'Add a certification': 'Ajouter une certification',
 	'Aim to take it by': 'À passer d’ici le',
 	'Valid for (months)': 'Valable (mois)',
@@ -3809,5 +3802,135 @@ export const fr: Record<string, string> = {
 		'Chaque couverture, une page pour chacun, une note depuis son modèle, et des pages tournées par une habitude.',
 	'Budget charts': 'Graphiques du budget',
 	'Where the money went and where it came from, month by month.':
-		'Où est passé l’argent et d’où il est venu, mois par mois.'
+		'Où est passé l’argent et d’où il est venu, mois par mois.',
+	Past: 'Passée',
+	Now: 'En cours',
+	Coming: 'À venir',
+	'Loading the plan…': 'Chargement du plan…',
+	'This roadmap has no plan: its skills are in the list and the skill graph.':
+		'Cette feuille de route n’a pas de plan : ses compétences sont dans la liste et le graphe.',
+	'The plan': 'Le plan',
+	'Phase {n} of {total}: {title}': 'Phase {n} sur {total} : {title}',
+	'Starts on {date}': 'Commence le {date}',
+	'Plan finished on {date}': 'Plan terminé le {date}',
+	'{start} → {end} · {done} of {total} milestones reached':
+		'{start} → {end} · {done} jalons atteints sur {total}',
+	'Open the goal': 'Ouvrir l’objectif',
+	Phases: 'Phases',
+	'Milestone reached': 'Jalon atteint',
+	Domains: 'Domaines',
+	'{title}: cards done': '{title} : cartes terminées',
+	'Its project was renamed or removed.': 'Son projet a été renommé ou supprimé.',
+	'None at the end of this phase: its domains are proven by the exit check.':
+		'Aucune à la fin de cette phase : ses domaines sont prouvés par le bilan de sortie.',
+	'Not tracked': 'Non suivie',
+	'All certifications': 'Toutes les certifications',
+	'Exit check': 'Bilan de sortie',
+	'42 projects': 'Projets 42',
+	optional: 'facultatif',
+	'Milestone reached: the exit check is done': 'Jalon atteint : le bilan de sortie est fait',
+	'Plan and milestones': 'Plan et jalons',
+	'Axon and {host}:{dir}': 'Axon et {host}:{dir}',
+	'With a vault, a note created, edited, renamed, or deleted here or in the files is replicated on the other side within seconds. A note changed on both sides keeps both versions; nothing is overwritten.':
+		'Avec un coffre, une note créée, modifiée, renommée ou supprimée ici ou dans les fichiers est répliquée de l’autre côté en quelques secondes. Une note modifiée des deux côtés garde les deux versions ; rien n’est écrasé.',
+	'Or keep a folder on this computer in step by hand':
+		'Ou synchronisez à la main un dossier de cet ordinateur',
+	'keeps it running and replicates every change both ways within seconds. To sync once instead, use':
+		'le garde actif et réplique chaque changement dans les deux sens en quelques secondes. Pour synchroniser une seule fois, utilisez',
+	', and': ', et',
+	"to pull and push the repository around the run. When a note changed on both sides, Axon's version is saved next to yours as":
+		'pour tirer et pousser le dépôt autour de l’exécution. Quand une note a changé des deux côtés, la version d’Axon est enregistrée à côté de la vôtre sous',
+	'waiting for the server to pair': 'en attente de l’appairage du serveur',
+	'in step both ways': 'synchronisé dans les deux sens',
+	'no news for 15 minutes': 'aucune nouvelle depuis 15 minutes',
+	'the last sync failed': 'la dernière synchronisation a échoué',
+	'Following {name}: {n} new.': 'Vous suivez {name} : {n} nouveautés.',
+	'YouTube channels you follow': 'Chaînes YouTube suivies',
+	'Podcasts you follow': 'Podcasts suivis',
+	'A YouTube channel': 'Une chaîne YouTube',
+	'A podcast feed or its site': 'Le flux d’un podcast ou son site',
+	'Axon reads each new video through its captions (or Whisper, when the server runs one), labels it, and adds it to the podcast and the digest.':
+		'Axon lit chaque nouvelle vidéo par ses sous-titres (ou Whisper, quand le serveur en fait tourner un), l’étiquette, et l’ajoute au podcast et au résumé.',
+	'Episodes come with their notes; with an Audiobookshelf server, their words too.':
+		'Les épisodes arrivent avec leurs notes ; avec un serveur Audiobookshelf, leurs paroles aussi.',
+	'Connect Audiobookshelf': 'Connecter Audiobookshelf',
+	'For the roadmap': 'Pour la feuille de route',
+	Following: 'Suivi',
+	'A cinema screen': 'Un écran de cinéma',
+	'A projector’s beam crossing a dark room to the screen, and a strip of film, after the Lumière brothers’ Cinématographe (1895): videos to learn from.':
+		'Le faisceau d’un projecteur qui traverse une salle sombre jusqu’à l’écran, et une bande de film, d’après le Cinématographe des frères Lumière (1895) : des vidéos pour apprendre.',
+	'A wireless set': 'Un poste de TSF',
+	'A valve radio with its arched cabinet and tuning dial, sending waves across the room, after the wireless sets of the 1930s: shows to listen to on the way.':
+		'Une radio à lampes, son coffret en arche et son cadran, qui envoie ses ondes dans la pièce, d’après les postes de TSF des années 1930 : des émissions à écouter en chemin.',
+	Draw: 'Dessiner',
+	'Draw a sketch (on a line with a drawing: edit it)':
+		'Dessiner un croquis (sur une ligne avec un dessin : le modifier)',
+	'A newer version of this plan is started: this one is kept for its history.':
+		'Une version plus récente de ce plan est démarrée : celle-ci est gardée pour son historique.',
+	'Open the new version': 'Ouvrir la nouvelle version',
+	'This roadmap was started from an earlier version of the plan.':
+		'Ce parcours a été démarré depuis une version antérieure du plan.',
+	'The plan below is the current one: 18 phases from Monday 19 October 2026, a certification for every domain, and an assessment retaken at each phase’s end. Starting it creates its goal, milestones, and projects; exams and habits you already have are kept, and the calendar shows only the new version. Move this roadmap to the trash afterwards if you no longer need it.':
+		'Le plan ci-dessous est l’actuel : 18 phases à partir du lundi 19 octobre 2026, une certification pour chaque domaine, et un bilan repassé à la fin de chaque phase. Le démarrer crée son objectif, ses jalons et ses projets ; les examens et habitudes que vous avez déjà sont gardés, et le calendrier ne montre que la nouvelle version. Mettez ensuite ce parcours à la corbeille si vous n’en avez plus besoin.',
+	'Start the new version': 'Démarrer la nouvelle version',
+	'The plan, phase by phase': 'Le plan, phase par phase',
+	'{start} → {end} · {total} milestones · {certs} certifications':
+		'{start} → {end} · {total} jalons · {certs} certifications',
+	'Your roadmap': 'Votre parcours',
+	'Learning on your own goes further with a plan: take the skills assessment, then start the Top-5% roadmap. Each day then says what to study.':
+		'Apprendre seul va plus loin avec un plan : passez le bilan de compétences, puis démarrez le parcours Top 5 %. Chaque jour dit alors quoi étudier.',
+	'See the roadmap': 'Voir le parcours',
+	'Your roadmap today': 'Votre parcours aujourd’hui',
+	'Starts on {date}, tomorrow.': 'Commence le {date}, demain.',
+	'Starts on {date}, in {n} days.': 'Commence le {date}, dans {n} jours.',
+	'Week {week} of {weeks} · {days} days to its milestone · {reached} of {total} milestones reached':
+		'Semaine {week} sur {weeks} · {days} jours avant son jalon · {reached} jalons atteints sur {total}',
+	'Weeks of this phase': 'Semaines de cette phase',
+	'Today’s block': 'Le créneau du jour',
+	'Nothing yet: get ready with the first week’s tasks.':
+		'Rien encore : préparez-vous avec les tâches de la première semaine.',
+	'No block today.': 'Pas de créneau aujourd’hui.',
+	'Project of the phase': 'Projet de la phase',
+	'Next certification': 'Prochaine certification',
+	'Review cards': 'Réviser les cartes',
+	'Open the plan': 'Ouvrir le plan',
+	Pen: 'Stylo',
+	Marker: 'Surligneur',
+	Arrow: 'Flèche',
+	Box: 'Cadre',
+	Ellipse: 'Ellipse',
+	Eraser: 'Gomme',
+	Black: 'Noir',
+	Red: 'Rouge',
+	Blue: 'Bleu',
+	Green: 'Vert',
+	Orange: 'Orange',
+	Purple: 'Violet',
+	Drawing: 'Dessin',
+	'Name of the drawing': 'Nom du dessin',
+	'Save in the note': 'Enregistrer dans la note',
+	'Drawing tools': 'Outils de dessin',
+	Thickness: 'Épaisseur',
+	Fine: 'Fin',
+	'Text to place': 'Texte à placer',
+	'Type, then click the sheet': 'Tapez, puis cliquez sur la feuille',
+	Redo: 'Rétablir',
+	'Clear the sheet': 'Effacer la feuille',
+	'Drawing sheet: {n} shapes': 'Feuille de dessin : {n} formes',
+	'Saved as an SVG picture in Attachments/: it shows in the note, in the vault (Obsidian), and opens here again for more drawing.':
+		'Enregistré comme image SVG dans Attachments/ : il s’affiche dans la note, dans le coffre (Obsidian), et se rouvre ici pour continuer à dessiner.',
+	'See the plan: its milestones, projects, and certifications':
+		'Voir le plan : ses jalons, ses projets et ses certifications',
+	'The Top-5% roadmap, version 2': 'Le parcours Top 5 %, version 2',
+	'35 domains in 18 phases from Monday 19 October 2026, a certification for each (43 in all), and its 18 milestones readable before you start.':
+		'35 domaines en 18 phases à partir du lundi 19 octobre 2026, une certification pour chacun (43 en tout), et ses 18 jalons lisibles avant de commencer.',
+	'The phase, today’s study block, its project, and the next certification, on Today.':
+		'La phase, le créneau d’étude du jour, son projet et la prochaine certification, sur Aujourd’hui.',
+	'Draw in notes': 'Dessiner dans les notes',
+	'Pen, arrows, boxes, and text in any note, saved as an SVG that the vault shows too.':
+		'Stylo, flèches, cadres et texte dans n’importe quelle note, enregistrés en SVG que le coffre affiche aussi.',
+	'Axon only, or a Markdown vault kept in step both ways: said at the top of Notes.':
+		'Axon seulement, ou un coffre Markdown tenu à jour dans les deux sens : indiqué en haut des Notes.',
+	'More about this roadmap': 'En savoir plus sur ce parcours',
+	'{n} more in Next actions': '{n} de plus dans Prochaines actions'
 };
