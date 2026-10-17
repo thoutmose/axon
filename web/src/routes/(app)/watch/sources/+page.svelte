@@ -137,11 +137,23 @@
 		const input = e.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		const format = /\.csv$/i.test(file.name) ? 'csv' : 'opml';
+		// A .json is YouTube Subscription Manager's export (EP-165).
+		const format = /\.csv$/i.test(file.name)
+			? 'csv'
+			: /\.json$/i.test(file.name)
+				? 'youtube'
+				: 'opml';
 		try {
 			const res = await fetch(`/api/v1/watch/import?format=${format}`, {
 				method: 'POST',
-				headers: { 'Content-Type': format === 'csv' ? 'text/csv' : 'text/x-opml' },
+				headers: {
+					'Content-Type':
+						format === 'csv'
+							? 'text/csv'
+							: format === 'youtube'
+								? 'application/json'
+								: 'text/x-opml'
+				},
 				body: await file.text()
 			});
 			const out = await res.json();
@@ -395,15 +407,18 @@
 	<div class="grid">
 		<div>
 			<label class="file"
-				>{t('A CSV or OPML file')}
+				>{t('A CSV, OPML, or JSON file')}
 				<input
 					type="file"
-					accept=".csv,.opml,.xml,text/csv,text/x-opml"
+					accept=".csv,.opml,.xml,.json,text/csv,text/x-opml,application/json"
 					onchange={importFile}
 				/></label
 			>
 			<p class="muted small">
 				{t('OPML comes from Feedly, FreshRSS, Inoreader, and most readers; folders become topics.')}
+				{t(
+					"YouTube subscriptions: Google Takeout's subscriptions.csv, or the JSON of YouTube Subscription Manager, whose folders become topics."
+				)}
 				{t('CSV columns')}: <code>{csvHeader}</code> ({t('topics separated by |')}).
 				<a
 					href="data:text/csv;charset=utf-8,{encodeURIComponent(sampleCSV)}"

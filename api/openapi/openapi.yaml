@@ -7709,7 +7709,7 @@ paths:
       operationId: importWatchSources
       summary: "Follow sources from a normalised CSV (url,title,topics,schedule,full_text) or an OPML file (Feedly, FreshRSS, Inoreader…)"
       parameters:
-        - { name: format, in: query, required: true, schema: { type: string, enum: [csv, opml] } }
+        - { name: format, in: query, required: true, description: "csv (Axon's columns, or Google Takeout's YouTube subscriptions.csv), opml, or youtube (YouTube Subscription Manager's JSON: folders become topics).", schema: { type: string, enum: [csv, opml, youtube] } }
         - { name: news, in: query, description: "1 imports the feeds as general news, apart from the tech watch (EP-155).", schema: { type: string, enum: ["1"] } }
       requestBody:
         required: true

@@ -11,6 +11,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -66,6 +68,9 @@ func ParseCSV(r io.Reader) ([]Planned, error) {
 		col[strings.ToLower(strings.TrimSpace(strings.TrimPrefix(h, "\ufeff")))] = i
 	}
 	if _, ok := col["url"]; !ok {
+		if _, takeout := col["channel id"]; takeout {
+			return takeoutCSV(cr, col)
+		}
 		return nil, ValidationError{"The CSV needs a header line with a url column: url,title,topics,schedule,full_text"}
 	}
 	get := func(rec []string, name string) string {
@@ -98,6 +103,87 @@ func ParseCSV(r io.Reader) ([]Planned, error) {
 		}
 		out = append(out, p)
 	}
+}
+
+// channelID is a YouTube channel's id, as subscription exports give it.
+var channelID = regexp.MustCompile(`^UC[0-9A-Za-z_-]{22}$`)
+
+// channelFeed is the feed of a YouTube channel.
+func channelFeed(id string) string {
+	return "https://www.youtube.com/feeds/videos.xml?channel_id=" + id
+}
+
+// takeoutCSV reads Google Takeout's YouTube subscriptions.csv (EP-165):
+// Channel Id, Channel Url, Channel Title.
+func takeoutCSV(cr *csv.Reader, col map[string]int) ([]Planned, error) {
+	var out []Planned
+	for {
+		rec, err := cr.Read()
+		if errors.Is(err, io.EOF) {
+			return out, nil
+		}
+		if err != nil {
+			return nil, ValidationError{fmt.Sprintf("The CSV is malformed: %v", err)}
+		}
+		if len(out) == MaxImport {
+			return nil, ValidationError{fmt.Sprintf("Import up to %d sources at a time.", MaxImport)}
+		}
+		get := func(name string) string {
+			if i, ok := col[name]; ok && i < len(rec) {
+				return strings.TrimSpace(rec[i])
+			}
+			return ""
+		}
+		p := Planned{URL: get("channel url"), Title: get("channel title")}
+		if id := get("channel id"); channelID.MatchString(id) {
+			p.URL = channelFeed(id)
+		}
+		out = append(out, p)
+	}
+}
+
+// ParseYouTubeJSON reads the export of YouTube Subscription Manager (EP-165):
+// an object of folders, each a list of channel ids; the folders become
+// topics, and its own settings (keys starting with ysc_) are left out.
+func ParseYouTubeJSON(r io.Reader) ([]Planned, error) {
+	var doc map[string]json.RawMessage
+	if err := json.NewDecoder(r).Decode(&doc); err != nil {
+		return nil, ValidationError{"The file is not the JSON of a YouTube subscriptions export."}
+	}
+	folders := make([]string, 0, len(doc))
+	for k := range doc {
+		if !strings.HasPrefix(k, "ysc_") {
+			folders = append(folders, k)
+		}
+	}
+	slices.Sort(folders)
+	var out []Planned
+	at := map[string]int{} // a channel in several folders is one source with their topics
+	for _, folder := range folders {
+		var ids []string
+		if json.Unmarshal(doc[folder], &ids) != nil {
+			continue // not a folder
+		}
+		topic := strings.TrimSpace(strings.ReplaceAll(folder, "_", " "))
+		for _, id := range ids {
+			if !channelID.MatchString(id) {
+				continue
+			}
+			if i, ok := at[id]; ok {
+				out[i].Topics = append(out[i].Topics, topic)
+				continue
+			}
+			if len(out) == MaxImport {
+				return nil, ValidationError{fmt.Sprintf("Import up to %d sources at a time.", MaxImport)}
+			}
+			at[id] = len(out)
+			out = append(out, Planned{URL: channelFeed(id), Topics: []string{topic}})
+		}
+	}
+	if len(out) == 0 {
+		return nil, ValidationError{"The file has no YouTube channel in it."}
+	}
+	return out, nil
 }
 
 type opmlOutline struct {

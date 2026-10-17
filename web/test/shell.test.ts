@@ -1520,7 +1520,7 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	await page.getByLabel('Keywords').fill('Postgres, SQL');
 	await page.getByRole('button', { name: 'Add the topic' }).click();
 	await expect(page.getByText('Postgres, SQL')).toBeVisible();
-	await page.getByLabel('A CSV or OPML file').setInputFiles({
+	await page.getByLabel('A CSV, OPML, or JSON file').setInputFiles({
 		name: 'sources.csv',
 		mimeType: 'text/csv',
 		buffer: (globalThis as unknown as { Buffer: { from(s: string): never } }).Buffer.from(

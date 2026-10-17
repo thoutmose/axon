@@ -18287,7 +18287,8 @@ export interface operations {
 	importWatchSources: {
 		parameters: {
 			query: {
-				format: 'csv' | 'opml';
+				/** @description csv (Axon's columns, or Google Takeout's YouTube subscriptions.csv), opml, or youtube (YouTube Subscription Manager's JSON: folders become topics). */
+				format: 'csv' | 'opml' | 'youtube';
 				/** @description 1 imports the feeds as general news, apart from the tech watch (EP-155). */
 				news?: '1';
 			};

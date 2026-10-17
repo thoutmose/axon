@@ -168,6 +168,13 @@ func FetchSource(ctx context.Context, pool *pgxpool.Pool, userID, id uuid.UUID, 
 	if err != nil {
 		return fail(errors.New("the address no longer gives a feed"))
 	}
+	// An import without titles named the source after its host (a YouTube
+	// channel, www.youtube.com): the feed's own title replaces it.
+	if feed.Title != "" && src.Title == hostOf(src.URL) {
+		if _, err := pool.Exec(ctx, `UPDATE watch_sources SET title = $2 WHERE id = $1`, id, cut(feed.Title, 200)); err != nil {
+			return fail(err)
+		}
+	}
 	if src.FullText {
 		fillFullText(fctx, pool, src.ID, feed.Items)
 	}
