@@ -62,9 +62,8 @@ type PlanProject struct {
 // PlanView is a started plan, or Started false for a roadmap without one.
 // A library roadmap's preview is not started but has its phases, at the
 // dates starting it today would give (EP-142). Outdated means the roadmap
-// was started from an earlier version of the plan: none of its milestones
-// is one of the plan's phases; Newer is a roadmap started since from the
-// same plan.
+// was started from an earlier version of the plan (EP-146); Newer is a
+// roadmap started since from the same plan.
 type PlanView struct {
 	Started  bool            `json:"started"`
 	Start    string          `json:"start"`
@@ -123,8 +122,9 @@ func PreviewPlan(ctx context.Context, q db.Querier, userID uuid.UUID, source str
 func GetPlan(ctx context.Context, q db.Querier, userID, id uuid.UUID, now time.Time) (PlanView, error) {
 	var planID *string
 	var planStart *time.Time
-	if err := q.QueryRow(ctx, `SELECT r.plan_id, r.plan_start FROM roadmaps r JOIN entities e ON e.id = r.id
-		WHERE r.id = $1 AND e.user_id = $2`, id, userID).Scan(&planID, &planStart); err != nil {
+	var version *int
+	if err := q.QueryRow(ctx, `SELECT r.plan_id, r.plan_start, r.plan_version FROM roadmaps r JOIN entities e ON e.id = r.id
+		WHERE r.id = $1 AND e.user_id = $2`, id, userID).Scan(&planID, &planStart, &version); err != nil {
 		return PlanView{}, err
 	}
 	out := PlanView{Phases: []PlanPhaseView{}}
@@ -196,12 +196,11 @@ func GetPlan(ctx context.Context, q db.Querier, userID, id uuid.UUID, now time.T
 		return out, err
 	}
 
-	matched := 0
+	out.Outdated = version == nil || *version != p.Version
 	for _, v := range p.phases(shift, today) {
 		v.Project = nil
 		if m, ok := milestones[v.Title]; ok {
 			v.Milestone = &m
-			matched++
 		}
 		if pr, ok := projects[p.Phases[v.N-1].Project.Title]; ok {
 			pr.Outcome = p.Phases[v.N-1].Project.Outcome
@@ -216,7 +215,6 @@ func GetPlan(ctx context.Context, q db.Querier, userID, id uuid.UUID, now time.T
 		}
 		out.Phases = append(out.Phases, v)
 	}
-	out.Outdated = len(milestones) > 0 && matched == 0
 	return out, nil
 }
 

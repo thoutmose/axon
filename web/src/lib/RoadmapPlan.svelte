@@ -74,6 +74,31 @@
 	}
 	const certCount = $derived(plan?.phases.reduce((n, p) => n + p.certifications.length, 0) ?? 0);
 
+	// A certification the plan gained after the roadmap was started (EP-146)
+	// is planned for the end of its phase in one click.
+	async function planCert(p: Phase, c: Phase['certifications'][number]) {
+		try {
+			await api('/v1/certifications', {
+				method: 'POST',
+				body: {
+					name: c.name,
+					code: c.code,
+					provider: c.provider,
+					url: c.url || null,
+					status: 'planned',
+					target_on: p.end,
+					cost_cents: c.cost_cents,
+					currency: 'USD',
+					validity_months: c.validity_months
+				}
+			});
+			await load();
+			toast(t('{code} is planned for {date}.', { code: c.code, date: short(p.end) }));
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
 	async function toggle(p: Phase) {
 		if (!p.milestone) return;
 		try {
@@ -231,8 +256,11 @@
 											<li>
 												<a href={c.url} rel="noopener noreferrer" target="_blank">{c.code}</a>
 												<span class="small">{c.name}</span>
-												{#if !preview}<span class="chip"
-														>{c.status ? certStatus[c.status] : t('Not tracked')}</span
+												{#if !preview && c.status}<span class="chip">{certStatus[c.status]}</span
+													>{:else if !preview}<Button
+														variant="secondary"
+														onclick={() => planCert(p, c)}
+														aria-label={t('Plan {code}', { code: c.code })}>{t('Plan it')}</Button
 													>{/if}
 											</li>
 										{/each}

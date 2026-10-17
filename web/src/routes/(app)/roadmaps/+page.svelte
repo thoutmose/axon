@@ -40,8 +40,7 @@
 	// The plan's milestones, readable before it is started (EP-142).
 	let planOpen = $state<Record<string, boolean>>({});
 	// The library is one roadmap with its plan (EP-95); once started, it opens.
-	const started = (s: Source) =>
-		roadmaps?.find((r) => r.source === 'library' && r.title === s.title);
+	const started = (s: Source) => roadmaps?.find((r) => r.plan_id === s.id && r.plan_current);
 
 	async function load() {
 		try {

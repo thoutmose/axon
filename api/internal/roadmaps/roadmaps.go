@@ -49,6 +49,8 @@ type Roadmap struct {
 	LicenseURL  *string   `json:"license_url"`
 	Done        int       `json:"done"`
 	Total       int       `json:"total"` // skipped skills are not counted
+	PlanID      *string   `json:"plan_id"`      // the library plan it was started from
+	PlanCurrent bool      `json:"plan_current"` // started from the plan's current version
 	Skills      []Skill   `json:"skills,omitempty"`
 	Edges       []Edge    `json:"edges,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -90,12 +92,24 @@ type Edge struct {
 const roadmapColumns = `r.id, e.title, r.description, r.source, r.attribution, r.license_url,
 	(SELECT count(*) FROM skills s WHERE s.roadmap_id = r.id AND s.status = 'done'),
 	(SELECT count(*) FROM skills s WHERE s.roadmap_id = r.id AND s.status <> 'skipped'),
-	e.created_at, r.updated_at`
+	e.created_at, r.updated_at, r.plan_id, r.plan_version`
 
 func scan(row pgx.Row) (Roadmap, error) {
 	var r Roadmap
-	err := row.Scan(&r.ID, &r.Title, &r.Description, &r.Source, &r.Attribution, &r.LicenseURL, &r.Done, &r.Total, &r.CreatedAt, &r.UpdatedAt)
+	var version *int
+	err := row.Scan(&r.ID, &r.Title, &r.Description, &r.Source, &r.Attribution, &r.LicenseURL, &r.Done, &r.Total, &r.CreatedAt, &r.UpdatedAt, &r.PlanID, &version)
+	r.PlanCurrent = r.PlanID != nil && version != nil && currentVersion(*r.PlanID) == *version
 	return r, err
+}
+
+// currentVersion is the version of a library plan, 0 for an unknown one.
+func currentVersion(planID string) int {
+	for _, d := range lib.Roadmaps {
+		if d.ID == planID && d.Plan != nil {
+			return d.Plan.Version
+		}
+	}
+	return 0
 }
 
 // List returns the user's roadmaps, newest first.

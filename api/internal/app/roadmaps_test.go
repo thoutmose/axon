@@ -198,7 +198,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 
 	var rm roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
-	if rm.Source != "library" || len(rm.Skills) != 41 || len(rm.Edges) < 8 {
+	if rm.Source != "library" || len(rm.Skills) != 43 || len(rm.Edges) < 8 {
 		t.Fatalf("roadmap = %d skills, %d edges", len(rm.Skills), len(rm.Edges))
 	}
 	var radar struct {
@@ -225,7 +225,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals", nil), &goals)
-	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 35 || len(goals.Items[0].Milestones) != 18 {
+	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 37 || len(goals.Items[0].Milestones) != 18 {
 		t.Fatalf("goals = %+v", goals)
 	}
 	g := goals.Items[0]
@@ -309,12 +309,12 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Errorf("pipekit's project note is missing: %.300s", n)
 	}
 
-	// The plan's 43 certifications, planned for the end of their phases (EP-104, EP-141).
+	// The plan's 45 certifications, planned for the end of their phases (EP-104, EP-141).
 	var certs struct {
 		Items []certJSON `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
-	if len(certs.Items) != 43 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
+	if len(certs.Items) != 45 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
 		t.Fatalf("certifications = %+v", certs.Items)
 	}
 
@@ -384,15 +384,17 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Fatalf("second start = %d %s", code, out)
 	}
 
-	// A roadmap started from an earlier version of the plan (other title,
-	// other phases) says so; starting the new version keeps the exams and
-	// habits it already planned, and the calendar shows the new one only.
+	// A roadmap started from an earlier version of the plan says so;
+	// starting the new version keeps the exams and habits it already
+	// planned, and the calendar shows the new one only.
 	ctx := context.Background()
-	if _, err := pool.Exec(ctx, `UPDATE entities SET title = 'Top-5% in 26 engineering domains' WHERE id = $1`, rm.ID); err != nil {
+	// Version 1 shared phase titles with version 2, so only the stored
+	// version tells them apart (EP-146).
+	if _, err := pool.Exec(ctx, `UPDATE roadmaps SET plan_version = 1 WHERE id = $1`, rm.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE entities SET title = 'Old ' || title WHERE id IN (SELECT id FROM milestones)`); err != nil {
-		t.Fatal(err)
+	if l := alice.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(l, []byte(`"plan_id":"top5-engineer","plan_current":false`)) {
+		t.Fatalf("the earlier roadmap in the list = %.400s", l)
 	}
 	var old struct {
 		Outdated bool    `json:"outdated"`
@@ -409,7 +411,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Fatalf("old plan after the new start = %+v", old)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
-	if len(certs.Items) != 43 {
+	if len(certs.Items) != 45 {
 		t.Errorf("certifications after the new start = %d", len(certs.Items))
 	}
 	if h := alice.mustDo(200, "GET", "/v1/habits?status=active", nil); bytes.Count(h, []byte(`"title":`)) != 4 {

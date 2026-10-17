@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Database architecture and GitOps** (EP-146): two more domains in the roadmap (37) with their certifications (the Google Cloud Professional Cloud Database Engineer and the CNCF GitOps Certified Associate, 45 in all), projects, and assessment; roadmaps remember the plan version they were started from, and **Plan it** adds a certification the plan gained since.
 - **The Top-5% roadmap, version 2** (EP-141): 35 domains in 18 phases from Monday 19 October 2026 to January 2031, a certification for every domain (43 in all) with the project work that proves it, the skills assessment with a domain each (37) and retaken at every phase's end.
 - **The plan and its milestones in sight** (EP-142): the roadmap's page shows the plan phase by phase, and the library shows it before a start (`GET /v1/roadmaps/sources/{source}/plan`); a roadmap started from an earlier version of the plan says so and starts the new one, and the calendar shows only the latest.
 - **Drawing in notes, and where notes live** (EP-143): a sketch sheet in the editor saves an SVG the vault shows too, and opens again for more drawing; the top of Notes says whether notes live in Axon only or also in a vault kept in step.

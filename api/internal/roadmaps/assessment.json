@@ -1343,6 +1343,67 @@
    ]
   },
   {
+   "id": "database-architecture",
+   "title": "Database architecture",
+   "questions": [
+    {
+     "id": "database-architecture-1",
+     "question": "What does a primary key guarantee?",
+     "choices": [
+      "Queries are faster",
+      "Rows cannot be deleted",
+      "Each row is identified by a unique, non-null value",
+      "The table is sorted"
+     ],
+     "answer": 2
+    },
+    {
+     "id": "database-architecture-2",
+     "question": "Why normalise a schema to third normal form?",
+     "choices": [
+      "To avoid indexes",
+      "To use less CPU",
+      "To make every query a single table scan",
+      "Each fact is stored once, so updates cannot contradict each other"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "database-architecture-3",
+     "question": "A query filters on (country, city) and sorts by date. Which index serves it best?",
+     "choices": [
+      "Separate indexes on country and on city",
+      "A hash index on city",
+      "An index on date alone",
+      "A composite index on (country, city, date)"
+     ],
+     "answer": 3
+    },
+    {
+     "id": "database-architecture-4",
+     "question": "When does denormalising (duplicating data) make sense?",
+     "choices": [
+      "When a read path is hot and the copy can be kept consistent by design",
+      "Only for small tables",
+      "Never in production",
+      "Always, it is faster"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "database-architecture-5",
+     "question": "Orders are read mostly by recent date and old ones archived yearly. What design fits?",
+     "choices": [
+      "Range-partition by date, so recent partitions stay small and old ones detach cheaply",
+      "Hash-partition by order ID",
+      "A separate database per customer",
+      "One table with a bigger server"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
    "id": "dba",
    "title": "Database administration",
    "questions": [

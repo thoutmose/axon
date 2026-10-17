@@ -28,7 +28,7 @@
 			icon: 'roadmap',
 			title: 'The Top-5% roadmap, version 2',
 			about:
-				'35 domains in 18 phases from Monday 19 October 2026, a certification for each (43 in all), and its 18 milestones readable before you start.'
+				'37 domains in 18 phases from Monday 19 October 2026, a certification for each (45 in all), and its 18 milestones readable before you start.'
 		},
 		{
 			href: '/today#roadmap-today-title',

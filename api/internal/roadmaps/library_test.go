@@ -44,8 +44,8 @@ func TestTheLibraryIsTheTop5Roadmap(t *testing.T) {
 			}
 		}
 	}
-	if hard != 35 {
-		t.Errorf("%d hard skills, want the 35 domains", hard)
+	if hard != 37 {
+		t.Errorf("%d hard skills, want the 37 domains", hard)
 	}
 	for skill := range resources {
 		if !seen[skill] {

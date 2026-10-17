@@ -6777,6 +6777,10 @@ export interface components {
 			done: number;
 			/** @description Skills not skipped. */
 			total: number;
+			/** @description The library plan it was started from. */
+			plan_id: string | null;
+			/** @description Started from the plan's current version. */
+			plan_current: boolean;
 			skills?: components['schemas']['Skill'][];
 			edges?: {
 				/** Format: uuid */
