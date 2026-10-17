@@ -1,34 +1,27 @@
 <script lang="ts">
 	import { t } from '$lib/i18n.svelte';
 	import { api, message, type Schemas } from '$lib/api';
-	import { colourOrder, slices } from '$lib/budgetCharts';
+	import BudgetCharts from '$lib/BudgetCharts.svelte';
 	import { monthLabel } from '$lib/calendar';
-	import Donut from '$lib/charts/Donut.svelte';
-	import YearBars from '$lib/charts/YearBars.svelte';
-	import { formatDate, localDate } from '$lib/dates';
+	import { localDate } from '$lib/dates';
 	import { formatCents } from '$lib/money';
 	import Status from '$lib/ui/Status.svelte';
 
-	// Reports (EP-138): a period, a month by default, as two donuts of where the
-	// money went and where it came from; below, the year to that month.
+	// Reports (EP-138): a period, a month by default, with its totals, the two
+	// donuts of where the money went and where it came from, and its year.
 	type Report = Schemas['BudgetReport'];
 	let month = $state(localDate(new Date()).slice(0, 7));
 	let months = $state(1);
 	let period = $state<Report | null>(null);
-	let year = $state<Report | null>(null);
 	let error = $state('');
 	const money = (c: number) => formatCents(c, period?.currency ?? 'EUR');
 
 	$effect(() => {
 		const [m, n] = [month, months];
 		if (!/^\d{4}-\d{2}$/.test(m)) return;
-		Promise.all([
-			api<Report>(`/v1/budget/report?months=${n}&month=${m}`),
-			api<Report>(`/v1/budget/report?months=12&month=${m}`)
-		])
-			.then(([p, y]) => {
+		api<Report>(`/v1/budget/report?months=${n}&month=${m}`)
+			.then((p) => {
 				period = p;
-				year = y;
 				error = '';
 			})
 			.catch((err) => (error = message(err)));
@@ -36,17 +29,6 @@
 
 	const income = $derived(period?.months.reduce((n, m) => n + m.income_cents, 0) ?? 0);
 	const outgo = $derived(period?.months.reduce((n, m) => n + m.expense_cents, 0) ?? 0);
-	const spending = $derived(
-		period && year
-			? slices(period.categories, 'expense', colourOrder(year.categories, 'expense'), t('Other'))
-			: []
-	);
-	const earning = $derived(
-		period && year
-			? slices(period.categories, 'income', colourOrder(year.categories, 'income'), t('Other'))
-			: []
-	);
-	const short = (m: string) => formatDate(`${m}-01`, { month: 'short' });
 </script>
 
 <svelte:head><title>{t('Reports · Budget · Axon')}</title></svelte:head>
@@ -72,7 +54,7 @@
 
 {#if error}
 	<Status kind="error" message={error} />
-{:else if !period || !year}
+{:else if !period}
 	<Status kind="loading" message={t('Working it out…')} />
 {:else}
 	<section class="card" aria-labelledby="totals">
@@ -103,61 +85,7 @@
 		</dl>
 	</section>
 
-	<div class="pies">
-		<section class="card" aria-label={t('Where the money went')}>
-			<Donut
-				title={t('Where the money went')}
-				slices={spending}
-				total={money(outgo)}
-				format={money}
-			/>
-		</section>
-		<section class="card" aria-label={t('Where it came from')}>
-			<Donut
-				title={t('Where it came from')}
-				slices={earning}
-				total={money(income)}
-				format={money}
-			/>
-		</section>
-	</div>
-
-	<section class="card" aria-labelledby="by-month">
-		<h2 id="by-month">{t('The year to {month}', { month: monthLabel(month) })}</h2>
-		<YearBars
-			months={year.months.map((m) => ({
-				label: short(m.month),
-				income: m.income_cents,
-				expense: m.expense_cents
-			}))}
-			format={money}
-		/>
-		<details>
-			<summary>{t('Show the figures as a table')}</summary>
-			<table>
-				<thead
-					><tr
-						><th scope="col">{t('Month')}</th><th scope="col" class="num">{t('In')}</th><th
-							scope="col"
-							class="num">{t('Out')}</th
-						><th scope="col" class="num">{t('Balance')}</th></tr
-					></thead
-				>
-				<tbody>
-					{#each year.months as m (m.month)}
-						<tr>
-							<td>{monthLabel(m.month)}</td>
-							<td class="num">{money(m.income_cents)}</td>
-							<td class="num">{money(m.expense_cents)}</td>
-							<td class="num" class:bad={m.income_cents < m.expense_cents}
-								>{money(m.income_cents - m.expense_cents)}</td
-							>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</details>
-	</section>
+	<BudgetCharts {month} {months} />
 {/if}
 
 <style>
@@ -179,20 +107,5 @@
 		margin: 0;
 		font-size: 1.5rem;
 		font-weight: 650;
-	}
-	.pies {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-		gap: var(--space-4);
-	}
-	details {
-		margin-top: var(--space-3);
-	}
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-	.num {
-		text-align: right;
 	}
 </style>

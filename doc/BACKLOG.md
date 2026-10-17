@@ -195,7 +195,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-144 | YouTube and Podcasts their own pages | Each tab has its own scenery, title, and follow panel with suggestions for the roadmap; line icons on the tabs. | SHOULD | 2 pts | EP-122, EP-129 | Done |
 | EP-145 | Your roadmap today | Today shows the plan's phase, today's study block, its project, and the next certification, with the next steps; sections new in a release show until turned off. | MUST | 2 pts | EP-63, EP-142 | Done |
 | EP-146 | Database architecture and GitOps | Two more domains in the roadmap, its certifications, projects, and assessment. | MUST | 2 pts | EP-141 | Done |
-| EP-147 | Budget charts where they are expected | The month's expense and income pies and the year's bars on the Budget page itself. | MUST | 1 pt | EP-138 | Planned |
+| EP-147 | Budget charts where they are expected | The month's expense and income pies and the year's bars on the Budget page itself. | MUST | 1 pt | EP-138 | Done |
 | EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Planned |
 | EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Planned |
 | EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Planned |
@@ -2354,6 +2354,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-146/IS-146.02** · 1 pt · MUST — The plan has a version, and migration `00066` stores the one each roadmap was started from (1 for those started on 5 October 2026, version 1's own date, 2 after). Started, outdated, and the library card's "Open the roadmap" read the plan's id and version, never the title, so the roadmap can be renamed and version 1 (which shares five phase titles with version 2) is still recognised. A certification the plan gained after a start is planned from the plan view with **Plan it**.
 
 **Tests.** Every domain has a certification and an assessment domain (37 and 45); a roadmap set to version 1 is listed as not current and flagged outdated; the assessment serves 190 questions.
+
+### EP-147 — Budget charts where they are expected
+
+**Goal.** "Why I still don't have what I've asked previously: pie charts of expenses and incomes by category for the current month, a bar chart with income and expense for each month of the current year" (owner, 2026-10-17). EP-138 had put them on Reports only, and its bars covered the last twelve months.
+
+- [x] **EP-147/IS-147.01** · 1 pt · MUST — `BudgetCharts` opens the Budget page under the month's counts: where the month's money went and where it came from, by category, and the bars of income and expenses from January to December of that month's year, with the figures as a table. Reports shows the same for the period it is set to, its bars for the calendar year too.
+
+**Tests.** The e2e budget walk finds the pies and "Income and expenses in" this year on the Budget page, and the donuts on Reports.
 
 ### EP-20 — Analytics & insights
 
