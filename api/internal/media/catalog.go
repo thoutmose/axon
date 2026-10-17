@@ -19,7 +19,8 @@ import (
 )
 
 // Catalogue lookups (EP-17). Open Library needs no key; TMDB is on when the
-// operator sets TMDB_API_KEY. Results are cached, requests are paced, and
+// operator sets TMDB_API_KEY; video games come from Wikipedia (EP-149),
+// which needs none either. Results are cached, requests are paced, and
 // covers are copied to Axon so pages never load images from elsewhere.
 
 // Retention: searches for a week; TMDB data for at most six months, as its
@@ -50,13 +51,15 @@ type Candidate struct {
 
 // Endpoints are the providers' base URLs.
 type Endpoints struct {
-	OpenLibrary, OpenLibraryCovers, TMDB, TMDBImages string
+	OpenLibrary, OpenLibraryCovers, TMDB, TMDBImages, Wikipedia string
+	WikimediaImages                                             []string // where Wikipedia's pictures may come from
 }
 
 // DefaultEndpoints are the real providers; tests point them elsewhere.
 var DefaultEndpoints = Endpoints{
 	OpenLibrary: "https://openlibrary.org", OpenLibraryCovers: "https://covers.openlibrary.org",
 	TMDB: "https://api.themoviedb.org/3", TMDBImages: "https://image.tmdb.org/t/p/w342",
+	Wikipedia: "https://en.wikipedia.org", WikimediaImages: []string{"https://upload.wikimedia.org/", "https://thumb.wikimedia.org/"},
 }
 
 // Catalogs holds the providers and their cache.
@@ -99,8 +102,11 @@ func (c *Catalogs) TMDBEnabled() bool { return c.tmdbKey != "" }
 // clients for at most three a second.
 func (c *Catalogs) pace(ctx context.Context, source string) error {
 	gap := 350 * time.Millisecond
-	if source == "tmdb" {
+	switch source {
+	case "tmdb":
 		gap = 100 * time.Millisecond
+	case "wikipedia":
+		gap = 200 * time.Millisecond
 	}
 	c.mu.Lock()
 	wait := time.Until(c.last[source].Add(gap))
@@ -165,8 +171,10 @@ func (c *Catalogs) Search(ctx context.Context, kind, query string) ([]Candidate,
 			return nil, fmt.Errorf("%w: films and series need a TMDB key on this server", ErrUnavailable)
 		}
 		source = "tmdb"
+	case "game":
+		source = "wikipedia"
 	default:
-		return nil, ValidationError{"Kind is film, series, or book."}
+		return nil, ValidationError{"Kind is film, series, book, or game."}
 	}
 	key := kind + ":" + strings.ToLower(query)
 	var cached []Candidate
@@ -177,9 +185,12 @@ func (c *Catalogs) Search(ctx context.Context, kind, query string) ([]Candidate,
 		return cached, nil
 	}
 	var found []Candidate
-	if source == "openlibrary" {
+	switch source {
+	case "openlibrary":
 		found, err = c.searchOpenLibrary(ctx, query)
-	} else {
+	case "wikipedia":
+		found, err = c.searchWikipedia(ctx, query)
+	default:
 		found, err = c.searchTMDB(ctx, kind, query)
 	}
 	if err != nil {
@@ -281,6 +292,8 @@ func (c *Catalogs) Details(ctx context.Context, source, kind, id string) (Candid
 			return Candidate{}, fmt.Errorf("%w: films and series need a TMDB key on this server", ErrUnavailable)
 		}
 		return c.tmdbDetails(ctx, kind, id)
+	case source == "wikipedia" && kind == "game" && validPage(id):
+		return c.wikipediaGame(ctx, id)
 	}
 	return Candidate{}, ValidationError{"That catalogue entry does not exist."}
 }
@@ -391,6 +404,8 @@ func (c *Catalogs) Cover(ctx context.Context, cand Candidate) *uuid.UUID {
 		src = c.OpenLibraryCovers + "/b/id/" + cand.CoverKey + "-M.jpg?default=false"
 	case "tmdb":
 		src = c.TMDBImages + cand.CoverKey
+	case "wikipedia":
+		src = cand.CoverKey // a whole address on Wikimedia's image servers, checked by coverKey
 	default:
 		return nil
 	}

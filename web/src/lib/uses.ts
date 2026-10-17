@@ -102,7 +102,7 @@ export const USES: { id: string; label: string; pages: string[]; sections: strin
 		sections: ['journal', 'water', 'caffeine']
 	},
 	{ id: 'money', label: 'Money', pages: ['budget'], sections: [] },
-	{ id: 'media', label: 'Films, series, and books', pages: ['media'], sections: [] },
+	{ id: 'media', label: 'Films, series, books, and games', pages: ['media'], sections: [] },
 	{ id: 'home', label: 'A shared home', pages: ['household'], sections: ['household'] }
 ];
 

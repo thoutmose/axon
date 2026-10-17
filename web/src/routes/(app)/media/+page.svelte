@@ -23,12 +23,14 @@
 		{ value: '', label: t('All') },
 		{ value: 'film', label: t('Films') },
 		{ value: 'series', label: t('Series') },
-		{ value: 'book', label: t('Books') }
+		{ value: 'book', label: t('Books') },
+		{ value: 'game', label: t('Video games') }
 	]);
 	const kindName: Record<Kind, string> = $derived({
 		film: t('Film'),
 		series: t('Series'),
-		book: t('Book')
+		book: t('Book'),
+		game: t('Video game')
 	});
 	const columns: { status: Item['status']; label: string }[] = $derived([
 		{ status: 'doing', label: t('In progress') },
@@ -36,7 +38,12 @@
 		{ status: 'done', label: t('Finished') },
 		{ status: 'dropped', label: t('Dropped') }
 	]);
-	const unit: Record<Kind, string> = { film: 'minutes', series: 'episodes', book: 'pages' };
+	const unit: Record<Kind, string> = {
+		film: 'minutes',
+		series: 'episodes',
+		book: 'pages',
+		game: 'hours'
+	};
 
 	const kind = $derived((page.url.searchParams.get('kind') ?? '') as Kind | '');
 	let items = $state<Item[] | null>(null);
@@ -75,11 +82,17 @@
 
 	// --- Adding ---
 	let addKind = $state<Kind>('book');
+	// The kind of the tab open is the kind to add.
+	$effect(() => {
+		if (kind) addKind = kind;
+	});
 	let query = $state('');
 	let results = $state<Candidate[] | null>(null);
 	let searching = $state(false);
 	let adding = $state('');
-	const available = $derived(addKind === 'book' ? catalogs.books : catalogs.films_and_series);
+	const available = $derived(
+		addKind === 'book' || addKind === 'game' ? catalogs.books : catalogs.films_and_series
+	);
 	const canSearch = $derived(available && catalogs.consented);
 
 	// Lookups send the title to Open Library or TMDB, so they wait for consent.
@@ -216,8 +229,9 @@
 
 	// Items added by hand, imported, or from the demo have no cover until looked up.
 	const missing = $derived(
-		(items ?? []).filter((i) => !i.cover_id && (i.kind === 'book' || catalogs.films_and_series))
-			.length
+		(items ?? []).filter(
+			(i) => !i.cover_id && (i.kind === 'book' || i.kind === 'game' || catalogs.films_and_series)
+		).length
 	);
 	let finding = $state(false);
 	// Covers are looked for by themselves once per visit (EP-134); quietly,
@@ -268,7 +282,7 @@
 
 <svelte:head><title>{t('Media')} · Axon</title></svelte:head>
 
-<h1>{t('Films, series, and books')}</h1>
+<h1>{t('Films, series, books, and games')}</h1>
 <AgentDock {...pageAgents.media} onapplied={() => load()} />
 
 <nav class="tabs" aria-label={t('Show')}>
@@ -288,6 +302,7 @@
 			<option value="book">{t('Book')}</option>
 			<option value="film">{t('Film')}</option>
 			<option value="series">{t('Series')}</option>
+			<option value="game">{t('Video game')}</option>
 		</select>
 		<label class="visually-hidden" for="media-q">{t('Title')}</label>
 		<input id="media-q" bind:value={query} maxlength="200" placeholder={t('Title')} required />
@@ -305,7 +320,7 @@
 	{:else if !catalogs.consented}
 		<p class="small">
 			{t(
-				'To search, Axon sends the title you type to Open Library (books) or TMDB (films and series). Nothing else about you is sent.'
+				'To search, Axon sends the title you type to Open Library (books), TMDB (films and series), or Wikipedia (games). Nothing else about you is sent.'
 			)}
 			<Button variant="secondary" onclick={allowLookups}>{t('Allow lookups')}</Button>
 		</p>
@@ -370,7 +385,7 @@
 	{#if items.length === 0}
 		<Status
 			kind="empty"
-			message={t('Nothing here yet. Add a film, a series, or a book you want to enjoy.')}
+			message={t('Nothing here yet. Add a film, a series, a book, or a game you want to enjoy.')}
 		/>
 	{/if}
 	{#each columns as col (col.status)}

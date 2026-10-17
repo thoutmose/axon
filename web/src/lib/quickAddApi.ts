@@ -30,11 +30,12 @@ export async function addParsed(p: Parsed): Promise<string> {
 		case 'book':
 		case 'film':
 		case 'series':
+		case 'game':
 			await api('/v1/media', {
 				method: 'POST',
 				body: { kind: p.kind, title: p.title, status: 'want' }
 			});
-			return `Added to ${p.kind === 'book' ? 'books to read' : 'films and series to watch'}.`;
+			return `Added to ${p.kind === 'book' ? 'books to read' : p.kind === 'game' ? 'games to play' : 'films and series to watch'}.`;
 		case 'habit':
 			await api('/v1/habits', { method: 'POST', body: { title: p.title } });
 			return 'Habit added. Give it a two-minute version on the Habits page.';

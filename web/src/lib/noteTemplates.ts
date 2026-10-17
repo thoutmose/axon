@@ -6,6 +6,7 @@ import { stem } from './notes';
 import areaMd from './vaultTemplates/area.md?raw';
 import bookMd from './vaultTemplates/book.md?raw';
 import filmMd from './vaultTemplates/film.md?raw';
+import gameMd from './vaultTemplates/game.md?raw';
 import seriesMd from './vaultTemplates/series.md?raw';
 import dailyMd from './vaultTemplates/daily.md?raw';
 import goalMd from './vaultTemplates/goal.md?raw';
@@ -103,7 +104,7 @@ export const templates: Template[] = [
 		literatureMd,
 		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
 	),
-	// Films, series, and books (EP-136): literature notes made for each.
+	// Films, series, books (EP-136), and video games (EP-149): literature notes made for each.
 	fromVault(
 		'film',
 		'zettelkasten',
@@ -126,6 +127,14 @@ export const templates: Template[] = [
 		'Book note',
 		'A book, chapter by chapter, with a reading log, quotes, and what you will do differently.',
 		bookMd,
+		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
+	),
+	fromVault(
+		'game',
+		'zettelkasten',
+		'Game note',
+		'A video game: how it plays, the moments that stay, its design ideas, a play log, and your verdict.',
+		gameMd,
 		(t, now) => `Zettel/literature/${zettelId(now)}-${slug(t)}.md`
 	),
 	fromVault(
@@ -378,12 +387,12 @@ export function itemTemplates(folder = 'Axon'): Template[] {
 				) +
 				`# ${t}\n\n## Identity\nI am a person who \n\n## Make it obvious (cue)\n\n\n## Make it attractive (craving)\n\n\n## Make it easy (two-minute version)\n\n\n## Make it satisfying (reward)\n\n\n## Habit contract\n\n\n## Notes\n\n`
 		),
-		...(['film', 'series', 'book'] as const).map((k) =>
+		...(['film', 'series', 'book', 'game'] as const).map((k) =>
 			item(
 				k,
-				k === 'film' ? 'Film' : k === 'series' ? 'Series' : 'Book',
-				`Becomes a ${k} on your Media list.`,
-				`Media/${k === 'film' ? 'Films' : k === 'series' ? 'Series' : 'Books'}`,
+				{ film: 'Film', series: 'Series', book: 'Book', game: 'Video game' }[k],
+				`Becomes a ${k === 'game' ? 'video game' : k} on your Media list.`,
+				`Media/${{ film: 'Films', series: 'Series', book: 'Books', game: 'Games' }[k]}`,
 				(t) =>
 					fm(k, 'status: want\nrating: \nprogress: 0\ntotal: \nyear: \ncreators: \ngenres: []\n') +
 					`# ${t}\n\n## Review\n\n\n## Notes\n\n`
@@ -516,9 +525,9 @@ export function builtInFiles(now: Date): { path: string; content: string }[] {
 	);
 }
 
-/** A film's, series', or book's details for its note template (EP-136). */
+/** A film's, series', book's, or game's details for its note template (EP-136, EP-149). */
 export type MediaDetails = {
-	kind: 'film' | 'series' | 'book';
+	kind: 'film' | 'series' | 'book' | 'game';
 	title: string;
 	creators: string;
 	year: number | null;

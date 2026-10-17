@@ -263,7 +263,7 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 	}
 
-	// Films, series, and books: finished favourites make the recommendations explain themselves.
+	// Films, series, books, and games: finished favourites make the recommendations explain themselves.
 	var reading uuid.UUID // the book the reading habit turns the pages of (EP-137)
 	for _, m := range []struct {
 		title, kind, status, creators string
@@ -277,6 +277,10 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		{"The Left Hand of Darkness", "book", "done", "Ursula K. Le Guin", []string{"Science fiction"}, 10, 0, 0, 0},
 		{"The Dispossessed", "book", "want", "Ursula K. Le Guin", []string{"Science fiction"}, 0, 0, 0, 0},
 		{"Designing Data-Intensive Applications", "book", "doing", "Martin Kleppmann", []string{"Software"}, 0, 210, 611, 0},
+		// Video games (EP-149): progress is hours played.
+		{"Factorio", "game", "doing", "Wube Software", []string{"Automation", "Strategy"}, 0, 120, 0, 2020},
+		{"Hades", "game", "done", "Supergiant Games", []string{"Roguelike"}, 9, 46, 0, 2020},
+		{"Outer Wilds", "game", "want", "Mobius Digital", []string{"Exploration"}, 0, 0, 0, 2019},
 	} {
 		if s.err != nil {
 			break

@@ -46,6 +46,20 @@ func (f *fakeCatalog) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_, _ = w.Write(jpeg)
+	case r.URL.Path == "/wp/w/api.php":
+		//nolint:gosec // a test server pointing at itself
+		_, _ = w.Write([]byte(`{"query":{"pages":[
+			{"index":2,"title":"Hades","description":"Greek god of the dead","thumbnail":{"source":"http://` + r.Host + `/wm/god.jpg"}},
+			{"index":1,"title":"Hades (video game)","description":"2020 video game","thumbnail":{"source":"http://` + r.Host + `/wm/wikipedia/en/c/cc/Hades_cover.png?utm_source=x"}},
+			{"index":3,"title":"Hades II","description":"2025 roguelike game","thumbnail":{"source":"https://elsewhere.test/x.png"}},
+			{"index":4,"title":"Roguelike","description":"Video game subgenre"}]}}`))
+	case r.URL.Path == "/wp/api/rest_v1/page/summary/Hades_(video_game)":
+		//nolint:gosec // a test server pointing at itself
+		_, _ = w.Write([]byte(`{"type":"standard","title":"Hades (video game)","description":"2020 roguelike video game",
+			"extract":"Hades is a roguelike action game developed and published by Supergiant Games. It was released for macOS and Windows in 2020.",
+			"thumbnail":{"source":"http://` + r.Host + `/wm/wikipedia/en/c/cc/Hades_cover.png"}}`))
+	case r.URL.Path == "/wm/wikipedia/en/c/cc/Hades_cover.png":
+		_, _ = w.Write(jpeg)
 	case r.URL.Path == "/tmdb/search/movie":
 		_, _ = w.Write([]byte(`{"results":[{"id":603,"title":"The Matrix","release_date":"1999-03-30","overview":"A hacker learns the truth.","poster_path":"/poster.jpg"}]}`))
 	case r.URL.Path == "/tmdb/movie/603":
@@ -74,7 +88,8 @@ func useFakeCatalog(t *testing.T) *fakeCatalog {
 	srv := httptest.NewServer(fake)
 	t.Cleanup(srv.Close)
 	saved := media.DefaultEndpoints
-	media.DefaultEndpoints = media.Endpoints{OpenLibrary: srv.URL + "/ol", OpenLibraryCovers: srv.URL + "/olc", TMDB: srv.URL + "/tmdb", TMDBImages: srv.URL + "/img"}
+	media.DefaultEndpoints = media.Endpoints{OpenLibrary: srv.URL + "/ol", OpenLibraryCovers: srv.URL + "/olc", TMDB: srv.URL + "/tmdb", TMDBImages: srv.URL + "/img",
+		Wikipedia: srv.URL + "/wp", WikimediaImages: []string{srv.URL + "/wm/"}}
 	t.Cleanup(func() { media.DefaultEndpoints = saved })
 	for _, table := range []string{"media_lookups", "media_covers"} {
 		if _, err := pool.Exec(context.Background(), "DELETE FROM "+table); err != nil {
@@ -187,7 +202,7 @@ func TestMediaTrackingCatalogueAndRecommendations(t *testing.T) {
 	if out := alice.mustDo(200, "GET", "/v1/media?kind=book&status=done", nil); !bytes.Contains(out, []byte(dune.ID)) || bytes.Contains(out, []byte(arrival.ID)) {
 		t.Fatalf("filtered list = %s", out)
 	}
-	alice.mustDo(400, "GET", "/v1/media?kind=game", nil)
+	alice.mustDo(400, "GET", "/v1/media?kind=podcast", nil)
 
 	// Private to its owner.
 	bob.mustDo(404, "GET", "/v1/media/"+dune.ID, nil)
@@ -215,6 +230,48 @@ func TestMediaTrackingCatalogueAndRecommendations(t *testing.T) {
 
 // With a TMDB key, films come from TMDB with genres and director, and TMDB
 // text and covers are dropped once older than TMDB's six months.
+// Video games come from Wikipedia without a key (EP-149): only its game
+// pages, their year, genre, developer, and cover, copied from its own
+// image server only; hours played are the progress.
+func TestVideoGamesFromWikipedia(t *testing.T) {
+	fake := useFakeCatalog(t)
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	alice.mustDo(204, "PUT", "/v1/me/consents/external_metadata", []byte(`{"granted":true}`))
+
+	var found struct {
+		Items []struct {
+			SourceID string   `json:"source_id"`
+			Year     *int     `json:"year"`
+			Genres   []string `json:"genres"`
+			HasCover bool     `json:"has_cover"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/media/search?kind=game&q=hades", nil), &found)
+	if len(found.Items) != 2 || found.Items[0].SourceID != "Hades_(video_game)" || found.Items[0].Year == nil || *found.Items[0].Year != 2020 ||
+		!found.Items[0].HasCover || found.Items[1].HasCover {
+		t.Fatalf("search = %+v", found.Items) // the god is left out; a cover from elsewhere is refused
+	}
+	alice.mustDo(422, "POST", "/v1/media", []byte(`{"kind":"game","catalog":{"source":"wikipedia","source_id":"../x"}}`))
+	hades := alice.addMedia(`{"kind":"game","catalog":{"source":"wikipedia","source_id":"Hades_(video_game)"}}`)
+	if hades.Title != "Hades" || hades.Creators != "Supergiant Games" || !strings.Contains(hades.Overview, "roguelike") ||
+		len(hades.Genres) != 1 || hades.Source != "wikipedia" || hades.CoverID == nil {
+		t.Fatalf("from Wikipedia: %+v", hades)
+	}
+	var played mediaJSON
+	_ = json.Unmarshal(alice.mustDo(200, "PATCH", "/v1/media/"+hades.ID, []byte(`{"status":"doing","progress":12}`)), &played)
+	if played.Progress != 12 || played.StartedOn == nil {
+		t.Fatalf("hours played: %+v", played)
+	}
+	if out := alice.mustDo(200, "GET", "/v1/media?kind=game", nil); !bytes.Contains(out, []byte(`"title":"Hades"`)) {
+		t.Fatalf("games = %s", out)
+	}
+	if n := fake.count("/wm/"); n != 1 {
+		t.Fatalf("cover downloaded %d times", n)
+	}
+}
+
 func TestMediaTMDBAndRetention(t *testing.T) {
 	fake := useFakeCatalog(t)
 	t.Setenv("TMDB_API_KEY", "test-key")

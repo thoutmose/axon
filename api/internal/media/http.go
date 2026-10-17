@@ -229,7 +229,7 @@ func (h *Handlers) create(w http.ResponseWriter, r *http.Request) {
 	var cat *Catalog
 	if body.Catalog != nil {
 		if f.Kind == nil {
-			httpx.Problem(w, http.StatusUnprocessableEntity, "Say whether it is a film, a series, or a book.")
+			httpx.Problem(w, http.StatusUnprocessableEntity, "Say whether it is a film, a series, a book, or a game.")
 			return
 		}
 		if err := h.consented(r, who.UserID); err != nil {

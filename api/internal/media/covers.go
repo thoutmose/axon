@@ -21,12 +21,12 @@ var CoverBudget = 12 * time.Second
 
 // FindCovers looks up the person's items that have no cover, oldest first,
 // and gives each the cover of the same work when the catalogue has one.
-// Books use Open Library; films and series only when TMDB is set up. allow
-// spends one lookup from the person's quota. When the quota or the time
-// budget runs out, more is true and the rest wait for the next run; lookups
-// are cached, so a run again is cheap.
+// Books use Open Library, games Wikipedia; films and series only when
+// TMDB is set up. allow spends one lookup from the person's quota. When the
+// quota or the time budget runs out, more is true and the rest wait for the
+// next run; lookups are cached, so a run again is cheap.
 func (c *Catalogs) FindCovers(ctx context.Context, userID uuid.UUID, allow func() bool) (checked, found int, more bool, err error) {
-	kinds := []string{"book"}
+	kinds := []string{"book", "game"}
 	if c.TMDBEnabled() {
 		kinds = append(kinds, "film", "series")
 	}
