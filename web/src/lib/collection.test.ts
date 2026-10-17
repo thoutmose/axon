@@ -15,6 +15,24 @@ const card = (over: Record<string, unknown>) =>
 	}) as Parameters<typeof cardName>[0];
 
 describe('the collection (EP-119)', () => {
+	it('names roadmap, project, and goal cards after them, and says what is left (EP-170)', () => {
+		const goal = card({
+			family: 'goal',
+			title: 'Run 10 km',
+			value: 50,
+			unit: 'percent',
+			next: { tier: 'gold', target: 100 }
+		});
+		expect(cardName(goal)).toBe('Run 10 km');
+		expect(nextStep(goal)).toBe('100 % of its milestones reached for gold');
+		expect(cardName(card({ family: 'milestones' }))).toBe('Milestones reached');
+		const g = groups([
+			goal,
+			card({ family: 'project', title: 'pipekit' }),
+			card({ family: 'exams' })
+		]);
+		expect(g.map((x) => x.id)).toEqual(['goals', 'projects', 'milestones']);
+	});
 	it('names a card by its skill or habit, or by what it counts', () => {
 		expect(cardName(card({ family: 'habit', title: 'Read 20 pages' }))).toBe('Read 20 pages');
 		expect(cardName(card({}))).toBe('Hard problems');

@@ -57,7 +57,15 @@
 		focus: 'M6 3h12M6 21h12M7 3c0 6 10 6 10 9s-10 3-10 9M17 3c0 6-10 6-10 9',
 		reviews: 'M4 6h12v14H4zM8 3h12v14',
 		streak: 'M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 3 2 4 3 4 0-4-2-6 0-10z',
-		decisions: 'M12 3v18M12 7h7l2 2-2 2h-7M12 13H5l-2 2 2 2h7'
+		decisions: 'M12 3v18M12 7h7l2 2-2 2h-7M12 13H5l-2 2 2 2h7',
+		roadmap: 'M3 20h4l3-8 4 5 3-11h4M3 20V4',
+		project: 'M4 7h16v12H4zM9 7V4h6v3',
+		goal: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',
+		milestones: 'M5 21V4M5 4h11l-2 4 2 4H5',
+		projects: 'M5 13l4 4L19 7',
+		goals: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4',
+		checkins: 'M4 12l5 5L20 6M4 6h7',
+		exams: 'M12 3l9 5-9 5-9-5zM7 11v5c3 2 7 2 10 0v-5'
 	};
 </script>
 

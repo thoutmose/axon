@@ -27,6 +27,13 @@ func TestCollection(t *testing.T) {
 		alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+day(-back), []byte(`{"status":"done"}`))
 	}
 	alice.mustDo(201, "POST", "/v1/practice", []byte(`{"title":"Median of Two Sorted Arrays","platform":"leetcode","difficulty":"hard","outcome":"solved"}`))
+	// A goal with one of its two milestones reached (EP-170).
+	var g struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals", []byte(`{"title":"Run 10 km"}`)), &g)
+	alice.mustDo(201, "POST", "/v1/goals/"+g.ID+"/milestones", []byte(`{"title":"Run 5 km","done":true}`))
+	alice.mustDo(201, "POST", "/v1/goals/"+g.ID+"/milestones", []byte(`{"title":"Run 8 km"}`))
 
 	var c struct {
 		Cards []struct {
@@ -57,7 +64,13 @@ func TestCollection(t *testing.T) {
 	if easy := c.Cards[byID["practice:easy"]]; easy.Tier != "" || easy.Next.Target != 10 {
 		t.Fatalf("easy card = %+v", easy)
 	}
-	if c.Earned != 2 || c.Total != 3*len(c.Cards) {
+	if goal := c.Cards[byID["goal:"+g.ID]]; goal.Title != "Run 10 km" || goal.Value != 50 || goal.Tier != "silver" {
+		t.Fatalf("goal card = %+v", goal)
+	}
+	if m := c.Cards[byID["milestones"]]; m.Value != 1 || m.Tier != "bronze" {
+		t.Fatalf("milestones card = %+v", m)
+	}
+	if c.Earned != 2+2+1 || c.Total != 3*len(c.Cards) {
 		t.Fatalf("earned %d of %d over %d cards", c.Earned, c.Total, len(c.Cards))
 	}
 }

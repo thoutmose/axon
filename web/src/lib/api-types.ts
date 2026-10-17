@@ -16167,7 +16167,22 @@ export interface operations {
 							/** @example practice:hard */
 							id: string;
 							/** @enum {unknown} */
-							family: 'skill' | 'habit' | 'practice' | 'focus' | 'reviews' | 'streak' | 'decisions';
+							family:
+								| 'skill'
+								| 'habit'
+								| 'roadmap'
+								| 'project'
+								| 'goal'
+								| 'practice'
+								| 'focus'
+								| 'reviews'
+								| 'streak'
+								| 'decisions'
+								| 'milestones'
+								| 'projects'
+								| 'goals'
+								| 'checkins'
+								| 'exams';
 							/** @description The skill's or habit's name; empty for the others. */
 							title: string;
 							/** @description For practice: easy, medium, or hard. */
@@ -16176,7 +16191,18 @@ export interface operations {
 							tier: '' | 'bronze' | 'silver' | 'gold';
 							value: number;
 							/** @enum {unknown} */
-							unit: 'days' | 'hours' | 'problems' | 'reviews' | 'decisions';
+							unit:
+								| 'days'
+								| 'hours'
+								| 'problems'
+								| 'reviews'
+								| 'decisions'
+								| 'percent'
+								| 'milestones'
+								| 'projects'
+								| 'goals'
+								| 'check-ins'
+								| 'exams';
 							/** @description The next tier and its threshold; target 0 when it is not a number (a skill started, or learned). */
 							next: {
 								/** @enum {unknown} */

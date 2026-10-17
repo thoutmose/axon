@@ -2,6 +2,7 @@ package progress
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,7 +31,7 @@ type Step struct {
 // and the next tier.
 type Card struct {
 	ID     string  `json:"id"`
-	Family string  `json:"family"` // skill, habit, practice, focus, reviews, streak, decisions
+	Family string  `json:"family"` // skill, habit, roadmap, project, goal, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams
 	Title  string  `json:"title"`  // the skill's or habit's name; empty for the others
 	Kind   string  `json:"kind"`   // practice: easy, medium, hard
 	Tier   string  `json:"tier"`
@@ -80,6 +81,12 @@ var (
 	reviewSteps   = [3]float64{100, 1000, 5000}
 	streakSteps   = [3]float64{7, 30, 100}
 	decisionSteps = [3]float64{5, 20, 50}
+	shareSteps    = [3]float64{25, 50, 100} // percent of a roadmap, project, or goal done
+	reachedSteps  = [3]float64{1, 10, 30}   // milestones reached
+	shippedSteps  = [3]float64{1, 5, 15}    // projects done
+	achievedSteps = [3]float64{1, 3, 10}    // goals achieved
+	checkinSteps  = [3]float64{50, 500, 2000}
+	examSteps     = [3]float64{1, 5, 15}
 	skillHours    = 10.0 // of focus for a skill's silver trophy
 )
 
@@ -153,6 +160,56 @@ func GetCollection(ctx context.Context, q db.Querier, userID uuid.UUID, tz strin
 		run := habits.BestRun(h.Days, h.Checkins, from, today)
 		c.Cards = append(c.Cards, card("habit:"+h.ID.String(), "habit", h.Title, "", "days", float64(run), habitSteps))
 	}
+
+	// A card per roadmap, project, and goal (EP-170): the share of it done,
+	// gold when all of it is (a project marked done, a goal achieved).
+	rows, err = q.Query(ctx, `SELECT 'roadmap', r.id, e.title,
+			coalesce(100.0 * count(s.id) FILTER (WHERE s.status = 'done') / nullif(count(s.id), 0), 0)
+		FROM roadmaps r JOIN entities e ON e.id = r.id LEFT JOIN skills s ON s.roadmap_id = r.id AND s.status <> 'skipped'
+		WHERE e.user_id = $1 GROUP BY r.id, e.title
+		UNION ALL
+		SELECT 'project', p.id, e.title, CASE WHEN p.status = 'done' THEN 100 ELSE coalesce((SELECT 100.0 * count(*) FILTER (WHERE t.status = 'done')
+				/ nullif(count(*) FILTER (WHERE t.status <> 'cancelled'), 0) FROM project_cards c JOIN tasks t ON t.id = c.task_id WHERE c.project_id = p.id), 0) END
+		FROM projects p JOIN entities e ON e.id = p.id WHERE e.user_id = $1 AND p.status <> 'archived'
+		UNION ALL
+		SELECT 'goal', g.id, e.title, CASE WHEN g.status = 'achieved' THEN 100 ELSE coalesce((SELECT 100.0 * count(*) FILTER (WHERE m.done_at IS NOT NULL)
+				/ nullif(count(*), 0) FROM milestones m WHERE m.goal_id = g.id), 0) END
+		FROM goals g JOIN entities e ON e.id = g.id WHERE e.user_id = $1 AND g.status <> 'archived'
+		ORDER BY 1, 3`, userID)
+	if err != nil {
+		return c, err
+	}
+	type share struct {
+		Family string
+		ID     uuid.UUID
+		Title  string
+		Done   float64
+	}
+	shares, err := pgx.CollectRows(rows, pgx.RowToStructByPos[share])
+	if err != nil {
+		return c, err
+	}
+	for _, sh := range shares {
+		c.Cards = append(c.Cards, card(sh.Family+":"+sh.ID.String(), sh.Family, sh.Title, "", "percent", math.Floor(sh.Done), shareSteps))
+	}
+
+	// Milestones reached, projects done, goals achieved, check-ins, exams passed.
+	var reached, shipped, achieved, checkins, exams int
+	if err := q.QueryRow(ctx, `SELECT
+		(SELECT count(*) FROM milestones m JOIN entities e ON e.id = m.id WHERE e.user_id = $1 AND m.done_at IS NOT NULL)::int,
+		(SELECT count(*) FROM projects p JOIN entities e ON e.id = p.id WHERE e.user_id = $1 AND p.status = 'done')::int,
+		(SELECT count(*) FROM goals g JOIN entities e ON e.id = g.id WHERE e.user_id = $1 AND g.status = 'achieved')::int,
+		(SELECT count(*) FROM habit_checkins c JOIN entities e ON e.id = c.habit_id WHERE e.user_id = $1 AND c.status IN ('done', 'two_minute'))::int,
+		(SELECT count(*) FROM certifications c WHERE c.user_id = $1 AND c.status = 'passed')::int`, userID).
+		Scan(&reached, &shipped, &achieved, &checkins, &exams); err != nil {
+		return c, err
+	}
+	c.Cards = append(c.Cards,
+		card("milestones", "milestones", "", "", "milestones", float64(reached), reachedSteps),
+		card("projects", "projects", "", "", "projects", float64(shipped), shippedSteps),
+		card("goals", "goals", "", "", "goals", float64(achieved), achievedSteps),
+		card("checkins", "checkins", "", "", "check-ins", float64(checkins), checkinSteps),
+		card("exams", "exams", "", "", "exams", float64(exams), examSteps))
 
 	// Problems solved unaided, by difficulty; focus hours; reviews; decisions reviewed.
 	var easy, medium, hard, reviews, decided int
