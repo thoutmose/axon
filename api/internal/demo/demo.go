@@ -511,10 +511,11 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 
 	// Progress rewards on, with a freeze in stock, music for focus, the tech
-	// watch podcast, and Today with its health cards, so the demo shows them.
+	// watch podcast, Jarvis, and Today with its health cards, so the demo shows them.
 	if s.err == nil {
 		doc := settings.Defaults()
 		doc.Gamification.Enabled = true
+		doc.Jarvis.Enabled = true // the button shows; agents do not run in the demo, and the panel says so
 		doc.Focus.Sound = "music"
 		doc.Podcast.Enabled = true
 		doc.Today.Sections = []string{"kpis", "roadmap", "tasks", "habits", "milestones", "goals", "journal", "water", "caffeine", "notes", "overview"}

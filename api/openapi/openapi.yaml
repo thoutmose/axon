@@ -10319,6 +10319,12 @@ components:
             monthly: { type: array, uniqueItems: true, items: { enum: [goals, month, watch] } }
             quote: { type: boolean }
             picture: { type: boolean }
+        jarvis:
+          type: object
+          additionalProperties: false
+          description: "Jarvis (EP-153): the master agent's floating button and side panel, off by default."
+          properties:
+            enabled: { type: boolean }
         caffeine:
           type: object
           additionalProperties: false

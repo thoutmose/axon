@@ -3993,5 +3993,22 @@ export const fr: Record<string, string> = {
 	Compaction: 'Compaction',
 	'No AI call yet.': 'Aucun appel d’IA pour l’instant.',
 	'Axon compacts what its tools hand the model, as rtk does for a coding agent’s commands: empty fields left out, times to the minute, lists of records as rows. The saving above is measured on your own calls. rtk itself compresses shell output for coding agents such as Claude Code, which can use it on the server; Axon’s agents run no commands, so it does not apply to them.':
-		'Axon compacte ce que ses outils transmettent au modèle, comme rtk le fait pour les commandes d’un agent de code : champs vides omis, heures à la minute, listes d’enregistrements en lignes. L’économie ci-dessus est mesurée sur vos propres appels. rtk lui-même compresse la sortie du shell pour les agents de code comme Claude Code, qui peuvent l’utiliser sur le serveur ; les agents d’Axon n’exécutent aucune commande, il ne s’applique donc pas à eux.'
+		'Axon compacte ce que ses outils transmettent au modèle, comme rtk le fait pour les commandes d’un agent de code : champs vides omis, heures à la minute, listes d’enregistrements en lignes. L’économie ci-dessus est mesurée sur vos propres appels. rtk lui-même compresse la sortie du shell pour les agents de code comme Claude Code, qui peuvent l’utiliser sur le serveur ; les agents d’Axon n’exécutent aucune commande, il ne s’applique donc pas à eux.',
+	'Jarvis could not finish ({status}).': 'Jarvis n’a pas pu terminer ({status}).',
+	'Close Jarvis': 'Fermer Jarvis',
+	'Open Jarvis': 'Ouvrir Jarvis',
+	'Your master agent: it asks Axon’s agents for you.':
+		'Votre agent maître : il demande aux agents d’Axon pour vous.',
+	'On {provider}, with your Jarvis model.': 'Sur {provider}, avec votre modèle pour Jarvis.',
+	'AI settings': 'Réglages de l’IA',
+	Privacy: 'Confidentialité',
+	'Say it in your own words: “I’m reading The Martian, add it to my books”, “Plan my week around the roadmap”, “What should I review today?”. Every change waits for your approval here.':
+		'Dites-le avec vos mots : « Je lis Seul sur Mars, ajoute-le à mes livres », « Organise ma semaine autour du parcours », « Que dois-je réviser aujourd’hui ? ». Chaque changement attend votre approbation ici.',
+	Approved: 'Approuvée',
+	Rejected: 'Rejetée',
+	'Jarvis is asking the agents…': 'Jarvis interroge les agents…',
+	'Ask Jarvis': 'Demander à Jarvis',
+	'Ask Jarvis…': 'Demandez à Jarvis…',
+	'Show Jarvis, the master agent: a ⚡ button at the bottom right opens a side panel where it asks Axon’s agents for you, on this provider or a local model (Ollama).':
+		'Afficher Jarvis, l’agent maître : un bouton ⚡ en bas à droite ouvre un panneau latéral où il demande aux agents d’Axon pour vous, sur ce fournisseur ou un modèle local (Ollama).'
 };

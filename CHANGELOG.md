@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **Jarvis** (EP-153): an opt-in ⚡ button opens a side panel where Jarvis, the master agent, asks Axon's agents for you ("I'm reading The Martian, add it to my books" becomes the book, being read, with its note, waiting for approval), on your provider or a local model, in front of a neon city and an animated face of light.
 - **AI tokens, measured and compacted** (EP-152): agents' tool results are compacted before they reach the model (empty fields out, times to the minute, records as rows), and Preferences → AI shows tokens and cost this month, by month, and by agent, with the measured saving.
 - **A model per agent** (EP-151): Preferences → AI → Models chooses one model for all agents or one per agent (Jarvis and video summaries included), priced by model; videos and episodes can be summarised in prose by your model, once each, within the budget.
 - **Maths in notes** (EP-150): `$…$` and `$$…$$` LaTeX rendered as MathML by KaTeX, as in Obsidian, and a **Write maths** helper in the editor with structures, symbols, Greek letters, and a live preview.
@@ -83,6 +84,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Fixed
 
+- Saving Preferences reset the coffee, digest, and podcast settings to their defaults; the settings now come back whole and are sent back whole (EP-153).
 - Edits of a note or an item large enough to be compressed failed with "changed somewhere else" on their first save: the proxy suffixes the entity tag with its encoding, and the API now reads it through (since EP-74, found in EP-100).
 - Aligned columns in Markdown tables align again: the alignment was a style attribute, which the Content Security Policy blocks.
 - New accounts start in the browser's time zone instead of UTC, so "today" is right from the first night (EP-69).

@@ -7027,6 +7027,10 @@ export interface components {
 				quote?: boolean;
 				picture?: boolean;
 			};
+			/** @description Jarvis (EP-153): the master agent's floating button and side panel, off by default. */
+			jarvis?: {
+				enabled?: boolean;
+			};
 			/** @description Coffee and tea (EP-117): bedtime, for the caffeine left then and the cut-off, and how fast the person clears caffeine (half-life fast 3 h, average 5 h, slow 7 h). */
 			caffeine?: {
 				/** @example 23:00 */

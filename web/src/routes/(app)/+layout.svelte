@@ -10,15 +10,20 @@
 	import { applyAppearance, type Appearance } from '$lib/preferences';
 	import { goto } from '$app/navigation';
 	import ShortcutsHelp from '$lib/ShortcutsHelp.svelte';
+	import Jarvis from '$lib/Jarvis.svelte';
+	import { jarvis } from '$lib/jarvis.svelte';
 	import { chord, typing } from '$lib/shortcuts';
 
 	let { children, data } = $props();
 
 	// The person's saved settings win over this browser's cached ones.
 	onMount(() => {
-		api<{ language: 'en' | 'fr'; appearance: Appearance; keyboard: { shortcuts: boolean } }>(
-			'/v1/me/settings'
-		)
+		api<{
+			language: 'en' | 'fr';
+			appearance: Appearance;
+			keyboard: { shortcuts: boolean };
+			jarvis?: { enabled: boolean };
+		}>('/v1/me/settings')
 			.then((s) => {
 				const before = storedLocale();
 				setLocale(s.language);
@@ -27,6 +32,7 @@
 				if (s.language !== before && storedLocale() === s.language) location.reload();
 				applyAppearance(s.appearance);
 				shortcuts = s.keyboard.shortcuts;
+				jarvis.enabled = s.jarvis?.enabled ?? false;
 			})
 			.catch(() => {});
 	});
@@ -87,6 +93,7 @@
 {/if}
 {@render children()}
 <CaptureDialog bind:open={capturing.open} oncaptured={() => capturing.count++} />
+{#if jarvis.enabled}<Jarvis />{/if}
 <CommandPalette bind:open={searching.open} />
 <ShortcutsHelp bind:open={help} />
 

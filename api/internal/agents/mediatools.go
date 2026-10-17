@@ -13,7 +13,9 @@ import (
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
 	"github.com/thoutmose/axon/api/internal/media"
+	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/textx"
+	"github.com/thoutmose/axon/api/internal/vault"
 )
 
 // Media tools (EP-17). The agent sees only the person's own list; catalogue
@@ -26,6 +28,9 @@ type mediaInput struct {
 	Creators string   `json:"creators"`
 	Genres   []string `json:"genres"`
 	Reason   string   `json:"reason"`
+	Status   string   `json:"status"` // want by default; doing for "I'm reading it"
+	Pages    int      `json:"total"`  // pages, episodes, or minutes
+	Note     bool     `json:"note"`   // also its literature note, from the vault template (EP-153)
 }
 
 // mediaFields keeps what the agent may set: the item, not a rating or a review.
@@ -37,8 +42,14 @@ func mediaFields(raw json.RawMessage) (media.Fields, error) {
 	if strings.TrimSpace(in.Title) == "" || strings.TrimSpace(in.Reason) == "" {
 		return media.Fields{}, toolErrorf("title and reason are required")
 	}
-	want := "want"
-	f := media.Fields{Title: &in.Title, Kind: &in.Kind, Status: &want, Creators: &in.Creators}
+	status := "want"
+	if in.Status == "doing" || in.Status == "done" {
+		status = in.Status
+	}
+	f := media.Fields{Title: &in.Title, Kind: &in.Kind, Status: &status, Creators: &in.Creators}
+	if in.Pages > 0 {
+		f.Total = &in.Pages
+	}
 	if in.Year != 0 {
 		f.Year = &in.Year
 	}
@@ -121,14 +132,18 @@ func init() {
 	}
 	registry["suggest_media"] = Tool{
 		Name: "suggest_media",
-		Description: "Propose adding a film, series, or book to the person's want list. reason says why it fits them, naming the items on their list it relates to. " +
-			"Nothing is added until the person approves.",
+		Description: "Propose adding a film, series, book, or video game to the person's list: on the want list, or as being read, watched, or played (status doing) or finished (done) when they say so. " +
+			"Give what you know for sure of its metadata (year, creators, genres, total pages or episodes); the cover is found by Axon. note also creates its literature note from the vault template. " +
+			"reason says why it fits them, or that they asked. Nothing is added until the person approves.",
 		Properties: map[string]any{
 			"kind":     map[string]any{"type": "string", "enum": media.Kinds},
 			"title":    str,
 			"year":     map[string]any{"type": "integer"},
 			"creators": map[string]any{"type": "string", "description": "Author, director, or creator."},
 			"genres":   map[string]any{"type": "array", "maxItems": 5, "items": str},
+			"status":   map[string]any{"type": "string", "enum": []string{"want", "doing", "done"}},
+			"total":    map[string]any{"type": "integer", "description": "Pages, episodes, or minutes, when known."},
+			"note":     map[string]any{"type": "boolean", "description": "Also create its literature note from the vault template."},
 			"reason":   reason,
 		},
 		Required: []string{"kind", "title", "reason"},
@@ -142,18 +157,45 @@ func init() {
 			if in.Creators != "" {
 				by = " by " + in.Creators
 			}
-			return fmt.Sprintf("Add the %s “%s”%s to your list: %s", in.Kind, in.Title, by, textx.Cut(in.Reason, 200)), nil
+			note := ""
+			if in.Note {
+				note = ", with its note"
+			}
+			return fmt.Sprintf("Add the %s “%s”%s to your list%s: %s", in.Kind, in.Title, by, note, textx.Cut(in.Reason, 200)), nil
 		},
 		Apply: func(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, raw json.RawMessage) error {
 			f, err := mediaFields(raw)
 			if err != nil {
 				return err
 			}
-			_, err = media.Create(ctx, tx, userID, actor, f, nil, time.Now())
+			it, err := media.Create(ctx, tx, userID, actor, f, nil, time.Now())
 			if v, ok := err.(media.ValidationError); ok { //nolint:errorlint // returned unwrapped by media
 				return toolErrorf("%s", v.Msg)
 			}
+			if err != nil {
+				return err
+			}
+			var in mediaInput
+			if decode(raw, &in) != nil || !in.Note {
+				return nil
+			}
+			path, content, ok := vault.MediaNote(it.Kind, it.Title, it.Creators, orZero(it.Year), it.Genres, orZero(it.Total), time.Now())
+			if !ok {
+				return nil
+			}
+			n, err := notes.Create(ctx, tx, userID, actor, path, content)
+			if err != nil {
+				return err
+			}
+			_, err = graph.CreateLink(ctx, tx, userID, actor, n.ID, graph.RelatesTo, it.ID)
 			return err
 		},
 	}
+}
+
+func orZero(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
