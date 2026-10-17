@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AgentModels from '$lib/AgentModels.svelte';
 	import { install, promptInstall } from '$lib/install.svelte';
 	import { disablePush, enablePush } from '$lib/reminders';
 	import EmbeddingSettings from '$lib/EmbeddingSettings.svelte';
@@ -127,6 +128,7 @@
 	let error = $state('');
 	let saving = $state(false);
 	let budget = $state('2.00');
+	let videoSummaries = $state(false);
 	let wip = $state('');
 
 	async function load() {
@@ -152,6 +154,7 @@
 				caffeine: { bedtime: '23:00', metabolism: 'average', ...loaded.caffeine }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
+			videoSummaries = s.ai?.video_summaries ?? false;
 			wip = s.templates.project.wip_limit?.toString() ?? '';
 		} catch (err) {
 			error = message(err);
@@ -217,7 +220,10 @@
 			);
 			await api('/v1/me/agent-settings', {
 				method: 'PUT',
-				body: { monthly_budget_cents: Math.round(Number(budget) * 100) }
+				body: {
+					monthly_budget_cents: Math.round(Number(budget) * 100),
+					video_summaries: videoSummaries
+				}
 			});
 			toast(t('Preferences saved.'));
 		} catch (err) {
@@ -667,7 +673,14 @@
 				<label for="pref-budget">{t('Monthly budget (US$)')}</label>
 				<input id="pref-budget" type="number" min="0" max="1000" step="0.5" bind:value={budget} />
 			</div>
+			<label class="check">
+				<input type="checkbox" bind:checked={videoSummaries} />
+				{t(
+					'Summarise videos and podcast episodes in prose with my model (5 to 10 lines and keywords each, once, within the budget). Without it, Axon summarises them itself, from their own sentences.'
+				)}
+			</label>
 			<ProviderSettings onchange={load} />
+			<AgentModels />
 		</Section>
 
 		<div class="actions"><Button type="submit" busy={saving}>{t('Save preferences')}</Button></div>

@@ -199,7 +199,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Done |
 | EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Done |
 | EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Done |
-| EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Planned |
+| EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Done |
 | EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Planned |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Planned |
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Planned |
@@ -2386,6 +2386,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-150/IS-150.01** · 2 pts · SHOULD — Notes render LaTeX as Obsidian writes it: `$…$` in a line, `$$…$$` on one line or on lines of their own, everywhere notes are read (notes, cards, previews). KaTeX (0.16.22, MIT) writes MathML, which the browser draws itself, so the page's CSP needs no inline style; it escapes its input, `trust` is off (no `\href`, no `\includegraphics`), sizes and macro expansion are bounded, and a formula it cannot read shows in red rather than failing. A `$` opens maths only before a non-space and closes only after one and before a non-digit, and maths never runs into code, so "$5 and $10" stays text. The editor's **∑ Write maths** opens a helper: structures (fraction, powers, roots, sums, integrals, limits, matrices, cases, aligned equations), symbols, Greek letters, a formula field drawn as you type, and inline or block insertion.
 
 **Tests.** Inline and block maths as MathML without a style attribute; prices and code left alone; a formula can neither link nor add a tag or an event handler; a broken formula renders.
+
+### EP-151 — A model per agent
+
+**Goal.** "Add the ability in the account preferences to define the model for each AI agent, or globally (for example all agents with Sonnet 5.5), and the same for Jarvis" (owner, 2026-10-17); and, from EP-148, prose summaries of videos by the chosen model.
+
+- [x] **EP-151/IS-151.01** · 2 pts · MUST — `agent_models` (migration `00069`) keeps a model for all agents (`*`) and any agent's own; `GET`/`PUT /v1/me/agent-models` (browser sessions, not the demo). Every run, the meal photo, the video summaries, and Jarvis resolve their provider as before (the person's or the server's), then the agent's own model, else all agents', else the provider's or the agent's default; prices follow the model chosen, the dearest known for an unknown one. **Preferences → AI → Models**: one field for all agents, and a model for one agent, each showing what it uses without a choice, with suggestions for the usual providers.
+- [x] **EP-151/IS-151.02** · 1 pt · SHOULD — **Summarise videos and podcast episodes in prose** (off by default; `video_summaries` in the agent settings): a worker in the API sends each transcribed item's title and first 24,000 characters of words to the person's model once, newest first, five every five minutes, within the consent and the monthly budget (stopped before a call that could cross it), recorded as a `video-summary` run. The words are data: no tool is offered and only JSON is read back, 3 to 10 lines of at most 300 characters and 3 to 10 keywords of at most 60, or the local summary stays. Off in the demo.
+
+**Tests.** Choices validated (unknown agent, bad model, no body); a run uses all agents' model, the Tutor its own; no summary until asked; then one request without tools, its lines and keywords checked and kept, never asked twice, and recorded.
 
 ### EP-20 — Analytics & insights
 

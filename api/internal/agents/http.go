@@ -44,6 +44,8 @@ func (r *Runner) UploadRoutes(m chi.Router) {
 // auth.RequireSession, so no token (or agent) can approve a proposal.
 func (r *Runner) SessionRoutes(m chi.Router) {
 	m.Put("/v1/me/agent-settings", r.settings)
+	m.Get("/v1/me/agent-models", r.getModels)
+	m.With(auth.NotDemo).Put("/v1/me/agent-models", r.putModels)
 	m.Get("/v1/me/agent-provider", r.getProvider)
 	m.With(auth.NotDemo).Put("/v1/me/agent-provider", r.putProvider)
 	m.With(auth.NotDemo).Delete("/v1/me/agent-provider", r.deleteProvider)
@@ -114,7 +116,8 @@ func (r *Runner) list(w http.ResponseWriter, req *http.Request) {
 func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 	who, _ := auth.FromContext(req.Context())
 	var body struct {
-		MonthlyBudgetCents int `json:"monthly_budget_cents"`
+		MonthlyBudgetCents int   `json:"monthly_budget_cents"`
+		VideoSummaries     *bool `json:"video_summaries"`
 	}
 	if err := httpx.Decode(req, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
@@ -127,6 +130,12 @@ func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 	} else if err != nil {
 		r.fail(w, err)
 		return
+	}
+	if body.VideoSummaries != nil {
+		if err := SetVideoSummaries(req.Context(), r.db, who.UserID, *body.VideoSummaries); err != nil {
+			r.fail(w, err)
+			return
+		}
 	}
 	st, err := r.status(req.Context(), r.db, who.UserID)
 	if err != nil {

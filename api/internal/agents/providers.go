@@ -61,8 +61,24 @@ func (r *Runner) providerSettings(ctx context.Context, q db.Querier, userID uuid
 	return &s, sealed, err
 }
 
-// resolve picks the person's provider, or the server default.
+// resolve picks the person's provider, or the server default, and the
+// model they chose for the agent (EP-151).
 func (r *Runner) resolve(ctx context.Context, q db.Querier, userID uuid.UUID, skill Skill) (*resolved, error) {
+	out, err := r.resolveProvider(ctx, q, userID, skill)
+	if err != nil {
+		return nil, err
+	}
+	chosen, err := r.chosenModel(ctx, q, userID, skill.Name)
+	if err != nil {
+		return nil, err
+	}
+	if chosen != "" && chosen != out.model {
+		out.model, out.price = chosen, priceFor(chosen)
+	}
+	return out, nil
+}
+
+func (r *Runner) resolveProvider(ctx context.Context, q db.Querier, userID uuid.UUID, skill Skill) (*resolved, error) {
 	s, sealed, err := r.providerSettings(ctx, q, userID)
 	if err != nil {
 		return nil, err
@@ -209,10 +225,18 @@ func SetBudget(ctx context.Context, q db.Querier, userID uuid.UUID, cents int) e
 	return err
 }
 
+// SetVideoSummaries turns prose summaries of videos and episodes on or off (EP-151).
+func SetVideoSummaries(ctx context.Context, q db.Querier, userID uuid.UUID, on bool) error {
+	_, err := q.Exec(ctx, `INSERT INTO agent_settings (user_id, video_summaries) VALUES ($1, $2)
+		ON CONFLICT (user_id) DO UPDATE SET video_summaries = $2, updated_at = now()`, userID, on)
+	return err
+}
+
 // AIConfig is the agent part of a person's settings; the key is never read back.
 type AIConfig struct {
 	Provider           *ProviderSettings `json:"provider"`
 	MonthlyBudgetCents int               `json:"monthly_budget_cents"`
+	VideoSummaries     bool              `json:"video_summaries"`
 }
 
 // GetAIConfig returns a person's provider (nil for the server default) and budget.
@@ -222,6 +246,7 @@ func (r *Runner) GetAIConfig(ctx context.Context, q db.Querier, userID uuid.UUID
 		return AIConfig{}, err
 	}
 	c := AIConfig{Provider: s, MonthlyBudgetCents: 200}
-	err = q.QueryRow(ctx, `SELECT coalesce((SELECT monthly_budget_cents FROM agent_settings WHERE user_id = $1), 200)`, userID).Scan(&c.MonthlyBudgetCents)
+	err = q.QueryRow(ctx, `SELECT coalesce((SELECT monthly_budget_cents FROM agent_settings WHERE user_id = $1), 200),
+		coalesce((SELECT video_summaries FROM agent_settings WHERE user_id = $1), false)`, userID).Scan(&c.MonthlyBudgetCents, &c.VideoSummaries)
 	return c, err
 }

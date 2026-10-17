@@ -4648,7 +4648,7 @@ paths:
     put:
       tags: [agents]
       operationId: setAgentSettings
-      summary: Set the monthly agent budget (browser sessions only)
+      summary: Set the monthly agent budget and video summaries (browser sessions only)
       security: [{ session: [] }]
       requestBody:
         required: true
@@ -4660,12 +4660,56 @@ paths:
               additionalProperties: false
               properties:
                 monthly_budget_cents: { type: integer, minimum: 0, maximum: 100000 }
+                video_summaries: { type: boolean, description: "Have your model summarise each video and episode once, in 5 to 10 lines with 5 to 10 keywords, within the budget (EP-151). Left out, it stays as it is." }
       responses:
         "200":
           description: Your agent status with the new budget.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AgentStatus" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/agent-models:
+    get:
+      tags: [agents]
+      operationId: getAgentModels
+      summary: The model each agent uses
+      description: "The model chosen for all agents ('*') and each agent's own, with the model it uses without a choice. The provider stays yours (or the server's); prices follow the model, the dearest known one for a model Axon does not know (EP-151)."
+      security: [{ session: [] }]
+      responses:
+        "200":
+          description: The choices.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentModels" }
+        "401": { $ref: "#/components/responses/Problem" }
+    put:
+      tags: [agents]
+      operationId: setAgentModels
+      summary: Choose the models (replaces every choice; an empty model removes one)
+      security: [{ session: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [models]
+              additionalProperties: false
+              properties:
+                models:
+                  type: object
+                  maxProperties: 60
+                  additionalProperties: { type: string, maxLength: 200 }
+                  example: { "*": claude-sonnet-5-5, tutor: claude-opus-5-5 }
+      responses:
+        "200":
+          description: The choices.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentModels" }
         "400": { $ref: "#/components/responses/Problem" }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
@@ -9520,13 +9564,29 @@ components:
         last_used_at: { type: [string, "null"], format: date-time }
     AgentStatus:
       type: object
-      required: [available, reason, provider, monthly_budget_cents, spent_micros]
+      required: [available, reason, provider, monthly_budget_cents, spent_micros, video_summaries]
       properties:
         available: { type: boolean }
         provider: { type: [string, "null"], description: The provider runs would use. }
         reason: { type: [string, "null"], enum: [demo, not_configured, no_consent, budget_exhausted, null] }
         monthly_budget_cents: { type: integer }
         spent_micros: { type: integer, description: "US dollars × 1,000,000 spent this calendar month (UTC)." }
+        video_summaries: { type: boolean, description: Videos and episodes are summarised in prose by your model. }
+    AgentModels:
+      type: object
+      required: [all, agents]
+      properties:
+        all: { type: string, description: "The model for all agents, empty for none." }
+        agents:
+          type: array
+          items:
+            type: object
+            required: [agent, title, default, model]
+            properties:
+              agent: { type: string, example: tutor }
+              title: { type: string }
+              default: { type: string, description: The model it uses without a choice of its own. }
+              model: { type: string, description: "Its own model, empty for none." }
     AgentRun:
       type: object
       description: The audit record of a run. It never contains prompt, reply, or tool input text.
@@ -10249,7 +10309,7 @@ components:
           properties:
             ai:
               type: object
-              required: [provider, monthly_budget_cents]
+              required: [provider, monthly_budget_cents, video_summaries]
               properties:
                 provider:
                   type: [object, "null"]
@@ -10262,6 +10322,7 @@ components:
                     input_price: { type: [number, "null"] }
                     output_price: { type: [number, "null"] }
                 monthly_budget_cents: { type: integer }
+                video_summaries: { type: boolean, description: Videos and episodes are summarised in prose by your model (EP-151). }
     AssessmentProfile:
       type: object
       required: [role, experience, goals, hours_per_week, formats]
