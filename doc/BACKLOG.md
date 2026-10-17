@@ -210,7 +210,14 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Done |
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Done |
 | EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Done |
-| EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Planned |
+| EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Done on staging (prod deploy, merge, and tag are the owner's) |
+| EP-163 | The radar by domain | One spoke per domain of the roadmap (maths, DSA, OS, Python, Rust, Kubernetes…), placed by the assessment and the skills done, instead of its sections. | MUST | 3 pts | EP-82, EP-141 | Planned |
+| EP-164 | The collection in reach | The collection says how to turn progress rewards on, and turns them on, instead of an error. | MUST | 1 pt | EP-119 | Planned |
+| EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Planned |
+| EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Planned |
+| EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Planned |
+| EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Planned |
+| EP-169 | Claude Code on Axon | `axon mcp` gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code subagent. | MUST | 5 pts | EP-19, EP-153 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -247,7 +254,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-169 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2480,6 +2487,12 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** `scheduleLabel` in French; the server's catalogue test now sees the chart and agent names.
 
+### EP-162 — Version 1.0
+
+**Goal.** "Then 1.0" (owner, 2026-10-17).
+
+- [x] **EP-162/IS-162.01** · 1 pt · MUST — The CHANGELOG's 1.0.0 gathers everything since 0.1.0 (the release candidate of 11 October, kept as 1.0.0-rc.1, and EP-47 to EP-161) with what the tag waits for; the upgrade guide covers migrations 6 to 71. `fe67b21` passed CI (run 39044704175, 12 of 12 jobs) and serves on staging. Production's deploy was refused to the agent by its permission check, so the owner runs it (`deploy/deploy.sh prod`, after a backup); the merge of pull request #86 and the `v1.0.0` tag are the owner's.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2690,6 +2703,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-16 | Owner requests: a shorter board, one set of icons, no past moods in the journal, a life radar, natural podcast voices (self-hosted Kokoro; famous people's voices declined), and the digest's channels on its page. Planned as EP-128 to EP-133. |
 | 2026-10-17 | Owner request: a far better Top-5% roadmap (a certification for every domain, the assessment, projects, milestones, a start on Monday 19 October 2026), notes drawn in Axon or in the vault, YouTube and Podcasts their own pages, and a site that guides a self-learner. Planned and delivered as EP-141 to EP-145. |
 | 2026-10-17 | Owner requests: database architecture and GitOps in the roadmap, Jarvis, the vault verified, video games, YouTube keywords and summaries, the budget charts, token compaction (rtk itself compresses shell output for coding agents, so Axon compacts its agents' tool results instead), maths in notes, the roadmap's resources as notes, a model per agent, a clean-up, a news digest, a banner, the trailer, monitoring, a full check, then 1.0. Planned as EP-146 to EP-162. |
+| 2026-10-17 | Owner requests, evening: the radar by domain, the collection, YouTube subscriptions, FreshRSS and Audiobookshelf connected (by the owner, in the app), the plan's goals, habits, healthy habits, and areas, habits on the calendar, axon.thoutmose.me, and Claude Code on the owner's subscription driving Axon's agents (Anthropic does not let third-party apps use a subscription, so Axon never holds it: the owner runs Claude Code, which calls Axon). Planned as EP-163 to EP-169. |
 | 2026-10-15 | Owner requests: a search bar in the menu bar, checked items that stay, a caffeine tracker, Huberman's habits, collectible rewards, invitations and sharing, a better knowledge graph, YouTube with subtitles, podcasts from Audiobookshelf, screenshots and a new trailer. Planned as EP-115 to EP-125 (sharing split into invitations, EP-120, and sharing an item, EP-121); EP-115 to EP-125 delivered. |
 | 2026-10-15 | Owner request: "continue to improve, by adding new features". Added and delivered EP-114, the decision journal. |
 | 2026-10-15 | The work asked for on 2026-10-14 (vault server, digests, answers, sign-in, tech watch) was built in a cloud session from `main` as EP-69 to EP-76, numbers this stack already used: renumbered EP-106 to EP-113 (migrations 00054 to 00059, ADRs 0031 to 0038) and rebuilt on top of the stack on `dev`, which `srv-dev` serves. |
