@@ -208,7 +208,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Done (fleet PRs #1 and #2 await review) |
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Done |
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Done |
-| EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Planned |
+| EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Done |
 | EP-161 | Everything checked | Every feature walked through in the demo and fixed where it fails. | MUST | 3 pts | EP-146..EP-160 | Planned |
 | EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
@@ -2461,6 +2461,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 **Goal.** The trailer shows Axon as it is after 2026-10-17's requests (owner, 2026-10-17).
 
 - [x] **EP-159/IS-159.01** · 1 pt · COULD — `make teaser` recorded from the srv-dev demo: twelve scenes (Today's roadmap, the plan, tasks, the notes graph, a note with a drawing and maths, learning, Jarvis, the news graph, media with their covers, health, the budget charts, the collection), 71 seconds, in WebM and MP4 with English and French captions. The shots find the budget charts by their labelled section, show the media from **In progress** so the covers are in frame, and close Jarvis after its own shot (its panel remembers being open); a headline beside its window takes the lines it needs and its subtitle follows it, where a guess from the headline's length overlapped two of them. The home page calls it **Axon in a minute**, no longer "under a minute".
+
+### EP-160 — Clean, documented, and safe
+
+**Goal.** "Refactor, document technically and functionally, no critical active CVE, and check the resources used" (owner, 2026-10-17).
+
+- [x] **EP-160/IS-160.01** · 2 pts · MUST — Every image and dependency scanned again ([security review, 2026-10-17 update](security/review-2026-10.md)): no reachable Go vulnerability, none in production npm dependencies, no HIGH or CRITICAL flaw in api, web, or caddy. The database image drops `gnupg` and SQLite, which only served its build; its two remaining CRITICAL flaws have no Debian 12 fix and are not reachable (minizip, which Debian's zlib does not ship; XML parsing, which Axon never asks of PostgreSQL).
+- [x] **EP-160/IS-160.02** · 1 pt · MUST — Resources measured on srv-dev on 2026-10-17: at rest, five containers use about 165 MB and under 2 % CPU, with a 34 MB database; 360 API requests, 16 at a time over the tailnet, answered in 4.7 s, all 200, with the API at 51 MB and 8 % CPU and PostgreSQL at 56 MB and 13 % at their peaks.
+- [x] **EP-160/IS-160.03** · 1 pt · SHOULD — Dead code, found with `deadcode` rather than by eye: `Schedule.String` (and the source text it alone kept) and `wsclient.Conn.SetReadDeadline` go. Functions only tests call stay, as the seams they are (`WriteTools`, `Balances`, `Stem`, `Tokens`, `pickTrack`); every `web/src/lib` module is imported somewhere.
+- [x] **EP-160/IS-160.04** · 1 pt · MUST — Documentation: the user guide already describes everything that came on 2026-10-17 (9a790c2); the configuration table in both READMEs gains the variables operators set but could not find there (`AXON_PORT`, `AXON_VERSION`, `AXON_ADDR`, `AXON_METRICS_ADDR`).
 
 ### EP-20 — Analytics & insights
 

@@ -11,7 +11,6 @@ import (
 // Schedule is a five-field cron expression (minute hour day-of-month month
 // day-of-week), read in the person's time zone. The default is midnight.
 type Schedule struct {
-	src                           string
 	minute, hour, dom, month, dow uint64 // bit sets
 	domStar, dowStar              bool
 }
@@ -35,7 +34,7 @@ func ParseSchedule(expr string) (Schedule, error) {
 	if len(f) != 5 {
 		return Schedule{}, errors.New("a schedule has five fields: minute hour day month weekday, like 0 0 * * *")
 	}
-	s := Schedule{src: strings.Join(f, " ")}
+	var s Schedule
 	var err error
 	parts := []struct {
 		dst    *uint64
@@ -62,8 +61,6 @@ func ParseSchedule(expr string) (Schedule, error) {
 	}
 	return s, nil
 }
-
-func (s Schedule) String() string { return s.src }
 
 // field reads "*", "5", "1-5", "*/15", "1-10/2", "1,15,30".
 func field(f string, lo, hi int) (uint64, error) {

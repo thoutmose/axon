@@ -435,6 +435,9 @@ Then open <http://localhost:3000>. The API is served under `/api` (for example `
 | `AXON_OIDC_ISSUER`, `AXON_OIDC_CLIENT_ID`, `AXON_OIDC_CLIENT_SECRET`, `AXON_OIDC_NAME` | Optional | secret | Sign in with any OpenID Connect provider (Authentik, Keycloak, GitLab…). |
 | `AXON_CONTACT` | Optional | `you@example.org` | How Open Library can reach the operator (sent in the User-Agent); defaults to `AXON_BASE_URL`. |
 | `ANKI_SYNC_URL` | Optional | private URL | Suggested anki-sync-server address for the Anki bridge (each person enters their own account). |
+| `AXON_PORT` | No | `3000` | The port Caddy publishes on 127.0.0.1 (compose); a second stack, such as the end-to-end tests, runs beside the first on another. |
+| `AXON_VERSION` | No | `dev` | The image tag compose builds and runs; `deploy.sh` sets it to the commit it deploys. |
+| `AXON_ADDR`, `AXON_METRICS_ADDR` | No | `:8080`, `:9464` | Where the API listens, and where it serves Prometheus metrics apart from the public routes. |
 
 Never put secrets in Markdown, issue text, prompts, screenshots, or logs. Use SOPS/age and a secret manager appropriate to the deployment.
 
