@@ -378,6 +378,14 @@ func (r *Runner) call(ctx context.Context, userID uuid.UUID, skill Skill, rn *ru
 	if name == "ask_agent" { // Jarvis's only tool (EP-153)
 		return r.ask(ctx, userID, rn, input)
 	}
+	return r.callTool(ctx, userID, skill, rn, t, input)
+}
+
+// callTool runs a data tool for a skill allowed it: a read answers at once,
+// a write becomes a proposal. Claude Code's calls (EP-169) come here
+// directly, never through Jarvis's ask_agent.
+func (r *Runner) callTool(ctx context.Context, userID uuid.UUID, skill Skill, rn *run, t Tool, input json.RawMessage) (string, bool, error) {
+	name := t.Name
 	if t.Write && skill.Safety == "health" && Unsafe(string(input)) {
 		rn.tools = append(rn.tools, name+":unsafe")
 		return unsafeToolError().Error(), true, nil

@@ -251,7 +251,7 @@ func (r *Runner) mcpTool(ctx context.Context, userID uuid.UUID, skills []Skill, 
 		rn.id, userID, skill.Name, skill.Version); err != nil {
 		return "", false, err
 	}
-	text, isErr, err := r.call(ctx, userID, *skill, rn, name, input)
+	text, isErr, err := r.callTool(ctx, userID, *skill, rn, registry[name], input)
 	if err != nil {
 		rn.status, rn.errCode = "failed", "tool_failed"
 	}
