@@ -200,7 +200,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Done |
 | EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Done |
 | EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Done |
-| EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Planned |
+| EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Done |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Planned |
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Planned |
 | EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Planned |
@@ -2395,6 +2395,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-151/IS-151.02** · 1 pt · SHOULD — **Summarise videos and podcast episodes in prose** (off by default; `video_summaries` in the agent settings): a worker in the API sends each transcribed item's title and first 24,000 characters of words to the person's model once, newest first, five every five minutes, within the consent and the monthly budget (stopped before a call that could cross it), recorded as a `video-summary` run. The words are data: no tool is offered and only JSON is read back, 3 to 10 lines of at most 300 characters and 3 to 10 keywords of at most 60, or the local summary stays. Off in the demo.
 
 **Tests.** Choices validated (unknown agent, bad model, no body); a run uses all agents' model, the Tutor its own; no summary until asked; then one request without tools, its lines and keywords checked and kept, never asked twice, and recorded.
+
+### EP-152 — AI tokens, measured and compacted
+
+**Goal.** "Ensure rtk (github.com/rtk-ai/rtk) runs for the AI to compress everything drastically" and "an AI token consumption section: how many tokens were consumed in general, then by each agent, and the difference with and without rtk" (owner, 2026-10-17). rtk is a CLI proxy that compresses shell command output for coding agents (Claude Code and the like); Axon's agents call the model's API and run no commands, so rtk cannot sit in front of them. Axon does the same thing to what its agents read instead, and measures it.
+
+- [x] **EP-152/IS-152.01** · 2 pts · SHOULD — Every read tool's result is compacted before it reaches the model: null and empty values left out, times to the minute, and a list of three or more records with the same fields sent as `{"cols": […], "rows": [[…]]}`; ids, numbers, `false`, and `0` stay. The system prompt says how compact results read. Each run records its tool results' characters before and after (`agent_runs.tool_chars_raw`, `tool_chars_sent`, migration `00070`).
+- [x] **EP-152/IS-152.02** · 1 pt · SHOULD — `GET /v1/me/ai-usage` and **Preferences → AI → AI tokens**: tokens in and out and cost this month and all along, the last twelve months as bars, a table by agent (meal photos, video summaries, and Jarvis included), and what compaction saved, in characters and, about four to a token, in tokens; a note says what rtk is and why it does not apply.
+
+**Tests.** Compaction keeps ids, numbers, false, zero, and text, cuts time to the minute, makes rows of like records and leaves unlike ones; a run's tool results are smaller sent than raw; usage by agent and by month; the system prompt explains the rows.
 
 ### EP-20 — Analytics & insights
 

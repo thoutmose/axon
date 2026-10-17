@@ -116,6 +116,8 @@ Turn on progress rewards in Preferences: points from every area, each traceable,
 
 Agents draft changes; **nothing changes until you approve**. Each person picks a provider (Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model) and a monthly budget under **Agents**, and turns on **AI agents** in Privacy. Agents: Task Manager, Goals, Habits, Tutor, Resource, Teacher, Media, Side projects, Code review, and, with their own consent, Personal Trainer and Nutritionist.
 
+**AI tokens**, under Preferences → AI, add up every agent run, meal photo, video summary, and Jarvis answer: tokens in and out and cost this month, by month, and by agent. Axon compacts what its tools hand the model (empty fields out, times to the minute, records as rows) and shows the saving it measured.
+
 **Models**: under Preferences → AI, choose one model for all agents (for example `claude-sonnet-5-5`), or one for an agent (a deep model for the Tutor, a quick one for summaries); costs follow the model. **Summarise videos and podcast episodes in prose** has your model write each one's 5 to 10 lines and keywords once, within the budget; without it, Axon summarises them itself from their own sentences.
 
 ## Your data

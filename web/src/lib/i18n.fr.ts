@@ -3975,5 +3975,23 @@ export const fr: Record<string, string> = {
 	'A model for one agent': 'Un modèle pour un agent',
 	'Save the models': 'Enregistrer les modèles',
 	'Summarise videos and podcast episodes in prose with my model (5 to 10 lines and keywords each, once, within the budget). Without it, Axon summarises them itself, from their own sentences.':
-		'Résumer les vidéos et les épisodes de podcast en prose avec mon modèle (5 à 10 lignes et des mots-clés chacun, une seule fois, dans le budget). Sans cela, Axon les résume lui-même, à partir de leurs propres phrases.'
+		'Résumer les vidéos et les épisodes de podcast en prose avec mon modèle (5 à 10 lignes et des mots-clés chacun, une seule fois, dans le budget). Sans cela, Axon les résume lui-même, à partir de leurs propres phrases.',
+	'Meal photos': 'Photos de repas',
+	'Video summaries': 'Résumés de vidéos',
+	'AI tokens': 'Jetons d’IA',
+	'Adding it up…': 'Calcul en cours…',
+	'{in} in, {out} out · {cost}': '{in} en entrée, {out} en sortie · {cost}',
+	'All along': 'Depuis le début',
+	'{runs} calls · {cost}': '{runs} appels · {cost}',
+	'Saved by compaction': 'Économisé par la compaction',
+	'of tool results: {raw} → {sent} characters, about {tokens} tokens':
+		'des résultats d’outils : {raw} → {sent} caractères, environ {tokens} jetons',
+	'Tokens by month': 'Jetons par mois',
+	Calls: 'Appels',
+	'Tokens in': 'Jetons en entrée',
+	'Tokens out': 'Jetons en sortie',
+	Compaction: 'Compaction',
+	'No AI call yet.': 'Aucun appel d’IA pour l’instant.',
+	'Axon compacts what its tools hand the model, as rtk does for a coding agent’s commands: empty fields left out, times to the minute, lists of records as rows. The saving above is measured on your own calls. rtk itself compresses shell output for coding agents such as Claude Code, which can use it on the server; Axon’s agents run no commands, so it does not apply to them.':
+		'Axon compacte ce que ses outils transmettent au modèle, comme rtk le fait pour les commandes d’un agent de code : champs vides omis, heures à la minute, listes d’enregistrements en lignes. L’économie ci-dessus est mesurée sur vos propres appels. rtk lui-même compresse la sortie du shell pour les agents de code comme Claude Code, qui peuvent l’utiliser sur le serveur ; les agents d’Axon n’exécutent aucune commande, il ne s’applique donc pas à eux.'
 };

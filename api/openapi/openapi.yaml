@@ -4671,6 +4671,42 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/Problem" }
+  /v1/me/ai-usage:
+    get:
+      tags: [agents]
+      operationId: getAIUsage
+      summary: Tokens and cost of every AI call, and what compaction saved
+      description: "From the run records (agents, meal photos, video summaries, Jarvis): this calendar month (UTC), all along, by agent, and the last twelve months. Tool results are compacted before they reach the model (empty fields left out, times to the minute, records as rows); their characters before and after are counted (EP-152)."
+      responses:
+        "200":
+          description: The usage.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [this_month, all_time, by_agent, by_month]
+                properties:
+                  this_month: { $ref: "#/components/schemas/AITally" }
+                  all_time: { $ref: "#/components/schemas/AITally" }
+                  by_agent:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/AITally"
+                        - type: object
+                          required: [agent]
+                          properties:
+                            agent: { type: string }
+                  by_month:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/AITally"
+                        - type: object
+                          required: [month]
+                          properties:
+                            month: { type: string, example: "2026-10" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/me/agent-models:
     get:
       tags: [agents]
@@ -9572,6 +9608,16 @@ components:
         monthly_budget_cents: { type: integer }
         spent_micros: { type: integer, description: "US dollars × 1,000,000 spent this calendar month (UTC)." }
         video_summaries: { type: boolean, description: Videos and episodes are summarised in prose by your model. }
+    AITally:
+      type: object
+      required: [runs, input_tokens, output_tokens, cost_micros, tool_chars_raw, tool_chars_sent]
+      properties:
+        runs: { type: integer }
+        input_tokens: { type: integer }
+        output_tokens: { type: integer }
+        cost_micros: { type: integer, description: "US dollars × 1,000,000." }
+        tool_chars_raw: { type: integer, description: Characters of tool results before compaction. }
+        tool_chars_sent: { type: integer, description: And as sent to the model. }
     AgentModels:
       type: object
       required: [all, agents]
