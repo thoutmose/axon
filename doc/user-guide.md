@@ -47,6 +47,18 @@ A task you check off stays in its list, crossed out, until the next day, so you 
 
 In the notes' graph and the news graph, scroll or pinch to zoom, drag to move, **Fit** to see everything, and **Full screen**; type in **Find in the graph** to select a note or a concept and centre on it. Labels that would overlap are left out until you zoom in.
 
+## Watch: the tech watch, YouTube, podcasts, and the news
+
+**Think → Tech watch** follows feeds, sites, Medium authors, Substacks, YouTube channels, GitHub repositories, and subreddits on a schedule you choose (midnight by default), keeps each story once even when several sources carry it, labels it by your topics and its key phrases, and flags outliers (a short excerpt, a press release). **Sources and health** says how each source is doing; import an OPML or CSV file, or the subscriptions of a FreshRSS server (its API password is used once, never stored).
+
+- **YouTube** and **Podcasts** are tabs of their own, each with its scenery, the channels or shows you follow, a field to follow one more, and suggestions for your roadmap. A video's or an episode's words are read from its captions (or a Whisper server) and shown **in a few words**: 5 to 10 of its own central sentences and 5 to 10 keywords, not its subtitles; with **Summarise videos and podcast episodes in prose** under Preferences → AI, your model writes them instead, once each, within your budget.
+- **News**: mark a source as general news (when following it, on Sources, or for a whole FreshRSS import) and its stories stay out of the tech watch, in the **News** tab and the news digest.
+- The **knowledge graph** of the news connects stories by what they say; **Export or share** writes the view as PDF, Markdown, or a link anyone can open until you revoke it; the **podcast** reads the period's stories aloud, by one host or two.
+
+## Digest
+
+**Reflect → Digest** shows the daily, weekly, and monthly digests, and **The news**: what to do today and what comes next, how the week or month went, the tech watch's top stories, with a line and a picture of the day. They go out at the times set under Preferences → Reminders (the news digest at **The news digest at**, off until you give it a time) by email, as a notification, or to Slack, Discord, Microsoft Teams, Telegram, ntfy, or a webhook (set up on the Digest page). Answer a digest in Slack, Discord, or Telegram ("done 2", "add call the bank tomorrow at 3pm") and Axon does it. The news digest tells the last day's general news as stories: the same story from several outlets is one, and a story more outlets carry comes first.
+
 ## Aim: Goals, Projects, Areas, Resources
 
 - **Goals** have an outcome, a date, milestones, and linked tasks and habits. Progress shows exactly how it was worked out.
