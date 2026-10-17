@@ -64,8 +64,9 @@ version=$(git rev-parse --short HEAD)
 if [[ "$flag" == "--skip-ci" ]]; then
   echo "dev: deploying $version without checking CI"
 else
+  # dev's pull request run is skipped (it repeats the push run): ignore it.
   ci=$(gh run list --commit "$(git rev-parse HEAD)" --workflow ci --json status,conclusion \
-    --jq '[.[] | select(.status == "completed")][0].conclusion // "missing"')
+    --jq '[.[] | select(.status == "completed" and .conclusion != "skipped")][0].conclusion // "missing"')
   if [[ "$ci" != "success" ]]; then
     echo "CI for $version is '$ci': push the commit and wait for a green CI run" >&2
     exit 1
