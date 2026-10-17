@@ -221,7 +221,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-170 | A bigger collection | A card per roadmap, goal, and project raised by its progress, and cards for milestones reached, projects shipped, goals achieved, habit check-ins, and certifications passed. | MUST | 3 pts | EP-119 | Done |
 | EP-171 | More projects and milestones in the plan | A milestone per domain under its group's goal, and a portfolio project per group of domains with each domain's proof and the group's exams, created at the start and added to a plan started earlier. | MUST | 5 pts | EP-166 | Done |
 | EP-172 | Jarvis, nicer to use | A larger, clearer panel: suggestions to start, a conversation that reads well, proposals to approve in place, keyboard and mobile friendly. | MUST | 3 pts | EP-153 | Done |
-| EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Planned |
+| EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -2580,6 +2580,12 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-172/IS-172.01** · 3 pts · MUST — The panel is wider (30 rem, or 52 rem with **Wider**, remembered), slides in, and has its own header: the face, a status dot (ready, asking the agents, unavailable) with the provider, **New conversation**, **Wider/Narrower**, and **Close**; the floating button no longer hovers beside it. Empty, it asks "What can I do for you?", offers six suggestions that send in one click, and names the agents it works with. Messages say who and when; Jarvis's thinking shows animated dots and the seconds spent; each proposal names its agent, turns green when approved, and several at once can be approved with **Approve all**. The text box grows with what is typed; Enter sends, Shift+Enter breaks a line, Escape closes, and Ctrl+J (⌘J) opens or closes Jarvis anywhere. The conversation lasts the browser session across pages. Reduced motion stops the animations.
 
 **Tests.** An end-to-end test turns Jarvis on, opens it with Ctrl+J, checks the suggestions and the wider view with axe, and closes it with Escape.
+
+### EP-173 — The trailer, about you
+
+**Goal.** "Don't say there are X domains: the goal is to set up your own personal roadmap for a self-learning journey and improve knowledge, hard and soft skills; and increase the resolution and quality of the screenshots" (owner, 2026-10-17).
+
+- [x] **EP-173/IS-173.01** · 2 pts · MUST — The trailer opens on "Learn anything. Your way.", calls Axon the self-hosted life OS for self-learners, and its roadmap scene says "Your own roadmap: set up a personal roadmap for your self-learning journey"; a new scene, "Grow hard and soft skills", shows the radar by domain; the collection's scene names trophies for roadmaps, goals, projects, and habits. No counts remain. The film is 1920×1080 instead of 1280×720 (screenshots at twice the pixels and JPEG quality 95, frames at 97, VP9 CRF 30 and H.264 CRF 20), 76 seconds, about 18 MB in each format; the captions in English and French follow.
 
 ### EP-20 — Analytics & insights
 

@@ -99,7 +99,8 @@
 			// --- The story: each scene, its words in English and French, its shot. ---
 			const features = [
 				['today', 'Your day, at a glance.', 'Your roadmap, tasks, habits, and goals in one view.', 'Votre journée, d’un coup d’œil.', 'Votre parcours, vos tâches, habitudes et objectifs, au même endroit.'],
-				['plan', 'Become one of the best.', '37 domains, 18 phases, a certification for each.', 'Devenez l’un des meilleurs.', '37 domaines, 18 phases, une certification pour chacun.'],
+				['plan', 'Your own roadmap.', 'Set up a personal roadmap for your self-learning journey.', 'Votre propre parcours.', 'Construisez votre parcours personnel d’autoformation.'],
+				['skills', 'Grow hard and soft skills.', 'Your knowledge, domain by domain, as it grows.', 'Développez savoir-faire et savoir-être.', 'Vos connaissances, domaine par domaine, à mesure qu’elles grandissent.'],
 				['tasks', 'Do what matters.', 'GTD and Kanban, without the clutter.', 'Faites ce qui compte.', 'GTD et Kanban, sans le désordre.'],
 				['notes', 'Think in connections.', 'A Zettelkasten graph of your notes.', 'Pensez en liens.', 'Le graphe Zettelkasten de vos notes.'],
 				['sketch', 'Draw. Write maths.', 'Sketches and LaTeX in every note, and in your vault.', 'Dessinez. Écrivez des maths.', 'Croquis et LaTeX dans chaque note, et dans votre coffre.'],
@@ -109,7 +110,7 @@
 				['media', 'Everything you enjoy.', 'Films, series, books, and games, with their covers.', 'Tout ce que vous aimez.', 'Films, séries, livres et jeux, avec leurs couvertures.'],
 				['health', 'Feel better.', 'Water, coffee, sleep, and what helps you.', 'Sentez-vous mieux.', 'L’eau, le café, le sommeil, et ce qui vous aide.'],
 				['budget', 'Know your money.', 'Where it went and where it came from, month by month.', 'Maîtrisez votre argent.', 'Où il est allé et d’où il vient, mois après mois.'],
-				['collection', 'Collect your progress.', 'Trophies, from bronze to gold.', 'Collectionnez vos progrès.', 'Des trophées, du bronze à l’or.']
+				['collection', 'Collect your progress.', 'Trophies for your roadmaps, goals, projects, and habits.', 'Collectionnez vos progrès.', 'Des trophées pour vos parcours, objectifs, projets et habitudes.']
 			];
 			const SCENE = 4.2;
 			const T = { hook: 0, logo: 3.5, features: 7, grid: 7 + features.length * SCENE };
@@ -118,8 +119,8 @@
 			const DURATION = T.end + 5;
 			// Captions, for the video's text tracks.
 			const captions = [
-				{ from: 0, to: T.logo, en: 'Your life. Organised.', fr: 'Votre vie. Organisée.' },
-				{ from: T.logo, to: T.features, en: 'Axon, the self-hosted life OS.', fr: 'Axon, l’OS de vie auto-hébergé.' },
+				{ from: 0, to: T.logo, en: 'Learn anything. Your way.', fr: 'Apprenez tout. À votre façon.' },
+				{ from: T.logo, to: T.features, en: 'Axon, the self-hosted life OS for self-learners.', fr: 'Axon, l’OS de vie auto-hébergé des autodidactes.' },
 				...features.map((f, i) => ({
 					from: T.features + i * SCENE,
 					to: T.features + (i + 1) * SCENE,
@@ -162,8 +163,8 @@
 
 			// Hook.
 			const hook = layer();
-			const life = el('<div class="title" style="top:430px;font-size:150px">Your life.</div>');
-			const organised = el('<div class="title gradient" style="top:600px;font-size:150px">Organised.</div>');
+			const life = el('<div class="title" style="top:430px;font-size:150px">Learn anything.</div>');
+			const organised = el('<div class="title gradient" style="top:600px;font-size:150px">Your way.</div>');
 			hook.append(life, organised);
 			// Logo.
 			const logo = layer();
@@ -174,7 +175,7 @@
 					<path d="M18 42 L32 18 L46 42 M23 34 H41" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 				</svg>
 				<div class="title" style="top:470px;font-size:190px">Axon</div>
-				<div class="sub" style="top:700px">The self-hosted life OS.</div>`;
+				<div class="sub" style="top:700px">The self-hosted life OS for self-learners.</div>`;
 			// Features: the headline left and the window right, or the window under the headline.
 			const scenes = features.map(([shot, title, sub], i) => {
 				const l = layer();
@@ -198,7 +199,7 @@
 			const grid = layer();
 			const gridTitle = el('<div class="title" style="top:70px;font-size:96px">Everything. <span class="gradient">In one place.</span></div>');
 			grid.append(gridTitle);
-			const tiles = ['today', 'plan', 'notes', 'sketch', 'jarvis', 'graph', 'media', 'budget', 'learn'].map((shot, i) => {
+			const tiles = ['today', 'plan', 'skills', 'notes', 'sketch', 'jarvis', 'graph', 'media', 'learn'].map((shot, i) => {
 				const w = windowOf(shot, grid);
 				w.querySelector('.bar').style.height = '16px';
 				w.querySelector('.crop').style.cssText = 'height:230px;overflow:hidden';

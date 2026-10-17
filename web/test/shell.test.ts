@@ -2138,7 +2138,8 @@ test('preferences switch the language, theme, and text size, and export as YAML'
 
 test('Jarvis opens with Ctrl+J, offers suggestions, widens, and closes with Escape', async () => {
 	await page.goto('/account/preferences');
-	await page.getByLabel(/^Show Jarvis, the master agent/).check();
+	await page.waitForLoadState('networkidle');
+	await page.getByLabel('Show Jarvis, the master agent').check();
 	await page.getByRole('button', { name: 'Save preferences' }).click();
 	await page.goto('/today');
 	await page.getByRole('button', { name: 'Open Jarvis' }).waitFor();
@@ -2156,7 +2157,8 @@ test('Jarvis opens with Ctrl+J, offers suggestions, widens, and closes with Esca
 	await expect(panel).toBeHidden();
 	await expect(page.getByRole('button', { name: 'Open Jarvis' })).toBeVisible();
 	await page.goto('/account/preferences');
-	await page.getByLabel(/^Show Jarvis, the master agent/).uncheck();
+	await page.waitForLoadState('networkidle');
+	await page.getByLabel('Show Jarvis, the master agent').uncheck();
 	await page.getByRole('button', { name: 'Save preferences' }).click();
 });
 

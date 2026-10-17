@@ -14,6 +14,7 @@ mkdirSync(out, { recursive: true });
 const shots = [
 	{ name: 'today', path: '/today', heading: 'Your roadmap today', offset: 120 },
 	{ name: 'plan', path: (d) => `/roadmaps/${d.roadmap}?view=plan`, heading: 'The plan', offset: 110 },
+	{ name: 'skills', path: '/roadmaps', heading: 'Skills acquired', offset: 70 },
 	{ name: 'tasks', path: '/tasks?view=kanban' },
 	{ name: 'notes', path: '/notes', heading: 'Knowledge graph' },
 	{ name: 'sketch', path: (d) => `/notes/${d.note}` },
@@ -69,7 +70,7 @@ for (const s of shots) {
 	await page.goto(base + (typeof s.path === 'function' ? s.path(data) : s.path));
 	await page.waitForLoadState('networkidle');
 	// The demo's banner is for visitors, not for the film.
-	await page.addStyleTag({ content: '.demo-banner, .space-credit, #jarvis-panel .notice { display: none !important; }' });
+	await page.addStyleTag({ content: '.demo-banner, .space-credit, #jarvis-panel .notice { display: none !important; } #jarvis-panel .chips button { opacity: 1 !important; }' });
 	if (s.open) {
 		await page.getByRole('button', { name: s.open }).click();
 		await page.waitForTimeout(800);
@@ -80,7 +81,7 @@ for (const s of shots) {
 		await h.evaluate((el, offset) => scrollTo(0, el.getBoundingClientRect().top + scrollY - offset), s.offset ?? 90);
 	}
 	await page.waitForTimeout(1200);
-	await page.screenshot({ path: `${out}/${s.name}.jpg`, type: 'jpeg', quality: 86 });
+	await page.screenshot({ path: `${out}/${s.name}.jpg`, type: 'jpeg', quality: 95 });
 	if (s.close) await page.getByRole('button', { name: s.close }).click();
 	console.log(s.name);
 }
