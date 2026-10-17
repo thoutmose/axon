@@ -214,7 +214,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-163 | The radar by domain | One spoke per domain of the roadmap (maths, DSA, OS, Python, Rust, Kubernetes…), placed by the assessment and the skills done, instead of its sections. | MUST | 3 pts | EP-82, EP-141 | Done |
 | EP-164 | The collection in reach | The collection says how to turn progress rewards on, and turns them on, instead of an error. | MUST | 1 pt | EP-119 | Done |
 | EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Done |
-| EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Planned |
+| EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Done |
 | EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Planned |
 | EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Planned |
 | EP-169 | Claude Code on Axon | `axon mcp` gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code subagent. | MUST | 5 pts | EP-19, EP-153 | Planned |
@@ -2516,6 +2516,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-165/IS-165.01** · 2 pts · MUST — Tech watch → Sources → Import takes a `.json` from YouTube Subscription Manager (folders of channel ids; each folder becomes a topic, a channel in two folders is one source with both, the extension's own `ysc_*` settings are left out) and Google Takeout's `subscriptions.csv` (Channel Id, Channel Url, Channel Title); each channel is followed through its feed. A source imported without a title takes its feed's title at the first fetch instead of keeping its host's name. The owner's export (srv-prod, `~/lifeos`) reads as 172 channels in 24 topics; importing it into the owner's account is the owner's step.
 
 **Tests.** `TestParseCSVReadsGoogleTakeoutSubscriptions`, `TestParseYouTubeJSONMakesFoldersTopics`.
+
+### EP-166 — The plan, whole
+
+**Goal.** "Ensure to have habits related to my roadmap, goals (updated to follow the roadmap) with projects and milestones; habits should also have healthy habits … the appropriate areas following my roadmap" (owner, 2026-10-17).
+
+- [x] **EP-166/IS-166.01** · 3 pts · MUST — The plan (still version 2, so a started plan is not called outdated) gains an area per group of domains (computer science foundations, systems and Linux, programming languages, data, AI and machine learning, software engineering, infrastructure and DevOps, security, communication and collaboration) and Health; a goal per group, its domains to prove, measured in domains proven, due at the end of the last phase working on them, in its area, its skills supporting it, related to the Top-5% goal; and twelve habits in their areas: one DSA problem, maths exercises, Linux and Bash, code in the phase's language, ten pages of an engineering book, explaining one thing learnt, and, for health, sleep 7.5 hours, morning sunlight, 30 minutes of movement, strength training, 2 L of water, and screens off an hour before bed. Starting the plan creates them with the rest; an area, goal, or habit the person already has (by name) is reused, never repeated.
+- [x] **EP-166/IS-166.02** · 2 pts · MUST — **Add its goals, habits, and areas** on a started plan (`POST /v1/roadmaps/{id}/plan/complete`) gives a plan started earlier what it lacks, and says what it added; nothing the person has changes. Links are looked up before they are made, since a duplicate insert aborted the transaction. The demo's own Health area and Huberman's morning sunlight reuse the plan's instead of doubling them. The phases, milestones, and projects were already per phase, from Monday 19 October 2026.
+
+**Tests.** `TestThePlansHabitsAndGoalsHaveTheirAreas`; the plan's start test counts 12 goals, 16 habits, and the Health area, and completes a plan missing a goal and a habit.
 
 ### EP-20 — Analytics & insights
 

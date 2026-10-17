@@ -2732,7 +2732,8 @@
 							5,
 							6,
 							7
-						]
+						],
+						"area": "Engineering mastery"
 					},
 					{
 						"title": "Daily review: spaced tests and the board",
@@ -2752,7 +2753,8 @@
 							5,
 							6,
 							7
-						]
+						],
+						"area": "Engineering mastery"
 					},
 					{
 						"title": "Weekly project deep-work session",
@@ -2766,7 +2768,8 @@
 						"place": "at the desk",
 						"days": [
 							6
-						]
+						],
+						"area": "Engineering mastery"
 					},
 					{
 						"title": "Weekly reflection and roadmap check",
@@ -2780,7 +2783,250 @@
 						"place": "",
 						"days": [
 							7
-						]
+						],
+						"area": "Engineering mastery"
+					},
+					{
+						"title": "One DSA problem",
+						"stack": "After the morning coffee",
+						"cue": "The problem list open in the browser's first tab.",
+						"craving": "Patterns compound: one problem a day is 365 a year.",
+						"two": "Read one problem and write its brute force.",
+						"reward": "Log it, its pattern, and the time it took.",
+						"identity": "I'm someone who solves a problem every day.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Computer science foundations"
+					},
+					{
+						"title": "Maths exercises",
+						"stack": "Before the study block",
+						"cue": "The exercise book open on the desk, a pencil on it.",
+						"craving": "Maths is learnt with the pencil, not by reading.",
+						"two": "Do one exercise.",
+						"reward": "Tick it in the problem set; a set done is a milestone step.",
+						"identity": "I'm someone who does maths every day.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5
+						],
+						"area": "Computer science foundations"
+					},
+					{
+						"title": "Linux and Bash, one thing a day",
+						"stack": "After opening the terminal",
+						"cue": "A terminal opens with the day's man page.",
+						"craving": "The command line is the engineer's hands.",
+						"two": "Read one man page section or write one line of a script.",
+						"reward": "Keep it in the dotfiles repository.",
+						"identity": "I'm someone who lives in the terminal.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5
+						],
+						"area": "Systems and Linux"
+					},
+					{
+						"title": "Code in the phase's language",
+						"stack": "After the study block's first pomodoro",
+						"cue": "The phase's project open in the editor.",
+						"craving": "Fluency comes from writing, every day.",
+						"two": "Write or refactor one function.",
+						"reward": "Commit it; the contribution graph fills.",
+						"identity": "I'm someone who writes code every day.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Programming languages"
+					},
+					{
+						"title": "Read 10 pages of an engineering book",
+						"stack": "After dinner",
+						"cue": "The book on the pillow.",
+						"craving": "Books hold what courses skip.",
+						"two": "Read one page.",
+						"reward": "Note one idea in the book's literature note.",
+						"identity": "I'm someone who reads engineering books.",
+						"time": "",
+						"place": "in the armchair",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Engineering mastery"
+					},
+					{
+						"title": "Explain one thing learnt",
+						"stack": "After the daily review",
+						"cue": "The day's note open.",
+						"craving": "If you can't explain it simply, you don't know it yet.",
+						"two": "Write three sentences a beginner would understand.",
+						"reward": "It becomes a permanent note in the vault.",
+						"identity": "I'm someone who explains what they learn.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5
+						],
+						"area": "Communication and collaboration"
+					},
+					{
+						"title": "Sleep 7.5 hours: lights out by 23:00",
+						"stack": "After brushing the teeth",
+						"cue": "The bedroom cool and dark, the alarm set for 7.5 hours later.",
+						"craving": "Memory consolidates during sleep: no sleep, no learning.",
+						"two": "Be in bed at 22:45, lights off at 23:00.",
+						"reward": "Note the night's sleep; mornings are sharper.",
+						"identity": "I'm someone who protects their sleep.",
+						"time": "",
+						"place": "in the bedroom",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Health"
+					},
+					{
+						"title": "Morning sunlight",
+						"stack": "After waking up",
+						"cue": "Shoes by the door.",
+						"craving": "Light in the eyes in the morning sets the body clock and the evening's sleep.",
+						"two": "Step outside for two minutes.",
+						"reward": "Ten minutes outside, coffee after.",
+						"identity": "I'm someone who starts the day outside.",
+						"time": "",
+						"place": "outside",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Health"
+					},
+					{
+						"title": "Move 30 minutes",
+						"stack": "After the last call of the day",
+						"cue": "Walking shoes or the bike ready.",
+						"craving": "Movement keeps the brain sharp and the back well.",
+						"two": "Walk around the block.",
+						"reward": "Log it in Health; the week's minutes add up.",
+						"identity": "I'm someone who moves every day.",
+						"time": "",
+						"place": "outside",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Health"
+					},
+					{
+						"title": "Strength training",
+						"stack": "Monday, Wednesday, and Friday before dinner",
+						"cue": "The mat and the weights out.",
+						"craving": "Strength keeps a desk worker healthy for decades.",
+						"two": "Do one set of push-ups.",
+						"reward": "Log the workout; the numbers go up.",
+						"identity": "I'm someone who trains.",
+						"time": "",
+						"place": "at home or the gym",
+						"days": [
+							1,
+							3,
+							5
+						],
+						"area": "Health"
+					},
+					{
+						"title": "Drink 2 L of water",
+						"stack": "At each meal and each study block",
+						"cue": "A full bottle on the desk.",
+						"craving": "Even mild dehydration dulls attention.",
+						"two": "Drink one glass now.",
+						"reward": "Log it in Water on Today.",
+						"identity": "I'm someone who drinks enough water.",
+						"time": "",
+						"place": "at the desk",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Health"
+					},
+					{
+						"title": "Screens off an hour before bed",
+						"stack": "At 22:00",
+						"cue": "The phone charging outside the bedroom.",
+						"craving": "Evening light and scrolling push sleep back.",
+						"two": "Put the phone on its charger.",
+						"reward": "Read a paper book instead.",
+						"identity": "I'm someone whose evenings are calm.",
+						"time": "",
+						"place": "in the living room",
+						"days": [
+							1,
+							2,
+							3,
+							4,
+							5,
+							6,
+							7
+						],
+						"area": "Health"
 					}
 				],
 				"tasks": [
@@ -2861,6 +3107,46 @@
 					{
 						"title": "Maths",
 						"description": "Finals at 80% or more: 6.042J, 18.01, 18.02, 18.06, 18.404; Stat 110 and 18.650 for probability and statistics."
+					},
+					{
+						"title": "Computer science foundations",
+						"description": "Computer science, data structures and algorithms, maths, probability, and statistics: what every other domain stands on."
+					},
+					{
+						"title": "Systems and Linux",
+						"description": "C and C++, operating systems, Linux, Bash, and networks: how a machine and a network really work."
+					},
+					{
+						"title": "Programming languages",
+						"description": "Python, Java, and Rust, written idiomatically and shipped."
+					},
+					{
+						"title": "Data",
+						"description": "Databases and their architecture and administration, data-intensive systems, streaming and batch processing, data engineering, DataOps, analysis, and science."
+					},
+					{
+						"title": "AI and machine learning",
+						"description": "Machine learning, deep learning, and MLOps."
+					},
+					{
+						"title": "Software engineering",
+						"description": "Software engineering, system design, API design, and web development."
+					},
+					{
+						"title": "Infrastructure and DevOps",
+						"description": "Docker and Podman, Kubernetes, DevOps, GitOps, and the cloud."
+					},
+					{
+						"title": "Security",
+						"description": "Cybersecurity and DevSecOps."
+					},
+					{
+						"title": "Communication and collaboration",
+						"description": "Technical writing, explaining simply, code review, and open source."
+					},
+					{
+						"title": "Health",
+						"description": "Sleep, light, movement, water, and screens off at night: the energy five years of study run on."
 					}
 				],
 				"resources": [
@@ -3323,7 +3609,75 @@
 						"skill": "Data engineering"
 					}
 				],
-				"version": 2
+				"version": 2,
+				"stages": [
+					{
+						"title": "Foundations: Computer science, Data structures and algorithms, Maths, Probability, Statistics",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Computer science, Data structures and algorithms, Maths, Probability, Statistics.",
+						"section": "1 · Foundations",
+						"area": "Computer science foundations"
+					},
+					{
+						"title": "Systems: C and C++, Operating systems, Linux, Bash, Network",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: C and C++, Operating systems, Linux, Bash, Network.",
+						"section": "2 · Systems",
+						"area": "Systems and Linux"
+					},
+					{
+						"title": "Languages: Python, Java, Rust",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Python, Java, Rust.",
+						"section": "3 · Languages",
+						"area": "Programming languages"
+					},
+					{
+						"title": "Data: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science.",
+						"section": "4 · Data",
+						"area": "Data"
+					},
+					{
+						"title": "AI: Machine learning, Deep learning, MLOps",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Machine learning, Deep learning, MLOps.",
+						"section": "5 · AI",
+						"area": "AI and machine learning"
+					},
+					{
+						"title": "Software: Software engineering, System design, API design, Web development",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Software engineering, System design, API design, Web development.",
+						"section": "6 · Software",
+						"area": "Software engineering"
+					},
+					{
+						"title": "Infrastructure: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud.",
+						"section": "7 · Infrastructure",
+						"area": "Infrastructure and DevOps"
+					},
+					{
+						"title": "Security: Cybersecurity, DevSecOps",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Cybersecurity, DevSecOps.",
+						"section": "8 · Security",
+						"area": "Security"
+					},
+					{
+						"title": "Communication: Technical writing, Explaining simply",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Technical writing, Explaining simply.",
+						"section": "9 · Communication",
+						"area": "Communication and collaboration"
+					},
+					{
+						"title": "Collaboration: Code review and open source",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Code review and open source.",
+						"section": "10 · Collaboration",
+						"area": "Communication and collaboration"
+					},
+					{
+						"title": "Self-management: Consistency, Planning and reflection, Learning how to learn",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Consistency, Planning and reflection, Learning how to learn.",
+						"section": "11 · Self-management",
+						"area": "Engineering mastery"
+					}
+				]
 			}
 		}
 	]

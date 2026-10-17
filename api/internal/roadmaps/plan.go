@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -50,6 +51,7 @@ type Plan struct {
 	Habits    []PlanHabit    `json:"habits"`
 	Tasks     []PlanTask     `json:"tasks"`
 	Areas     []PlanArea     `json:"areas"`
+	Stages    []PlanStage    `json:"stages"`
 	Resources []PlanResource `json:"resources"`
 	Rhythm    []PlanDay      `json:"rhythm"`
 	Certs     []PlanCert     `json:"certifications"`
@@ -169,6 +171,16 @@ type PlanHabit struct {
 	Time     string `json:"time"`
 	Place    string `json:"place"`
 	Days     []int  `json:"days"`
+	Area     string `json:"area"` // the plan's area it belongs to (EP-166)
+}
+
+// PlanStage is a goal per group of domains (a section of the roadmap),
+// proven by the end of the last phase that works on it (EP-166).
+type PlanStage struct {
+	Title   string `json:"title"`
+	Outcome string `json:"outcome"`
+	Section string `json:"section"`
+	Area    string `json:"area"`
 }
 
 // PlanTask is a first task, due Day days after the start.
@@ -248,11 +260,7 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 		return s, err
 	}
 	link := func(from uuid.UUID, rel string, to uuid.UUID) error {
-		_, err := graph.CreateLink(ctx, tx, userID, actor, from, rel, to)
-		if errors.Is(err, graph.ErrDuplicate) {
-			return nil
-		}
-		return err
+		return planLink(ctx, tx, userID, actor, from, rel, to)
 	}
 
 	// The roadmap's own note, unless the vault already has it.
@@ -267,33 +275,11 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 		return s, err
 	}
 
-	// Areas, reused when the person already has one of the same name.
-	areas, err := para.Areas.List(ctx, tx, userID, "active")
+	areaIDs, _, err := planAreas(ctx, tx, userID, actor, p, rm.ID)
 	if err != nil {
 		return s, err
 	}
-	var mainArea uuid.UUID
-	for i, a := range p.Areas {
-		id := uuid.Nil
-		for _, have := range areas {
-			if strings.EqualFold(have.Title, a.Title) {
-				id = have.ID
-			}
-		}
-		if id == uuid.Nil {
-			item, err := para.Areas.Create(ctx, tx, userID, actor, para.Fields{Title: str(a.Title), Description: str(a.Description)})
-			if err != nil {
-				return s, err
-			}
-			id = item.ID
-		}
-		if i == 0 {
-			mainArea = id
-		}
-		if err := link(rm.ID, para.InArea, id); err != nil {
-			return s, err
-		}
-	}
+	mainArea := areaIDs[strings.ToLower(p.Areas[0].Title)]
 
 	// The goal: every domain proven, measured in domains.
 	domains := 0
@@ -423,16 +409,10 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 		}
 	}
 
-	// The habits that drive it, and the exams, unless the person already
-	// has them (an earlier version of the plan, or their own).
+	// The habits that drive it, a goal per group of domains, and the exams,
+	// unless the person already has them (an earlier version of the plan,
+	// or their own).
 	have := map[string]bool{}
-	hs, err := habits.List(ctx, tx, userID, "active", now)
-	if err != nil {
-		return s, err
-	}
-	for _, h := range hs {
-		have["habit "+strings.ToLower(h.Title)] = true
-	}
 	cs, err := certs.List(ctx, tx, userID)
 	if err != nil {
 		return s, err
@@ -440,20 +420,11 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	for _, c := range cs {
 		have["cert "+c.Code] = true
 	}
-	for _, h := range p.Habits {
-		if have["habit "+strings.ToLower(h.Title)] {
-			continue
-		}
-		habit, err := habits.Create(ctx, tx, userID, actor, habits.Fields{Title: str(h.Title), StackAfter: str(h.Stack), Cue: str(h.Cue),
-			Craving: str(h.Craving), TwoMinute: str(h.Two), Reward: str(h.Reward), Identity: str(h.Identity),
-			IntentionTime: str(h.Time), IntentionPlace: str(h.Place), Days: h.Days}, now)
-		if err != nil {
-			return s, err
-		}
-		s.Habits = append(s.Habits, habit.ID)
-		if err := link(habit.ID, goals.Supports, g.ID); err != nil {
-			return s, err
-		}
+	if s.Habits, err = planHabits(ctx, tx, userID, actor, p, areaIDs, g.ID, now); err != nil {
+		return s, err
+	}
+	if _, err := planStages(ctx, tx, userID, actor, d, areaIDs, skills, g.ID, shift); err != nil {
+		return s, err
 	}
 
 	// The first week's tasks; a project's go on its board.
@@ -520,6 +491,207 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 	}
 	s.Roadmap, err = Get(ctx, tx, userID, rm.ID)
 	return s, err
+}
+
+// planAreas creates the plan's areas the person lacks, reusing one of the
+// same name, and puts the roadmap in each; it returns them by lower-cased
+// title, and how many it created.
+func planAreas(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, p Plan, roadmap uuid.UUID) (map[string]uuid.UUID, int, error) {
+	areas, err := para.Areas.List(ctx, tx, userID, "active")
+	if err != nil {
+		return nil, 0, err
+	}
+	ids := map[string]uuid.UUID{}
+	for _, a := range areas {
+		ids[strings.ToLower(a.Title)] = a.ID
+	}
+	created := 0
+	for _, a := range p.Areas {
+		id, ok := ids[strings.ToLower(a.Title)]
+		if !ok {
+			item, err := para.Areas.Create(ctx, tx, userID, actor, para.Fields{Title: &a.Title, Description: &a.Description})
+			if err != nil {
+				return nil, 0, err
+			}
+			id, ids[strings.ToLower(a.Title)] = item.ID, item.ID
+			created++
+		}
+		if err := planLink(ctx, tx, userID, actor, roadmap, para.InArea, id); err != nil {
+			return nil, 0, err
+		}
+	}
+	return ids, created, nil
+}
+
+// planHabits creates the plan's habits the person does not have yet (by
+// title), each in its area and supporting the goal.
+func planHabits(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, p Plan, areas map[string]uuid.UUID, goal uuid.UUID, now time.Time) ([]uuid.UUID, error) {
+	hs, err := habits.List(ctx, tx, userID, "active", now)
+	if err != nil {
+		return nil, err
+	}
+	have := map[string]bool{}
+	for _, h := range hs {
+		have[strings.ToLower(h.Title)] = true
+	}
+	var out []uuid.UUID
+	for _, h := range p.Habits {
+		if have[strings.ToLower(h.Title)] {
+			continue
+		}
+		habit, err := habits.Create(ctx, tx, userID, actor, habits.Fields{Title: &h.Title, StackAfter: &h.Stack, Cue: &h.Cue,
+			Craving: &h.Craving, TwoMinute: &h.Two, Reward: &h.Reward, Identity: &h.Identity,
+			IntentionTime: &h.Time, IntentionPlace: &h.Place, Days: h.Days}, now)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, habit.ID)
+		if goal != uuid.Nil {
+			if err := planLink(ctx, tx, userID, actor, habit.ID, goals.Supports, goal); err != nil {
+				return nil, err
+			}
+		}
+		if area, ok := areas[strings.ToLower(h.Area)]; ok {
+			if err := planLink(ctx, tx, userID, actor, habit.ID, para.InArea, area); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return out, nil
+}
+
+// planStages creates a goal per group of domains the person does not have
+// yet (by title): its domains proven by the end of the last phase working
+// on one of them (the plan's end for the soft skills), in its area, its
+// skills supporting it, and related to the plan's goal.
+func planStages(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, d LibraryRoadmap, areas map[string]uuid.UUID, skills map[string]uuid.UUID, goal uuid.UUID, shift int) (int, error) {
+	p := *d.Plan
+	mine, err := goals.List(ctx, tx, userID, "active")
+	if err != nil {
+		return 0, err
+	}
+	have := map[string]bool{}
+	for _, g := range mine {
+		have[strings.ToLower(g.Title)] = true
+	}
+	created := 0
+	for _, st := range p.Stages {
+		if have[strings.ToLower(st.Title)] {
+			continue
+		}
+		var domains []string
+		for _, sk := range d.Skills {
+			if sk.Section == st.Section {
+				domains = append(domains, sk.Title)
+			}
+		}
+		end := ""
+		for _, ph := range p.Phases {
+			for _, dom := range ph.Domains {
+				if slices.Contains(domains, dom) && ph.End > end {
+					end = ph.End
+				}
+			}
+		}
+		if end == "" {
+			end = p.End
+		}
+		target := day(end).AddDate(0, 0, shift)
+		g, err := goals.Create(ctx, tx, userID, actor, goals.Fields{Title: &st.Title, Outcome: &st.Outcome, TargetDate: &target,
+			Measure: &goals.Measure{Unit: "domains proven", Target: float64(len(domains))}})
+		if err != nil {
+			return created, err
+		}
+		created++
+		if area, ok := areas[strings.ToLower(st.Area)]; ok {
+			if err := planLink(ctx, tx, userID, actor, g.ID, para.InArea, area); err != nil {
+				return created, err
+			}
+		}
+		if goal != uuid.Nil {
+			if err := planLink(ctx, tx, userID, actor, g.ID, graph.RelatesTo, goal); err != nil {
+				return created, err
+			}
+		}
+		for _, dom := range domains {
+			if id, ok := skills[dom]; ok {
+				if err := planLink(ctx, tx, userID, actor, id, goals.Supports, g.ID); err != nil {
+					return created, err
+				}
+			}
+		}
+	}
+	return created, nil
+}
+
+// planLink links two items, once. It looks first: a duplicate insert would
+// abort the transaction around it.
+func planLink(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, from uuid.UUID, rel string, to uuid.UUID) error {
+	var exists bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM links WHERE user_id = $1 AND source_id = $2 AND relation = $3 AND target_id = $4)`,
+		userID, from, rel, to).Scan(&exists); err != nil || exists {
+		return err
+	}
+	_, err := graph.CreateLink(ctx, tx, userID, actor, from, rel, to)
+	if errors.Is(err, graph.ErrDuplicate) {
+		return nil
+	}
+	return err
+}
+
+// Completed is what completing a plan started earlier added (EP-166).
+type Completed struct {
+	Areas  int `json:"areas"`
+	Goals  int `json:"goals"`
+	Habits int `json:"habits"`
+}
+
+// CompletePlan gives a roadmap's plan, started earlier, what the plan has
+// since gained and the person lacks: its areas, a goal per group of
+// domains, and its habits. Nothing the person has is changed or repeated.
+func CompletePlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, roadmap uuid.UUID, now time.Time) (Completed, error) {
+	var planID *string
+	var planStart *time.Time
+	if err := tx.QueryRow(ctx, `SELECT r.plan_id, r.plan_start FROM roadmaps r JOIN entities e ON e.id = r.id
+		WHERE r.id = $1 AND e.user_id = $2`, roadmap, userID).Scan(&planID, &planStart); err != nil {
+		return Completed{}, err
+	}
+	var d *LibraryRoadmap
+	for i := range lib.Roadmaps {
+		if planID != nil && lib.Roadmaps[i].ID == *planID && lib.Roadmaps[i].Plan != nil {
+			d = &lib.Roadmaps[i]
+		}
+	}
+	if d == nil || planStart == nil {
+		return Completed{}, ValidationError{"This roadmap has no plan to complete."}
+	}
+	p := *d.Plan
+	shift := int(planStart.Sub(day(p.Start)).Hours() / 24)
+	var goal uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT l.target_id FROM links l JOIN goals g ON g.id = l.target_id
+		WHERE l.user_id = $1 AND l.source_id = $2 AND l.relation = 'supports' LIMIT 1`, userID, roadmap).Scan(&goal); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return Completed{}, err
+	}
+	rm, err := Get(ctx, tx, userID, roadmap)
+	if err != nil {
+		return Completed{}, err
+	}
+	skills := map[string]uuid.UUID{}
+	for _, sk := range rm.Skills {
+		skills[sk.Title] = sk.ID
+	}
+	var out Completed
+	areas, n, err := planAreas(ctx, tx, userID, actor, p, roadmap)
+	if err != nil {
+		return out, err
+	}
+	out.Areas = n
+	if out.Goals, err = planStages(ctx, tx, userID, actor, *d, areas, skills, goal, shift); err != nil {
+		return out, err
+	}
+	hs, err := planHabits(ctx, tx, userID, actor, p, areas, goal, now)
+	out.Habits = len(hs)
+	return out, err
 }
 
 // projectNote writes a phase project's note in its docs folder, in the

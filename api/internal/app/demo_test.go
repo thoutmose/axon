@@ -232,7 +232,8 @@ func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(added) != 3+len(demo.LearningNotes)+len(demo.Funds)+len(demo.Schools)+len(demo.Protocols) {
+	// Morning sunlight comes with the roadmap's plan (EP-166), so the protocols add one habit less.
+	if len(added) != 3+len(demo.LearningNotes)+len(demo.Funds)+len(demo.Schools)+len(demo.Protocols)-1 {
 		t.Fatalf("added = %v", added)
 	}
 	var list struct {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -239,7 +240,16 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		goal            uuid.UUID
 	}{{"Health", "Sleep 7–8 h, move every day, eat mostly plants.", health.ID}} {
 		var area para.Item
-		if s.err == nil {
+		var have []para.Item
+		if s.err == nil { // the roadmap's plan may have created it (EP-166)
+			have, s.err = para.Areas.List(ctx, tx, user, "active")
+		}
+		for _, h := range have {
+			if h.Title == a.title {
+				area = h
+			}
+		}
+		if s.err == nil && area.ID == uuid.Nil {
 			area, s.err = para.Areas.Create(ctx, tx, user, graph.UserActor, para.Fields{Title: ptr(a.title), Description: ptr(a.standard)})
 		}
 		if s.err == nil {
@@ -395,6 +405,14 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 	}
 	var habitIDs []uuid.UUID
 	history := [][3]int{{1, 30, 9}, {1, 25, 6}, {2, 30, 0}, {1, 20, 7}, {1, 14, 5}} // every, days, miss
+	planned := map[string]uuid.UUID{}
+	if s.err == nil {
+		var have []habits.Habit
+		have, s.err = habits.List(ctx, tx, user, "active", now)
+		for _, h := range have {
+			planned[strings.ToLower(h.Title)] = h.ID
+		}
+	}
 	var protocols []habitSeed
 	for i, p := range Protocols {
 		protocols = append(protocols, habitSeed{p[0], p[1], p[2], p[3], p[4], p[5], history[i][0], history[i][1], history[i][2]})
@@ -409,8 +427,12 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 			break
 		}
 		var habit habits.Habit
-		habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin),
-			Identity: ptr(h.identity), IntentionTime: ptr(h.at), IntentionPlace: ptr(h.where)}, now)
+		if id, ok := planned[strings.ToLower(h.title)]; ok { // the roadmap's plan has it too (EP-166)
+			habit.ID = id
+		} else {
+			habit, s.err = habits.Create(ctx, tx, user, graph.UserActor, habits.Fields{Title: ptr(h.title), StackAfter: ptr(h.stack), TwoMinute: ptr(h.twoMin),
+				Identity: ptr(h.identity), IntentionTime: ptr(h.at), IntentionPlace: ptr(h.where)}, now)
+		}
 		habitIDs = append(habitIDs, habit.ID)
 		for back := h.days; back >= 1 && s.err == nil; back-- {
 			if back%h.every != 0 || (h.miss > 0 && back%h.miss == 0) { // a few missed days, as in real life
