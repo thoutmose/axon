@@ -482,6 +482,8 @@ export const fr: Record<string, string> = {
 	'Hard skills': 'Compétences techniques',
 	'Soft skills': 'Compétences humaines',
 	'One spoke per roadmap.': 'Un rayon par parcours.',
+	'One spoke per domain of your plan: once assessed, the filled shape is your level, out of 5, and the dashed one the domains done.':
+		'Une branche par domaine de votre plan : une fois évalué, la forme pleine est votre niveau, sur 5, et la pointillée les domaines faits.',
 	'One spoke per section.': 'Un rayon par section.',
 	'Progress of {title}': 'Progression de {title}',
 	'{done} of {total} skills': '{done} compétences sur {total}',
@@ -498,6 +500,9 @@ export const fr: Record<string, string> = {
 	'no skills yet': 'aucune compétence pour l’instant',
 	'{title}: {done} of {total} skills acquired': '{title} : {done} compétences acquises sur {total}',
 	Acquired: 'Acquises',
+	'Assessed level': 'Niveau évalué',
+	'Done in the roadmap': 'Fait dans le parcours',
+	'level {level} of 5': 'niveau {level} sur 5',
 	'With those being learnt': 'Avec celles en cours',
 	'{label}: {done} of {total} acquired ({percent}), {learning} being learnt':
 		'{label} : {done} acquises sur {total} ({percent}), {learning} en cours',
