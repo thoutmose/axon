@@ -100,6 +100,13 @@ type Doc struct {
 	Digest       Digest       `json:"digest" yaml:"digest"`
 	Podcast      Podcast      `json:"podcast" yaml:"podcast"`
 	Caffeine     Caffeine     `json:"caffeine" yaml:"caffeine"`
+	Jarvis       Jarvis       `json:"jarvis" yaml:"jarvis"`
+}
+
+// Jarvis (EP-153): the master agent's floating button, off until the
+// person turns it on.
+type Jarvis struct {
+	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
 // Caffeine (EP-117): when the person goes to bed, and how fast they clear

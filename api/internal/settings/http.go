@@ -2,6 +2,7 @@ package settings
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -74,18 +75,23 @@ func (h *Handlers) get(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
-	out := map[string]any{"language": d.Language, "appearance": d.Appearance, "templates": d.Templates, "keyboard": d.Keyboard,
-		"focus": d.Focus, "gamification": d.Gamification, "vault": d.Vault, "learning": d.Learning, "reminders": d.Reminders, "today": d.Today, "menu": d.Menu,
-		"digest": d.Digest, "podcast": d.Podcast}
+	// The whole document, in its own order, so no part can be left out
+	// (caffeine was): a client that sends it back unchanged keeps everything.
+	doc, err := json.Marshal(d)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	if h.runner != nil {
 		ai, err := h.runner.GetAIConfig(r.Context(), h.db, who.UserID)
 		if err != nil {
 			h.fail(w, err)
 			return
 		}
-		out["ai"] = ai
+		a, _ := json.Marshal(ai)
+		doc = append(append([]byte(`{"ai":`), a...), append([]byte(","), doc[1:]...)...)
 	}
-	httpx.JSON(w, http.StatusOK, out)
+	httpx.JSON(w, http.StatusOK, json.RawMessage(doc))
 }
 
 func (h *Handlers) put(w http.ResponseWriter, r *http.Request) {

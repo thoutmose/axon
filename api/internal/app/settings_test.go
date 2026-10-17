@@ -237,3 +237,33 @@ func TestTheThemeFollowsTheSunOverAChosenLandscape(t *testing.T) {
 	put("sun", "atlantis", 422)
 	put("moon", "forest", 422)
 }
+
+// The settings come back whole and survive a round trip (EP-153): the
+// coffee settings were missing from the document, so Preferences reset them
+// on every save.
+func TestSettingsRoundTripKeepsEveryPart(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	var doc map[string]any
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+	for _, part := range []string{"caffeine", "jarvis", "digest", "podcast", "today", "menu"} {
+		if _, ok := doc[part]; !ok {
+			t.Fatalf("settings lack %q", part)
+		}
+	}
+	delete(doc, "ai")
+	doc["caffeine"] = map[string]any{"bedtime": "22:30", "metabolism": "slow"}
+	doc["jarvis"] = map[string]any{"enabled": true}
+	body, _ := json.Marshal(doc)
+	alice.mustDo(200, "PUT", "/v1/me/settings", body)
+	// What Preferences does: read, change one thing, send it all back.
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
+	delete(doc, "ai")
+	doc["language"] = "fr"
+	body, _ = json.Marshal(doc)
+	out := alice.mustDo(200, "PUT", "/v1/me/settings", body)
+	if !bytes.Contains(out, []byte(`"caffeine":{"bedtime":"22:30","metabolism":"slow"}`)) || !bytes.Contains(out, []byte(`"jarvis":{"enabled":true}`)) {
+		t.Fatalf("after a save = %s", out)
+	}
+}

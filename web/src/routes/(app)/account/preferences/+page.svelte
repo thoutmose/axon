@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { jarvis } from '$lib/jarvis.svelte';
 	import AIUsage from '$lib/AIUsage.svelte';
 	import AgentModels from '$lib/AgentModels.svelte';
 	import { install, promptInstall } from '$lib/install.svelte';
@@ -34,6 +35,7 @@
 	type Settings = Schemas['Settings'] & {
 		keyboard: { shortcuts: boolean; vim: boolean };
 		caffeine: { bedtime: string; metabolism: 'fast' | 'average' | 'slow' };
+		jarvis: { enabled: boolean };
 		focus: Focus;
 		gamification: { enabled: boolean };
 		vault: { mirror: boolean; folder: string; health: boolean };
@@ -152,7 +154,8 @@
 					sections: ['kpis', 'tasks', 'milestones', 'goals', 'notes', 'overview']
 				},
 				menu: loaded.menu ?? { hidden: [], chosen: false },
-				caffeine: { bedtime: '23:00', metabolism: 'average', ...loaded.caffeine }
+				caffeine: { bedtime: '23:00', metabolism: 'average', ...loaded.caffeine },
+				jarvis: { enabled: loaded.jarvis?.enabled ?? false }
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			videoSummaries = s.ai?.video_summaries ?? false;
@@ -174,7 +177,8 @@
 			reminders: { ...remindersDefaults, ...saved.reminders },
 			today: saved.today ?? s!.today,
 			menu: saved.menu ?? s!.menu,
-			caffeine: { bedtime: '23:00', metabolism: 'average', ...saved.caffeine }
+			caffeine: { bedtime: '23:00', metabolism: 'average', ...saved.caffeine },
+			jarvis: { enabled: saved.jarvis?.enabled ?? false }
 		};
 		setHidden(s.menu.hidden);
 		setLocale(saved.language);
@@ -187,38 +191,13 @@
 		saving = true;
 		try {
 			s.templates.project.wip_limit = wip ? Number(wip) : null;
-			const {
-				language,
-				appearance,
-				templates,
-				keyboard,
-				focus,
-				gamification,
-				vault,
-				learning,
-				reminders,
-				today,
-				menu
-			} = s;
-			apply(
-				await api<Settings>('/v1/me/settings', {
-					method: 'PUT',
-					body: {
-						language,
-						appearance,
-						templates,
-						keyboard,
-						focus,
-						gamification,
-						vault,
-						learning,
-						reminders,
-						// Sent back as they are: a part left out would be reset to its default.
-						today,
-						menu
-					}
-				})
-			);
+			// The whole document goes back: a part left out would be reset to
+			// its default (coffee, the digest, and the podcast were, before).
+			// The AI part is read here and set through its own endpoints.
+			const { ai: _ai, ...doc } = s;
+			void _ai;
+			apply(await api<Settings>('/v1/me/settings', { method: 'PUT', body: doc }));
+			jarvis.enabled = s.jarvis.enabled;
 			await api('/v1/me/agent-settings', {
 				method: 'PUT',
 				body: {
@@ -678,6 +657,12 @@
 				<input type="checkbox" bind:checked={videoSummaries} />
 				{t(
 					'Summarise videos and podcast episodes in prose with my model (5 to 10 lines and keywords each, once, within the budget). Without it, Axon summarises them itself, from their own sentences.'
+				)}
+			</label>
+			<label class="check">
+				<input type="checkbox" bind:checked={s.jarvis.enabled} />
+				{t(
+					'Show Jarvis, the master agent: a ⚡ button at the bottom right opens a side panel where it asks Axon’s agents for you, on this provider or a local model (Ollama).'
 				)}
 			</label>
 			<ProviderSettings onchange={load} />
