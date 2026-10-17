@@ -3,7 +3,7 @@
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import { t } from '$lib/i18n.svelte';
-	import JarvisFace from '$lib/JarvisFace.svelte';
+	import JarvisBrain from '$lib/JarvisBrain.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Icon from '$lib/ui/Icon.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
@@ -229,7 +229,7 @@
 	<aside id="jarvis-panel" class="panel" class:wide aria-label="Jarvis">
 		<div class="sky" aria-hidden="true"></div>
 		<header>
-			<div class="portrait"><JarvisFace {thinking} /></div>
+			<div class="portrait"><JarvisBrain {thinking} /></div>
 			<div class="who">
 				<h2>Jarvis</h2>
 				<p class="tag">
@@ -280,6 +280,7 @@
 		<div class="log" bind:this={log} aria-live="polite">
 			{#if turns.length === 0}
 				<div class="welcome">
+					<div class="hero"><JarvisBrain /></div>
 					<p class="lead">{t('What can I do for you?')}</p>
 					<p class="hint">
 						{t(
@@ -483,8 +484,8 @@
 		backdrop-filter: blur(8px);
 	}
 	.portrait {
-		width: 3.75rem;
-		height: 4.1rem;
+		width: 5rem;
+		height: 3.5rem;
 		flex: none;
 	}
 	.who {
@@ -578,6 +579,11 @@
 		background: rgb(7 10 26 / 0.55);
 		border: 1px solid rgb(62 242 255 / 0.25);
 		backdrop-filter: blur(6px);
+	}
+	.hero {
+		width: min(16rem, 100%);
+		aspect-ratio: 324 / 226;
+		margin: 0 auto var(--space-3);
 	}
 	.lead {
 		margin: 0;
