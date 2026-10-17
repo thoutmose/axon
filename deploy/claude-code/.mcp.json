@@ -1,0 +1,9 @@
+{
+	"mcpServers": {
+		"axon": {
+			"type": "http",
+			"url": "${AXON_URL:-https://axon.thoutmose.me}/api/v1/mcp",
+			"headers": { "Authorization": "Bearer ${AXON_TOKEN}" }
+		}
+	}
+}

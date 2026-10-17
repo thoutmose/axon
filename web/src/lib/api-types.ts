@@ -2757,6 +2757,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/mcp': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Axon's agents for an MCP client (Claude Code)
+		 * @description A Model Context Protocol server over streamable HTTP (JSON-RPC 2.0, one message per request, JSON replies) for a client the person runs on their own model, such as Claude Code (EP-169). Methods: initialize, ping, tools/list, tools/call, prompts/list, prompts/get; notifications get 202. Tools are the agents' tools the person's consents allow (not Jarvis's ask_agent): reads return data, writes become pending proposals approved in Axon, each call recorded as a run with the model claude-code. Prompts are the agents' instructions. Needs the ai_agents consent and a session or a write-scope token (a read token cannot post); not for the demo.
+		 */
+		post: operations['mcp'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/me/ai-usage': {
 		parameters: {
 			query?: never;
@@ -14006,6 +14026,55 @@ export interface operations {
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
+		};
+	};
+	mcp: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/** @enum {string} */
+					jsonrpc: '2.0';
+					/** @description Absent for a notification. */
+					id?: string | number;
+					/** @example tools/list */
+					method: string;
+					params?: Record<string, never>;
+				};
+			};
+		};
+		responses: {
+			/** @description The JSON-RPC response, with a result or an error. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						jsonrpc: string;
+						id: unknown;
+						result?: Record<string, never>;
+						error?: {
+							code?: number;
+							message?: string;
+						};
+					};
+				};
+			};
+			/** @description A notification was received. */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
 		};
 	};
 	getAIUsage: {

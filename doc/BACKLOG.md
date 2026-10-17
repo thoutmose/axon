@@ -217,7 +217,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Done |
 | EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Done |
 | EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Done (the switch is the owner's) |
-| EP-169 | Claude Code on Axon | `axon mcp` gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code subagent. | MUST | 5 pts | EP-19, EP-153 | Planned |
+| EP-169 | Claude Code on Axon | An MCP server in Axon gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code prompt. | MUST | 5 pts | EP-19, EP-153 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -2540,6 +2540,18 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 - [x] **EP-168/IS-168.01** · 1 pt · MUST — The 502: Tailscale Serve picks its certificate by the TLS server name, which nginx does not send to an upstream by default; checked from srv-dev, the handshake fails without it and Axon answers 200 with it, even under `Host: axon.thoutmose.me`. [Operations](operations.md#production-at-its-own-address-ep-168) gives the proxy host's settings (`proxy_ssl_server_name on; proxy_ssl_name srv-prod.tail781d53.ts.net;`, srv-prod's tailnet address as the forward host), the address change in the production settings, and the passkey move, which the owner does.
 - [x] **EP-168/IS-168.02** · 1 pt · MUST — Through Nginx Proxy Manager and Tailscale Serve, Caddy would see srv-npm's tailnet address as every visitor's (its private ranges leave out 100.64.0.0/10), so per-address sign-in limits would be shared by all: `AXON_TRUSTED_PROXIES` adds proxies to trust, and production trusts srv-npm.
+
+### EP-169 — Claude Code on Axon
+
+**Goal.** "Connect my Claude Code subscription to Axon, without an API key: run `claude remote-control` on srv-prod in a folder, and use Claude with the AI agents" (owner, 2026-10-17).
+
+**Decision.** Anthropic does not let a third-party app use a Claude subscription, so Axon never holds or calls it: the owner runs Claude Code (on their subscription), which calls Axon as an MCP server with a personal access token. Axon brings its agents' tools and instructions; Claude Code brings the model.
+
+- [x] **EP-169/IS-169.01** · 3 pts · MUST — `POST /v1/mcp`: MCP over streamable HTTP (JSON-RPC 2.0, JSON replies; initialize, ping, tools/list, tools/call, prompts/list, prompts/get; notifications 202). Tools are the agents' tools the person's consents allow, Jarvis's `ask_agent` aside (it would call the server's provider); reads come back compacted and framed as data; a write is dry-run and stored as a pending proposal, exactly as an agent's, approved only from a browser session; a tool only health agents have keeps their safety guards; each call is a run of the agent lending the tool (the one needing fewest consents), with the model `claude-code`. It needs the `ai_agents` consent and a write token (a read token cannot post), and is closed to the demo.
+- [x] **EP-169/IS-169.02** · 1 pt · MUST — Each agent but Jarvis is an MCP prompt with its instructions, today's date, and its approved memories, which Claude Code offers as `/mcp__axon__<agent>`.
+- [x] **EP-169/IS-169.03** · 1 pt · MUST — `deploy/claude-code` (`.mcp.json` with the token from `AXON_TOKEN`, never in a file, and a `CLAUDE.md`) is copied to `/opt/axon` by each deploy; [Operations](operations.md#claude-code-on-axon-ep-169) gives the three commands on srv-prod and the user guide points to them.
+
+**Tests.** `TestClaudeCodeUsesTheAgentsToolsThroughMCP`: no tools without consent, the handshake, tools and their read-only hints, health tools and `ask_agent` withheld, a read framed as data, a write that changes nothing until approved and is the task manager's, the run's model, the prompts, an unknown method, and a read token refused.
 
 ### EP-20 — Analytics & insights
 

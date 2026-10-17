@@ -244,6 +244,21 @@ Each person must still grant the `ai_agents` consent, and their monthly budget (
 
 Run outcomes are logged as `agent run finished` with status, tool count, tokens, and cost; prompts and replies are never logged. A run stuck as `running` after a restart is marked `failed` (`interrupted`) when the same person next starts one.
 
+### Claude Code on Axon (EP-169)
+
+A person can drive Axon's agents from Claude Code on their own Claude subscription: Claude Code is the MCP client, Axon the server (`POST /api/v1/mcp`), so Axon holds no key and calls no model. Its tools are the agents' tools the person's consents allow; writes are proposals approved in Axon, never changes; each call is an agent run with the model `claude-code`. It needs the `ai_agents` consent and a **write** token (Account → Tokens; a read token cannot post).
+
+On `srv-prod`, as the owner (once Claude Code is installed and signed in with `claude`):
+
+```bash
+cp -r /opt/axon/deploy/claude-code ~/axon-claude && cd ~/axon-claude   # or from a checkout of this repository
+read -rs AXON_TOKEN && export AXON_TOKEN                               # the write token, not stored in a file
+# AXON_URL defaults to https://axon.thoutmose.me; until the switch: export AXON_URL=https://srv-prod.tail781d53.ts.net
+claude remote-control
+```
+
+Approve the `axon` server when Claude Code asks (it comes from the folder's `.mcp.json`); `/mcp` shows it connected. The agents are the prompts `/mcp__axon__<agent>`, for example `/mcp__axon__task-manager What should I do next?`. Revoke the token to cut the connection.
+
 ## Load testing (EP-21)
 
 `api/cmd/axon-load` sends a mix of reads and writes (today, tasks, notes, search, dashboard overview, insights, habits, and 10 % task creation) with a write-scoped personal access token, and prints throughput and p50/p95/p99 per endpoint. It creates tasks, so run it only against a local stack or a throwaway instance:
