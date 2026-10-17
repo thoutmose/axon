@@ -134,6 +134,8 @@ Agents draft changes; **nothing changes until you approve**. Each person picks a
 
 **Models**: under Preferences → AI, choose one model for all agents (for example `claude-sonnet-5-5`), or one for an agent (a deep model for the Tutor, a quick one for summaries); costs follow the model. **Summarise videos and podcast episodes in prose** has your model write each one's 5 to 10 lines and keywords once, within the budget; without it, Axon summarises them itself from their own sentences.
 
+**Claude Code**: with your own Claude subscription, Claude Code can use Axon's agents: their tools read your data and propose changes you approve in Axon, as always. Create a write token under Account → Tokens, then follow [Claude Code on Axon](operations.md#claude-code-on-axon-ep-169); Axon never sees your subscription.
+
 ## Your data
 
 - **Account → Privacy**: consents (all off until you turn them on), the full export (JSON plus your notes as Markdown), and erasure.

@@ -32,6 +32,7 @@ func (r *Runner) Routes(m chi.Router) {
 	m.Get("/v1/proposals", r.proposals)
 	m.Get("/v1/agent-memories", r.memories)
 	m.Get("/v1/me/ai-usage", r.usage)
+	m.With(auth.NotDemo).Post("/v1/mcp", r.mcp) // Claude Code on Axon (EP-169)
 }
 
 // UploadRoutes mounts the meal photo estimate, which needs a larger body
