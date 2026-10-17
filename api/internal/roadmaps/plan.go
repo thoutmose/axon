@@ -560,68 +560,183 @@ func planHabits(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Ac
 	return out, nil
 }
 
-// planStages creates a goal per group of domains the person does not have
-// yet (by title): its domains proven by the end of the last phase working
-// on one of them (the plan's end for the soft skills), in its area, its
-// skills supporting it, and related to the plan's goal.
-func planStages(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, d LibraryRoadmap, areas map[string]uuid.UUID, skills map[string]uuid.UUID, goal uuid.UUID, shift int) (int, error) {
+// stageCounts is what planStages created.
+type stageCounts struct{ goals, milestones, projects int }
+
+// planStages gives each group of domains (a section of the roadmap) what
+// the person does not have yet (by title): its goal, the domains to prove
+// measured in domains proven, due at the end of the last phase working on
+// one of them (the plan's end for the soft skills), in its area, its
+// skills supporting it, and related to the plan's goal; a milestone per
+// domain, due at the end of the last phase working on it (EP-171); and a
+// portfolio project whose board holds each domain's proof and the group's
+// exams, in the backlog (EP-171).
+func planStages(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, d LibraryRoadmap, areas map[string]uuid.UUID, skills map[string]uuid.UUID, goal uuid.UUID, shift int) (stageCounts, error) {
 	p := *d.Plan
+	var n stageCounts
 	mine, err := goals.List(ctx, tx, userID, "active")
 	if err != nil {
-		return 0, err
+		return n, err
 	}
-	have := map[string]bool{}
+	goalIDs := map[string]uuid.UUID{}
 	for _, g := range mine {
-		have[strings.ToLower(g.Title)] = true
+		goalIDs[strings.ToLower(g.Title)] = g.ID
 	}
-	created := 0
-	for _, st := range p.Stages {
-		if have[strings.ToLower(st.Title)] {
-			continue
-		}
-		var domains []string
-		for _, sk := range d.Skills {
-			if sk.Section == st.Section {
-				domains = append(domains, sk.Title)
+	// The last phase working on a domain ends when it should be proven.
+	ends := map[string]string{}
+	for _, ph := range p.Phases {
+		for _, dom := range ph.Domains {
+			if ph.End > ends[dom] {
+				ends[dom] = ph.End
 			}
 		}
-		end := ""
-		for _, ph := range p.Phases {
-			for _, dom := range ph.Domains {
-				if slices.Contains(domains, dom) && ph.End > end {
-					end = ph.End
+	}
+	due := func(dom string) time.Time {
+		if e, ok := ends[dom]; ok {
+			return day(e).AddDate(0, 0, shift)
+		}
+		return day(p.End).AddDate(0, 0, shift)
+	}
+	for _, st := range p.Stages {
+		var domains []LibrarySkill
+		for _, sk := range d.Skills {
+			if sk.Section == st.Section {
+				domains = append(domains, sk)
+			}
+		}
+		target := day(p.Phases[0].Start)
+		for _, dom := range domains {
+			if t := due(dom.Title); t.After(target) {
+				target = t
+			}
+		}
+		area, inArea := areas[strings.ToLower(st.Area)]
+		gid, ok := goalIDs[strings.ToLower(st.Title)]
+		if !ok {
+			g, err := goals.Create(ctx, tx, userID, actor, goals.Fields{Title: &st.Title, Outcome: &st.Outcome, TargetDate: &target,
+				Measure: &goals.Measure{Unit: "domains proven", Target: float64(len(domains))}})
+			if err != nil {
+				return n, err
+			}
+			gid = g.ID
+			n.goals++
+			if inArea {
+				if err := planLink(ctx, tx, userID, actor, gid, para.InArea, area); err != nil {
+					return n, err
+				}
+			}
+			if goal != uuid.Nil {
+				if err := planLink(ctx, tx, userID, actor, gid, graph.RelatesTo, goal); err != nil {
+					return n, err
+				}
+			}
+			for _, dom := range domains {
+				if id, ok := skills[dom.Title]; ok {
+					if err := planLink(ctx, tx, userID, actor, id, goals.Supports, gid); err != nil {
+						return n, err
+					}
 				}
 			}
 		}
-		if end == "" {
-			end = p.End
-		}
-		target := day(end).AddDate(0, 0, shift)
-		g, err := goals.Create(ctx, tx, userID, actor, goals.Fields{Title: &st.Title, Outcome: &st.Outcome, TargetDate: &target,
-			Measure: &goals.Measure{Unit: "domains proven", Target: float64(len(domains))}})
+
+		// A milestone per domain.
+		rows, err := tx.Query(ctx, `SELECT e.title FROM milestones m JOIN entities e ON e.id = m.id WHERE m.goal_id = $1 AND e.user_id = $2`, gid, userID)
 		if err != nil {
-			return created, err
+			return n, err
 		}
-		created++
-		if area, ok := areas[strings.ToLower(st.Area)]; ok {
-			if err := planLink(ctx, tx, userID, actor, g.ID, para.InArea, area); err != nil {
-				return created, err
+		titles, err := pgx.CollectRows(rows, pgx.RowTo[string])
+		if err != nil {
+			return n, err
+		}
+		for _, dom := range domains {
+			title := dom.Title + " proven"
+			if slices.Contains(titles, title) {
+				continue
+			}
+			at := due(dom.Title)
+			m, err := goals.AddMilestone(ctx, tx, userID, gid, actor, goals.MilestoneFields{Title: &title, DueOn: &at})
+			if err != nil {
+				return n, err
+			}
+			n.milestones++
+			if id, ok := skills[dom.Title]; ok {
+				if err := planLink(ctx, tx, userID, actor, id, graph.RelatesTo, m.ID); err != nil {
+					return n, err
+				}
 			}
 		}
-		if goal != uuid.Nil {
-			if err := planLink(ctx, tx, userID, actor, g.ID, graph.RelatesTo, goal); err != nil {
-				return created, err
+
+		// The group's portfolio: each domain's proof and its exams.
+		name := sectionNumber.ReplaceAllString(st.Section, "")
+		title := name + " portfolio"
+		var exists bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM projects p JOIN entities e ON e.id = p.id
+			WHERE e.user_id = $1 AND lower(e.title) = lower($2) AND p.status <> 'archived')`, userID, title).Scan(&exists); err != nil {
+			return n, err
+		}
+		if exists {
+			continue
+		}
+		status := "on_hold"
+		for _, dom := range domains {
+			if slices.Contains(p.Phases[0].Domains, dom.Title) {
+				status = "active"
+			}
+		}
+		desc := fmt.Sprintf("The proof of each %s domain, as the roadmap asks for it, and the group's exams: what the goal “%s” is measured by.", name, st.Title)
+		slug := strings.ToLower(strings.ReplaceAll(name, " ", "-")) + "-portfolio"
+		pr, err := projects.Create(ctx, tx, userID, actor, projects.Fields{Title: &title, Description: &desc, Status: &status,
+			DocsFolder: new("1-Projects/" + slug)})
+		if err != nil {
+			return n, err
+		}
+		n.projects++
+		if err := planLink(ctx, tx, userID, actor, pr.ID, goals.Supports, gid); err != nil {
+			return n, err
+		}
+		if inArea {
+			if err := planLink(ctx, tx, userID, actor, pr.ID, para.InArea, area); err != nil {
+				return n, err
 			}
 		}
 		for _, dom := range domains {
-			if id, ok := skills[dom]; ok {
-				if err := planLink(ctx, tx, userID, actor, id, goals.Supports, g.ID); err != nil {
-					return created, err
+			at := due(dom.Title)
+			if err := backlogCard(ctx, tx, userID, actor, pr.ID, dom.Title+": proof", dom.Description, &at); err != nil {
+				return n, err
+			}
+		}
+		for _, c := range p.Certs {
+			if !slices.ContainsFunc(domains, func(sk LibrarySkill) bool { return sk.Title == c.Skill }) {
+				continue
+			}
+			var at *time.Time
+			for _, ph := range p.Phases {
+				if ph.N == c.Phase {
+					t := day(ph.End).AddDate(0, 0, shift)
+					at = &t
 				}
+			}
+			label := c.Name
+			if c.Code != "" {
+				label += " (" + c.Code + ")"
+			}
+			if err := backlogCard(ctx, tx, userID, actor, pr.ID, "Exam: "+label, c.Provider+" "+c.URL, at); err != nil {
+				return n, err
 			}
 		}
 	}
-	return created, nil
+	return n, nil
+}
+
+// backlogCard puts a task, due when given, in a project's backlog.
+func backlogCard(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, project uuid.UUID, title, notes string, due *time.Time) error {
+	status, column, kind := "someday", "backlog", "issue"
+	t, err := tasks.Create(ctx, tx, userID, actor, tasks.Fields{Title: &title, Status: &status, DueOn: due, Notes: &notes})
+	if err != nil {
+		return err
+	}
+	_, err = projects.Place(ctx, tx, userID, project, actor, t.ID, projects.CardInput{Column: &column, Kind: &kind})
+	return err
 }
 
 // planLink links two items, once. It looks first: a duplicate insert would
@@ -641,14 +756,17 @@ func planLink(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Acto
 
 // Completed is what completing a plan started earlier added (EP-166).
 type Completed struct {
-	Areas  int `json:"areas"`
-	Goals  int `json:"goals"`
-	Habits int `json:"habits"`
+	Areas      int `json:"areas"`
+	Goals      int `json:"goals"`
+	Habits     int `json:"habits"`
+	Milestones int `json:"milestones"`
+	Projects   int `json:"projects"`
 }
 
 // CompletePlan gives a roadmap's plan, started earlier, what the plan has
 // since gained and the person lacks: its areas, a goal per group of
-// domains, and its habits. Nothing the person has is changed or repeated.
+// domains with a milestone per domain and a portfolio project, and its
+// habits. Nothing the person has is changed or repeated.
 func CompletePlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, roadmap uuid.UUID, now time.Time) (Completed, error) {
 	var planID *string
 	var planStart *time.Time
@@ -686,9 +804,11 @@ func CompletePlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.
 		return out, err
 	}
 	out.Areas = n
-	if out.Goals, err = planStages(ctx, tx, userID, actor, *d, areas, skills, goal, shift); err != nil {
+	st, err := planStages(ctx, tx, userID, actor, *d, areas, skills, goal, shift)
+	if err != nil {
 		return out, err
 	}
+	out.Goals, out.Milestones, out.Projects = st.goals, st.milestones, st.projects
 	hs, err := planHabits(ctx, tx, userID, actor, p, areas, goal, now)
 	out.Habits = len(hs)
 	return out, err

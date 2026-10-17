@@ -252,20 +252,33 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects", nil), &projects)
 	var later struct{ Items []struct{} }
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects?status=on_hold", nil), &later)
-	active, pipekit, side := 0, "", ""
+	active, pipekit, side, infra := 0, "", "", ""
 	for _, p := range projects.Items {
 		if p.Status == "active" {
 			active++
 		}
 		switch {
+		case p.Title == "Infrastructure portfolio":
+			infra = p.ID
 		case bytes.HasPrefix([]byte(p.Title), []byte("pipekit")):
 			pipekit = p.ID
 		case p.Title == "42 cursus (self-taught)":
 			side = p.ID
 		}
 	}
-	if len(later.Items) != 17 || active != 2 || pipekit == "" || side == "" {
+	// A project per phase, the 42 cursus, and a portfolio per group of
+	// domains (EP-171): those with a domain in phase 1 are under way.
+	if len(later.Items) != 17+7 || active != 2+4 || pipekit == "" || side == "" {
 		t.Fatalf("projects = %+v", projects.Items)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects?status=on_hold", nil), &projects)
+	for _, p := range projects.Items {
+		if p.Title == "Infrastructure portfolio" {
+			infra = p.ID
+		}
+	}
+	if b := alice.mustDo(200, "GET", "/v1/projects/"+infra+"/board", nil); !bytes.Contains(b, []byte(`"Kubernetes: proof"`)) || !bytes.Contains(b, []byte("Exam: ")) {
+		t.Errorf("infrastructure portfolio = %.600s", b)
 	}
 	board := alice.mustDo(200, "GET", "/v1/projects/"+pipekit+"/board", nil)
 	for _, want := range []string{`"Phase 1 exit check"`, `"kind":"epic"`, `"OverTheWire Bandit 0–15"`, `"kind":"subtask"`,
@@ -289,7 +302,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Errorf("areas = %s", a)
 	}
 	// Completing a plan started with everything adds nothing (EP-166).
-	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":0,"habits":0}`)) {
+	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":0,"habits":0,"milestones":0,"projects":0}`)) {
 		t.Errorf("complete = %s", c)
 	}
 	// A plan started before them gets the goal and habit it lacks, once.
@@ -310,7 +323,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 			alice.mustDo(204, "DELETE", "/v1/goals/"+goal.ID, nil)
 		}
 	}
-	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":1,"habits":1}`)) {
+	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":1,"habits":1,"milestones":2,"projects":0}`)) {
 		t.Errorf("complete after deletions = %s", c)
 	}
 	if r := alice.mustDo(200, "GET", "/v1/resources", nil); !bytes.Contains(r, []byte("42 subjects and testers")) {
