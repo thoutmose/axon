@@ -50,6 +50,7 @@
 			weekly_at: string;
 			monthly_day: number;
 			monthly_at: string;
+			news_at: string;
 		};
 		today: { sections: string[] };
 		menu: { hidden: string[]; chosen: boolean };
@@ -62,7 +63,8 @@
 		weekly_day: 'sunday',
 		weekly_at: '18:00',
 		monthly_day: 1,
-		monthly_at: '09:00'
+		monthly_at: '09:00',
+		news_at: ''
 	};
 	type ReminderStatus = {
 		public_key: string;
@@ -390,6 +392,10 @@
 				<div class="field">
 					<label for="rem-monthly-at">{t('at')}</label>
 					<input id="rem-monthly-at" type="time" bind:value={s.reminders.monthly_at} />
+				</div>
+				<div class="field">
+					<label for="rem-news-at">{t('The news digest at')}</label>
+					<input id="rem-news-at" type="time" bind:value={s.reminders.news_at} />
 				</div>
 			</div>
 			<p class="muted small">

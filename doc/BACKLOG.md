@@ -203,7 +203,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Done |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Done |
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Done |
-| EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Planned |
+| EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Done |
 | EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Planned |
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Planned |
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Planned |
@@ -2423,6 +2423,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-154/IS-154.02** · 1 pt · MUST — `POST /v1/roadmaps/{id}/resource-notes` and the plan's **Write its resources as notes** add the notes a roadmap started earlier lacks; **Its resources as notes** opens Notes on Resources.
 
 **Tests.** A start writes the Nand to Tetris note with its link, phase 2, its project colstore-c, and its certification, connected to at least four items; writing again adds none; a roadmap without a plan is refused. Note lookups in tests use the exact path filter.
+
+### EP-155 — A news digest
+
+**Goal.** "On the digest, add a new digest dedicated to the news: analyse with NLP the most interesting news of the FreshRSS service on srv-services. Ensure it is news, not the tech watch" (owner, 2026-10-17).
+
+- [x] **EP-155/IS-155.01** · 1 pt · SHOULD — A source can be general news (`watch_sources.news`, migration `00071`): set when following it, on the Sources page, or for every feed of a FreshRSS import ("These feeds are general news") or an OPML or CSV import (`?news=1`). Its items stay out of the tech watch: its lists, counts, digest section, podcast, and agents' reads; the **News** tab shows them.
+- [x] **EP-155/IS-155.02** · 2 pts · SHOULD — The **news digest** (`kind=news`): the last 36 hours of news told as stories. The watch already stores a story several feeds carry once, naming the other outlets; beyond that, items whose SimHash fingerprints differ by six bits or fewer, or whose terms mostly overlap, are one story. A story counts for three per distinct outlet, one per item, and up to two for being recent, so the news many newsrooms chose comes first; the ten that count most are told with the first outlet's headline, their outlets, and a line of what it says. It goes out daily at **The news digest at** (`reminders.news_at`, empty for none) on the digest's channels, and the Digest page has its tab.
+
+**Tests.** Stories rank by outlets; a news source's items are in the News tab and not in the tech watch; the news digest's top story names both outlets, and the daily digest shows no general news.
 
 ### EP-20 — Analytics & insights
 

@@ -197,6 +197,7 @@ type Source struct {
 	Schedule      string     `json:"schedule"`
 	Enabled       bool       `json:"enabled"`
 	FullText      bool       `json:"full_text"`
+	News          bool       `json:"news"` // general news, apart from the tech watch (EP-155)
 	Origin        string     `json:"origin"`
 	NextFetchAt   time.Time  `json:"next_fetch_at"`
 	LastFetchedAt *time.Time `json:"last_fetched_at"`
@@ -211,7 +212,7 @@ type Source struct {
 	etag, mod     string
 }
 
-const sourceColumns = `s.id, s.url, s.site_url, s.title, s.topic_ids::text[], s.schedule, s.enabled, s.full_text, s.origin, s.next_fetch_at,
+const sourceColumns = `s.id, s.url, s.site_url, s.title, s.topic_ids::text[], s.schedule, s.enabled, s.full_text, s.news, s.origin, s.next_fetch_at,
 	s.last_fetched_at, s.last_ok_at, s.last_error, s.failures, s.created_at,
 	(SELECT count(*) FROM watch_items i WHERE i.source_id = s.id),
 	(SELECT count(*) FROM watch_items i WHERE i.source_id = s.id AND i.fetched_at > now() - interval '7 days'),
@@ -220,7 +221,7 @@ const sourceColumns = `s.id, s.url, s.site_url, s.title, s.topic_ids::text[], s.
 
 func scanSource(r pgx.Row) (Source, error) {
 	var s Source
-	err := r.Scan(&s.ID, &s.URL, &s.SiteURL, &s.Title, &s.TopicIDs, &s.Schedule, &s.Enabled, &s.FullText, &s.Origin, &s.NextFetchAt,
+	err := r.Scan(&s.ID, &s.URL, &s.SiteURL, &s.Title, &s.TopicIDs, &s.Schedule, &s.Enabled, &s.FullText, &s.News, &s.Origin, &s.NextFetchAt,
 		&s.LastFetchedAt, &s.LastOKAt, &s.LastError, &s.Failures, &s.CreatedAt, &s.Items, &s.ItemsWeek, &s.Merged, &s.etag, &s.mod)
 	switch {
 	case !s.Enabled:
@@ -265,6 +266,7 @@ type SourceInput struct {
 	Schedule *string  `json:"schedule"`
 	Enabled  *bool    `json:"enabled"`
 	FullText *bool    `json:"full_text"`
+	News     *bool    `json:"news"`
 	Origin   string   `json:"-"`
 }
 
@@ -313,9 +315,10 @@ func CreateSource(ctx context.Context, tx pgx.Tx, userID uuid.UUID, in SourceInp
 		return Source{}, Stats{}, err
 	}
 	id := uuid.Must(uuid.NewV7())
-	_, err = tx.Exec(ctx, `INSERT INTO watch_sources (id, user_id, url, site_url, title, topic_ids, schedule, enabled, full_text, origin, next_fetch_at, last_fetched_at, last_ok_at)
-		VALUES ($1, $2, $3, $4, $5, $6::uuid[], $7, $8, $9, $10, $11, $12, $12)`,
-		id, userID, cut(found.URL, 2000), cut(found.Feed.SiteURL, 2000), title, topics, sched, in.Enabled == nil || *in.Enabled, in.FullText != nil && *in.FullText, origin, next, now)
+	_, err = tx.Exec(ctx, `INSERT INTO watch_sources (id, user_id, url, site_url, title, topic_ids, schedule, enabled, full_text, news, origin, next_fetch_at, last_fetched_at, last_ok_at)
+		VALUES ($1, $2, $3, $4, $5, $6::uuid[], $7, $8, $9, $10, $11, $12, $13, $13)`,
+		id, userID, cut(found.URL, 2000), cut(found.Feed.SiteURL, 2000), title, topics, sched, in.Enabled == nil || *in.Enabled, in.FullText != nil && *in.FullText,
+		in.News != nil && *in.News, origin, next, now)
 	if isUnique(err) {
 		return Source{}, Stats{}, ErrExists
 	}
@@ -385,11 +388,14 @@ func UpdateSource(ctx context.Context, tx pgx.Tx, userID, id uuid.UUID, in Sourc
 	if in.Enabled != nil {
 		cur.Enabled = *in.Enabled
 	}
+	if in.News != nil {
+		cur.News = *in.News
+	}
 	if in.FullText != nil {
 		cur.FullText = *in.FullText
 	}
-	_, err = tx.Exec(ctx, `UPDATE watch_sources SET title = $3, topic_ids = $4::uuid[], schedule = $5, enabled = $6, full_text = $7, next_fetch_at = $8
-		WHERE id = $1 AND user_id = $2`, id, userID, cur.Title, cur.TopicIDs, cur.Schedule, cur.Enabled, cur.FullText, next)
+	_, err = tx.Exec(ctx, `UPDATE watch_sources SET title = $3, topic_ids = $4::uuid[], schedule = $5, enabled = $6, full_text = $7, next_fetch_at = $8,
+		news = $9 WHERE id = $1 AND user_id = $2`, id, userID, cur.Title, cur.TopicIDs, cur.Schedule, cur.Enabled, cur.FullText, next, cur.News)
 	if err != nil {
 		return cur, err
 	}

@@ -29,6 +29,7 @@ const (
 	Daily   = "daily"
 	Weekly  = "weekly"
 	Monthly = "monthly"
+	News    = "news" // the day's general news, apart from the tech watch (EP-155)
 )
 
 // Item is one line. N numbers the lines a reply can act on.
@@ -128,6 +129,9 @@ func Build(ctx context.Context, q db.Querier, userID uuid.UUID, kind, lang strin
 	}
 	d.Greeting = fmt.Sprintf("%s, %s", greet, name)
 	switch kind {
+	case News: // its own digest, without the template's sections (EP-155)
+		d.Picture = true
+		return d, b.headlines(&d)
 	case Weekly:
 		err = b.weekly(&d)
 	case Monthly:
@@ -224,6 +228,7 @@ func arrange(d *Digest, order []string) {
 func (b *builder) news(since time.Time) ([]Item, error) {
 	rows, err := b.q.Query(b.ctx, `SELECT id, title, source_title, cardinality(also_in) FROM watch_items
 		WHERE user_id = $1 AND published_at >= $2 AND outlier = '' AND status <> 'archived'
+		  AND NOT EXISTS (SELECT 1 FROM watch_sources s WHERE s.id = watch_items.source_id AND s.news)
 		ORDER BY score DESC, cardinality(also_in) DESC, published_at DESC LIMIT 5`, b.user, since)
 	if err != nil {
 		return nil, err
@@ -762,7 +767,7 @@ func (b *builder) domains() ([]string, error) {
 }
 
 // Kinds lists the digests in the order they are offered.
-var Kinds = []string{Daily, Weekly, Monthly}
+var Kinds = []string{Daily, Weekly, Monthly, News}
 
 // Valid reports a known kind.
 func Valid(kind string) bool { return slices.Contains(Kinds, kind) }

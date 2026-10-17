@@ -26,6 +26,7 @@ type Planned struct {
 	Topics   []string // topic names; missing ones are created
 	Schedule string
 	FullText bool
+	News     bool // general news, apart from the tech watch (EP-155)
 }
 
 // ImportResult says what an import did, line by line for what failed.
@@ -275,9 +276,9 @@ func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, plan []Planned, or
 			ids = append(ids, id)
 		}
 		title := cut(strings.TrimSpace(firstOf(p.Title, hostOf(raw))), 200)
-		tag, err := tx.Exec(ctx, `INSERT INTO watch_sources (id, user_id, url, title, topic_ids, schedule, full_text, origin, next_fetch_at)
-			VALUES ($1, $2, $3, $4, $5::uuid[], $6, $7, $8, $9) ON CONFLICT (user_id, url) DO NOTHING`,
-			uuid.Must(uuid.NewV7()), userID, raw, title, nonNil(ids), sched, p.FullText, origin, now)
+		tag, err := tx.Exec(ctx, `INSERT INTO watch_sources (id, user_id, url, title, topic_ids, schedule, full_text, news, origin, next_fetch_at)
+			VALUES ($1, $2, $3, $4, $5::uuid[], $6, $7, $8, $9, $10) ON CONFLICT (user_id, url) DO NOTHING`,
+			uuid.Must(uuid.NewV7()), userID, raw, title, nonNil(ids), sched, p.FullText, p.News, origin, now)
 		if err != nil {
 			return res, err
 		}

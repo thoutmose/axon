@@ -1094,6 +1094,7 @@ export const fr: Record<string, string> = {
 	'Previous month': 'Mois précédent',
 	'Next month': 'Mois suivant',
 	'This month': 'Ce mois-ci',
+	'The news': 'L’actualité',
 	Currency: 'Devise',
 	'Private to you: never searched, never shown to agents, included in your export, erased with your account. Amounts are exact to the cent.':
 		'Privé : jamais cherché, jamais montré aux agents, inclus dans votre export, effacé avec votre compte. Les montants sont exacts au centime.',
@@ -4015,5 +4016,9 @@ export const fr: Record<string, string> = {
 		'{n} notes de ressource écrites dans 3-Resources/.',
 	'Every resource already has its note.': 'Chaque ressource a déjà sa note.',
 	'Its resources as notes': 'Ses ressources en notes',
-	'Write its resources as notes': 'Écrire ses ressources en notes'
+	'Write its resources as notes': 'Écrire ses ressources en notes',
+	'The news digest at': 'Le digest de l’actualité à',
+	'General news, not tech: kept out of the tech watch, for the News tab and the news digest':
+		'Actualité générale, pas la tech : tenue hors de la veille technologique, pour l’onglet Actualité et le digest de l’actualité',
+	'These feeds are general news': 'Ces flux sont de l’actualité générale'
 };

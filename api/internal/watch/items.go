@@ -53,7 +53,11 @@ type Item struct {
 }
 
 // Kinds of news, for filters and exports.
-var Kinds = []string{"article", "video", "podcast"}
+var Kinds = []string{"article", "video", "podcast", "news"}
+
+// fromNews is true for an item of a general news source (EP-155); %s is
+// the items' table or alias.
+const fromNews = "EXISTS (SELECT 1 FROM watch_sources ns WHERE ns.id = %s.source_id AND ns.news)"
 
 // videoURL matches the video sites whose links are videos.
 const videoURL = `^https?://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/`
@@ -143,6 +147,14 @@ func (f Filter) where(userID uuid.UUID) (string, []any) {
 	}
 	if f.Before != nil {
 		add("i.published_at < ?", *f.Before)
+	}
+	// General news is apart from the tech watch: only its own tab shows it,
+	// and a source's own list.
+	switch {
+	case f.Kind == "news":
+		conds = append(conds, fmt.Sprintf(fromNews, "i"))
+	case f.SourceID == nil:
+		conds = append(conds, "NOT "+fmt.Sprintf(fromNews, "i"))
 	}
 	switch f.Kind {
 	case "podcast":

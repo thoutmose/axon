@@ -195,6 +195,7 @@ type Reminders struct {
 	WeeklyAt   string `json:"weekly_at" yaml:"weekly_at"`     // "18:00", or empty for none
 	MonthlyDay int    `json:"monthly_day" yaml:"monthly_day"` // 1–28
 	MonthlyAt  string `json:"monthly_at" yaml:"monthly_at"`   // "09:00", or empty for none
+	NewsAt     string `json:"news_at" yaml:"news_at"`         // the news digest (EP-155): "07:30", or empty for none
 }
 
 // Weekdays name the days a weekly digest can go out.
@@ -313,7 +314,8 @@ func (d Doc) Validate() error {
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
 	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening},
-		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}, {"caffeine.bedtime", d.Caffeine.Bedtime}} {
+		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}, {"reminders.news_at", d.Reminders.NewsAt},
+		{"caffeine.bedtime", d.Caffeine.Bedtime}} {
 		if _, err := time.Parse("15:04", t.v); t.v != "" && (err != nil || len(t.v) != 5) {
 			return FieldError{t.path, "is a time like 08:00, or empty for none"}
 		}

@@ -172,9 +172,10 @@ type slot struct {
 
 // slots lists what may go out on a local day: the morning digest and the
 // evening nudge every day, the weekly digest on its day, the monthly one
-// on its day of the month (EP-107).
+// on its day of the month (EP-107), and the news digest every day when it
+// has a time (EP-155).
 func slots(r settings.Reminders, local time.Time) []slot {
-	out := []slot{{"morning", r.Morning}, {"evening", r.Evening}}
+	out := []slot{{"morning", r.Morning}, {"evening", r.Evening}, {"news", r.NewsAt}}
 	if strings.EqualFold(local.Weekday().String(), r.WeeklyDay) {
 		out = append(out, slot{"weekly", r.WeeklyAt})
 	}

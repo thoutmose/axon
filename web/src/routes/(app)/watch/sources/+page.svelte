@@ -77,6 +77,7 @@
 	let schedule = $state('0 0 * * *');
 	let custom = $state('');
 	let fullText = $state(false);
+	let news = $state(false); // general news, apart from the tech watch (EP-155)
 	let busy = $state(false);
 
 	async function find(e: SubmitEvent) {
@@ -102,7 +103,8 @@
 						url: preview?.url ?? address,
 						topic_ids: picked,
 						schedule: schedule === 'custom' ? custom : schedule,
-						full_text: fullText
+						full_text: fullText,
+						news
 					}
 				}
 			);
@@ -151,7 +153,7 @@
 		}
 		input.value = '';
 	}
-	let fresh = $state({ url: '', user: '', password: '' });
+	let fresh = $state({ url: '', user: '', password: '', news: false });
 	async function importFresh(e: SubmitEvent) {
 		e.preventDefault();
 		busy = true;
@@ -379,6 +381,11 @@
 					'Read each article’s page when the feed has an excerpt only (Medium, Substack previews, news sites)'
 				)}</label
 			>
+			<label class="check"
+				><input type="checkbox" bind:checked={news} />{t(
+					'General news, not tech: kept out of the tech watch, for the News tab and the news digest'
+				)}</label
+			>
 			<Button {busy} onclick={follow}>{t('Follow')}</Button>
 		</div>
 	{/if}
@@ -421,6 +428,11 @@
 				bind:value={fresh.password}
 				required
 			/>
+			<label class="check small"
+				><input type="checkbox" bind:checked={fresh.news} />{t(
+					'These feeds are general news'
+				)}</label
+			>
 			<Button type="submit" variant="secondary" {busy}>{t('Import its subscriptions')}</Button>
 			<p class="muted small">
 				{t(
@@ -539,6 +551,13 @@
 									checked={s.full_text}
 									onchange={() => patch(s, { full_text: !s.full_text })}
 								/>{t('Full text')}</label
+							>
+							<label class="check small"
+								><input
+									type="checkbox"
+									checked={s.news}
+									onchange={() => patch(s, { news: !s.news })}
+								/>{t('News')}</label
 							>
 						</td>
 						<td class="small">

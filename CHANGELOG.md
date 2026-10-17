@@ -8,6 +8,7 @@ Owner requests delivered after the 1.0 release candidate: EP-106 to EP-113 (the 
 
 ### Added
 
+- **A news digest** (EP-155): general news sources (a FreshRSS import, for one) stay apart from the tech watch in a News tab, and a daily news digest tells the last day's top stories, ranked by how many outlets carry them.
 - **The roadmap's resources as notes** (EP-154): the plan's 145 resources become resource notes with their link, what they are for, and the phases, projects, milestones, and certifications they serve, connected to them; a roadmap started earlier gets them from its plan.
 - **Jarvis** (EP-153): an opt-in ⚡ button opens a side panel where Jarvis, the master agent, asks Axon's agents for you ("I'm reading The Martian, add it to my books" becomes the book, being read, with its note, waiting for approval), on your provider or a local model, in front of a neon city and an animated face of light.
 - **AI tokens, measured and compacted** (EP-152): agents' tool results are compacted before they reach the model (empty fields out, times to the minute, records as rows), and Preferences → AI shows tokens and cost this month, by month, and by agent, with the measured saving.
