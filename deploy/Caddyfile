@@ -1,9 +1,11 @@
 {
 	admin off
 	# Tailscale Serve and Docker forward from private addresses; the first
-	# address outside those ranges (right to left) is the real client.
+	# address outside those ranges (right to left) is the real client. A
+	# proxy in front of Tailscale Serve (a domain's, EP-168) is added by
+	# address in AXON_TRUSTED_PROXIES, or every visitor would look like it.
 	servers {
-		trusted_proxies static private_ranges
+		trusted_proxies static private_ranges {$AXON_TRUSTED_PROXIES}
 		trusted_proxies_strict
 	}
 }

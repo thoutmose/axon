@@ -12,6 +12,22 @@ How Axon runs on its servers. Host configuration (SSH, Docker, monitoring, logs)
 
 Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the API (with its background workers), web, PostgreSQL 16 + pgvector, the Anki bridge, and the backup service. Tailscale Serve provides HTTPS in front of Caddy. Nothing listens publicly.
 
+### Production at its own address (EP-168)
+
+`https://axon.thoutmose.me` resolves on the tailnet to `srv-npm` (Nginx Proxy Manager, 100.95.163.114), which forwards to Tailscale Serve on `srv-prod`; it stays tailnet only.
+
+1. **Proxy host** in Nginx Proxy Manager: domain `axon.thoutmose.me`, scheme `https`, forward host `100.75.122.25` (srv-prod's tailnet address: the proxy's container may not resolve `*.ts.net`), port `443`, websockets on, the `*.thoutmose.me` certificate with Force SSL. In **Advanced**, the name Tailscale Serve needs to pick its certificate; without it the TLS handshake fails and the proxy answers 502:
+
+   ```nginx
+   proxy_ssl_server_name on;
+   proxy_ssl_name srv-prod.tail781d53.ts.net;
+   ```
+
+   Checked from srv-dev on 2026-10-17: without the name the handshake fails; with it and `Host: axon.thoutmose.me`, Axon answers 200.
+2. **Before switching, keep a way in.** Passkeys belong to their address: those made on `srv-prod.tail781d53.ts.net` do not work on `axon.thoutmose.me`. Keep your recovery codes at hand, or link another sign-in (Account → Sign-in & security), then add a passkey on the new address after the switch.
+3. **The address**, in `deploy/env/prod.env.age` (see [Secrets](#secrets)): `AXON_BASE_URL=https://axon.thoutmose.me` and `WEBAUTHN_RP_ID=axon.thoutmose.me`; then `deploy/deploy.sh prod`. `AXON_TRUSTED_PROXIES=100.95.163.114/32` in `prod.settings.env` already lets Caddy see each visitor's address through the proxy, not the proxy's.
+4. The old tailnet address keeps serving, but sign-in and changes need the configured address (same-origin checks); the vault server and `axon notes-sync` should use the new one too.
+
 ## Prerequisites on the operator machine
 
 - Docker, `age`, `rsync`, and SSH entries for the hosts in `~/.ssh/config`.
