@@ -198,7 +198,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-147 | Budget charts where they are expected | The month's expense and income pies and the year's bars on the Budget page itself. | MUST | 1 pt | EP-138 | Done |
 | EP-148 | YouTube in a few words | Each video: 5 to 10 keywords and a 5-to-10-line summary of what it says, instead of its subtitles. | MUST | 2 pts | EP-122 | Done |
 | EP-149 | Video games | A media kind for video games, with covers, a page, and a note template. | SHOULD | 2 pts | EP-134, EP-136 | Done |
-| EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Planned |
+| EP-150 | Maths in notes | LaTeX ($…$, $$…$$) rendered in notes, with a helper to write expressions. | SHOULD | 2 pts | EP-25 | Done |
 | EP-151 | A model per agent | Preferences choose the model for all agents or for each one, Jarvis included; videos can be summarised in prose by the chosen model. | MUST | 3 pts | EP-22, EP-148 | Planned |
 | EP-152 | AI tokens, measured and compacted | Tokens used overall and per agent; tool results compacted before they reach the model, raw against sent. | SHOULD | 3 pts | EP-19, EP-151 | Planned |
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Planned |
@@ -2378,6 +2378,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-149/IS-149.01** · 2 pts · SHOULD — `game` is a media kind (migration `00068`), its progress in hours played. Games are looked up in English Wikipedia, without a key: one search asks for each page's short description and page image of any licence (cover art is not free), keeps the pages a description calls a game ("2020 video game", "Factory simulation game"; not a genre, series, studio, or board game) and drops the disambiguation from the title; the page summary adds the overview, the year, the genre, and the developer ("developed and published by…"). Covers are copied from Wikimedia's own image servers only, query removed, like the other covers, and found for games added by hand. The Media page has a **Video games** tab, and adding defaults to the open tab's kind; quick add takes `game:` and `jeu:`; the vault mirror writes games to `Axon/Media/Games/`; the **Game note** template (how it plays, moments that stay, design ideas, a play log, the verdict) joins the film, series, and book notes. The demo has Factorio, Hades, and Outer Wilds.
 
 **Tests.** A fake Wikipedia: only game pages, sorted by rank, the year and genre from the description, the developer from the summary, a cover from the image server and none from elsewhere, a page key that escapes refused, hours as progress, the games tab.
+
+### EP-150 — Maths in notes
+
+**Goal.** "Like the user can do maths, add LaTeX syntax or a help to write maths expressions in the notes" (owner, 2026-10-17).
+
+- [x] **EP-150/IS-150.01** · 2 pts · SHOULD — Notes render LaTeX as Obsidian writes it: `$…$` in a line, `$$…$$` on one line or on lines of their own, everywhere notes are read (notes, cards, previews). KaTeX (0.16.22, MIT) writes MathML, which the browser draws itself, so the page's CSP needs no inline style; it escapes its input, `trust` is off (no `\href`, no `\includegraphics`), sizes and macro expansion are bounded, and a formula it cannot read shows in red rather than failing. A `$` opens maths only before a non-space and closes only after one and before a non-digit, and maths never runs into code, so "$5 and $10" stays text. The editor's **∑ Write maths** opens a helper: structures (fraction, powers, roots, sums, integrals, limits, matrices, cases, aligned equations), symbols, Greek letters, a formula field drawn as you type, and inline or block insertion.
+
+**Tests.** Inline and block maths as MathML without a style attribute; prices and code left alone; a formula can neither link nor add a tag or an event handler; a broken formula renders.
 
 ### EP-20 — Analytics & insights
 

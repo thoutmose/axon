@@ -3953,5 +3953,17 @@ export const fr: Record<string, string> = {
 	'Game to play': 'Jeu à jouer',
 	'Add game': 'Ajouter le jeu',
 	'Beside films, series, and books: covers from Wikipedia, hours played, and a game note.':
-		'À côté des films, séries et livres : couvertures de Wikipédia, heures de jeu et une note de jeu.'
+		'À côté des films, séries et livres : couvertures de Wikipédia, heures de jeu et une note de jeu.',
+	'Write maths': 'Écrire des maths',
+	Structures: 'Structures',
+	Matrix: 'Matrice',
+	Cases: 'Cas',
+	Aligned: 'Aligné',
+	'Greek letters': 'Lettres grecques',
+	'Formula (LaTeX)': 'Formule (LaTeX)',
+	'The formula is drawn here as you type.': 'La formule s’affiche ici pendant la saisie.',
+	'On its own line': 'Sur sa propre ligne',
+	Insert: 'Insérer',
+	'Notes take LaTeX between $…$ in a line, or $$…$$ on lines of their own, as Obsidian does.':
+		'Les notes acceptent le LaTeX entre $…$ dans une ligne, ou $$…$$ sur des lignes à part, comme Obsidian.'
 };

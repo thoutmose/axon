@@ -1,3 +1,4 @@
+import katex from 'katex';
 import { api, type Schemas } from './api';
 
 export type Note = Schemas['Note'];
@@ -139,8 +140,28 @@ function embeds(s: string, held: string[], file?: FileResolver): string {
 	});
 }
 
-// Inline Markdown on already-escaped text. Code spans are cut out first so
-// their content is never interpreted.
+// Maths (EP-150), written as in Obsidian: $…$ inline, $$…$$ as a block.
+// KaTeX writes MathML, which browsers draw themselves, so no inline style is
+// needed; it escapes what it is given, and trust is off, so a formula can
+// neither link nor load anything. An opening $ is followed and a closing $
+// preceded by a non-space, and a closing $ is not followed by a digit, so
+// prices such as "$5 and $10" stay text; maths never runs into code.
+const inlineMath = /(\$(?=[^\s$`])[^$\n`]*?[^\s$\\`]\$(?!\d)|\$[^\s$`]\$(?!\d))/;
+
+export function math(tex: string, display: boolean): string {
+	return katex.renderToString(tex, {
+		output: 'mathml',
+		displayMode: display,
+		throwOnError: false,
+		trust: false,
+		strict: 'ignore',
+		maxSize: 50,
+		maxExpand: 500
+	});
+}
+
+// Inline Markdown on already-escaped text. Code spans and maths are cut out
+// first so their content is never interpreted.
 function inline(
 	text: string,
 	resolve: Resolver,
@@ -148,10 +169,13 @@ function inline(
 	file?: FileResolver
 ): string {
 	return text
-		.split(/(`[^`]+`)/)
+		.split(new RegExp(`(\`[^\`]+\`|${inlineMath.source.slice(1, -1)})`))
 		.map((part) => {
 			if (part.startsWith('`') && part.endsWith('`') && part.length > 1) {
 				return `<code>${escape(part.slice(1, -1))}</code>`;
+			}
+			if (inlineMath.test(part) && part.startsWith('$') && part.endsWith('$')) {
+				return math(part.slice(1, -1), false);
 			}
 			const held: string[] = [];
 			let s = escape(part.replace(/\u0001/g, ''));
@@ -227,6 +251,20 @@ export function render(
 	};
 	for (; i < lines.length; i++) {
 		const line = lines[i];
+		// A block of maths: $$ on its own lines around it, or on one line.
+		const oneLine = line.match(/^\s*\$\$(.+)\$\$\s*$/);
+		if (oneLine) {
+			flush();
+			out.push(`<div class="math">${math(oneLine[1], true)}</div>`);
+			continue;
+		}
+		if (/^\s*\$\$\s*$/.test(line)) {
+			flush();
+			const body: string[] = [];
+			for (i++; i < lines.length && !/^\s*\$\$\s*$/.test(lines[i]); i++) body.push(lines[i]);
+			out.push(`<div class="math">${math(body.join('\n'), true)}</div>`);
+			continue;
+		}
 		const fence = line.match(/^```/);
 		if (fence) {
 			flush();

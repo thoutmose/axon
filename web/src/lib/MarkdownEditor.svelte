@@ -4,6 +4,7 @@
 	import * as edit from './markdownEdit';
 	import type { Edit } from './markdownEdit';
 	import { canUpload, noteFiles, refreshFiles, resolveFile, upload } from './noteFiles.svelte';
+	import MathHelper from './MathHelper.svelte';
 	import SketchPad from './SketchPad.svelte';
 	import { fromSVG, svgEmbed, type Shape } from './sketch';
 	import { noteIndex } from './noteIndex.svelte';
@@ -60,6 +61,7 @@
 	// Drawing (EP-143): a new sketch at the caret, or the one embedded on
 	// the caret's line when Axon drew it, saved as a new SVG that replaces it.
 	let drawing = $state(false);
+	let writingMaths = $state(false);
 	let sketch = $state<Shape[]>([]);
 	let replacing = $state<string | null>(null);
 	async function draw() {
@@ -185,7 +187,8 @@
 			icon: '▦',
 			run: () => insert('\n| Column | Column |\n| --- | --- |\n| | |\n')
 		},
-		{ label: t('Callout'), icon: 'ⓘ', run: () => insert('\n> [!NOTE] Title\n> Text\n') }
+		{ label: t('Callout'), icon: 'ⓘ', run: () => insert('\n> [!NOTE] Title\n> Text\n') },
+		{ label: t('Write maths'), icon: '∑', run: () => (writingMaths = true) }
 	]);
 
 	function detect() {
@@ -298,6 +301,7 @@
 		{/if}
 	</div>
 	{#if pictures}<SketchPad bind:open={drawing} shapes={sketch} onsave={saveDrawing} />{/if}
+	<MathHelper bind:open={writingMaths} oninsert={insert} />
 	<label for={id} class="visually-hidden">{label}</label>
 	<textarea
 		{id}

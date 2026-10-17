@@ -340,3 +340,15 @@ code {
 	outline: 2px solid var(--accent);
 	outline-offset: 1px;
 }
+
+/* Maths in notes (EP-150): KaTeX's MathML, drawn by the browser. */
+.math {
+	overflow-x: auto;
+	margin: var(--space-3) 0;
+}
+.katex math {
+	font-size: 1.1em;
+}
+.math math[display='block'] {
+	display: block math;
+}
