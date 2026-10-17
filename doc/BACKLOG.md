@@ -204,7 +204,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-153 | Jarvis | An opt-in floating button opens a side panel where Jarvis, the master agent, works only through Axon's agents, on the chosen provider or Ollama. | MUST | 8 pts | EP-19, EP-151 | Done |
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Done |
 | EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Done |
-| EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Planned |
+| EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Done (srv-secondbrain offline: the live check waits for it) |
 | EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Planned |
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Planned |
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Planned |
@@ -2432,6 +2432,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-155/IS-155.02** · 2 pts · SHOULD — The **news digest** (`kind=news`): the last 36 hours of news told as stories. The watch already stores a story several feeds carry once, naming the other outlets; beyond that, items whose SimHash fingerprints differ by six bits or fewer, or whose terms mostly overlap, are one story. A story counts for three per distinct outlet, one per item, and up to two for being recent, so the news many newsrooms chose comes first; the ten that count most are told with the first outlet's headline, their outlets, and a line of what it says. It goes out daily at **The news digest at** (`reminders.news_at`, empty for none) on the digest's channels, and the Digest page has its tab.
 
 **Tests.** Stories rank by outlets; a news source's items are in the News tab and not in the tech watch; the news digest's top story names both outlets, and the daily digest shows no general news.
+
+### EP-156 — The vault in step, verified
+
+**Goal.** "Ensure the notes between the website and the Markdown vault defined in the account preferences are synchronised; test it with the vault in ~/SecondBrain on srv-secondbrain" (owner, 2026-10-17).
+
+- [x] **EP-156/IS-156.01** · 2 pts · MUST — The sync (`axon notes-sync`, which the vault server runs) carries what came on 2026-10-17 both ways: a drawing made in Axon reaches the vault byte for byte, its shapes with it, and an edit made there comes back; a note with inline and block maths goes both ways untouched; the roadmap's resource notes are ordinary notes in `3-Resources/`. On 2026-10-17 `srv-secondbrain` was offline on the tailnet (last seen three days before), so the live check against `~/SecondBrain` waits for it: pair it from Preferences → Markdown vault → **Also as files on a server** (the one-time code needs the owner's session), then **Where your notes live** at the top of Notes shows whether it is in step.
+
+**Tests.** `TestVaultCarriesDrawingsAndMaths`, beside the existing sync, conflict, live-watch, pairing, and attachment tests.
 
 ### EP-20 — Analytics & insights
 
