@@ -2136,6 +2136,30 @@ test('preferences switch the language, theme, and text size, and export as YAML'
 	await expect(page.getByRole('link', { name: 'Today' })).toBeVisible();
 });
 
+test('Jarvis opens with Ctrl+J, offers suggestions, widens, and closes with Escape', async () => {
+	await page.goto('/account/preferences');
+	await page.getByLabel(/^Show Jarvis, the master agent/).check();
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+	await page.goto('/today');
+	await page.getByRole('button', { name: 'Open Jarvis' }).waitFor();
+	await page.keyboard.press('Control+j');
+	const panel = page.getByRole('complementary', { name: 'Jarvis' });
+	await expect(panel.getByText('What can I do for you?')).toBeVisible();
+	await expect(panel.getByRole('list', { name: 'Suggestions' }).getByRole('button')).toHaveCount(6);
+	await panel.getByRole('button', { name: 'Wider' }).click();
+	await expect(panel.getByRole('button', { name: 'Narrower' })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	await noSeriousA11yViolations(page);
+	await page.keyboard.press('Escape');
+	await expect(panel).toBeHidden();
+	await expect(page.getByRole('button', { name: 'Open Jarvis' })).toBeVisible();
+	await page.goto('/account/preferences');
+	await page.getByLabel(/^Show Jarvis, the master agent/).uncheck();
+	await page.getByRole('button', { name: 'Save preferences' }).click();
+});
+
 test('keyboard shortcuts navigate, and Vim mode edits and saves a note', async () => {
 	await page.goto('/today');
 	const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
