@@ -219,8 +219,8 @@ func (h *Handlers) dashboard(w http.ResponseWriter, r *http.Request) {
 // Event is one dated item on the calendar.
 type Event struct {
 	Date  tasks.Date `json:"date"`
-	Type  string     `json:"type"` // task, goal, milestone, study, certification
-	Kind  string     `json:"kind"` // scheduled, due, target, milestone, block, exam, expiry
+	Type  string     `json:"type"` // task, goal, milestone, study, certification, habit
+	Kind  string     `json:"kind"` // scheduled, due, target, milestone, block, exam, expiry, habit
 	ID    uuid.UUID  `json:"id"`
 	Title string     `json:"title"`
 	Done  bool       `json:"done"`
@@ -231,6 +231,10 @@ type Event struct {
 }
 
 var allTypes = []string{"task", "goal", "milestone", "study", "certification"}
+
+// Habits (EP-167) come only when asked for: a day of each scheduled habit is
+// many events, which the defaults (the review's look ahead, feeds) leave out.
+var validTypes = append(slices.Clone(allTypes), "habit")
 
 // events returns dated items of the given types between from and to
 // (inclusive), oldest first. Cancelled tasks and archived goals are left out;
@@ -262,6 +266,15 @@ func events(ctx context.Context, q db.Querier, userID uuid.UUID, from, to time.T
 			SELECT c.expires_on, 'certification', 'expiry', c.id, 'Expires: ' || c.name || CASE WHEN c.code <> '' THEN ' (' || c.code || ')' ELSE '' END,
 			       false, NULL
 			  FROM certifications c WHERE c.user_id = $1 AND c.status = 'passed' AND c.expires_on BETWEEN $2 AND $3
+			UNION ALL
+			-- Each day a habit to build is scheduled, from the day it was made;
+			-- done with that day's check-in (EP-167).
+			SELECT s.day::date, 'habit', 'habit', h.id, e.title,
+			       EXISTS (SELECT 1 FROM habit_checkins c WHERE c.habit_id = h.id AND c.day = s.day::date AND c.status IN ('done', 'two_minute')), NULL
+			  FROM habits h JOIN entities e ON e.id = h.id
+			  CROSS JOIN generate_series($2::date, $3::date, interval '1 day') AS s(day)
+			 WHERE 'habit' = ANY($4) AND e.user_id = $1 AND h.status = 'active' AND h.kind = 'build'
+			   AND extract(isodow FROM s.day)::smallint = ANY(h.days) AND s.day::date >= e.created_at::date
 		) d
 		WHERE d.type = ANY($4) AND NOT ($5 AND d.done)
 		ORDER BY d.day, d.type, d.title, d.id LIMIT $6`, userID, from, to, types, openOnly, limit)
@@ -302,7 +315,7 @@ func parseTypes(s string) ([]string, bool) {
 	}
 	var out []string
 	for _, t := range strings.Split(s, ",") {
-		if !slices.Contains(allTypes, t) {
+		if !slices.Contains(validTypes, t) {
 			return nil, false
 		}
 		if !slices.Contains(out, t) {
@@ -323,7 +336,7 @@ func (h *Handlers) calendar(w http.ResponseWriter, r *http.Request) {
 	}
 	types, ok := parseTypes(q.Get("types"))
 	if !ok {
-		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, milestone, study, and certification.")
+		httpx.Problem(w, http.StatusBadRequest, "?types= is a comma-separated list of task, goal, milestone, study, certification, and habit.")
 		return
 	}
 	items, err := events(r.Context(), h.db, who.UserID, from, to, types, false, 2000)

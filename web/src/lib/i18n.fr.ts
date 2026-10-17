@@ -1260,6 +1260,7 @@ export const fr: Record<string, string> = {
 	'Add tag': 'Ajouter une étiquette',
 	'#food': '#alimentation',
 	'Add rule': 'Ajouter la règle',
+	'Habits {done}/{n}': 'Habitudes {done}/{n}',
 	'Goal target dates': 'Dates cibles des objectifs',
 	Milestones: 'Jalons',
 	'Goal target': 'Cible d’objectif',

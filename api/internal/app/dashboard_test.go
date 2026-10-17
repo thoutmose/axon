@@ -93,7 +93,32 @@ func TestDashboardNumbersMatchTheItemsBehindThem(t *testing.T) {
 		t.Error("types=goal returned tasks")
 	}
 	alice.mustDo(400, "GET", "/v1/calendar?from="+day(0)+"&to="+day(200), nil)
-	alice.mustDo(400, "GET", "/v1/calendar?from="+day(0)+"&to="+day(1)+"&types=habit", nil)
+	alice.mustDo(400, "GET", "/v1/calendar?from="+day(0)+"&to="+day(1)+"&types=nope", nil)
+
+	// Habits only when asked for (EP-167): a habit to build on each of its
+	// days from the day it was made, done with that day's check-in; one to
+	// break never.
+	var h struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Stretch"}`)), &h)
+	alice.mustDo(201, "POST", "/v1/habits", []byte(`{"title":"Doomscroll","kind":"break"}`))
+	alice.mustDo(200, "PUT", "/v1/habits/"+h.ID+"/checkins/"+day(0), []byte(`{"status":"done"}`))
+	var hab struct {
+		Items []struct {
+			Date  string `json:"date"`
+			Type  string `json:"type"`
+			Title string `json:"title"`
+			Done  bool   `json:"done"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/calendar?from="+day(-3)+"&to="+day(3)+"&types=habit", nil), &hab)
+	if len(hab.Items) != 4 || hab.Items[0].Date != day(0) || !hab.Items[0].Done || hab.Items[1].Done || hab.Items[0].Title != "Stretch" {
+		t.Errorf("habits on the calendar = %+v", hab.Items)
+	}
+	if bytes.Contains(alice.mustDo(200, "GET", "/v1/calendar?from="+day(-3)+"&to="+day(3), nil), []byte(`"type":"habit"`)) {
+		t.Error("habits came without being asked for")
+	}
 }
 
 func TestCalendarFeedsContainOnlyWhatWasChosenAndCanBeRevoked(t *testing.T) {
