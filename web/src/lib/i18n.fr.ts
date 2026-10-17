@@ -3131,7 +3131,7 @@ export const fr: Record<string, string> = {
 	'The other service did not confirm who you are. Try again.':
 		'L’autre service n’a pas confirmé votre identité. Réessayez.',
 	// Tech watch (EP-110)
-	'A CSV or OPML file': 'Un fichier CSV ou OPML',
+	'A CSV, OPML, or JSON file': 'Un fichier CSV, OPML ou JSON',
 	'A feed, a site, medium.com/@author, name.substack.com, a YouTube channel…':
 		'Un flux, un site, medium.com/@auteur, nom.substack.com, une chaîne YouTube…',
 	'API password': 'Mot de passe d’API',
@@ -3167,6 +3167,8 @@ export const fr: Record<string, string> = {
 	'News stored per day, last 30 days': 'Actualités enregistrées par jour, 30 derniers jours',
 	'No source yet: follow one above.': 'Aucune source pour l’instant : suivez-en une ci-dessus.',
 	'Nothing here yet.': 'Rien ici pour l’instant.',
+	"YouTube subscriptions: Google Takeout's subscriptions.csv, or the JSON of YouTube Subscription Manager, whose folders become topics.":
+		'Abonnements YouTube : le subscriptions.csv de Google Takeout, ou le JSON de YouTube Subscription Manager, dont les dossiers deviennent des thèmes.',
 	'OPML comes from Feedly, FreshRSS, Inoreader, and most readers; folders become topics.':
 		'L’OPML vient de Feedly, FreshRSS, Inoreader et de la plupart des lecteurs ; les dossiers deviennent des sujets.',
 	'Open the note': 'Ouvrir la note',

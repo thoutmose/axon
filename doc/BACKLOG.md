@@ -213,7 +213,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-162 | Version 1.0 | The release prepared for the owner's merge and tag, then deployed to srv-prod. | MUST | 1 pt | EP-161 | Done on staging (prod deploy, merge, and tag are the owner's) |
 | EP-163 | The radar by domain | One spoke per domain of the roadmap (maths, DSA, OS, Python, Rust, Kubernetes…), placed by the assessment and the skills done, instead of its sections. | MUST | 3 pts | EP-82, EP-141 | Done |
 | EP-164 | The collection in reach | The collection says how to turn progress rewards on, and turns them on, instead of an error. | MUST | 1 pt | EP-119 | Done |
-| EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Planned |
+| EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Done |
 | EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Planned |
 | EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Planned |
 | EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Planned |
@@ -2508,6 +2508,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-164/IS-164.01** · 1 pt · MUST — The collection belongs to progress rewards, which start off; with them off, Collection said only "Progress rewards are off". It now says what the collection needs and offers **Turn on progress rewards**, which keeps every other setting, as the Progress page does (one shared helper).
 
 **Tests.** The progress-rewards end-to-end test starts on the collection while rewards are off.
+
+### EP-165 — YouTube subscriptions imported
+
+**Goal.** "For YouTube channels subscriptions I can give you an export with the list of my subscriptions" (owner, 2026-10-17).
+
+- [x] **EP-165/IS-165.01** · 2 pts · MUST — Tech watch → Sources → Import takes a `.json` from YouTube Subscription Manager (folders of channel ids; each folder becomes a topic, a channel in two folders is one source with both, the extension's own `ysc_*` settings are left out) and Google Takeout's `subscriptions.csv` (Channel Id, Channel Url, Channel Title); each channel is followed through its feed. A source imported without a title takes its feed's title at the first fetch instead of keeping its host's name. The owner's export (srv-prod, `~/lifeos`) reads as 172 channels in 24 topics; importing it into the owner's account is the owner's step.
+
+**Tests.** `TestParseCSVReadsGoogleTakeoutSubscriptions`, `TestParseYouTubeJSONMakesFoldersTopics`.
 
 ### EP-20 — Analytics & insights
 

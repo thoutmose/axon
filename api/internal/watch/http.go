@@ -334,8 +334,10 @@ func (h *Handlers) importFile(w http.ResponseWriter, r *http.Request) {
 		plan, err = ParseCSV(bytes.NewReader(body))
 	case "opml":
 		plan, err = ParseOPML(bytes.NewReader(body))
+	case "youtube":
+		plan, err = ParseYouTubeJSON(bytes.NewReader(body))
 	default:
-		httpx.Problem(w, http.StatusBadRequest, "format is csv or opml.")
+		httpx.Problem(w, http.StatusBadRequest, "format is csv, opml, or youtube.")
 		return
 	}
 	if err != nil {
