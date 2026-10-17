@@ -16,7 +16,7 @@ await page.evaluate(async () => {
 const stage = page.locator('#stage');
 const frame = async (t, path) => {
 	await page.evaluate((t) => window.render(t), t);
-	await stage.screenshot({ path, type: 'jpeg', quality: 92 });
+	await stage.screenshot({ path, type: 'jpeg', quality: 97 });
 };
 
 if (flag === '--preview') {
