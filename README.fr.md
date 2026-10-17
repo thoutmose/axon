@@ -436,6 +436,7 @@ Ouvrez ensuite <http://localhost:3000>. L’API est servie sous `/api` (par exem
 | `ANKI_SYNC_URL` | Facultatif | URL privée | Adresse suggérée du serveur anki-sync-server pour le pont Anki (chacun saisit son propre compte). |
 | `AXON_PORT` | Non | `3000` | Le port que Caddy publie sur 127.0.0.1 (compose) ; une seconde pile, comme les tests de bout en bout, tourne à côté de la première sur un autre. |
 | `AXON_VERSION` | Non | `dev` | L’étiquette des images que compose construit et lance ; `deploy.sh` y met le commit qu’il déploie. |
+| `AXON_TRUSTED_PROXIES` | Non | `100.95.163.114/32` | Adresses d’un proxy placé devant Tailscale Serve (celui du domaine d’Axon), pour que Caddy voie l’adresse de chaque visiteur et non celle du proxy. |
 | `AXON_ADDR`, `AXON_METRICS_ADDR` | Non | `:8080`, `:9464` | Où l’API écoute, et où elle sert les métriques Prometheus, à part des routes publiques. |
 
 Ne mettez jamais de secrets dans du Markdown, des tickets, des prompts, des captures d’écran ou des journaux. Utilisez SOPS/age et un gestionnaire de secrets adapté au déploiement.

@@ -216,7 +216,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-165 | YouTube subscriptions imported | Google Takeout's subscriptions.csv and YouTube Subscription Manager's JSON import as followed channels, their folders as topics. | MUST | 2 pts | EP-122 | Done |
 | EP-166 | The plan, whole | Starting the roadmap's plan also creates a goal per stage, a habit per domain track, healthy habits, and an area per domain group; a plan started earlier gets what it lacks. | MUST | 5 pts | EP-141 | Done |
 | EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Done |
-| EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Planned |
+| EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Done (the switch is the owner's) |
 | EP-169 | Claude Code on Axon | `axon mcp` gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code subagent. | MUST | 5 pts | EP-19, EP-153 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
@@ -2533,6 +2533,13 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-167/IS-167.01** · 2 pts · MUST — `GET /v1/calendar?types=…,habit` gives an event for each day an active habit to build is scheduled, from the day it was made, done with that day's check-in (done or two-minute); a habit to break never shows. Habits come only when asked for, so the review's look ahead and the iCal feeds are unchanged. The calendar asks for them by default and has a **Habits** filter; in the month grid a day's habits are one line, "Habits 3/16", naming each in its tooltip and opening Habits, and the agenda lists each with a link to it. The feed form offers only what a feed can hold (tasks, goals, milestones): asking for study blocks or certifications in a feed failed with a server error.
 
 **Tests.** The dashboard test checks a habit's days, its check-in, a habit to break left out, and habits absent unless asked for; feeds refuse habits.
+
+### EP-168 — Axon at its own address
+
+**Goal.** "I want to use the URL https://axon.thoutmose.me and not srv-prod's tailnet name"; then "I did what you said and have a 502" (owner, 2026-10-17).
+
+- [x] **EP-168/IS-168.01** · 1 pt · MUST — The 502: Tailscale Serve picks its certificate by the TLS server name, which nginx does not send to an upstream by default; checked from srv-dev, the handshake fails without it and Axon answers 200 with it, even under `Host: axon.thoutmose.me`. [Operations](operations.md#production-at-its-own-address-ep-168) gives the proxy host's settings (`proxy_ssl_server_name on; proxy_ssl_name srv-prod.tail781d53.ts.net;`, srv-prod's tailnet address as the forward host), the address change in the production settings, and the passkey move, which the owner does.
+- [x] **EP-168/IS-168.02** · 1 pt · MUST — Through Nginx Proxy Manager and Tailscale Serve, Caddy would see srv-npm's tailnet address as every visitor's (its private ranges leave out 100.64.0.0/10), so per-address sign-in limits would be shared by all: `AXON_TRUSTED_PROXIES` adds proxies to trust, and production trusts srv-npm.
 
 ### EP-20 — Analytics & insights
 

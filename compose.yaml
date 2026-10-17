@@ -11,6 +11,8 @@ services:
       - "127.0.0.1:${AXON_PORT:-3000}:3000" # AXON_PORT lets a second stack (the e2e tests) run beside this one
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      AXON_TRUSTED_PROXIES: ${AXON_TRUSTED_PROXIES:-} # a proxy in front of Tailscale Serve (EP-168)
     security_opt: [no-new-privileges:true] # no setuid escalation inside the container
     cap_drop: [ALL] # listens on 3000, so needs no Linux capability
     depends_on: [api, web]
