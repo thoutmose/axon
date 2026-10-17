@@ -3,16 +3,19 @@ package watch
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/thoutmose/axon/api/internal/knowledge"
 )
 
 // Transcribing videos (EP-123): after a fetch, a few videos at a time get
-// their words, which join the item's text and its analysis: its concepts,
-// topics, labels, and the graph.
+// their words, which feed the item's analysis (its concepts, topics,
+// labels, and the graph) and become its summary and keywords (EP-148).
 
 // PendingTranscripts is how many videos each worker step transcribes.
 const PendingTranscripts = 3
@@ -50,13 +53,24 @@ func Transcribe(ctx context.Context, pool *pgxpool.Pool, userID, itemID uuid.UUI
 		if err != nil {
 			return err
 		}
-		content := *it.Content + "\n\n" + transcriptMarkdown(tr)
-		a := Analyse(Entry{URL: it.URL, Title: it.Title, Summary: it.Summary, Markdown: content, Categories: it.Categories}, topics)
-		_, err = tx.Exec(ctx, `UPDATE watch_items SET content = $2, lang = $3, words = $4, simhash = $5, terms = $6, keywords = $7,
-			labels = $8, topic_ids = $9::uuid[], score = $10, outlier = '', transcript_source = $11, transcript_lang = $12,
-			transcript_tried_at = now() WHERE id = $1`,
-			itemID, cut(CleanLinks(content), 200000), a.Lang, a.Words, int64(a.SimHash), //nolint:gosec // the same 64 bits
-			nonNil(a.Terms), nonNil(a.Keywords), nonNil(uniq(append(a.Labels, it.Labels...), 16)), nonNil(a.Topics), a.Score,
+		// The words feed the analysis; what is shown is five to ten of
+		// their sentences and five to ten keywords (EP-148).
+		words := cut(tr.Text, 200000)
+		a := Analyse(Entry{URL: it.URL, Title: it.Title, Summary: it.Summary, Markdown: *it.Content + "\n\n" + words, Categories: it.Categories}, topics)
+		summary, keywords := it.Summary, a.Keywords
+		if lines := knowledge.Summarise(words, 5, 10); len(lines) > 0 {
+			summary = cut(strings.Join(lines, "\n"), 5000)
+			keywords = knowledge.KeyPhrasesBetween(it.Title+".\n"+words, 5, 10)
+		}
+		labels := a.Labels
+		for _, k := range keywords[:min(3, len(keywords))] {
+			labels = append(labels, strings.ToLower(k))
+		}
+		_, err = tx.Exec(ctx, `UPDATE watch_items SET transcript = $2, summary = $3, lang = $4, words = $5, simhash = $6, terms = $7,
+			keywords = $8, labels = $9, topic_ids = $10::uuid[], score = $11, outlier = '', transcript_source = $12,
+			transcript_lang = $13, transcript_tried_at = now() WHERE id = $1`,
+			itemID, words, summary, a.Lang, a.Words, int64(a.SimHash), //nolint:gosec // the same 64 bits
+			nonNil(a.Terms), nonNil(keywords), nonNil(uniq(append(labels, it.Labels...), 16)), nonNil(a.Topics), a.Score,
 			tr.Source, cut(tr.Lang, 10))
 		return err
 	})

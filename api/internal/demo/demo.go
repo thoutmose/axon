@@ -420,7 +420,9 @@ func seed(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) error {
 		}
 	}
 
-	s.link(habitIDs[0], "relates_to", reading) // Read 20 pages → the book in progress (EP-137)
+	if len(habitIDs) > 0 {
+		s.link(habitIDs[0], "relates_to", reading) // Read 20 pages → the book in progress (EP-137)
+	}
 
 	// A habit to break, with the four laws inverted, and the habits scorecard.
 	if s.err == nil {

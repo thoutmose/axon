@@ -48,7 +48,7 @@ type Roadmap struct {
 	Attribution string    `json:"attribution"`
 	LicenseURL  *string   `json:"license_url"`
 	Done        int       `json:"done"`
-	Total       int       `json:"total"` // skipped skills are not counted
+	Total       int       `json:"total"`        // skipped skills are not counted
 	PlanID      *string   `json:"plan_id"`      // the library plan it was started from
 	PlanCurrent bool      `json:"plan_current"` // started from the plan's current version
 	Skills      []Skill   `json:"skills,omitempty"`

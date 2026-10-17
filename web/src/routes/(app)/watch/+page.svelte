@@ -469,9 +469,25 @@
 						<Button variant="ghost" busy={transcribing} onclick={transcribe}
 							>{t('Read the transcript')}</Button
 						>
-						<span class="muted">{t('Its words join the analysis and the graph.')}</span>
+						<span class="muted"
+							>{t('Its words become five to ten key sentences and keywords.')}</span
+						>
 					{/if}
 				</p>
+			{/if}
+			{#if open.item.transcript_source && open.item.summary}
+				<!-- A video or an episode in a few words, not its subtitles (EP-148). -->
+				<section class="gist" aria-labelledby="gist-title">
+					<h3 id="gist-title">{t('In a few words')}</h3>
+					<ul>
+						{#each open.item.summary.split('\n') as line, i (i)}<li>{line}</li>{/each}
+					</ul>
+					{#if open.item.keywords.length}
+						<p class="chips" aria-label={t('Keywords')}>
+							{#each open.item.keywords as k (k)}<span class="chip">{k}</span>{/each}
+						</p>
+					{/if}
+				</section>
 			{/if}
 			<div class="content">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- render() escapes everything it does not produce -->
@@ -664,6 +680,23 @@
 	}
 	.unread .title {
 		font-weight: 700;
+	}
+	.gist {
+		border-left: 3px solid var(--accent);
+		padding: var(--space-2) var(--space-4);
+		margin: var(--space-3) 0;
+		background: var(--accent-soft);
+		border-radius: var(--radius);
+	}
+	.gist h3 {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-base);
+	}
+	.gist ul {
+		margin: 0 0 var(--space-2);
+		padding-left: var(--space-4);
+		display: grid;
+		gap: var(--space-1);
 	}
 	.summary {
 		color: var(--muted);

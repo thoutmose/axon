@@ -11,8 +11,9 @@ import (
 )
 
 // A YouTube video in the tech watch (EP-123): its link without the share
-// tracking, then its words from the captions, which join its analysis and
-// its topics; a second time asks nothing more.
+// tracking, then its words from the captions, which feed its analysis and
+// its topics and become its summary and keywords; a second time asks
+// nothing more.
 func TestWatchVideoTranscript(t *testing.T) {
 	e := newEnv(t, true)
 	alice := e.client()
@@ -69,14 +70,21 @@ func TestWatchVideoTranscript(t *testing.T) {
 
 	var it struct {
 		Content          string   `json:"content"`
+		Summary          string   `json:"summary"`
+		Keywords         []string `json:"keywords"`
 		Labels           []string `json:"labels"`
 		TranscriptSource string   `json:"transcript_source"`
 		TranscriptLang   string   `json:"transcript_lang"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/watch/items/"+id+"/transcript", nil), &it)
-	if it.TranscriptSource != "auto_captions" || it.TranscriptLang != "en" || !strings.Contains(it.Content, "## Transcript") ||
-		!strings.Contains(it.Content, "Raft elects a leader") {
+	if it.TranscriptSource != "auto_captions" || it.TranscriptLang != "en" {
 		t.Fatalf("transcribed = %+v", it)
+	}
+	// Not the subtitles: the video's own sentences as its summary, and five
+	// to ten keywords (EP-148).
+	if strings.Contains(it.Content, "Transcript") || strings.Contains(it.Content, "replicates its log") ||
+		!strings.HasPrefix(it.Summary, "Raft elects a leader") || len(it.Keywords) < 5 || len(it.Keywords) > 10 {
+		t.Fatalf("shown = %q, %q, %q", it.Content, it.Summary, it.Keywords)
 	}
 	found := false
 	for _, l := range it.Labels {
