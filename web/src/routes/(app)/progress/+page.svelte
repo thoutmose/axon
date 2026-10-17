@@ -4,6 +4,7 @@
 	import { api, message } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import Collection from '$lib/Collection.svelte';
+	import { turnOnRewards } from '$lib/collection';
 	import ShareButton from '$lib/ShareButton.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -36,12 +37,7 @@
 
 	async function turnOn() {
 		try {
-			const s = await api<Record<string, unknown>>('/v1/me/settings');
-			const { ai: _ai, ...doc } = s;
-			await api('/v1/me/settings', {
-				method: 'PUT',
-				body: { ...doc, gamification: { enabled: true } }
-			});
+			await turnOnRewards();
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');

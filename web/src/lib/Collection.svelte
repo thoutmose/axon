@@ -1,6 +1,14 @@
 <script lang="ts">
-	import { api, message } from '$lib/api';
-	import { achievement, cardName, groups, nextStep, type Card } from '$lib/collection';
+	import { api, ApiError, message } from '$lib/api';
+	import {
+		achievement,
+		cardName,
+		groups,
+		nextStep,
+		turnOnRewards,
+		type Card
+	} from '$lib/collection';
+	import Button from '$lib/ui/Button.svelte';
 	import ShareButton from '$lib/ShareButton.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -10,9 +18,28 @@
 	type Collection = { cards: Card[]; earned: number; total: number };
 	let c = $state<Collection | null>(null);
 	let error = $state('');
-	api<Collection>('/v1/progress/collection')
-		.then((r) => (c = r))
-		.catch((err) => (error = message(err)));
+	// With progress rewards off, the collection offers to turn them on (EP-164).
+	let off = $state(false);
+	function load() {
+		api<Collection>('/v1/progress/collection')
+			.then((r) => {
+				c = r;
+				off = false;
+			})
+			.catch((err) => {
+				if (err instanceof ApiError && err.status === 409) off = true;
+				else error = message(err);
+			});
+	}
+	load();
+	async function turnOn() {
+		try {
+			await turnOnRewards();
+			load();
+		} catch (err) {
+			error = message(err);
+		}
+	}
 
 	const rank = { gold: 3, silver: 2, bronze: 1, '': 0 };
 	const sorted = (cards: Card[]) =>
@@ -38,6 +65,13 @@
 	<h2 id="collection-title">{t('Your collection')}</h2>
 	{#if error}
 		<Status kind="error" message={error} />
+	{:else if off}
+		<p>
+			{t(
+				'The collection comes with progress rewards, which are off. Turn them on to see your trophies and cards; you can turn them off again in Preferences.'
+			)}
+		</p>
+		<Button onclick={turnOn}>{t('Turn on progress rewards')}</Button>
 	{:else if !c}
 		<Status kind="loading" message={t('Loading…')} />
 	{:else}

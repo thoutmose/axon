@@ -2384,6 +2384,13 @@ test('learn: cards from a note, free recall, a memory palace walk, and the day p
 });
 
 test('progress rewards are opt-in, explain every point, and reflect every area', async () => {
+	// While they are off, the collection says so and offers to turn them on (EP-164).
+	await page.goto('/collection');
+	await expect(
+		page
+			.getByRole('region', { name: 'Your collection' })
+			.getByRole('button', { name: 'Turn on progress rewards' })
+	).toBeVisible();
 	await page.goto('/progress');
 	await expect(page.getByRole('heading', { name: 'Progress rewards are off' })).toBeVisible();
 	await page.getByRole('button', { name: 'Turn on progress rewards' }).click();
