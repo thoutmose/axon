@@ -218,6 +218,10 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-167 | Habits on the calendar | The calendar shows each day's habits beside its tasks and study blocks. | MUST | 2 pts | EP-97 | Done |
 | EP-168 | Axon at its own address | Production at https://axon.thoutmose.me behind the fleet's proxy: the proxy's settings, the client address through two proxies, and the passkey move. | MUST | 2 pts | — | Done (the switch is the owner's) |
 | EP-169 | Claude Code on Axon | An MCP server in Axon gives Claude Code (the owner's subscription, run by the owner, also through Remote Control) Axon's agents' tools with a personal access token; writes stay proposals for approval; each agent as a Claude Code prompt. | MUST | 5 pts | EP-19, EP-153 | Done |
+| EP-170 | A bigger collection | A card per roadmap, goal, and project raised by its progress, and cards for milestones reached, projects shipped, goals achieved, habit check-ins, and certifications passed. | MUST | 3 pts | EP-119 | Done |
+| EP-171 | More projects and milestones in the plan | Each phase's plan gains its own milestones per domain and a project per track, created at the start and added to a plan started earlier. | MUST | 5 pts | EP-166 | Planned |
+| EP-172 | Jarvis, nicer to use | A larger, clearer panel: suggestions to start, a conversation that reads well, proposals to approve in place, keyboard and mobile friendly. | MUST | 3 pts | EP-153 | Planned |
+| EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Planned |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -254,7 +258,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-169 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-173 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2552,6 +2556,14 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-169/IS-169.03** · 1 pt · MUST — `deploy/claude-code` (`.mcp.json` with the token from `AXON_TOKEN`, never in a file, and a `CLAUDE.md`) is copied to `/opt/axon` by each deploy; [Operations](operations.md#claude-code-on-axon-ep-169) gives the three commands on srv-prod and the user guide points to them.
 
 **Tests.** `TestClaudeCodeUsesTheAgentsToolsThroughMCP`: no tools without consent, the handshake, tools and their read-only hints, health tools and `ask_agent` withheld, a read framed as data, a write that changes nothing until approved and is the task manager's, the run's model, the prompts, an unknown method, and a read token refused.
+
+### EP-170 — A bigger collection
+
+**Goal.** "Add a lot more badges on the collection related to the roadmaps, projects, habits, goals, milestones" (owner, 2026-10-17).
+
+- [x] **EP-170/IS-170.01** · 3 pts · MUST — A card per roadmap (the share of its skills learned), per goal (the share of its milestones reached; gold when achieved), and per project (the share of its cards done; gold when done), at 25, 50, and 100 %; and counters for milestones reached (1, 10, 30), projects shipped (1, 5, 15), goals achieved (1, 3, 10), habit check-ins (50, 500, 2,000), and certifications passed (1, 5, 15). The collection groups them as Roadmap trophies, Roadmaps, Goals, Projects, Habit cards, and Milestones, each with its emblem, next step, and a sentence to share. With the Top-5% plan started, that is some 60 more cards.
+
+**Tests.** The collection test counts a goal half-way and the first milestone; the cards' names, next steps, and groups in unit tests.
 
 ### EP-20 — Analytics & insights
 

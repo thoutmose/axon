@@ -6229,12 +6229,12 @@ paths:
                       required: [id, family, title, kind, tier, value, unit, next]
                       properties:
                         id: { type: string, example: "practice:hard" }
-                        family: { enum: [skill, habit, practice, focus, reviews, streak, decisions] }
+                        family: { enum: [skill, habit, roadmap, project, goal, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams] }
                         title: { type: string, description: "The skill's or habit's name; empty for the others." }
                         kind: { type: string, description: "For practice: easy, medium, or hard." }
                         tier: { enum: ["", bronze, silver, gold] }
                         value: { type: number }
-                        unit: { enum: [days, hours, problems, reviews, decisions] }
+                        unit: { enum: [days, hours, problems, reviews, decisions, percent, milestones, projects, goals, check-ins, exams] }
                         next:
                           type: [object, "null"]
                           required: [tier, target]
