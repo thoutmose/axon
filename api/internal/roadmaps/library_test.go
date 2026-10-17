@@ -81,8 +81,36 @@ func TestThePlansPhasesFollowEachOther(t *testing.T) {
 			}
 		}
 	}
-	if len(p.Habits) != 4 || len(p.Tasks) == 0 {
+	if len(p.Habits) != 16 || len(p.Tasks) == 0 {
 		t.Errorf("habits %d, tasks %d", len(p.Habits), len(p.Tasks))
+	}
+}
+
+// Every habit and goal of the plan lives in one of its areas, and every
+// group of domains has its goal (EP-166).
+func TestThePlansHabitsAndGoalsHaveTheirAreas(t *testing.T) {
+	d := Library()[0]
+	p := *d.Plan
+	areas := map[string]bool{}
+	for _, a := range p.Areas {
+		areas[a.Title] = true
+	}
+	for _, h := range p.Habits {
+		if !areas[h.Area] || len(h.Days) == 0 {
+			t.Errorf("habit %q: area %q, days %v", h.Title, h.Area, h.Days)
+		}
+	}
+	staged := map[string]bool{}
+	for _, st := range p.Stages {
+		if !areas[st.Area] {
+			t.Errorf("goal %q: unknown area %q", st.Title, st.Area)
+		}
+		staged[st.Section] = true
+	}
+	for _, sk := range d.Skills {
+		if !staged[sk.Section] {
+			t.Errorf("section %q has no goal", sk.Section)
+		}
 	}
 }
 

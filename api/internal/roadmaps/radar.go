@@ -136,7 +136,10 @@ func radarKind(counts []skillCount, levels map[string]int) RadarKind {
 	}
 	by := "roadmap"
 	if len(roadmaps) < 3 {
-		by = "domain"
+		by = "section"
+		if len(counts) > 0 {
+			by = "domain"
+		}
 		for _, c := range counts {
 			if c.Plan == "" {
 				by = "section"

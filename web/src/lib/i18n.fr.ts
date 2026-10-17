@@ -4027,6 +4027,11 @@ export const fr: Record<string, string> = {
 		'{n} notes de ressource écrites dans 3-Resources/.',
 	'Every resource already has its note.': 'Chaque ressource a déjà sa note.',
 	'Its resources as notes': 'Ses ressources en notes',
+	'Add its goals, habits, and areas': 'Ajouter ses objectifs, habitudes et domaines',
+	'Added {goals} goals, {habits} habits, and {areas} areas.':
+		'{goals} objectifs, {habits} habitudes et {areas} domaines ajoutés.',
+	'You already have every goal, habit, and area of the plan.':
+		'Vous avez déjà chaque objectif, habitude et domaine du plan.',
 	'Write its resources as notes': 'Écrire ses ressources en notes',
 	'The news digest at': 'Le digest de l’actualité à',
 	'General news, not tech: kept out of the tech watch, for the News tab and the news digest':

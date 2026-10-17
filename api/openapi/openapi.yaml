@@ -7297,6 +7297,29 @@ paths:
               schema: { $ref: "#/components/schemas/RoadmapPlan" }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/{id}/plan/complete:
+    post:
+      tags: [roadmaps]
+      operationId: completeRoadmapPlan
+      summary: Give a plan started earlier what it has since gained
+      description: "Creates the plan's areas, its goal per group of domains, and its habits that the person does not have yet (by title), connected as at the start (EP-166). Nothing the person has is changed or repeated."
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: What was added.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [areas, goals, habits]
+                properties:
+                  areas: { type: integer }
+                  goals: { type: integer }
+                  habits: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/{id}/resource-notes:
     post:
       tags: [roadmaps]

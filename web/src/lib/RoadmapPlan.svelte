@@ -120,6 +120,28 @@
 		}
 	}
 
+	// What the plan has gained since it was started (EP-166): its goals per
+	// group of domains, its habits, and its areas, added where missing.
+	let completing = $state(false);
+	async function complete() {
+		completing = true;
+		try {
+			const r = await api<{ areas: number; goals: number; habits: number }>(
+				`/v1/roadmaps/${roadmapId}/plan/complete`,
+				{ method: 'POST' }
+			);
+			toast(
+				r.areas + r.goals + r.habits
+					? t('Added {goals} goals, {habits} habits, and {areas} areas.', r)
+					: t('You already have every goal, habit, and area of the plan.')
+			);
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			completing = false;
+		}
+	}
+
 	async function toggle(p: Phase) {
 		if (!p.milestone) return;
 		try {
@@ -219,6 +241,9 @@
 			<div class="tools">
 				<Button variant="secondary" busy={writing} onclick={resourceNotes}
 					>{t('Write its resources as notes')}</Button
+				>
+				<Button variant="secondary" busy={completing} onclick={complete}
+					>{t('Add its goals, habits, and areas')}</Button
 				>
 			</div>
 		{/if}

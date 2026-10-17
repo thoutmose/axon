@@ -205,7 +205,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		Hard, Soft struct{ Spokes []struct{ Label string } }
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/radar", nil), &radar)
-	if len(radar.Hard.Spokes) != 8 || len(radar.Soft.Spokes) != 3 {
+	if len(radar.Hard.Spokes) != 37 || len(radar.Soft.Spokes) != 6 { // a spoke per domain (EP-163)
 		t.Fatalf("radar = %+v", radar)
 	}
 
@@ -225,10 +225,17 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals", nil), &goals)
-	if len(goals.Items) != 1 || goals.Items[0].Measure == nil || goals.Items[0].Measure.Target != 37 || len(goals.Items[0].Milestones) != 18 {
+	// The plan's goal, and one per group of domains (EP-166).
+	i := -1
+	for j, g := range goals.Items {
+		if strings.HasPrefix(g.Title, "Top-5%") {
+			i = j
+		}
+	}
+	if len(goals.Items) != 12 || i < 0 || goals.Items[i].Measure == nil || goals.Items[i].Measure.Target != 37 || len(goals.Items[i].Milestones) != 18 {
 		t.Fatalf("goals = %+v", goals)
 	}
-	g := goals.Items[0]
+	g := goals.Items[i]
 	first, _ := time.Parse(time.DateOnly, g.Milestones[0].DueOn)
 	second, _ := time.Parse(time.DateOnly, g.Milestones[1].DueOn)
 	if !bytes.HasPrefix([]byte(g.Milestones[0].Title), []byte("Phase 1:")) || second.Sub(first) != 84*24*time.Hour {
@@ -272,14 +279,39 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	}
 
 	habits := alice.mustDo(200, "GET", "/v1/habits?status=active", nil)
-	if bytes.Count(habits, []byte(`"title":`)) != 4 || !bytes.Contains(habits, []byte("Weekly reflection and roadmap check")) {
+	if bytes.Count(habits, []byte(`"title":`)) != 16 || !bytes.Contains(habits, []byte("Weekly reflection and roadmap check")) || !bytes.Contains(habits, []byte("Morning sunlight")) {
 		t.Errorf("habits = %s", habits)
 	}
 	if next := alice.mustDo(200, "GET", "/v1/tasks?status=next&limit=100", nil); !bytes.Contains(next, []byte("6.042J lectures 1–3")) {
 		t.Errorf("next tasks lack the first week")
 	}
-	if a := alice.mustDo(200, "GET", "/v1/areas", nil); !bytes.Contains(a, []byte("Engineering mastery")) || !bytes.Contains(a, []byte(`"Maths"`)) {
+	if a := alice.mustDo(200, "GET", "/v1/areas", nil); !bytes.Contains(a, []byte("Engineering mastery")) || !bytes.Contains(a, []byte(`"Maths"`)) || !bytes.Contains(a, []byte(`"Health"`)) {
 		t.Errorf("areas = %s", a)
+	}
+	// Completing a plan started with everything adds nothing (EP-166).
+	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":0,"habits":0}`)) {
+		t.Errorf("complete = %s", c)
+	}
+	// A plan started before them gets the goal and habit it lacks, once.
+	var hs struct {
+		Items []struct {
+			ID    string `json:"id"`
+			Title string `json:"title"`
+		} `json:"items"`
+	}
+	_ = json.Unmarshal(habits, &hs)
+	for _, h := range hs.Items {
+		if h.Title == "Morning sunlight" {
+			alice.mustDo(204, "DELETE", "/v1/habits/"+h.ID, nil)
+		}
+	}
+	for _, goal := range goals.Items {
+		if strings.HasPrefix(goal.Title, "Security:") {
+			alice.mustDo(204, "DELETE", "/v1/goals/"+goal.ID, nil)
+		}
+	}
+	if c := alice.mustDo(200, "POST", "/v1/roadmaps/"+rm.ID+"/plan/complete", nil); !bytes.Contains(c, []byte(`{"areas":0,"goals":1,"habits":1}`)) {
+		t.Errorf("complete after deletions = %s", c)
 	}
 	if r := alice.mustDo(200, "GET", "/v1/resources", nil); !bytes.Contains(r, []byte("42 subjects and testers")) {
 		t.Errorf("resources = %s", r)
@@ -449,7 +481,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	if len(certs.Items) != 45 {
 		t.Errorf("certifications after the new start = %d", len(certs.Items))
 	}
-	if h := alice.mustDo(200, "GET", "/v1/habits?status=active", nil); bytes.Count(h, []byte(`"title":`)) != 4 {
+	if h := alice.mustDo(200, "GET", "/v1/habits?status=active", nil); bytes.Count(h, []byte(`"title":`)) != 16 {
 		t.Errorf("habits after the new start = %s", h)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/calendar?types=study&from="+start.Format(time.DateOnly)+"&to="+start.AddDate(0, 0, 6).Format(time.DateOnly), nil), &cal)

@@ -639,6 +639,7 @@ var catalog = map[string]string{
 	"days is 1 or 7.":                                             "days vaut 1 ou 7.",
 	"format is briefing, digest, or deep.":                        "format vaut briefing, digest ou deep.",
 	"format is csv, opml, or youtube.":                            "format vaut csv, opml ou youtube.",
+	"This roadmap has no plan to complete.":                       "Ce parcours n’a pas de plan à compléter.",
 	"The file has no YouTube channel in it.":                      "Le fichier ne contient aucune chaîne YouTube.",
 	"The file is not the JSON of a YouTube subscriptions export.": "Le fichier n’est pas le JSON d’un export d’abonnements YouTube.",
 	"format is csv, ods, md, zip, json, or pdf.":                  "format vaut csv, ods, md, zip, json ou pdf.",

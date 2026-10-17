@@ -4287,6 +4287,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/roadmaps/{id}/plan/complete': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Give a plan started earlier what it has since gained
+		 * @description Creates the plan's areas, its goal per group of domains, and its habits that the person does not have yet (by title), connected as at the start (EP-166). Nothing the person has is changed or repeated.
+		 */
+		post: operations['completeRoadmapPlan'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}/resource-notes': {
 		parameters: {
 			query?: never;
@@ -17635,6 +17655,35 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	completeRoadmapPlan: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description What was added. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						areas: number;
+						goals: number;
+						habits: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	writeRoadmapResourceNotes: {
