@@ -7297,6 +7297,27 @@ paths:
               schema: { $ref: "#/components/schemas/RoadmapPlan" }
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/roadmaps/{id}/resource-notes:
+    post:
+      tags: [roadmaps]
+      operationId: writeRoadmapResourceNotes
+      summary: Write the plan's resources as notes
+      description: "One resource note per book, course, site, and practice of a started library plan, in 3-Resources/<plan>/, with its link, what it is for, and the phases, projects, milestones, and certifications it serves; each connected to its skill, the goal, and those milestones and projects. Notes that exist are left alone, so it can be called again (EP-154). Starting the plan writes them."
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: How many notes were written.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [written]
+                properties:
+                  written: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
   /v1/roadmaps/{id}/plan:
     get:
       tags: [roadmaps]

@@ -514,6 +514,10 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 			return s, err
 		}
 	}
+	// Every resource of the plan as a note, connected to where it serves (EP-154).
+	if _, err := ResourceNotes(ctx, tx, userID, actor, rm.ID, now); err != nil {
+		return s, err
+	}
 	s.Roadmap, err = Get(ctx, tx, userID, rm.ID)
 	return s, err
 }

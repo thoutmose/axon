@@ -99,6 +99,27 @@
 		}
 	}
 
+	// The plan's resources as notes (EP-154): written at the start; this
+	// adds the ones a roadmap started earlier lacks.
+	let writing = $state(false);
+	async function resourceNotes() {
+		writing = true;
+		try {
+			const r = await api<{ written: number }>(`/v1/roadmaps/${roadmapId}/resource-notes`, {
+				method: 'POST'
+			});
+			toast(
+				r.written
+					? t('{n} resource notes written in 3-Resources/.', { n: r.written })
+					: t('Every resource already has its note.')
+			);
+		} catch (err) {
+			toast(message(err), 'error');
+		} finally {
+			writing = false;
+		}
+	}
+
 	async function toggle(p: Phase) {
 		if (!p.milestone) return;
 		try {
@@ -179,6 +200,7 @@
 				})}
 			{/if}
 			{#if plan.goal_id}· <a href="/goals/{plan.goal_id}">{t('Open the goal')}</a>{/if}
+			{#if !preview}· <a href="/notes?para=resources">{t('Its resources as notes')}</a>{/if}
 		</p>
 		<ol class="strip" aria-label={t('Phases')}>
 			{#each plan.phases as p (p.n)}
@@ -193,6 +215,13 @@
 				</li>
 			{/each}
 		</ol>
+		{#if !preview}
+			<div class="tools">
+				<Button variant="secondary" busy={writing} onclick={resourceNotes}
+					>{t('Write its resources as notes')}</Button
+				>
+			</div>
+		{/if}
 	</section>
 
 	<ol class="phases">
@@ -314,6 +343,9 @@
 {/if}
 
 <style>
+	.tools {
+		margin-top: var(--space-3);
+	}
 	.notice {
 		border: 1px solid var(--warn);
 		border-radius: var(--radius-lg);

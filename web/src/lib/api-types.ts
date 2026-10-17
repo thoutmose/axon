@@ -4287,6 +4287,26 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/v1/roadmaps/{id}/resource-notes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Write the plan's resources as notes
+		 * @description One resource note per book, course, site, and practice of a started library plan, in 3-Resources/<plan>/, with its link, what it is for, and the phases, projects, milestones, and certifications it serves; each connected to its skill, the goal, and those milestones and projects. Notes that exist are left alone, so it can be called again (EP-154). Starting the plan writes them.
+		 */
+		post: operations['writeRoadmapResourceNotes'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/roadmaps/{id}/plan': {
 		parameters: {
 			query?: never;
@@ -17603,6 +17623,33 @@ export interface operations {
 			};
 			401: components['responses']['Problem'];
 			404: components['responses']['Problem'];
+		};
+	};
+	writeRoadmapResourceNotes: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description How many notes were written. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						written: number;
+					};
+				};
+			};
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
 		};
 	};
 	getRoadmapPlan: {

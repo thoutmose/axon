@@ -366,6 +366,15 @@
 					"skill": "Computer science"
 				},
 				{
+					"title": "Teach Yourself Computer Science",
+					"kind": "site",
+					"by": "Oz Nova, Myles Byrne",
+					"free": true,
+					"url": "https://teachyourselfcs.com/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
 					"title": "MIT 6.006 Introduction to Algorithms",
 					"kind": "course",
 					"by": "MIT OpenCourseWare",
@@ -474,6 +483,15 @@
 					"skill": "Probability"
 				},
 				{
+					"title": "MIT 6.041SC Probabilistic Systems Analysis",
+					"kind": "course",
+					"by": "MIT OpenCourseWare",
+					"free": true,
+					"url": "https://ocw.mit.edu/courses/6-041sc-probabilistic-systems-analysis-and-applied-probability-fall-2013/",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
 					"title": "MIT 18.650 Statistics for Applications",
 					"kind": "course",
 					"by": "MIT OpenCourseWare",
@@ -488,6 +506,24 @@
 					"by": "Allen Downey",
 					"free": true,
 					"url": "https://allendowney.github.io/ThinkBayes2/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "OpenIntro Statistics",
+					"kind": "book",
+					"by": "Diez, Çetinkaya-Rundel, Barr",
+					"free": true,
+					"url": "https://www.openintro.org/book/os/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "Seeing Theory",
+					"kind": "site",
+					"by": "Brown University",
+					"free": true,
+					"url": "https://seeing-theory.brown.edu/",
 					"section": "1 · Foundations",
 					"skill": "Statistics"
 				},
@@ -551,6 +587,24 @@
 					"by": "MIT PDOS",
 					"free": true,
 					"url": "https://pdos.csail.mit.edu/6.1810/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
+					"title": "The Linux kernel documentation",
+					"kind": "site",
+					"by": "The kernel development community",
+					"free": true,
+					"url": "https://docs.kernel.org/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
+					"title": "A Beginner's Guide to Linux Kernel Development (LFD103)",
+					"kind": "course",
+					"by": "The Linux Foundation",
+					"free": true,
+					"url": "https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/",
 					"section": "2 · Systems",
 					"skill": "Operating systems"
 				},
@@ -672,6 +726,33 @@
 					"skill": "Python"
 				},
 				{
+					"title": "The Python Tutorial",
+					"kind": "site",
+					"by": "Python Software Foundation",
+					"free": true,
+					"url": "https://docs.python.org/3/tutorial/",
+					"section": "3 · Languages",
+					"skill": "Python"
+				},
+				{
+					"title": "Effective Python, 3rd edition",
+					"kind": "book",
+					"by": "Brett Slatkin",
+					"free": false,
+					"url": "https://effectivepython.com/",
+					"section": "3 · Languages",
+					"skill": "Python"
+				},
+				{
+					"title": "Real Python",
+					"kind": "site",
+					"by": "Real Python",
+					"free": true,
+					"url": "https://realpython.com/",
+					"section": "3 · Languages",
+					"skill": "Python"
+				},
+				{
 					"title": "dev.java: learn Java",
 					"kind": "site",
 					"by": "Oracle",
@@ -686,6 +767,15 @@
 					"by": "Joshua Bloch",
 					"free": false,
 					"url": "https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/",
+					"section": "3 · Languages",
+					"skill": "Java"
+				},
+				{
+					"title": "Java Concurrency in Practice",
+					"kind": "book",
+					"by": "Brian Goetz et al.",
+					"free": false,
+					"url": "https://jcip.net/",
 					"section": "3 · Languages",
 					"skill": "Java"
 				},
@@ -717,6 +807,15 @@
 					"skill": "Rust"
 				},
 				{
+					"title": "Rust by Example",
+					"kind": "site",
+					"by": "The Rust Project",
+					"free": true,
+					"url": "https://doc.rust-lang.org/rust-by-example/",
+					"section": "3 · Languages",
+					"skill": "Rust"
+				},
+				{
 					"title": "CMU 15-445/645 Database Systems, with BusTub",
 					"kind": "course",
 					"by": "Andy Pavlo, Carnegie Mellon",
@@ -733,6 +832,24 @@
 					"url": "https://use-the-index-luke.com/",
 					"section": "4 · Data",
 					"skill": "Databases"
+				},
+				{
+					"title": "SQLBolt",
+					"kind": "practice",
+					"by": "SQLBolt",
+					"free": true,
+					"url": "https://sqlbolt.com/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
+					"title": "Choose a data store",
+					"kind": "site",
+					"by": "Microsoft Azure Architecture Center",
+					"free": true,
+					"url": "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/data-store-overview",
+					"section": "4 · Data",
+					"skill": "Database architecture"
 				},
 				{
 					"title": "PostgreSQL: table partitioning",
@@ -924,6 +1041,24 @@
 					"skill": "Data engineering"
 				},
 				{
+					"title": "Data Engineering Zoomcamp",
+					"kind": "course",
+					"by": "DataTalks.Club",
+					"free": true,
+					"url": "https://github.com/DataTalksClub/data-engineering-zoomcamp",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "The Data Warehouse Toolkit, 3rd edition",
+					"kind": "book",
+					"by": "Ralph Kimball, Margy Ross",
+					"free": false,
+					"url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
 					"title": "OpenLineage documentation",
 					"kind": "site",
 					"by": "OpenLineage",
@@ -1010,6 +1145,15 @@
 					"by": "Kohavi, Tang, Xu",
 					"free": false,
 					"url": "https://experimentguide.com/",
+					"section": "4 · Data",
+					"skill": "Data science"
+				},
+				{
+					"title": "Python Data Science Handbook",
+					"kind": "book",
+					"by": "Jake VanderPlas",
+					"free": true,
+					"url": "https://jakevdp.github.io/PythonDataScienceHandbook/",
 					"section": "4 · Data",
 					"skill": "Data science"
 				},
@@ -1176,6 +1320,15 @@
 					"skill": "System design"
 				},
 				{
+					"title": "ByteByteGo newsletter",
+					"kind": "site",
+					"by": "Alex Xu",
+					"free": true,
+					"url": "https://blog.bytebytego.com/",
+					"section": "6 · Software",
+					"skill": "System design"
+				},
+				{
 					"title": "Google API Improvement Proposals",
 					"kind": "site",
 					"by": "Google",
@@ -1226,6 +1379,24 @@
 					"by": "Mozilla",
 					"free": true,
 					"url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+					"section": "6 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "Learn web development on web.dev",
+					"kind": "course",
+					"by": "Google",
+					"free": true,
+					"url": "https://web.dev/learn",
+					"section": "6 · Software",
+					"skill": "Web development"
+				},
+				{
+					"title": "The Odin Project",
+					"kind": "course",
+					"by": "The Odin Project",
+					"free": true,
+					"url": "https://www.theodinproject.com/",
 					"section": "6 · Software",
 					"skill": "Web development"
 				},
