@@ -36,6 +36,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
 	"github.com/thoutmose/axon/api/internal/server"
+	"github.com/thoutmose/axon/api/internal/telemetry"
 	"github.com/thoutmose/axon/api/internal/watch"
 )
 
@@ -107,6 +108,7 @@ func serve() error {
 	registerPoolStats(reg, pool)
 	metrics := server.NewMetrics(reg, version, pool)
 	watch.RegisterMetrics(reg)
+	telemetry.Register(reg, pool) // workers and storage by feature (EP-157)
 
 	// The API and the metrics endpoint listen separately, so /metrics is never
 	// reachable through Caddy and the public routes.
@@ -192,7 +194,10 @@ func demoEnabled() bool { return os.Getenv("AXON_DEMO") == "1" }
 // purges the trash, and gives older card reviews their prediction (EP-77).
 func pruneMedia(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) {
 	for {
-		if err := media.Prune(ctx, pool); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("maintenance")
+		err := media.Prune(ctx, pool)
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			log.Error("media prune failed", "err", err)
 		}
 		if err := graph.PurgeTrash(ctx, pool, time.Now()); err != nil && ctx.Err() == nil {

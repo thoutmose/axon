@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -16,6 +17,29 @@ import (
 type Metrics struct {
 	requests *prometheus.CounterVec
 	duration *prometheus.HistogramVec
+	busy     *prometheus.CounterVec // seconds spent serving each feature (EP-157)
+}
+
+// Feature is the part of Axon a route belongs to: /v1/watch/items is
+// watch, /v1/me/agent-models is agents (the "me" prefix is skipped).
+func Feature(route string) string {
+	parts := strings.Split(strings.Trim(route, "/"), "/")
+	if len(parts) > 0 && parts[0] == "v1" {
+		parts = parts[1:]
+	}
+	if len(parts) > 1 && parts[0] == "me" {
+		parts = parts[1:]
+	}
+	if len(parts) == 0 || parts[0] == "" {
+		return "other"
+	}
+	f := parts[0]
+	for _, p := range []string{"agent", "watch", "media", "budget", "health", "household", "vault", "calendar", "roadmap", "note"} {
+		if strings.HasPrefix(f, p) {
+			return p
+		}
+	}
+	return f
 }
 
 // NewMetrics registers the API's metrics on reg. axon_db_up pings the
@@ -31,6 +55,10 @@ func NewMetrics(reg prometheus.Registerer, version string, db Pinger) *Metrics {
 			Help:    "HTTP request duration by method and route pattern.",
 			Buckets: []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5},
 		}, []string{"method", "route"}),
+		busy: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "axon_feature_busy_seconds_total",
+			Help: "Seconds spent serving requests, by feature (tasks, notes, watch, agents…).",
+		}, []string{"feature"}),
 	}
 	buildInfo := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name:        "axon_build_info",
@@ -49,7 +77,7 @@ func NewMetrics(reg prometheus.Registerer, version string, db Pinger) *Metrics {
 		}
 		return 1
 	})
-	reg.MustRegister(m.requests, m.duration, buildInfo, dbUp)
+	reg.MustRegister(m.requests, m.duration, m.busy, buildInfo, dbUp)
 	return m
 }
 
@@ -75,6 +103,7 @@ func observe(m *Metrics, log *slog.Logger) func(http.Handler) http.Handler {
 
 			m.requests.WithLabelValues(r.Method, route, strconv.Itoa(status)).Inc()
 			m.duration.WithLabelValues(r.Method, route).Observe(elapsed.Seconds())
+			m.busy.WithLabelValues(Feature(route)).Add(elapsed.Seconds())
 
 			if route == "/healthz" || route == "/readyz" {
 				return // probed constantly; metrics are enough

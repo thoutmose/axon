@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/netsafe"
+	"github.com/thoutmose/axon/api/internal/telemetry"
 )
 
 // Limits: the size of one calendar, how many events are kept from it, and
@@ -180,6 +181,7 @@ func trim(s string, n int) string {
 // Run refreshes sources older than the refresh interval, every few minutes.
 func (s *Store) Run(ctx context.Context) {
 	for {
+		done := telemetry.Time("calendars")
 		rows, err := s.db.Query(ctx, `SELECT id FROM calendar_sources WHERE fetched_at IS NULL OR fetched_at < $1 ORDER BY fetched_at NULLS FIRST LIMIT 50`,
 			s.now().Add(-refresh))
 		if err == nil {
@@ -194,6 +196,7 @@ func (s *Store) Run(ctx context.Context) {
 		} else if ctx.Err() == nil {
 			s.log.Error("calendar sources query failed", "err", err)
 		}
+		done(err) // the round, refreshes included
 		select {
 		case <-ctx.Done():
 			return

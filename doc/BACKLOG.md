@@ -205,7 +205,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-154 | The roadmap's resources as notes | The best resources of the active roadmap as resource notes linked to its projects, milestones, goal, and certifications, opening in a new tab. | MUST | 3 pts | EP-141 | Done |
 | EP-155 | A news digest | A digest of the most interesting general news from the FreshRSS server, apart from the tech watch. | SHOULD | 3 pts | EP-107 | Done |
 | EP-156 | The vault in step, verified | Notes in step with the vault set in Preferences, checked against ~/SecondBrain on srv-secondbrain. | MUST | 2 pts | EP-106, EP-143 | Done (srv-secondbrain offline: the live check waits for it) |
-| EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Planned |
+| EP-157 | Monitoring of every feature | Per-feature CPU, memory, storage, and request metrics, with dashboards and alerts on srv-monitoring (fleet repository). | SHOULD | 5 pts | EP-21 | Done (fleet PRs #1 and #2 await review) |
 | EP-158 | A banner and the hardware needed | A README banner, and srv-prod's specification as the example requirements. | SHOULD | 1 pt | — | Planned |
 | EP-159 | The trailer, again | The trailer recorded from the current demo. | COULD | 1 pt | EP-158 | Planned |
 | EP-160 | Clean, documented, and safe | Refactoring, technical and functional documentation, no critical active CVE, resource use checked. | MUST | 5 pts | — | Planned |
@@ -2440,6 +2440,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 - [x] **EP-156/IS-156.01** · 2 pts · MUST — The sync (`axon notes-sync`, which the vault server runs) carries what came on 2026-10-17 both ways: a drawing made in Axon reaches the vault byte for byte, its shapes with it, and an edit made there comes back; a note with inline and block maths goes both ways untouched; the roadmap's resource notes are ordinary notes in `3-Resources/`. On 2026-10-17 `srv-secondbrain` was offline on the tailnet (last seen three days before), so the live check against `~/SecondBrain` waits for it: pair it from Preferences → Markdown vault → **Also as files on a server** (the one-time code needs the owner's session), then **Where your notes live** at the top of Notes shows whether it is in step.
 
 **Tests.** `TestVaultCarriesDrawingsAndMaths`, beside the existing sync, conflict, live-watch, pairing, and attachment tests.
+
+### EP-157 — Monitoring of every feature
+
+**Goal.** "Ensure the project is monitored on srv-monitoring with generic and really advanced monitoring, to know in real time which process or functionality of the website uses CPU, RAM, storage" (owner, 2026-10-17). Host configuration is the fleet repository's (ADR 0004).
+
+- [x] **EP-157/IS-157.01** · 3 pts · SHOULD — Axon measures itself by feature: `axon_feature_busy_seconds_total{feature}` (each route's feature: tasks, notes, watch, agent, roadmap…), the background workers' runs, failures, and time (`internal/telemetry`), and the storage each feature's tables hold with the database's size, read from the catalogue at most once a minute; the Go and process collectors already give the API's CPU and memory.
+- [x] **EP-157/IS-157.02** · 2 pts · SHOULD — In the fleet repository, pull request #1 (scrape job, dashboard, alerts, from 2026-10-10) gains the per-container view (cAdvisor: CPU, memory, disk I/O, network of each Axon container), the API's CPU and heap, time by feature, workers, and storage panels, and the `AxonWorkerFailing` and `AxonContainerMemoryHigh` alerts (rules checked with promtool), with their runbooks; pull request #2 grows srv-dev's disk from 40 to 80 GB, which the CI runner and e2e images fill. Both wait for the owner's review and apply.
+
+**Tests.** A route's feature; the full suite with the new collectors registered.
 
 ### EP-20 — Analytics & insights
 

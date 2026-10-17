@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/thoutmose/axon/api/internal/telemetry"
 	"github.com/thoutmose/axon/api/internal/textx"
 )
 
@@ -172,7 +173,10 @@ func (r *Runner) summariseOne(ctx context.Context, id, userID uuid.UUID, title, 
 // RunVideoSummaries summarises a few items every five minutes.
 func (r *Runner) RunVideoSummaries(ctx context.Context) {
 	for {
-		if err := r.SummariseVideos(ctx, summariesPerStep); err != nil && ctx.Err() == nil {
+		done := telemetry.Time("video-summaries")
+		err := r.SummariseVideos(ctx, summariesPerStep)
+		done(err)
+		if err != nil && ctx.Err() == nil {
 			r.log.Error("video summaries failed", "err", err)
 		}
 		select {
