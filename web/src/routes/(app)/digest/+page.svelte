@@ -77,7 +77,8 @@
 	const tabs: [Kind, string][] = [
 		['daily', 'Today'],
 		['weekly', 'This week'],
-		['monthly', 'This month']
+		['monthly', 'This month'],
+		['news', 'The news']
 	];
 </script>
 

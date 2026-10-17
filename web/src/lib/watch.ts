@@ -15,7 +15,7 @@ export type WatchFilter = {
 	from?: string;
 	to?: string;
 	outliers?: boolean;
-	kind?: '' | 'article' | 'video' | 'podcast';
+	kind?: '' | 'article' | 'video' | 'podcast' | 'news';
 };
 
 /** The query string for a filter, empty values left out. */

@@ -99,6 +99,7 @@ type watchSourceJSON struct {
 	ID        string `json:"id"`
 	URL       string `json:"url"`
 	Title     string `json:"title"`
+	News      bool   `json:"news"`
 	Health    string `json:"health"`
 	Failures  int    `json:"failures"`
 	LastError string `json:"last_error"`
@@ -431,4 +432,80 @@ func TestPodcastNaturalVoices(t *testing.T) {
 	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"","voice":"af_heart"}`))
 	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hi","voice":"bad voice!"}`))
 	bob.mustDo(422, "POST", "/v1/watch/podcast/speech", []byte(`{"text":"Hi","voice":"af_heart","speed":5}`))
+}
+
+// General news (EP-155): a news source's items stay out of the tech watch,
+// have their own tab, and make the news digest, a story many outlets carry
+// first.
+func TestNewsApartFromTheTechWatch(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	t.Setenv("AXON_CALENDAR_PRIVATE", "1")
+	now := time.Now().UTC()
+	feed := func(outlet string, stories ...string) string {
+		var b strings.Builder
+		b.WriteString(`<rss version="2.0"><channel><title>` + outlet + `</title>`)
+		for i, s := range stories {
+			fmt.Fprintf(&b, `<item><title>%s</title><link>https://%s.example/%d</link><guid>%s-%d</guid><pubDate>%s</pubDate>
+				<description>%s %s %s</description></item>`, s, strings.ToLower(outlet), i, outlet, i,
+				now.Add(-time.Duration(i+1)*time.Hour).Format(time.RFC1123Z), s, s, s)
+		}
+		return b.String() + `</channel></rss>`
+	}
+	feeds := map[string]string{
+		"/bbc.xml":     feed("BBC", "Climate summit ends with a global methane deal agreed by ministers", "Local football club wins the cup final"),
+		"/reuters.xml": feed("Reuters", "Climate summit ends with a global methane deal agreed by ministers"),
+		"/tech.xml":    feed("Tech", "Postgres eighteen ships asynchronous input output for faster scans"),
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(feeds[r.URL.Path]))
+	}))
+	defer srv.Close()
+	bbc, _ := alice.follow(srv.URL+"/bbc.xml", `,"news":true`)
+	alice.follow(srv.URL+"/reuters.xml", `,"news":true`)
+	alice.follow(srv.URL+"/tech.xml", "")
+	if !bbc.News {
+		t.Fatalf("source = %+v", bbc)
+	}
+	titles := func(q string) string {
+		var l struct {
+			Items []struct {
+				Title string `json:"title"`
+			} `json:"items"`
+		}
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/watch/items?status=all&outliers=1"+q, nil), &l)
+		var out []string
+		for _, it := range l.Items {
+			out = append(out, it.Title)
+		}
+		return strings.Join(out, " | ")
+	}
+	if got := titles(""); strings.Contains(got, "summit") || !strings.Contains(got, "Postgres") {
+		t.Fatalf("the tech watch = %s", got)
+	}
+	if got := titles("&kind=news"); !strings.Contains(got, "summit") || !strings.Contains(got, "football") || strings.Contains(got, "Postgres") {
+		t.Fatalf("the news = %s", got)
+	}
+	var d struct {
+		Title    string `json:"title"`
+		Sections []struct {
+			Items []struct {
+				Text   string `json:"text"`
+				Detail string `json:"detail"`
+			} `json:"items"`
+		} `json:"sections"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/digest?kind=news", nil), &d)
+	if d.Title != "The news" || len(d.Sections) != 1 || len(d.Sections[0].Items) < 2 {
+		t.Fatalf("news digest = %+v", d)
+	}
+	top := d.Sections[0].Items[0]
+	if !strings.Contains(top.Text, "summit") || !strings.Contains(top.Detail, "BBC") || !strings.Contains(top.Detail, "Reuters") {
+		t.Fatalf("top story = %+v", top)
+	}
+	// The daily digest's tech watch has no general news.
+	if daily := alice.mustDo(200, "GET", "/v1/me/digest?kind=daily", nil); bytes.Contains(daily, []byte("summit")) {
+		t.Fatalf("the daily digest shows the news: %s", daily)
+	}
 }

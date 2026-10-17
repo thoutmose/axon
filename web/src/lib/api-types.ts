@@ -5138,6 +5138,8 @@ export interface components {
 			enabled?: boolean;
 			/** @description Read each article's page when the feed has an excerpt only. */
 			full_text?: boolean;
+			/** @description General news, not the tech watch: its items make the news digest and the News tab (EP-155). */
+			news?: boolean;
 		};
 		WatchSource: {
 			/** Format: uuid */
@@ -5149,6 +5151,8 @@ export interface components {
 			schedule: string;
 			enabled: boolean;
 			full_text: boolean;
+			/** @description A general news source, apart from the tech watch. */
+			news: boolean;
 			/** @enum {string} */
 			origin: 'manual' | 'csv' | 'opml' | 'freshrss' | 'agent' | 'audiobookshelf';
 			/** Format: date-time */
@@ -5288,6 +5292,7 @@ export interface components {
 				articles: number;
 				videos: number;
 				podcasts: number;
+				news?: number;
 			};
 			daily: {
 				/** Format: date */
@@ -5367,7 +5372,7 @@ export interface components {
 			 * @enum {string}
 			 */
 			mode: 'webhook' | 'bot';
-			digests: ('daily' | 'weekly' | 'monthly')[];
+			digests: ('daily' | 'weekly' | 'monthly' | 'news')[];
 			/** @description Task reminders and the evening nudge too. */
 			reminders: boolean;
 			enabled: boolean;
@@ -5395,7 +5400,7 @@ export interface components {
 		};
 		Digest: {
 			/** @enum {string} */
-			kind: 'daily' | 'weekly' | 'monthly';
+			kind: 'daily' | 'weekly' | 'monthly' | 'news';
 			lang: string;
 			title: string;
 			greeting: string;
@@ -7038,6 +7043,11 @@ export interface components {
 				 * @example 09:00
 				 */
 				monthly_at?: string;
+				/**
+				 * @description When the news digest goes out each day; empty for none (EP-155).
+				 * @example 07:30
+				 */
+				news_at?: string;
 			};
 			/** @description The digest template (EP-113): each digest's sections in order, and whether the quote and the picture come along. Left out on update, it keeps its defaults. */
 			digest?: {
@@ -7592,8 +7602,8 @@ export interface components {
 		WatchFrom: string;
 		/** @description Published before. */
 		WatchTo: string;
-		/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
-		WatchKind: 'article' | 'video' | 'podcast';
+		/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure); news is the general news sources' items, which every other view leaves out (EP-155). */
+		WatchKind: 'article' | 'video' | 'podcast' | 'news';
 		WatchFormat: 'csv' | 'ods' | 'md' | 'zip' | 'json' | 'pdf';
 		/** @description 1 to include items flagged as outliers. */
 		WatchOutliers: '0' | '1';
@@ -7635,7 +7645,7 @@ export interface components {
 						token?: string;
 						secret?: string;
 					};
-					digests?: ('daily' | 'weekly' | 'monthly')[];
+					digests?: ('daily' | 'weekly' | 'monthly' | 'news')[];
 					reminders?: boolean;
 					enabled?: boolean;
 				};
@@ -10754,7 +10764,7 @@ export interface operations {
 	testReminders: {
 		parameters: {
 			query?: {
-				kind?: 'daily' | 'weekly' | 'monthly';
+				kind?: 'daily' | 'weekly' | 'monthly' | 'news';
 			};
 			header?: {
 				/** @description Any unique string (e.g. a UUID); retries with the same key and body replay the first response. */
@@ -10925,7 +10935,7 @@ export interface operations {
 	getDigest: {
 		parameters: {
 			query?: {
-				kind?: 'daily' | 'weekly' | 'monthly';
+				kind?: 'daily' | 'weekly' | 'monthly' | 'news';
 			};
 			header?: never;
 			path?: never;
@@ -10949,7 +10959,7 @@ export interface operations {
 	getDigestPicture: {
 		parameters: {
 			query?: {
-				kind?: 'daily' | 'weekly' | 'monthly';
+				kind?: 'daily' | 'weekly' | 'monthly' | 'news';
 			};
 			header?: never;
 			path?: never;
@@ -18276,6 +18286,8 @@ export interface operations {
 		parameters: {
 			query: {
 				format: 'csv' | 'opml';
+				/** @description 1 imports the feeds as general news, apart from the tech watch (EP-155). */
+				news?: '1';
 			};
 			header?: never;
 			path?: never;
@@ -18318,6 +18330,8 @@ export interface operations {
 					user: string;
 					/** @description The API password from FreshRSS: Profile → API management. */
 					password: string;
+					/** @description Its feeds are general news: kept apart from the tech watch, for the news digest (EP-155). */
+					news?: boolean;
 				};
 			};
 		};
@@ -18363,7 +18377,7 @@ export interface operations {
 			query?: {
 				/** @description Empty: everything but archived. */
 				status?: components['parameters']['WatchStatus'];
-				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure); news is the general news sources' items, which every other view leaves out (EP-155). */
 				kind?: components['parameters']['WatchKind'];
 				source?: components['parameters']['WatchSource'];
 				topic?: components['parameters']['WatchTopic'];
@@ -18612,7 +18626,7 @@ export interface operations {
 				format: components['parameters']['WatchFormat'];
 				/** @description Empty: everything but archived. */
 				status?: components['parameters']['WatchStatus'];
-				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure). */
+				/** @description Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure); news is the general news sources' items, which every other view leaves out (EP-155). */
 				kind?: components['parameters']['WatchKind'];
 				source?: components['parameters']['WatchSource'];
 				topic?: components['parameters']['WatchTopic'];

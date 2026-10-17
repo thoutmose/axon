@@ -2341,7 +2341,7 @@ paths:
       summary: "Send a digest now, even with nothing due, to your devices, your email, and your channels"
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
-        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly], default: daily } }
+        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly, news], default: daily } }
       responses:
         "200":
           description: Where it went.
@@ -2453,7 +2453,7 @@ paths:
       operationId: getDigest
       summary: "Your daily, weekly, or monthly digest as it would go out now"
       parameters:
-        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly], default: daily } }
+        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly, news], default: daily } }
       responses:
         "200":
           description: The digest.
@@ -2468,7 +2468,7 @@ paths:
       operationId: getDigestPicture
       summary: "The digest's illustration: a landscape drawn for the day and its theme"
       parameters:
-        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly], default: daily } }
+        - { name: kind, in: query, schema: { type: string, enum: [daily, weekly, monthly, news], default: daily } }
       responses:
         "200":
           description: A 1200 × 360 PNG.
@@ -7710,6 +7710,7 @@ paths:
       summary: "Follow sources from a normalised CSV (url,title,topics,schedule,full_text) or an OPML file (Feedly, FreshRSS, Inoreader…)"
       parameters:
         - { name: format, in: query, required: true, schema: { type: string, enum: [csv, opml] } }
+        - { name: news, in: query, description: "1 imports the feeds as general news, apart from the tech watch (EP-155).", schema: { type: string, enum: ["1"] } }
       requestBody:
         required: true
         content:
@@ -7738,6 +7739,7 @@ paths:
                 url: { type: string, example: "https://rss.example.org" }
                 user: { type: string }
                 password: { type: string, description: "The API password from FreshRSS: Profile → API management." }
+                news: { type: boolean, description: "Its feeds are general news: kept apart from the tech watch, for the news digest (EP-155)." }
       responses:
         "200": { description: What was imported., content: { application/json: { schema: { $ref: "#/components/schemas/WatchImportResult" } } } }
         "400": { $ref: "#/components/responses/Problem" }
@@ -8354,7 +8356,7 @@ components:
     WatchQuery: { name: q, in: query, description: "Words in the title or summary.", schema: { type: string } }
     WatchFrom: { name: from, in: query, description: "Published from (2026-10-14 or RFC 3339).", schema: { type: string } }
     WatchTo: { name: to, in: query, description: "Published before.", schema: { type: string } }
-    WatchKind: { name: kind, in: query, description: "Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure).", schema: { type: string, enum: [article, video, podcast] } }
+    WatchKind: { name: kind, in: query, description: "Articles, videos (YouTube, Vimeo), or podcast episodes (an audio enclosure); news is the general news sources' items, which every other view leaves out (EP-155).", schema: { type: string, enum: [article, video, podcast, news] } }
     WatchFormat: { name: format, in: query, required: true, schema: { type: string, enum: [csv, ods, md, zip, json, pdf] } }
     WatchOutliers: { name: outliers, in: query, description: "1 to include items flagged as outliers.", schema: { type: string, enum: ["0", "1"] } }
     ID:
@@ -8423,7 +8425,7 @@ components:
                   topic: { type: string }
                   token: { type: string }
                   secret: { type: string }
-              digests: { type: array, items: { type: string, enum: [daily, weekly, monthly] } }
+              digests: { type: array, items: { type: string, enum: [daily, weekly, monthly, news] } }
               reminders: { type: boolean }
               enabled: { type: boolean }
     WebAuthnCredential:
@@ -8619,9 +8621,10 @@ components:
         schedule: { type: string, example: "0 0 * * *", description: "Cron (minute hour day month weekday) in your time zone, or @daily, @hourly, @weekly; at least 15 minutes apart. Midnight by default." }
         enabled: { type: boolean }
         full_text: { type: boolean, description: "Read each article's page when the feed has an excerpt only." }
+        news: { type: boolean, description: "General news, not the tech watch: its items make the news digest and the News tab (EP-155)." }
     WatchSource:
       type: object
-      required: [id, url, site_url, title, topic_ids, schedule, enabled, full_text, origin, next_fetch_at, last_fetched_at, last_ok_at, last_error, failures, created_at, items, items_week, merged, health]
+      required: [id, url, site_url, title, topic_ids, schedule, enabled, full_text, news, origin, next_fetch_at, last_fetched_at, last_ok_at, last_error, failures, created_at, items, items_week, merged, health]
       properties:
         id: { type: string, format: uuid }
         url: { type: string }
@@ -8631,6 +8634,7 @@ components:
         schedule: { type: string }
         enabled: { type: boolean }
         full_text: { type: boolean }
+        news: { type: boolean, description: "A general news source, apart from the tech watch." }
         origin: { type: string, enum: [manual, csv, opml, freshrss, agent, audiobookshelf] }
         next_fetch_at: { type: string, format: date-time }
         last_fetched_at: { type: [string, "null"], format: date-time }
@@ -8739,7 +8743,7 @@ components:
         items:
           type: object
           required: [total, unread, saved, today, week, outliers, merged, articles, videos, podcasts]
-          properties: { total: { type: integer }, unread: { type: integer }, saved: { type: integer }, today: { type: integer }, week: { type: integer }, outliers: { type: integer }, merged: { type: integer }, articles: { type: integer }, videos: { type: integer }, podcasts: { type: integer } }
+          properties: { total: { type: integer }, unread: { type: integer }, saved: { type: integer }, today: { type: integer }, week: { type: integer }, outliers: { type: integer }, merged: { type: integer }, articles: { type: integer }, videos: { type: integer }, podcasts: { type: integer }, news: { type: integer } }
         daily:
           type: array
           items: { type: object, required: [day, count], properties: { day: { type: string, format: date }, count: { type: integer } } }
@@ -8805,7 +8809,7 @@ components:
         name: { type: string }
         target: { type: string, description: "Where it posts, without the secret part." }
         mode: { type: string, enum: [webhook, bot], description: "bot: also reads your answers once linked (Slack, Discord, Telegram)." }
-        digests: { type: array, items: { type: string, enum: [daily, weekly, monthly] } }
+        digests: { type: array, items: { type: string, enum: [daily, weekly, monthly, news] } }
         reminders: { type: boolean, description: "Task reminders and the evening nudge too." }
         enabled: { type: boolean }
         linked: { type: boolean }
@@ -8829,7 +8833,7 @@ components:
       type: object
       required: [kind, lang, title, greeting, date, label, summary, sections, stats, quote, theme, picture, url]
       properties:
-        kind: { type: string, enum: [daily, weekly, monthly] }
+        kind: { type: string, enum: [daily, weekly, monthly, news] }
         lang: { type: string }
         title: { type: string }
         greeting: { type: string }
@@ -10330,6 +10334,7 @@ components:
             weekly_at: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "18:00", description: "Empty for no weekly digest." }
             monthly_day: { type: integer, minimum: 1, maximum: 28 }
             monthly_at: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "09:00", description: "Empty for no monthly digest." }
+            news_at: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$|^$", example: "07:30", description: "When the news digest goes out each day; empty for none (EP-155)." }
         digest:
           type: object
           additionalProperties: false

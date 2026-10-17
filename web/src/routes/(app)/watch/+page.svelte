@@ -209,8 +209,15 @@
 		{ kind: '', label: 'Everything', icon: 'web' },
 		{ kind: 'article', label: 'Articles', icon: 'note' },
 		{ kind: 'video', label: 'YouTube', icon: 'play' },
-		{ kind: 'podcast', label: 'Podcasts', icon: 'mic' }
+		{ kind: 'podcast', label: 'Podcasts', icon: 'mic' },
+		{ kind: 'news', label: 'News', icon: 'feed_item' }
 	];
+	// YouTube, Podcasts, and the general news are places of their own (EP-144, EP-155).
+	const heading = $derived(
+		({ video: t('YouTube'), podcast: t('Podcasts'), news: t('News') } as Record<string, string>)[
+			filter.kind ?? ''
+		] ?? t('Tech watch')
+	);
 	const kindCount = (k: WatchFilter['kind']) => {
 		if (!stats) return null;
 		const n = stats.items;
@@ -218,31 +225,18 @@
 			'': n.articles + n.videos + n.podcasts,
 			article: n.articles,
 			video: n.videos,
-			podcast: n.podcasts
+			podcast: n.podcasts,
+			news: n.news
 		}[k ?? ''];
 	};
 </script>
 
 <svelte:window onkeydown={onKey} />
-<svelte:head
-	><title
-		>{filter.kind === 'video'
-			? t('YouTube')
-			: filter.kind === 'podcast'
-				? t('Podcasts')
-				: t('Tech watch')} · Axon</title
-	></svelte:head
->
+<svelte:head><title>{heading} · Axon</title></svelte:head>
 
 <header class="head">
 	<div>
-		<h1>
-			{filter.kind === 'video'
-				? t('YouTube')
-				: filter.kind === 'podcast'
-					? t('Podcasts')
-					: t('Tech watch')}
-		</h1>
+		<h1>{heading}</h1>
 		{#if stats}
 			<p class="muted small">
 				{t('{unread} unread · {today} new today · {sources} sources', {

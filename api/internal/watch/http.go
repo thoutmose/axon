@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -341,6 +342,12 @@ func (h *Handlers) importFile(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	// ?news=1 imports general news, apart from the tech watch (EP-155).
+	if r.URL.Query().Get("news") == "1" {
+		for i := range plan {
+			plan[i].News = true
+		}
+	}
 	h.runImport(w, r, who.UserID, plan, format)
 }
 
@@ -350,6 +357,7 @@ func (h *Handlers) importFreshRSS(w http.ResponseWriter, r *http.Request) {
 		URL      string `json:"url"`
 		User     string `json:"user"`
 		Password string `json:"password"`
+		News     bool   `json:"news"` // its feeds are general news, apart from the tech watch (EP-155)
 	}
 	if err := httpx.Decode(r, &b); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
@@ -361,6 +369,9 @@ func (h *Handlers) importFreshRSS(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.fail(w, err)
 		return
+	}
+	for i := range plan {
+		plan[i].News = b.News
 	}
 	h.runImport(w, r, who.UserID, plan, "freshrss")
 }
@@ -584,6 +595,7 @@ type Overview struct {
 		Articles int `json:"articles"`
 		Videos   int `json:"videos"`
 		Podcasts int `json:"podcasts"`
+		News     int `json:"news"` // from general news sources (EP-155)
 	} `json:"items"`
 	Daily  []DayCount   `json:"daily"` // news stored per day, last 30 days
 	Labels []LabelCount `json:"labels"`
@@ -636,14 +648,16 @@ func Summarize(ctx context.Context, q *pgxpool.Pool, userID uuid.UUID, now time.
 			o.Next = &t
 		}
 	}
+	news := fmt.Sprintf(fromNews, "watch_items") // general news, counted apart (EP-155)
 	err = q.QueryRow(ctx, `SELECT count(*), count(*) FILTER (WHERE status = 'unread' AND outlier = ''), count(*) FILTER (WHERE status = 'saved'),
 		count(*) FILTER (WHERE fetched_at > $2::timestamptz - interval '1 day'), count(*) FILTER (WHERE fetched_at > $2::timestamptz - interval '7 days'),
 		count(*) FILTER (WHERE outlier <> ''), count(*) FILTER (WHERE cardinality(also_in) > 0),
-		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url !~* '`+videoURL+`'),
-		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url ~* '`+videoURL+`'),
-		count(*) FILTER (WHERE outlier = '' AND audio <> '')
+		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url !~* '`+videoURL+`' AND NOT `+news+`),
+		count(*) FILTER (WHERE outlier = '' AND audio = '' AND url ~* '`+videoURL+`' AND NOT `+news+`),
+		count(*) FILTER (WHERE outlier = '' AND audio <> '' AND NOT `+news+`),
+		count(*) FILTER (WHERE outlier = '' AND `+news+`)
 		FROM watch_items WHERE user_id = $1`, userID, now).Scan(&o.Items.Total, &o.Items.Unread, &o.Items.Saved, &o.Items.Today, &o.Items.Week, &o.Items.Outliers, &o.Items.Merged,
-		&o.Items.Articles, &o.Items.Videos, &o.Items.Podcasts)
+		&o.Items.Articles, &o.Items.Videos, &o.Items.Podcasts, &o.Items.News)
 	if err != nil {
 		return o, err
 	}
