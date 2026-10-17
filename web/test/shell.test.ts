@@ -722,14 +722,15 @@ test('the calendar opens on a month grid, with the agenda one click away', async
 
 test('areas and resources: start from a template, archive, and restore', async () => {
 	await page.goto('/areas');
-	await page.getByRole('button', { name: '＋ Health' }).click();
-	await expect(page.getByRole('heading', { level: 1, name: 'Health' })).toBeVisible();
-	await expect(page.getByLabel('Standard to keep')).toHaveValue(/sleep 7–8 h/);
+	// Finances: the roadmap's plan, started earlier, already made Health (EP-166).
+	await page.getByRole('button', { name: '＋ Finances' }).click();
+	await expect(page.getByRole('heading', { level: 1, name: 'Finances' })).toBeVisible();
+	await expect(page.getByLabel('Standard to keep')).toHaveValue(/save 15 %/);
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Archive' }).click();
 	await expect(page.getByText('Archived. Find it in the Archive.')).toBeVisible();
 	await page.goto('/archive');
-	await page.locator('#main').getByRole('link', { name: 'Health' }).click();
+	await page.locator('#main').getByRole('link', { name: 'Finances' }).click();
 	await page.getByRole('button', { name: 'Restore' }).click();
 	await expect(page.getByText('Restored.')).toBeVisible();
 
@@ -2498,8 +2499,8 @@ test('try the shared demo without a passkey, with sample data in every area', as
 		page.getByRole('link', { name: 'Top-5% in 37 engineering domains', exact: true })
 	).toBeVisible();
 	// The skills radar: one roadmap, so a spoke per section.
-	await expect(page.getByRole('img', { name: /^Hard skills: .*Foundations \d+%/ })).toBeVisible();
-	await expect(page.getByRole('img', { name: /^Soft skills: .*Communication \d+%/ })).toBeVisible();
+	await expect(page.getByRole('img', { name: /^Hard skills: .*Computer science \d+%/ })).toBeVisible();
+	await expect(page.getByRole('img', { name: /^Soft skills: .*Technical writing \d+%/ })).toBeVisible();
 	await noSeriousA11yViolations(page);
 	await page.goto('/agents');
 	await expect(page.getByText('Agents do not run in the shared demo')).toBeVisible();
