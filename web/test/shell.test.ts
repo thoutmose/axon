@@ -2499,8 +2499,12 @@ test('try the shared demo without a passkey, with sample data in every area', as
 		page.getByRole('link', { name: 'Top-5% in 37 engineering domains', exact: true })
 	).toBeVisible();
 	// The skills radar: one roadmap, so a spoke per section.
-	await expect(page.getByRole('img', { name: /^Hard skills: .*Computer science \d+%/ })).toBeVisible();
-	await expect(page.getByRole('img', { name: /^Soft skills: .*Technical writing \d+%/ })).toBeVisible();
+	await expect(
+		page.getByRole('img', { name: /^Hard skills: .*Computer science \d+%/ })
+	).toBeVisible();
+	await expect(
+		page.getByRole('img', { name: /^Soft skills: .*Technical writing \d+%/ })
+	).toBeVisible();
 	await noSeriousA11yViolations(page);
 	await page.goto('/agents');
 	await expect(page.getByText('Agents do not run in the shared demo')).toBeVisible();
