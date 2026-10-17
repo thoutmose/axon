@@ -104,9 +104,6 @@ func (c *Conn) Close() error {
 	return c.conn.Close()
 }
 
-// SetReadDeadline bounds the next Read.
-func (c *Conn) SetReadDeadline(t time.Time) error { return c.conn.SetReadDeadline(t) }
-
 // WriteText sends one text message.
 func (c *Conn) WriteText(b []byte) error { return c.writeFrame(0x1, b) }
 
