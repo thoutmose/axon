@@ -180,12 +180,15 @@
 				const l = layer();
 				const side = i % 2 === 0;
 				const h = el(
-					`<div class="title" style="font-size:${side ? 92 : 104}px;${side ? 'text-align:left;left:130px;right:auto;width:640px;top:390px' : 'top:110px'}">${title}</div>`
+					`<div class="title" style="font-size:${side ? 92 : 104}px;${side ? 'position:relative;text-align:left' : 'top:110px'}">${title}</div>`
 				);
-				const s = el(
-					`<div class="sub" style="${side ? 'text-align:left;left:132px;right:auto;width:600px;top:' + (title.length > 18 ? 610 : 520) + 'px' : 'top:250px'}">${sub}</div>`
-				);
-				l.append(h, s);
+				const s = el(`<div class="sub" style="${side ? 'position:relative;text-align:left;left:2px;width:600px;margin-top:34px' : 'top:250px'}">${sub}</div>`);
+				// Beside the window, the subtitle follows the headline however many lines it takes.
+				if (side) {
+					const words = el('<div style="position:absolute;left:130px;top:390px;width:640px"></div>');
+					words.append(h, s);
+					l.append(words);
+				} else l.append(h, s);
 				// The shots were taken scrolled to what they show: whole, sized to the frame.
 				const w = windowOf(shot, l);
 				Object.assign(w.style, side ? { left: '820px', top: '215px', width: '1000px' } : { left: '440px', top: '335px', width: '1040px' });

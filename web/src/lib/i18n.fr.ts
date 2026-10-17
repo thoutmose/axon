@@ -50,7 +50,7 @@ export const fr: Record<string, string> = {
 	'Sign in': 'Se connecter',
 	'Create your account': 'Créer votre compte',
 	'Try the demo': 'Essayer la démo',
-	'Axon in under a minute': 'Axon en moins d’une minute',
+	'Axon in a minute': 'Axon en une minute',
 	'A tour of the demo, with music Axon composed itself.':
 		'Un tour de la démo, en musique composée par Axon.',
 	'The demo is a shared account with sample data, reset every night. No passkey needed.':
