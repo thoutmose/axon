@@ -249,6 +249,19 @@ func Semantic(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*semantic.
 	return semantic.NewIndexer(pool, log, sealer), nil
 }
 
+// VideoSummaries is the runner that writes prose summaries of videos and
+// episodes for the people who asked (EP-151).
+func VideoSummaries(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger, provider agents.Provider) (*agents.Runner, error) {
+	var sealer *auth.Sealer
+	if cfg.EncryptionKey != "" {
+		var err error
+		if sealer, err = auth.NewSealer(cfg.EncryptionKey); err != nil {
+			return nil, err
+		}
+	}
+	return agents.NewRunner(pool, log, provider, sealer)
+}
+
 // Reminders returns the reminders worker (EP-56); the API serves its
 // endpoints, and the process runs one to send reminders on time.
 func Reminders(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger) (*reminders.Worker, error) {

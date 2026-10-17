@@ -3965,5 +3965,15 @@ export const fr: Record<string, string> = {
 	'On its own line': 'Sur sa propre ligne',
 	Insert: 'Insérer',
 	'Notes take LaTeX between $…$ in a line, or $$…$$ on lines of their own, as Obsidian does.':
-		'Les notes acceptent le LaTeX entre $…$ dans une ligne, ou $$…$$ sur des lignes à part, comme Obsidian.'
+		'Les notes acceptent le LaTeX entre $…$ dans une ligne, ou $$…$$ sur des lignes à part, comme Obsidian.',
+	'Models saved.': 'Modèles enregistrés.',
+	Models: 'Modèles',
+	'One model for all agents, or one for an agent: a deep one for the Tutor, a quick one for summaries. The provider stays the one above; costs follow the model.':
+		'Un modèle pour tous les agents, ou un pour un agent : un profond pour le Tuteur, un rapide pour les résumés. Le fournisseur reste celui ci-dessus ; les coûts suivent le modèle.',
+	'All agents': 'Tous les agents',
+	'Each agent’s own default': 'Le modèle par défaut de chaque agent',
+	'A model for one agent': 'Un modèle pour un agent',
+	'Save the models': 'Enregistrer les modèles',
+	'Summarise videos and podcast episodes in prose with my model (5 to 10 lines and keywords each, once, within the budget). Without it, Axon summarises them itself, from their own sentences.':
+		'Résumer les vidéos et les épisodes de podcast en prose avec mon modèle (5 à 10 lignes et des mots-clés chacun, une seule fois, dans le budget). Sans cela, Axon les résume lui-même, à partir de leurs propres phrases.'
 };

@@ -2748,8 +2748,29 @@ export interface paths {
 			cookie?: never;
 		};
 		get?: never;
-		/** Set the monthly agent budget (browser sessions only) */
+		/** Set the monthly agent budget and video summaries (browser sessions only) */
 		put: operations['setAgentSettings'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/me/agent-models': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * The model each agent uses
+		 * @description The model chosen for all agents ('*') and each agent's own, with the model it uses without a choice. The provider stays yours (or the server's); prices follow the model, the dearest known one for a model Axon does not know (EP-151).
+		 */
+		get: operations['getAgentModels'];
+		/** Choose the models (replaces every choice; an empty model removes one) */
+		put: operations['setAgentModels'];
 		post?: never;
 		delete?: never;
 		options?: never;
@@ -6160,6 +6181,21 @@ export interface components {
 			monthly_budget_cents: number;
 			/** @description US dollars × 1,000,000 spent this calendar month (UTC). */
 			spent_micros: number;
+			/** @description Videos and episodes are summarised in prose by your model. */
+			video_summaries: boolean;
+		};
+		AgentModels: {
+			/** @description The model for all agents, empty for none. */
+			all: string;
+			agents: {
+				/** @example tutor */
+				agent: string;
+				title: string;
+				/** @description The model it uses without a choice of its own. */
+				default: string;
+				/** @description Its own model, empty for none. */
+				model: string;
+			}[];
 		};
 		/** @description The audit record of a run. It never contains prompt, reply, or tool input text. */
 		AgentRun: {
@@ -7004,6 +7040,8 @@ export interface components {
 					output_price?: number | null;
 				} | null;
 				monthly_budget_cents: number;
+				/** @description Videos and episodes are summarised in prose by your model (EP-151). */
+				video_summaries: boolean;
 			};
 		};
 		AssessmentProfile: {
@@ -13862,6 +13900,8 @@ export interface operations {
 			content: {
 				'application/json': {
 					monthly_budget_cents: number;
+					/** @description Have your model summarise each video and episode once, in 5 to 10 lines with 5 to 10 keywords, within the budget (EP-151). Left out, it stays as it is. */
+					video_summaries?: boolean;
 				};
 			};
 		};
@@ -13873,6 +13913,65 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['AgentStatus'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getAgentModels: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The choices. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentModels'];
+				};
+			};
+			401: components['responses']['Problem'];
+		};
+	};
+	setAgentModels: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': {
+					/**
+					 * @example {
+					 *       "*": "claude-sonnet-5-5",
+					 *       "tutor": "claude-opus-5-5"
+					 *     }
+					 */
+					models: {
+						[key: string]: string;
+					};
+				};
+			};
+		};
+		responses: {
+			/** @description The choices. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['AgentModels'];
 				};
 			};
 			400: components['responses']['Problem'];

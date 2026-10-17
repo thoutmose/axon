@@ -91,10 +91,10 @@ func TestAudiobookshelf(t *testing.T) {
 	t.Setenv("AXON_WHISPER_URL", srv.URL)
 	var it struct {
 		TranscriptSource string `json:"transcript_source"`
-		Content          string `json:"content"`
+		Summary          string `json:"summary"` // the words' own sentences (EP-148)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/watch/items/"+list.Items[0].ID+"/transcript", nil), &it)
-	if it.TranscriptSource != "whisper" || whispered != "my-own-copy" || !bytes.Contains([]byte(it.Content), []byte("quorum")) {
+	if it.TranscriptSource != "whisper" || whispered != "my-own-copy" || !bytes.Contains([]byte(it.Summary), []byte("quorum")) {
 		t.Fatalf("transcribed = %+v, sent %q", it, whispered)
 	}
 

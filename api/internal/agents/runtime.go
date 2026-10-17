@@ -84,6 +84,8 @@ type Status struct {
 	Provider    *string `json:"provider"` // the provider runs would use
 	BudgetCents int     `json:"monthly_budget_cents"`
 	SpentMicros int64   `json:"spent_micros"` // this calendar month (UTC)
+	// VideoSummaries asks the model to summarise videos and episodes (EP-151).
+	VideoSummaries bool `json:"video_summaries"`
 }
 
 func (r *Runner) status(ctx context.Context, q db.Querier, userID uuid.UUID) (Status, error) {
@@ -91,9 +93,10 @@ func (r *Runner) status(ctx context.Context, q db.Querier, userID uuid.UUID) (St
 	var demo bool
 	err := q.QueryRow(ctx, `SELECT
 		coalesce((SELECT monthly_budget_cents FROM agent_settings WHERE user_id = $1), 200),
+		coalesce((SELECT video_summaries FROM agent_settings WHERE user_id = $1), false),
 		coalesce((SELECT sum(cost_micros) FROM agent_runs WHERE user_id = $1 AND started_at >= date_trunc('month', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'), 0),
 		coalesce((SELECT demo FROM users WHERE id = $1), false)`, userID).
-		Scan(&s.BudgetCents, &s.SpentMicros, &demo)
+		Scan(&s.BudgetCents, &s.VideoSummaries, &s.SpentMicros, &demo)
 	if err != nil {
 		return s, err
 	}
