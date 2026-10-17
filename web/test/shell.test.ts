@@ -622,7 +622,11 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	const detail = page.getByRole('complementary', { name: 'Operating systems' });
 	await expect(detail).toContainText('Needs first: C and C++');
 	await expect(
-		detail.getByRole('link', { name: /Operating Systems: Three Easy Pieces/ })
+		detail.getByRole('link', { name: /Operating Systems: Three Easy Pieces ↗/ })
+	).toBeVisible();
+	// Its resource note is connected to the skill too (EP-154).
+	await expect(
+		detail.getByRole('link', { name: 'Operating Systems: Three Easy Pieces', exact: true })
 	).toBeVisible();
 	await detail.getByRole('button', { name: 'Learning' }).click();
 	await expect(graph.getByRole('link', { name: 'Operating systems, learning' })).toBeVisible();
