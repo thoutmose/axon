@@ -1,4 +1,5 @@
-/** Shell-wide connection state: browser offline, or API unreachable. */
+/** Shell-wide connection state: browser offline, or API unreachable. Read it
+ * in the browser only: on the server one module serves every visitor. */
 export const connection = $state({ online: true, apiDown: false });
 
 export function watchConnection() {

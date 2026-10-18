@@ -368,7 +368,8 @@
 			'You are offline. Captures (press n) are kept on this device and sent when you reconnect; other changes are not saved.'
 		) + (outbox.items.length ? ' ' + t('{n} waiting.', { n: outbox.items.length }) : '')}
 	</p>
-{:else if connection.apiDown}
+{:else if browser && connection.apiDown}
+	<!-- Browser-only: on the server this state is shared by every visitor. -->
 	<p class="banner" role="alert">
 		{t("Axon's server is not responding. Your data is safe; try again shortly.")}
 	</p>
