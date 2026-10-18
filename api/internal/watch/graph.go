@@ -3,6 +3,7 @@ package watch
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"regexp"
@@ -41,10 +42,12 @@ type GraphFilter struct {
 	Fringe   bool    // keep concepts with no strong link
 }
 
-// GNode is a concept (or a topic, or a source).
+// GNode is a concept, an entity of the ontology, or one of its classes.
 type GNode struct {
 	ID        string    `json:"id"`
-	Kind      string    `json:"kind"` // concept, topic, source
+	Kind      string    `json:"kind"`  // concept, entity, class
+	Type      string    `json:"type"`  // concept, class, or the entity's: organization, technology, language, database, cloud_service, standard, vulnerability
+	Class     string    `json:"class"` // an entity's class in the ontology
 	Label     string    `json:"label"`
 	Count     int       `json:"count"` // news it appears in
 	Sources   int       `json:"sources"`
@@ -66,13 +69,18 @@ type GItem struct {
 	Title string    `json:"title"`
 }
 
-// GEdge links two concepts.
+// GEdge is a fact: subject (From), predicate, object (To). Concepts that go
+// together are related_to by NPMI; the knowledge layer's predicates are in
+// kg.go, with the news they were read in.
 type GEdge struct {
-	From     string  `json:"from"`
-	To       string  `json:"to"`
-	Together int     `json:"together"`
-	NPMI     float64 `json:"npmi"`
-	Reason   string  `json:"reason"`
+	From      string      `json:"from"`
+	To        string      `json:"to"`
+	Predicate string      `json:"predicate"`
+	Directed  bool        `json:"directed"`
+	Together  int         `json:"together"`
+	NPMI      float64     `json:"npmi"`
+	Reason    string      `json:"reason"`
+	Evidence  []GEvidence `json:"evidence"`
 }
 
 // GCommunity is a group of concepts, named by its most central ones.
@@ -95,6 +103,9 @@ type Graph struct {
 		Communities int     `json:"communities"`
 		Modularity  float64 `json:"modularity"`
 		Bridges     int     `json:"bridges"`
+		Entities    int     `json:"entities"`
+		Facts       int     `json:"facts"` // facts read in the news
+		Classes     int     `json:"classes"`
 	} `json:"stats"`
 }
 
@@ -111,6 +122,7 @@ type gdoc struct {
 	outlier              bool
 	concepts             []string // concept keys
 	terms                []string
+	kg                   *ItemKG     // read by the person's model, if it has been
 	sentences            []gsentence // read once, on first summary
 }
 
@@ -160,7 +172,7 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		where += fmt.Sprintf(" AND i.source_id = $%d", len(args))
 	}
 	rows, err := q.Query(ctx, `SELECT i.id, i.title, i.summary, left(i.content, 20000), i.lang, i.source_title, i.topic_ids::text[], i.published_at,
-		i.outlier <> '', i.keywords, i.terms FROM watch_items i WHERE `+where+fmt.Sprintf(` ORDER BY i.published_at DESC LIMIT %d`, MaxGraphItems), args...)
+		i.outlier <> '', i.keywords, i.terms, i.kg FROM watch_items i WHERE `+where+fmt.Sprintf(` ORDER BY i.published_at DESC LIMIT %d`, MaxGraphItems), args...)
 	if err != nil {
 		return g, err
 	}
@@ -168,8 +180,15 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	docs, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (*gdoc, error) {
 		d := &gdoc{}
 		var kw []string
-		err := r.Scan(&d.id, &d.title, &d.summary, &d.body, &d.lang, &d.source, &d.topics, &d.published, &d.outlier, &kw, &d.terms)
+		var kg []byte
+		err := r.Scan(&d.id, &d.title, &d.summary, &d.body, &d.lang, &d.source, &d.topics, &d.published, &d.outlier, &kw, &d.terms, &kg)
 		keywords = append(keywords, kw)
+		if len(kg) > 0 {
+			var x ItemKG
+			if json.Unmarshal(kg, &x) == nil {
+				d.kg = &x
+			}
+		}
 		return d, err
 	})
 	if err != nil {
@@ -315,32 +334,6 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	if len(g.Edges) > 400 {
 		g.Edges = g.Edges[:400]
 	}
-	var comm []int
-	var ranks []float64
-	if n > 0 {
-		comm, g.Stats.Modularity = knowledge.Louvain(adj)
-		ranks = knowledge.PageRank(adj)
-	}
-	top := 0.0
-	for _, r := range ranks {
-		top = math.Max(top, r)
-	}
-	// Renumber communities by size, biggest first; isolated concepts get 0.
-	sizes := map[int]int{}
-	for i, c := range comm {
-		if len(adj[i]) > 0 {
-			sizes[c]++
-		}
-	}
-	order := make([]int, 0, len(sizes))
-	for c := range sizes {
-		order = append(order, c)
-	}
-	slices.SortFunc(order, func(a, b int) int { return cmp.Or(cmp.Compare(sizes[b], sizes[a]), cmp.Compare(a, b)) })
-	renum := map[int]int{}
-	for i, c := range order {
-		renum[c] = i + 1
-	}
 	// Per concept: its news, sources, topics, trend, summary.
 	notes, err := noteConcepts(ctx, q, userID)
 	if err != nil {
@@ -353,15 +346,8 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	history := slices.ContainsFunc(used, func(d *gdoc) bool { return !d.published.After(weekAgo) })
 	corpus := knowledge.NewCorpus(termsOf(used))
 	for i, k := range keys {
-		node := GNode{ID: "c:" + k, Kind: "concept", Label: best(surface, k, alias), Count: df[k], Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}}
-		if len(adj[i]) > 0 {
-			node.Community = renum[comm[i]]
-		} else {
-			node.Fringe = true
-		}
-		if top > 0 {
-			node.Rank = round2(ranks[i] / top)
-		}
+		node := GNode{ID: "c:" + k, Kind: "concept", Type: "concept", Label: best(surface, k, alias), Count: df[k], Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}}
+		node.Fringe = len(adj[i]) == 0
 		srcs, tps := map[string]bool{}, map[string]bool{}
 		var mine []*gdoc
 		recent, before := 0, 0
@@ -403,29 +389,19 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		}
 		if ns, ok := notes[k]; ok {
 			node.InNotes = ns[:min(3, len(ns))]
-			g.Stats.Bridges++
 		}
 		if node.Fringe && !f.Fringe {
 			continue
 		}
 		g.Nodes = append(g.Nodes, node)
 	}
-	for _, c := range order {
-		members := []GNode{}
-		for _, nd := range g.Nodes {
-			if nd.Community == renum[c] {
-				members = append(members, nd)
-			}
+	addKnowledge(&g, used, kgContext{corpus: corpus, notes: notes, weekAgo: weekAgo, weeks: weeks, history: history, minNPMI: f.MinNPMI, fringe: f.Fringe})
+	for _, nd := range g.Nodes {
+		if nd.Kind == "concept" {
+			g.Stats.Concepts++
 		}
-		slices.SortFunc(members, func(a, b GNode) int { return cmp.Compare(b.Rank, a.Rank) })
-		var names []string
-		for _, m := range members[:min(3, len(members))] {
-			names = append(names, m.Label)
-		}
-		g.Communities = append(g.Communities, GCommunity{ID: renum[c], Label: strings.Join(names, " · "), Size: sizes[c]})
 	}
-	g.Stats.Concepts, g.Stats.Edges, g.Stats.Communities = len(g.Nodes), len(g.Edges), len(g.Communities)
-	g.Stats.Modularity = round2(g.Stats.Modularity)
+	g.Stats.Edges, g.Stats.Communities = len(g.Edges), len(g.Communities)
 	return g, nil
 }
 

@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { appLocale } from '$lib/dates';
 	import { api, message } from '$lib/api';
-	import { t } from '$lib/i18n.svelte';
+	import { storedLocale, t } from '$lib/i18n.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Section from '$lib/ui/Section.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -147,6 +148,7 @@
 			const res = await fetch(`/api/v1/watch/import?format=${format}`, {
 				method: 'POST',
 				headers: {
+					'Accept-Language': storedLocale(),
 					'Content-Type':
 						format === 'csv'
 							? 'text/csv'
@@ -307,7 +309,7 @@
 			<span>{t('next fetch')}</span>
 			<small
 				>{stats.next_fetch_at
-					? new Date(stats.next_fetch_at).toLocaleString([], {
+					? new Date(stats.next_fetch_at).toLocaleString(appLocale(), {
 							weekday: 'short',
 							hour: '2-digit',
 							minute: '2-digit'
@@ -338,7 +340,8 @@
 		</svg>
 		{#if hover}
 			<div class="tip" style:left="{(hover.x / 300) * 100}%">
-				{new Date(hover.day + 'T00:00:00').toLocaleDateString()}: <strong>{hover.count}</strong>
+				{new Date(hover.day + 'T00:00:00').toLocaleDateString(appLocale())}:
+				<strong>{hover.count}</strong>
 			</div>
 		{/if}
 		<table class="sr-only">
@@ -539,7 +542,10 @@
 						</td>
 						<td class="small">
 							{s.last_fetched_at ? ago(s.last_fetched_at) : '—'}
-							<div class="muted">{t('next')} {new Date(s.next_fetch_at).toLocaleString()}</div>
+							<div class="muted">
+								{t('next')}
+								{new Date(s.next_fetch_at).toLocaleString(appLocale())}
+							</div>
 						</td>
 						<td>
 							<select
@@ -616,7 +622,7 @@
 							<td><strong>{s.name}</strong></td>
 							<td class="small">{s.description}</td>
 							<td class="small" class:bad={expired(s)}>
-								{expired(s) ? t('Expired') : new Date(s.expires_at).toLocaleDateString()}
+								{expired(s) ? t('Expired') : new Date(s.expires_at).toLocaleDateString(appLocale())}
 							</td>
 							<td class="small">
 								{s.views}

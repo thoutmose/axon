@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from '$lib/dates';
 	import { host, originalLabel } from '$lib/watchLinks';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -70,7 +71,7 @@
 	// The kind follows the address, so the menu opens the videos or the
 	// podcasts (EP-127).
 	const kindParam = (k: string | null): WatchFilter['kind'] =>
-		k === 'article' || k === 'video' || k === 'podcast' ? k : '';
+		k === 'article' || k === 'video' || k === 'podcast' || k === 'news' ? k : '';
 	const urlKind = $derived(kindParam(page.url.searchParams.get('kind')));
 	$effect(() => {
 		filter.kind = urlKind;
@@ -426,8 +427,8 @@
 						target="_blank"
 						rel="noopener noreferrer">{open.item.source_title} ↗</a
 					>{:else}{open.item.source_title}{/if}{#if open.item.author}
-					· {open.item.author}{/if} · {new Date(open.item.published_at).toLocaleString()} · {open
-					.item.reading_minutes} min
+					· {open.item.author}{/if} · {new Date(open.item.published_at).toLocaleString(appLocale())} ·
+				{open.item.reading_minutes} min
 			</p>
 			<h2>{open.item.title}</h2>
 			<p class="link-line small">

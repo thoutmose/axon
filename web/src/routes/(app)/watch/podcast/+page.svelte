@@ -100,7 +100,8 @@
 				format: settings.format,
 				lang: settings.lang,
 				minutes: String(settings.minutes),
-				days: String(settings.days)
+				days: String(settings.days),
+				hosts: String(settings.hosts === 2 ? 2 : 1)
 			});
 			episode = await api<Episode>(`/v1/watch/podcast?${q}`);
 		} catch (err) {
@@ -121,11 +122,48 @@
 		voices.filter((v) => settings && v.lang.toLowerCase().startsWith(settings.lang))
 	);
 
+	// The hosts' conversation, when the person's model wrote it (owner
+	// request: a real podcast, not summaries read one after the other): each
+	// line in its host's voice. Else the intro, the stories, and the outro.
+	const turns = $derived(episode?.turns ?? []);
 	const parts = $derived(
-		episode ? [episode.intro, ...episode.chapters.map((c) => c.text), episode.outro] : []
+		turns.length
+			? turns.map((x) => x.text)
+			: episode
+				? [episode.intro, ...episode.chapters.map((c) => c.text), episode.outro]
+				: []
 	);
 	const voiceOf = (i: number) =>
-		hostOf(i, parts.length, hosts) === 1 ? settings!.voice2 : settings!.voice;
+		(turns.length ? turns[i]?.host : hostOf(i, parts.length, hosts)) === 1
+			? settings!.voice2
+			: settings!.voice;
+	// The story a part is about: -1 for the opening and the close.
+	const chapterOf = (i: number) =>
+		turns.length
+			? (turns[i]?.chapter ?? -1)
+			: i >= 1 && i <= (episode?.chapters.length ?? 0)
+				? i - 1
+				: -1;
+	const firstOf = (chapter: number) =>
+		turns.length
+			? Math.max(
+					0,
+					turns.findIndex((x) => x.chapter === chapter)
+				)
+			: chapter + 1;
+	// The close: the lines after the last story's.
+	const closingFrom = $derived(
+		turns.length ? turns.findLastIndex((x) => x.chapter >= 0) + 1 : parts.length - 1
+	);
+	// Rhythm: a breath between lines, a longer one between stories.
+	const pauseAfter = (i: number) => (chapterOf(i) === chapterOf(i + 1) ? 250 : 800);
+	let gap: ReturnType<typeof setTimeout> | undefined;
+	function next(i: number) {
+		clearTimeout(gap);
+		gap = setTimeout(() => {
+			if (playing && current === i) speak(i + 1);
+		}, pauseAfter(i));
+	}
 
 	function partAudio(i: number): Promise<string> {
 		const voice = voiceOf(i);
@@ -155,9 +193,7 @@
 			if (current !== i || !playing) return;
 			audio ??= new Audio();
 			audio.src = url;
-			audio.onended = () => {
-				if (playing && current === i) speak(i + 1);
-			};
+			audio.onended = () => next(i);
 			await audio.play();
 			// The next part is spoken while this one plays.
 			if (i + 1 < parts.length) partAudio(i + 1).catch(() => {});
@@ -188,9 +224,7 @@
 		u.rate = settings.rate;
 		const v = voices.find((x) => x.name === voiceOf(i));
 		if (v) u.voice = v;
-		u.onend = () => {
-			if (playing && current === i) speak(i + 1);
-		};
+		u.onend = () => next(i);
 		speech.cancel();
 		speech.speak(u);
 		playing = true;
@@ -215,6 +249,7 @@
 		playing = false;
 	}
 	function stop() {
+		clearTimeout(gap);
 		playing = false;
 		current = -1;
 		speech?.cancel();
@@ -225,9 +260,59 @@
 		forget();
 	});
 
+	// A voice is heard before the episode is made (owner request): a sentence
+	// in the chosen voice and pace, nothing generated.
+	const sample = {
+		en: 'Hello, I am the voice of your Axon tech watch. This is how your podcast will sound.',
+		fr: 'Bonjour, je suis la voix de votre veille Axon. Voici comment sonnera votre podcast.'
+	};
+	let previewing = $state<string | null>(null);
+	let sampleUrl = ''; // the last voice sample, freed when the next one plays
+	async function preview(key: 'voice' | 'voice2') {
+		if (!settings) return;
+		stop();
+		const text = sample[settings.lang as 'en' | 'fr'] ?? sample.en;
+		const voice = settings[key];
+		previewing = key;
+		try {
+			if (useNatural) {
+				const r = await fetch('/api/v1/watch/podcast/speech', {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ text, voice, speed: settings.rate })
+				});
+				if (!r.ok)
+					throw new Error((await r.json().catch(() => null))?.detail ?? `HTTP ${r.status}`);
+				audio ??= new Audio();
+				audio.onended = () => (previewing = null);
+				if (sampleUrl) URL.revokeObjectURL(sampleUrl);
+				sampleUrl = URL.createObjectURL(await r.blob());
+				audio.src = sampleUrl;
+				await audio.play();
+				return;
+			}
+			if (!speech) return;
+			const u = new SpeechSynthesisUtterance(text);
+			u.lang = settings.lang === 'fr' ? 'fr-FR' : 'en-US';
+			u.rate = settings.rate;
+			const v = voices.find((x) => x.name === voice);
+			if (v) u.voice = v;
+			u.onend = () => (previewing = null);
+			speech.speak(u);
+		} catch (err) {
+			previewing = null;
+			toast(err instanceof Error ? err.message : t('Something went wrong. Try again.'), 'error');
+		}
+	}
+
 	function download() {
 		if (!episode) return;
-		const text = [episode.title, '', ...parts].join('\n\n');
+		const text = [
+			episode.title,
+			'',
+			...(turns.length ? turns.map((x) => `${episode!.hosts[x.host] ?? ''}: ${x.text}`) : parts)
+		].join('\n\n');
 		const a = document.createElement('a');
 		a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
 		a.download = `axon-podcast-${episode.to.slice(0, 10)}.txt`;
@@ -304,21 +389,34 @@
 				</select></label
 			>
 			{#each hostKeys as key, n (key)}
-				<label
-					>{hosts === 2 ? t('Voice of host {n}', { n: n + 1 }) : t('Voice')}
-					{#if useNatural}
-						<select bind:value={settings[key]}>
-							{#each natural.voices.filter((v) => v.lang === settings!.lang) as v (v.id)}
-								<option value={v.id}>{voiceLabel(v.id)}</option>
-							{/each}
-						</select>
-					{:else}
-						<select bind:value={settings[key]} disabled={!speech}>
-							<option value="">{t('This device’s default')}</option>
-							{#each forLang as v (v.name)}<option value={v.name}>{v.name}</option>{/each}
-						</select>
-					{/if}
-				</label>
+				<div class="voice">
+					<label
+						>{hosts === 2 ? t('Voice of host {n}', { n: n + 1 }) : t('Voice')}
+						{#if useNatural}
+							<select bind:value={settings[key]}>
+								{#each natural.voices.filter((v) => v.lang === settings!.lang) as v (v.id)}
+									<option value={v.id}>{voiceLabel(v.id)}</option>
+								{/each}
+							</select>
+						{:else}
+							<select bind:value={settings[key]} disabled={!speech}>
+								<option value="">{t('This device’s default')}</option>
+								{#each forLang as v (v.name)}<option value={v.name}>{v.name}</option>{/each}
+							</select>
+						{/if}
+					</label>
+					<Button
+						variant="secondary"
+						busy={previewing === key}
+						disabled={!useNatural && !speech}
+						onclick={() => preview(key)}
+						aria-label={t('Listen to {voice}', {
+							voice: useNatural
+								? voiceLabel(settings![key])
+								: settings![key] || t('This device’s default')
+						})}>▶ {t('Listen')}</Button
+					>
+				</div>
 			{/each}
 			<p class="muted small">
 				{useNatural
@@ -385,30 +483,36 @@
 					<Button variant="ghost" onclick={download}>{t('Download the script')}</Button>
 				</div>
 				<ol class="chapters" aria-live="polite">
-					<li class:now={current === 0}>
+					<li class:now={current >= 0 && current < firstOf(0)}>
 						<button type="button" class="link" onclick={() => speak(0)} disabled={!canPlay}
 							>{t('Introduction')}</button
 						>
 					</li>
 					{#each episode.chapters as c, i (i)}
-						<li class:now={current === i + 1}>
-							<button type="button" class="link" onclick={() => speak(i + 1)} disabled={!canPlay}
-								>{c.title}</button
+						<li class:now={current >= 0 && chapterOf(current) === i}>
+							<button
+								type="button"
+								class="link"
+								onclick={() => speak(firstOf(i))}
+								disabled={!canPlay}>{c.title}</button
 							>
 							<span class="muted small"
 								>{c.source}{#if c.topic}
 									· {c.topic}{/if} · <a href="/watch?item={c.item_id}">{t('Open')}</a></span
 							>
-							{#if current === i + 1}<p class="small">{c.text}</p>{/if}
+							{#if current >= 0 && chapterOf(current) === i}<p class="small">
+									{#if turns.length}<strong>{episode.hosts[turns[current].host]} :</strong>
+									{/if}{parts[current]}
+								</p>{/if}
 						</li>
 					{:else}
 						<li class="muted">{t('No news in this period yet.')}</li>
 					{/each}
-					<li class:now={current === parts.length - 1 && current > 0}>
+					<li class:now={current > 0 && current >= closingFrom}>
 						<button
 							type="button"
 							class="link"
-							onclick={() => speak(parts.length - 1)}
+							onclick={() => speak(closingFrom)}
 							disabled={!canPlay}>{t('Closing')}</button
 						>
 					</li>
@@ -451,6 +555,14 @@
 		display: grid;
 		gap: var(--space-1);
 		font-size: var(--text-sm);
+	}
+	.voice {
+		display: flex;
+		align-items: end;
+		gap: var(--space-2);
+	}
+	.voice label {
+		flex: 1;
 	}
 	.row {
 		display: flex;

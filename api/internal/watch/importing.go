@@ -259,7 +259,7 @@ func FreshRSS(ctx context.Context, base, user, apiPassword string) ([]Planned, e
 	req.Header.Set("User-Agent", UserAgent)
 	res, err := Client.Do(req)
 	if err != nil {
-		return nil, ValidationError{"FreshRSS could not be reached: " + err.Error()}
+		return nil, ValidationError{fmt.Sprintf("FreshRSS could not be reached: %v", err)}
 	}
 	body, _ := io.ReadAll(io.LimitReader(res.Body, 1<<20))
 	_ = res.Body.Close()
@@ -280,7 +280,7 @@ func FreshRSS(ctx context.Context, base, user, apiPassword string) ([]Planned, e
 	req.Header.Set("User-Agent", UserAgent)
 	res, err = Client.Do(req)
 	if err != nil {
-		return nil, ValidationError{"FreshRSS could not be reached: " + err.Error()}
+		return nil, ValidationError{fmt.Sprintf("FreshRSS could not be reached: %v", err)}
 	}
 	defer func() { _ = res.Body.Close() }()
 	var subs struct {

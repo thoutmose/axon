@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 
 	"golang.org/x/net/html"
 
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/netsafe"
 )
 
@@ -22,8 +22,9 @@ import (
 // operator allows them. Tests replace it.
 var Client = netsafe.Client(30 * time.Second)
 
-// UserAgent says who is asking, as feed publishers ask.
-const UserAgent = "Axon tech watch (self-hosted; +https://github.com/thoutmose/axon)"
+// UserAgent says who is asking, as feed publishers ask, in the product/version
+// form bot filters expect: dev.to answers 403 to anything else.
+const UserAgent = "Axon/1.0 (+https://github.com/thoutmose/axon)"
 
 const maxBody = 10 << 20
 
@@ -42,7 +43,7 @@ func get(ctx context.Context, raw, etag, mod string) (response, error) {
 	var r response
 	u, err := url.Parse(raw)
 	if err != nil || u.Host == "" || u.User != nil || (u.Scheme != "https" && (u.Scheme != "http" || !netsafe.AllowPrivate())) {
-		return r, fmt.Errorf("%q is not an https address", raw)
+		return r, l10n.Errorf("%q is not an https address", raw)
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
@@ -59,7 +60,7 @@ func get(ctx context.Context, raw, etag, mod string) (response, error) {
 	res, err := Client.Do(req)
 	if err != nil {
 		if errors.Is(err, netsafe.ErrPrivate) {
-			return r, errors.New("that address is on a private network")
+			return r, l10n.Errorf("that address is on a private network")
 		}
 		return r, err
 	}
@@ -71,14 +72,14 @@ func get(ctx context.Context, raw, etag, mod string) (response, error) {
 		return r, nil
 	}
 	if res.StatusCode != http.StatusOK {
-		return r, fmt.Errorf("%s answered %d", u.Host, res.StatusCode)
+		return r, l10n.Errorf("%s answered %d", u.Host, res.StatusCode)
 	}
 	r.body, err = io.ReadAll(io.LimitReader(res.Body, maxBody+1))
 	if err != nil {
 		return r, err
 	}
 	if len(r.body) > maxBody {
-		return r, errors.New("the feed is larger than 10 MB")
+		return r, l10n.Errorf("the feed is larger than 10 MB")
 	}
 	return r, nil
 }
@@ -187,7 +188,7 @@ func Discover(ctx context.Context, input string) (Found, error) {
 			return found, nil
 		}
 	}
-	return Found{}, errors.New("no feed found at that address: paste the feed's address, or the site's home page")
+	return Found{}, l10n.Errorf("paste the feed's address, or the site's home page")
 }
 
 func readFeed(ctx context.Context, feedURL string) (Found, error) {

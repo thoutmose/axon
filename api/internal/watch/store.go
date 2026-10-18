@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/thoutmose/axon/api/internal/clock"
 	"github.com/thoutmose/axon/api/internal/db"
@@ -92,10 +91,19 @@ func SaveTopic(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id, name string
 		t.ID = uuid.Must(uuid.NewV7()).String()
 		_, err = tx.Exec(ctx, `INSERT INTO watch_topics (id, user_id, name, keywords) VALUES ($1, $2, $3, $4)`, t.ID, userID, name, kws)
 	} else {
-		var tag pgconn.CommandTag
-		tag, err = tx.Exec(ctx, `UPDATE watch_topics SET name = $3, keywords = $4 WHERE id = $1 AND user_id = $2`, id, userID, name, kws)
-		if err == nil && tag.RowsAffected() == 0 {
+		var old string
+		err = tx.QueryRow(ctx, `SELECT name FROM watch_topics WHERE id = $1 AND user_id = $2`, id, userID).Scan(&old)
+		if errors.Is(err, pgx.ErrNoRows) {
 			return Topic{}, ErrNotFound
+		}
+		if err == nil {
+			_, err = tx.Exec(ctx, `UPDATE watch_topics SET name = $3, keywords = $4 WHERE id = $1 AND user_id = $2`, id, userID, name, kws)
+		}
+		// A renamed topic's label follows it on every item, not only the
+		// recent ones the relabelling below reads again.
+		if err == nil && !strings.EqualFold(old, name) {
+			_, err = tx.Exec(ctx, `UPDATE watch_items SET labels = array_replace(labels, $2, $3) WHERE user_id = $1 AND $2 = ANY (labels)`,
+				userID, strings.ToLower(old), strings.ToLower(name))
 		}
 	}
 	if isUnique(err) {
@@ -273,7 +281,7 @@ type SourceInput struct {
 func (in SourceInput) check(ctx context.Context, q db.Querier, userID uuid.UUID) error {
 	if in.Schedule != nil {
 		if _, err := ParseSchedule(*in.Schedule); err != nil {
-			return ValidationError{"Schedule: " + err.Error() + "."}
+			return ValidationError{fmt.Sprintf("Schedule: %s.", err)}
 		}
 	}
 	if in.Title != nil && (strings.TrimSpace(*in.Title) == "" || utf8.RuneCountInString(*in.Title) > 200) {

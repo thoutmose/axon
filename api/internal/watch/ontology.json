@@ -1,0 +1,2974 @@
+{
+"types": [
+"organization",
+"technology",
+"language",
+"database",
+"cloud_service",
+"standard",
+"concept",
+"vulnerability",
+"class"
+],
+"entities": [
+{
+"id": "amazon-web-services",
+"label": "Amazon Web Services",
+"type": "organization",
+"class": "Cloud provider",
+"aliases": [
+"AWS"
+]
+},
+{
+"id": "microsoft",
+"label": "Microsoft",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "google",
+"label": "Google",
+"type": "organization",
+"class": "Technology company",
+"aliases": [
+"Alphabet"
+]
+},
+{
+"id": "meta",
+"label": "Meta",
+"type": "organization",
+"class": "Technology company",
+"aliases": [
+"Facebook"
+]
+},
+{
+"id": "apple",
+"label": "Apple",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "ibm",
+"label": "IBM",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "oracle",
+"label": "Oracle",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "red-hat",
+"label": "Red Hat",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "databricks",
+"label": "Databricks",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "snowflake-inc",
+"label": "Snowflake Inc.",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "dbt-labs",
+"label": "dbt Labs",
+"type": "organization",
+"class": "Data platform company",
+"aliases": [
+"Fishtown Analytics"
+]
+},
+{
+"id": "confluent",
+"label": "Confluent",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "elastic",
+"label": "Elastic",
+"type": "organization",
+"class": "Open source company",
+"aliases": [
+"Elastic N.V."
+]
+},
+{
+"id": "mongodb-inc",
+"label": "MongoDB Inc.",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "redis-ltd",
+"label": "Redis Ltd",
+"type": "organization",
+"class": "Database company",
+"aliases": [
+"Redis Labs"
+]
+},
+{
+"id": "docker-inc",
+"label": "Docker Inc.",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "hashicorp",
+"label": "HashiCorp",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "grafana-labs",
+"label": "Grafana Labs",
+"type": "organization",
+"class": "Observability company"
+},
+{
+"id": "datadog",
+"label": "Datadog",
+"type": "organization",
+"class": "Observability company"
+},
+{
+"id": "github",
+"label": "GitHub",
+"type": "organization",
+"class": "Developer platform"
+},
+{
+"id": "gitlab",
+"label": "GitLab",
+"type": "organization",
+"class": "Developer platform"
+},
+{
+"id": "atlassian",
+"label": "Atlassian",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "cloudflare",
+"label": "Cloudflare",
+"type": "organization",
+"class": "Cloud provider"
+},
+{
+"id": "vercel",
+"label": "Vercel",
+"type": "organization",
+"class": "Cloud provider"
+},
+{
+"id": "netflix",
+"label": "Netflix",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "uber",
+"label": "Uber",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "airbnb",
+"label": "Airbnb",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "linkedin",
+"label": "LinkedIn",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "apache-software-foundation",
+"label": "Apache Software Foundation",
+"type": "organization",
+"class": "Open source foundation",
+"aliases": [
+"ASF"
+]
+},
+{
+"id": "cloud-native-computing-foundation",
+"label": "Cloud Native Computing Foundation",
+"type": "organization",
+"class": "Open source foundation",
+"aliases": [
+"CNCF"
+]
+},
+{
+"id": "linux-foundation",
+"label": "Linux Foundation",
+"type": "organization",
+"class": "Open source foundation"
+},
+{
+"id": "python-software-foundation",
+"label": "Python Software Foundation",
+"type": "organization",
+"class": "Open source foundation",
+"aliases": [
+"PSF"
+]
+},
+{
+"id": "rust-foundation",
+"label": "Rust Foundation",
+"type": "organization",
+"class": "Open source foundation"
+},
+{
+"id": "openai",
+"label": "OpenAI",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "anthropic",
+"label": "Anthropic",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "mistral-ai",
+"label": "Mistral AI",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "hugging-face",
+"label": "Hugging Face",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "google-deepmind",
+"label": "Google DeepMind",
+"type": "organization",
+"class": "AI lab",
+"aliases": [
+"DeepMind"
+]
+},
+{
+"id": "nvidia",
+"label": "NVIDIA",
+"type": "organization",
+"class": "Hardware company",
+"aliases": [
+"Nvidia"
+]
+},
+{
+"id": "intel",
+"label": "Intel",
+"type": "organization",
+"class": "Hardware company"
+},
+{
+"id": "amd",
+"label": "AMD",
+"type": "organization",
+"class": "Hardware company"
+},
+{
+"id": "fivetran",
+"label": "Fivetran",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "airbyte",
+"label": "Airbyte",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "astronomer",
+"label": "Astronomer",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "dagster-labs",
+"label": "Dagster Labs",
+"type": "organization",
+"class": "Data platform company",
+"aliases": [
+"Elementl"
+]
+},
+{
+"id": "prefect",
+"label": "Prefect",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "clickhouse-inc",
+"label": "ClickHouse Inc.",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "cockroach-labs",
+"label": "Cockroach Labs",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "supabase",
+"label": "Supabase",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "starburst",
+"label": "Starburst",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "cloudera",
+"label": "Cloudera",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "sap",
+"label": "SAP",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "salesforce",
+"label": "Salesforce",
+"type": "organization",
+"class": "Technology company"
+},
+{
+"id": "monte-carlo",
+"label": "Monte Carlo",
+"type": "organization",
+"class": "Data platform company",
+"aliases": [
+"Monte Carlo Data"
+]
+},
+{
+"id": "collibra",
+"label": "Collibra",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "atlan",
+"label": "Atlan",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "pinecone",
+"label": "Pinecone",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "qdrant",
+"label": "Qdrant",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "temporal-technologies",
+"label": "Temporal Technologies",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "jetbrains",
+"label": "JetBrains",
+"type": "organization",
+"class": "Developer platform"
+},
+{
+"id": "mozilla",
+"label": "Mozilla",
+"type": "organization",
+"class": "Open source foundation"
+},
+{
+"id": "canonical",
+"label": "Canonical",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "suse",
+"label": "SUSE",
+"type": "organization",
+"class": "Open source company"
+},
+{
+"id": "broadcom",
+"label": "Broadcom",
+"type": "organization",
+"class": "Technology company",
+"aliases": [
+"VMware"
+]
+},
+{
+"id": "alibaba",
+"label": "Alibaba",
+"type": "organization",
+"class": "Technology company",
+"aliases": [
+"Alibaba Cloud"
+]
+},
+{
+"id": "deepseek",
+"label": "DeepSeek",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "xai",
+"label": "xAI",
+"type": "organization",
+"class": "AI lab"
+},
+{
+"id": "neo4j-inc",
+"label": "Neo4j Inc.",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "tableau",
+"label": "Tableau",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "qlik",
+"label": "Qlik",
+"type": "organization",
+"class": "Data platform company"
+},
+{
+"id": "teradata",
+"label": "Teradata",
+"type": "organization",
+"class": "Database company"
+},
+{
+"id": "python",
+"label": "Python",
+"type": "language",
+"class": "Programming language",
+"by": "python-software-foundation"
+},
+{
+"id": "java",
+"label": "Java",
+"type": "language",
+"class": "Programming language",
+"by": "oracle"
+},
+{
+"id": "rust",
+"label": "Rust",
+"type": "language",
+"class": "Programming language",
+"by": "rust-foundation",
+"case": [
+"Rust"
+]
+},
+{
+"id": "go",
+"label": "Go",
+"type": "language",
+"class": "Programming language",
+"by": "google",
+"aliases": [
+"Golang"
+],
+"case": [
+"Go"
+]
+},
+{
+"id": "cplusplus",
+"label": "C++",
+"type": "language",
+"class": "Programming language",
+"aliases": [
+"C plus plus"
+]
+},
+{
+"id": "csharp",
+"label": "C#",
+"type": "language",
+"class": "Programming language",
+"by": "microsoft",
+"aliases": [
+"CSharp"
+]
+},
+{
+"id": "javascript",
+"label": "JavaScript",
+"type": "language",
+"class": "Programming language",
+"aliases": [
+"ECMAScript"
+]
+},
+{
+"id": "typescript",
+"label": "TypeScript",
+"type": "language",
+"class": "Programming language",
+"by": "microsoft"
+},
+{
+"id": "kotlin",
+"label": "Kotlin",
+"type": "language",
+"class": "Programming language",
+"by": "jetbrains"
+},
+{
+"id": "scala",
+"label": "Scala",
+"type": "language",
+"class": "Programming language"
+},
+{
+"id": "sql",
+"label": "SQL",
+"type": "language",
+"class": "Programming language",
+"case": [
+"SQL"
+]
+},
+{
+"id": "bash",
+"label": "Bash",
+"type": "language",
+"class": "Programming language",
+"case": [
+"Bash"
+]
+},
+{
+"id": "swift",
+"label": "Swift",
+"type": "language",
+"class": "Programming language",
+"by": "apple",
+"case": [
+"Swift"
+]
+},
+{
+"id": "zig",
+"label": "Zig",
+"type": "language",
+"class": "Programming language",
+"case": [
+"Zig"
+]
+},
+{
+"id": "julia",
+"label": "Julia",
+"type": "language",
+"class": "Programming language",
+"case": [
+"Julia"
+]
+},
+{
+"id": "r-language",
+"label": "R language",
+"type": "language",
+"class": "Programming language",
+"aliases": [
+"R programming"
+]
+},
+{
+"id": "elixir",
+"label": "Elixir",
+"type": "language",
+"class": "Programming language"
+},
+{
+"id": "postgresql",
+"label": "PostgreSQL",
+"type": "database",
+"class": "Relational database",
+"aliases": [
+"Postgres"
+]
+},
+{
+"id": "mysql",
+"label": "MySQL",
+"type": "database",
+"class": "Relational database",
+"by": "oracle"
+},
+{
+"id": "mariadb",
+"label": "MariaDB",
+"type": "database",
+"class": "Relational database",
+"fork_of": "mysql"
+},
+{
+"id": "sqlite",
+"label": "SQLite",
+"type": "database",
+"class": "Relational database"
+},
+{
+"id": "oracle-database",
+"label": "Oracle Database",
+"type": "database",
+"class": "Relational database",
+"by": "oracle"
+},
+{
+"id": "sql-server",
+"label": "SQL Server",
+"type": "database",
+"class": "Relational database",
+"by": "microsoft",
+"aliases": [
+"MSSQL"
+]
+},
+{
+"id": "cockroachdb",
+"label": "CockroachDB",
+"type": "database",
+"class": "Distributed SQL database",
+"by": "cockroach-labs"
+},
+{
+"id": "yugabytedb",
+"label": "YugabyteDB",
+"type": "database",
+"class": "Distributed SQL database"
+},
+{
+"id": "tidb",
+"label": "TiDB",
+"type": "database",
+"class": "Distributed SQL database"
+},
+{
+"id": "google-spanner",
+"label": "Google Spanner",
+"type": "database",
+"class": "Distributed SQL database",
+"by": "google",
+"aliases": [
+"Cloud Spanner"
+]
+},
+{
+"id": "amazon-aurora",
+"label": "Amazon Aurora",
+"type": "database",
+"class": "Relational database",
+"by": "amazon-web-services",
+"aliases": [
+"Aurora DSQL"
+]
+},
+{
+"id": "alloydb",
+"label": "AlloyDB",
+"type": "database",
+"class": "Relational database",
+"by": "google"
+},
+{
+"id": "mongodb",
+"label": "MongoDB",
+"type": "database",
+"class": "Document database",
+"by": "mongodb-inc"
+},
+{
+"id": "apache-cassandra",
+"label": "Apache Cassandra",
+"type": "database",
+"class": "Wide-column database",
+"by": "apache-software-foundation",
+"aliases": [
+"Cassandra"
+]
+},
+{
+"id": "scylladb",
+"label": "ScyllaDB",
+"type": "database",
+"class": "Wide-column database"
+},
+{
+"id": "redis",
+"label": "Redis",
+"type": "database",
+"class": "Key-value store",
+"by": "redis-ltd",
+"case": [
+"Redis"
+]
+},
+{
+"id": "valkey",
+"label": "Valkey",
+"type": "database",
+"class": "Key-value store",
+"by": "linux-foundation",
+"fork_of": "redis"
+},
+{
+"id": "dynamodb",
+"label": "DynamoDB",
+"type": "database",
+"class": "Key-value store",
+"by": "amazon-web-services",
+"aliases": [
+"Amazon DynamoDB"
+]
+},
+{
+"id": "azure-cosmos-db",
+"label": "Azure Cosmos DB",
+"type": "database",
+"class": "Document database",
+"by": "microsoft",
+"aliases": [
+"Cosmos DB"
+]
+},
+{
+"id": "elasticsearch",
+"label": "Elasticsearch",
+"type": "database",
+"class": "Search engine",
+"by": "elastic"
+},
+{
+"id": "opensearch",
+"label": "OpenSearch",
+"type": "database",
+"class": "Search engine",
+"by": "linux-foundation",
+"fork_of": "elasticsearch"
+},
+{
+"id": "neo4j",
+"label": "Neo4j",
+"type": "database",
+"class": "Graph database",
+"by": "neo4j-inc"
+},
+{
+"id": "pgvector",
+"label": "pgvector",
+"type": "database",
+"class": "Vector database"
+},
+{
+"id": "pinecone-db",
+"label": "Pinecone DB",
+"type": "database",
+"class": "Vector database",
+"by": "pinecone"
+},
+{
+"id": "weaviate",
+"label": "Weaviate",
+"type": "database",
+"class": "Vector database"
+},
+{
+"id": "qdrant-db",
+"label": "Qdrant DB",
+"type": "database",
+"class": "Vector database",
+"by": "qdrant"
+},
+{
+"id": "milvus",
+"label": "Milvus",
+"type": "database",
+"class": "Vector database"
+},
+{
+"id": "chroma",
+"label": "Chroma",
+"type": "database",
+"class": "Vector database",
+"aliases": [
+"ChromaDB"
+],
+"case": [
+"Chroma"
+]
+},
+{
+"id": "clickhouse",
+"label": "ClickHouse",
+"type": "database",
+"class": "Analytical database",
+"by": "clickhouse-inc"
+},
+{
+"id": "duckdb",
+"label": "DuckDB",
+"type": "database",
+"class": "Analytical database"
+},
+{
+"id": "apache-druid",
+"label": "Apache Druid",
+"type": "database",
+"class": "Analytical database",
+"by": "apache-software-foundation",
+"aliases": [
+"Druid"
+],
+"case": [
+"Druid"
+]
+},
+{
+"id": "apache-pinot",
+"label": "Apache Pinot",
+"type": "database",
+"class": "Analytical database",
+"by": "apache-software-foundation"
+},
+{
+"id": "starrocks",
+"label": "StarRocks",
+"type": "database",
+"class": "Analytical database"
+},
+{
+"id": "apache-doris",
+"label": "Apache Doris",
+"type": "database",
+"class": "Analytical database",
+"by": "apache-software-foundation"
+},
+{
+"id": "timescaledb",
+"label": "TimescaleDB",
+"type": "database",
+"class": "Time-series database",
+"aliases": [
+"Timescale"
+]
+},
+{
+"id": "influxdb",
+"label": "InfluxDB",
+"type": "database",
+"class": "Time-series database"
+},
+{
+"id": "neon",
+"label": "Neon",
+"type": "database",
+"class": "Relational database",
+"aliases": [
+"Neon Postgres"
+],
+"case": [
+"Neon"
+]
+},
+{
+"id": "supabase-postgres",
+"label": "Supabase Postgres",
+"type": "database",
+"class": "Relational database",
+"by": "supabase"
+},
+{
+"id": "snowflake",
+"label": "Snowflake",
+"type": "database",
+"class": "Data warehouse",
+"by": "snowflake-inc",
+"aliases": [
+"Snowflake Data Cloud"
+],
+"case": [
+"Snowflake"
+]
+},
+{
+"id": "bigquery",
+"label": "BigQuery",
+"type": "database",
+"class": "Data warehouse",
+"by": "google",
+"aliases": [
+"Google BigQuery"
+]
+},
+{
+"id": "amazon-redshift",
+"label": "Amazon Redshift",
+"type": "database",
+"class": "Data warehouse",
+"by": "amazon-web-services",
+"aliases": [
+"Redshift"
+]
+},
+{
+"id": "azure-synapse",
+"label": "Azure Synapse",
+"type": "database",
+"class": "Data warehouse",
+"by": "microsoft",
+"aliases": [
+"Synapse Analytics"
+]
+},
+{
+"id": "microsoft-fabric",
+"label": "Microsoft Fabric",
+"type": "technology",
+"class": "Data platform",
+"by": "microsoft",
+"aliases": [
+"Fabric"
+],
+"case": [
+"Fabric"
+]
+},
+{
+"id": "databricks-platform",
+"label": "Databricks Platform",
+"type": "technology",
+"class": "Lakehouse platform",
+"by": "databricks",
+"aliases": [
+"Databricks SQL",
+"Databricks Lakehouse"
+]
+},
+{
+"id": "trino",
+"label": "Trino",
+"type": "technology",
+"class": "Query engine"
+},
+{
+"id": "presto",
+"label": "Presto",
+"type": "technology",
+"class": "Query engine",
+"by": "meta",
+"aliases": [
+"PrestoDB"
+]
+},
+{
+"id": "dremio",
+"label": "Dremio",
+"type": "technology",
+"class": "Query engine"
+},
+{
+"id": "starburst-galaxy",
+"label": "Starburst Galaxy",
+"type": "technology",
+"class": "Query engine",
+"by": "starburst"
+},
+{
+"id": "amazon-athena",
+"label": "Amazon Athena",
+"type": "technology",
+"class": "Query engine",
+"by": "amazon-web-services",
+"aliases": [
+"Athena"
+],
+"case": [
+"Athena"
+]
+},
+{
+"id": "motherduck",
+"label": "MotherDuck",
+"type": "database",
+"class": "Data warehouse"
+},
+{
+"id": "delta-lake",
+"label": "Delta Lake",
+"type": "technology",
+"class": "Table format",
+"by": "linux-foundation"
+},
+{
+"id": "apache-iceberg",
+"label": "Apache Iceberg",
+"type": "technology",
+"class": "Table format",
+"by": "apache-software-foundation",
+"aliases": [
+"Iceberg"
+],
+"case": [
+"Iceberg"
+]
+},
+{
+"id": "apache-hudi",
+"label": "Apache Hudi",
+"type": "technology",
+"class": "Table format",
+"by": "apache-software-foundation",
+"aliases": [
+"Hudi"
+]
+},
+{
+"id": "apache-paimon",
+"label": "Apache Paimon",
+"type": "technology",
+"class": "Table format",
+"by": "apache-software-foundation",
+"aliases": [
+"Paimon"
+]
+},
+{
+"id": "apache-parquet",
+"label": "Apache Parquet",
+"type": "technology",
+"class": "File format",
+"by": "apache-software-foundation",
+"aliases": [
+"Parquet"
+]
+},
+{
+"id": "apache-avro",
+"label": "Apache Avro",
+"type": "technology",
+"class": "File format",
+"by": "apache-software-foundation",
+"aliases": [
+"Avro"
+]
+},
+{
+"id": "apache-orc",
+"label": "Apache ORC",
+"type": "technology",
+"class": "File format",
+"by": "apache-software-foundation",
+"aliases": [
+"ORC"
+],
+"case": [
+"ORC"
+]
+},
+{
+"id": "apache-arrow",
+"label": "Apache Arrow",
+"type": "technology",
+"class": "In-memory format",
+"by": "apache-software-foundation",
+"aliases": [
+"Arrow"
+],
+"case": [
+"Arrow"
+]
+},
+{
+"id": "polars",
+"label": "Polars",
+"type": "technology",
+"class": "DataFrame library"
+},
+{
+"id": "pandas",
+"label": "pandas",
+"type": "technology",
+"class": "DataFrame library",
+"case": [
+"pandas"
+]
+},
+{
+"id": "apache-datafusion",
+"label": "Apache DataFusion",
+"type": "technology",
+"class": "Query engine",
+"by": "apache-software-foundation",
+"aliases": [
+"DataFusion"
+]
+},
+{
+"id": "unity-catalog",
+"label": "Unity Catalog",
+"type": "technology",
+"class": "Data catalog",
+"by": "databricks"
+},
+{
+"id": "apache-polaris",
+"label": "Apache Polaris",
+"type": "technology",
+"class": "Data catalog",
+"by": "apache-software-foundation",
+"aliases": [
+"Polaris Catalog"
+]
+},
+{
+"id": "aws-glue",
+"label": "AWS Glue",
+"type": "technology",
+"class": "Data integration",
+"by": "amazon-web-services",
+"aliases": [
+"Glue Data Catalog"
+]
+},
+{
+"id": "amazon-emr",
+"label": "Amazon EMR",
+"type": "technology",
+"class": "Batch processing",
+"by": "amazon-web-services",
+"aliases": [
+"EMR"
+],
+"case": [
+"EMR"
+]
+},
+{
+"id": "google-dataflow",
+"label": "Google Dataflow",
+"type": "technology",
+"class": "Stream processing",
+"by": "google",
+"aliases": [
+"Cloud Dataflow"
+]
+},
+{
+"id": "dataproc",
+"label": "Dataproc",
+"type": "technology",
+"class": "Batch processing",
+"by": "google"
+},
+{
+"id": "azure-data-factory",
+"label": "Azure Data Factory",
+"type": "technology",
+"class": "Data integration",
+"by": "microsoft",
+"aliases": [
+"ADF"
+],
+"case": [
+"ADF"
+]
+},
+{
+"id": "apache-kafka",
+"label": "Apache Kafka",
+"type": "technology",
+"class": "Event streaming platform",
+"by": "apache-software-foundation",
+"aliases": [
+"Kafka"
+]
+},
+{
+"id": "apache-flink",
+"label": "Apache Flink",
+"type": "technology",
+"class": "Stream processing",
+"by": "apache-software-foundation",
+"aliases": [
+"Flink"
+]
+},
+{
+"id": "apache-spark",
+"label": "Apache Spark",
+"type": "technology",
+"class": "Batch processing",
+"by": "apache-software-foundation",
+"aliases": [
+"PySpark",
+"Spark SQL",
+"Spark Connect",
+"Spark Structured Streaming",
+"Spark jobs",
+"Spark job"
+]
+},
+{
+"id": "apache-beam",
+"label": "Apache Beam",
+"type": "technology",
+"class": "Stream processing",
+"by": "apache-software-foundation"
+},
+{
+"id": "apache-pulsar",
+"label": "Apache Pulsar",
+"type": "technology",
+"class": "Event streaming platform",
+"by": "apache-software-foundation",
+"aliases": [
+"Pulsar"
+]
+},
+{
+"id": "rabbitmq",
+"label": "RabbitMQ",
+"type": "technology",
+"class": "Message broker"
+},
+{
+"id": "redpanda",
+"label": "Redpanda",
+"type": "technology",
+"class": "Event streaming platform"
+},
+{
+"id": "nats",
+"label": "NATS",
+"type": "technology",
+"class": "Message broker",
+"case": [
+"NATS"
+]
+},
+{
+"id": "amazon-kinesis",
+"label": "Amazon Kinesis",
+"type": "technology",
+"class": "Event streaming platform",
+"by": "amazon-web-services",
+"aliases": [
+"Kinesis"
+]
+},
+{
+"id": "google-pub-sub",
+"label": "Google Pub/Sub",
+"type": "technology",
+"class": "Message broker",
+"by": "google",
+"aliases": [
+"Pub/Sub",
+"Cloud Pub/Sub"
+]
+},
+{
+"id": "azure-event-hubs",
+"label": "Azure Event Hubs",
+"type": "technology",
+"class": "Event streaming platform",
+"by": "microsoft",
+"aliases": [
+"Event Hubs"
+]
+},
+{
+"id": "kafka-streams",
+"label": "Kafka Streams",
+"type": "technology",
+"class": "Stream processing",
+"by": "apache-software-foundation"
+},
+{
+"id": "kafka-connect",
+"label": "Kafka Connect",
+"type": "technology",
+"class": "Data integration",
+"by": "apache-software-foundation"
+},
+{
+"id": "debezium",
+"label": "Debezium",
+"type": "technology",
+"class": "Change data capture"
+},
+{
+"id": "apache-airflow",
+"label": "Apache Airflow",
+"type": "technology",
+"class": "Workflow orchestrator",
+"by": "apache-software-foundation",
+"aliases": [
+"Airflow"
+]
+},
+{
+"id": "dagster",
+"label": "Dagster",
+"type": "technology",
+"class": "Workflow orchestrator",
+"by": "dagster-labs"
+},
+{
+"id": "prefect-orchestrator",
+"label": "Prefect Orchestrator",
+"type": "technology",
+"class": "Workflow orchestrator",
+"by": "prefect",
+"aliases": [
+"Prefect Cloud"
+]
+},
+{
+"id": "temporal",
+"label": "Temporal",
+"type": "technology",
+"class": "Workflow orchestrator",
+"by": "temporal-technologies",
+"case": [
+"Temporal"
+]
+},
+{
+"id": "argo-workflows",
+"label": "Argo Workflows",
+"type": "technology",
+"class": "Workflow orchestrator",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "kestra",
+"label": "Kestra",
+"type": "technology",
+"class": "Workflow orchestrator"
+},
+{
+"id": "dbt",
+"label": "dbt",
+"type": "technology",
+"class": "Data transformation",
+"by": "dbt-labs",
+"aliases": [
+"dbt Core",
+"dbt Cloud",
+"dbt Fusion"
+],
+"case": [
+"dbt"
+]
+},
+{
+"id": "sqlmesh",
+"label": "SQLMesh",
+"type": "technology",
+"class": "Data transformation"
+},
+{
+"id": "fivetran-connectors",
+"label": "Fivetran Connectors",
+"type": "technology",
+"class": "Data integration",
+"by": "fivetran"
+},
+{
+"id": "airbyte-platform",
+"label": "Airbyte Platform",
+"type": "technology",
+"class": "Data integration",
+"by": "airbyte"
+},
+{
+"id": "meltano",
+"label": "Meltano",
+"type": "technology",
+"class": "Data integration"
+},
+{
+"id": "great-expectations",
+"label": "Great Expectations",
+"type": "technology",
+"class": "Data quality",
+"aliases": [
+"GX Core"
+]
+},
+{
+"id": "soda",
+"label": "Soda",
+"type": "technology",
+"class": "Data quality",
+"aliases": [
+"Soda Core"
+],
+"case": [
+"Soda"
+]
+},
+{
+"id": "openlineage",
+"label": "OpenLineage",
+"type": "technology",
+"class": "Data lineage",
+"by": "linux-foundation"
+},
+{
+"id": "datahub",
+"label": "DataHub",
+"type": "technology",
+"class": "Data catalog"
+},
+{
+"id": "openmetadata",
+"label": "OpenMetadata",
+"type": "technology",
+"class": "Data catalog"
+},
+{
+"id": "amundsen",
+"label": "Amundsen",
+"type": "technology",
+"class": "Data catalog"
+},
+{
+"id": "apache-superset",
+"label": "Apache Superset",
+"type": "technology",
+"class": "BI tool",
+"by": "apache-software-foundation",
+"aliases": [
+"Superset"
+]
+},
+{
+"id": "metabase",
+"label": "Metabase",
+"type": "technology",
+"class": "BI tool"
+},
+{
+"id": "power-bi",
+"label": "Power BI",
+"type": "technology",
+"class": "BI tool",
+"by": "microsoft"
+},
+{
+"id": "tableau-desktop",
+"label": "Tableau Desktop",
+"type": "technology",
+"class": "BI tool",
+"by": "tableau"
+},
+{
+"id": "looker",
+"label": "Looker",
+"type": "technology",
+"class": "BI tool",
+"by": "google"
+},
+{
+"id": "streamlit",
+"label": "Streamlit",
+"type": "technology",
+"class": "Data app framework",
+"by": "snowflake-inc"
+},
+{
+"id": "docker",
+"label": "Docker",
+"type": "technology",
+"class": "Container runtime",
+"by": "docker-inc",
+"aliases": [
+"Docker Desktop",
+"Docker Compose"
+]
+},
+{
+"id": "podman",
+"label": "Podman",
+"type": "technology",
+"class": "Container runtime",
+"by": "red-hat"
+},
+{
+"id": "containerd",
+"label": "containerd",
+"type": "technology",
+"class": "Container runtime",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "kubernetes",
+"label": "Kubernetes",
+"type": "technology",
+"class": "Container orchestrator",
+"by": "cloud-native-computing-foundation",
+"aliases": [
+"K8s"
+]
+},
+{
+"id": "openshift",
+"label": "OpenShift",
+"type": "technology",
+"class": "Container orchestrator",
+"by": "red-hat"
+},
+{
+"id": "amazon-eks",
+"label": "Amazon EKS",
+"type": "technology",
+"class": "Container orchestrator",
+"by": "amazon-web-services",
+"aliases": [
+"EKS"
+],
+"case": [
+"EKS"
+]
+},
+{
+"id": "google-gke",
+"label": "Google GKE",
+"type": "technology",
+"class": "Container orchestrator",
+"by": "google",
+"aliases": [
+"GKE"
+],
+"case": [
+"GKE"
+]
+},
+{
+"id": "azure-aks",
+"label": "Azure AKS",
+"type": "technology",
+"class": "Container orchestrator",
+"by": "microsoft",
+"aliases": [
+"AKS"
+],
+"case": [
+"AKS"
+]
+},
+{
+"id": "helm",
+"label": "Helm",
+"type": "technology",
+"class": "Package manager",
+"by": "cloud-native-computing-foundation",
+"case": [
+"Helm"
+]
+},
+{
+"id": "kustomize",
+"label": "Kustomize",
+"type": "technology",
+"class": "Configuration tool"
+},
+{
+"id": "argo-cd",
+"label": "Argo CD",
+"type": "technology",
+"class": "GitOps tool",
+"by": "cloud-native-computing-foundation",
+"aliases": [
+"ArgoCD"
+]
+},
+{
+"id": "flux",
+"label": "Flux",
+"type": "technology",
+"class": "GitOps tool",
+"by": "cloud-native-computing-foundation",
+"aliases": [
+"FluxCD"
+],
+"case": [
+"Flux"
+]
+},
+{
+"id": "istio",
+"label": "Istio",
+"type": "technology",
+"class": "Service mesh",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "linkerd",
+"label": "Linkerd",
+"type": "technology",
+"class": "Service mesh",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "cilium",
+"label": "Cilium",
+"type": "technology",
+"class": "Networking",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "envoy",
+"label": "Envoy",
+"type": "technology",
+"class": "Proxy",
+"by": "cloud-native-computing-foundation",
+"case": [
+"Envoy"
+]
+},
+{
+"id": "terraform",
+"label": "Terraform",
+"type": "technology",
+"class": "Infrastructure as code",
+"by": "hashicorp"
+},
+{
+"id": "opentofu",
+"label": "OpenTofu",
+"type": "technology",
+"class": "Infrastructure as code",
+"by": "linux-foundation",
+"fork_of": "terraform"
+},
+{
+"id": "pulumi",
+"label": "Pulumi",
+"type": "technology",
+"class": "Infrastructure as code"
+},
+{
+"id": "ansible",
+"label": "Ansible",
+"type": "technology",
+"class": "Configuration management",
+"by": "red-hat"
+},
+{
+"id": "crossplane",
+"label": "Crossplane",
+"type": "technology",
+"class": "Infrastructure as code",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "prometheus",
+"label": "Prometheus",
+"type": "technology",
+"class": "Monitoring",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "grafana",
+"label": "Grafana",
+"type": "technology",
+"class": "Observability",
+"by": "grafana-labs"
+},
+{
+"id": "opentelemetry",
+"label": "OpenTelemetry",
+"type": "technology",
+"class": "Observability",
+"by": "cloud-native-computing-foundation",
+"aliases": [
+"OTel"
+],
+"case": [
+"OTel"
+]
+},
+{
+"id": "grafana-loki",
+"label": "Grafana Loki",
+"type": "technology",
+"class": "Logging",
+"by": "grafana-labs",
+"aliases": [
+"Loki"
+],
+"case": [
+"Loki"
+]
+},
+{
+"id": "jaeger",
+"label": "Jaeger",
+"type": "technology",
+"class": "Tracing",
+"by": "cloud-native-computing-foundation",
+"case": [
+"Jaeger"
+]
+},
+{
+"id": "jenkins",
+"label": "Jenkins",
+"type": "technology",
+"class": "CI/CD"
+},
+{
+"id": "github-actions",
+"label": "GitHub Actions",
+"type": "technology",
+"class": "CI/CD",
+"by": "github"
+},
+{
+"id": "gitlab-ci",
+"label": "GitLab CI",
+"type": "technology",
+"class": "CI/CD",
+"by": "gitlab",
+"aliases": [
+"GitLab CI/CD"
+]
+},
+{
+"id": "backstage",
+"label": "Backstage",
+"type": "technology",
+"class": "Developer portal",
+"by": "cloud-native-computing-foundation",
+"case": [
+"Backstage"
+]
+},
+{
+"id": "hashicorp-vault",
+"label": "HashiCorp Vault",
+"type": "technology",
+"class": "Secrets management",
+"by": "hashicorp"
+},
+{
+"id": "keycloak",
+"label": "Keycloak",
+"type": "technology",
+"class": "Identity and access management"
+},
+{
+"id": "trivy",
+"label": "Trivy",
+"type": "technology",
+"class": "Security scanner"
+},
+{
+"id": "falco",
+"label": "Falco",
+"type": "technology",
+"class": "Runtime security",
+"by": "cloud-native-computing-foundation",
+"case": [
+"Falco"
+]
+},
+{
+"id": "snyk",
+"label": "Snyk",
+"type": "technology",
+"class": "Security scanner"
+},
+{
+"id": "sonarqube",
+"label": "SonarQube",
+"type": "technology",
+"class": "Code quality"
+},
+{
+"id": "sigstore",
+"label": "Sigstore",
+"type": "technology",
+"class": "Supply chain security",
+"by": "linux-foundation",
+"aliases": [
+"cosign"
+]
+},
+{
+"id": "linux",
+"label": "Linux",
+"type": "technology",
+"class": "Operating system",
+"aliases": [
+"Linux kernel"
+],
+"case": [
+"Linux"
+]
+},
+{
+"id": "windows",
+"label": "Windows",
+"type": "technology",
+"class": "Operating system",
+"by": "microsoft",
+"case": [
+"Windows"
+]
+},
+{
+"id": "macos",
+"label": "macOS",
+"type": "technology",
+"class": "Operating system",
+"by": "apple"
+},
+{
+"id": "ubuntu",
+"label": "Ubuntu",
+"type": "technology",
+"class": "Linux distribution",
+"by": "canonical"
+},
+{
+"id": "debian",
+"label": "Debian",
+"type": "technology",
+"class": "Linux distribution"
+},
+{
+"id": "red-hat-enterprise-linux",
+"label": "Red Hat Enterprise Linux",
+"type": "technology",
+"class": "Linux distribution",
+"by": "red-hat",
+"aliases": [
+"RHEL"
+]
+},
+{
+"id": "ebpf",
+"label": "eBPF",
+"type": "technology",
+"class": "Kernel technology"
+},
+{
+"id": "systemd",
+"label": "systemd",
+"type": "technology",
+"class": "System software"
+},
+{
+"id": "git",
+"label": "Git",
+"type": "technology",
+"class": "Version control",
+"case": [
+"Git"
+]
+},
+{
+"id": "webassembly",
+"label": "WebAssembly",
+"type": "technology",
+"class": "Runtime standard",
+"aliases": [
+"Wasm"
+],
+"case": [
+"Wasm"
+]
+},
+{
+"id": "react",
+"label": "React",
+"type": "technology",
+"class": "Web framework",
+"by": "meta",
+"aliases": [
+"React.js"
+],
+"case": [
+"React"
+]
+},
+{
+"id": "svelte",
+"label": "Svelte",
+"type": "technology",
+"class": "Web framework",
+"aliases": [
+"SvelteKit"
+]
+},
+{
+"id": "vue-js",
+"label": "Vue.js",
+"type": "technology",
+"class": "Web framework",
+"aliases": [
+"Vue"
+],
+"case": [
+"Vue"
+]
+},
+{
+"id": "angular",
+"label": "Angular",
+"type": "technology",
+"class": "Web framework",
+"by": "google",
+"case": [
+"Angular"
+]
+},
+{
+"id": "next-js",
+"label": "Next.js",
+"type": "technology",
+"class": "Web framework",
+"by": "vercel"
+},
+{
+"id": "node-js",
+"label": "Node.js",
+"type": "technology",
+"class": "JavaScript runtime",
+"aliases": [
+"NodeJS"
+]
+},
+{
+"id": "deno",
+"label": "Deno",
+"type": "technology",
+"class": "JavaScript runtime",
+"case": [
+"Deno"
+]
+},
+{
+"id": "bun",
+"label": "Bun",
+"type": "technology",
+"class": "JavaScript runtime",
+"case": [
+"Bun"
+]
+},
+{
+"id": "django",
+"label": "Django",
+"type": "technology",
+"class": "Web framework"
+},
+{
+"id": "fastapi",
+"label": "FastAPI",
+"type": "technology",
+"class": "Web framework"
+},
+{
+"id": "flask",
+"label": "Flask",
+"type": "technology",
+"class": "Web framework",
+"case": [
+"Flask"
+]
+},
+{
+"id": "spring-boot",
+"label": "Spring Boot",
+"type": "technology",
+"class": "Web framework",
+"by": "broadcom",
+"aliases": [
+"Spring Framework"
+]
+},
+{
+"id": "quarkus",
+"label": "Quarkus",
+"type": "technology",
+"class": "Web framework",
+"by": "red-hat"
+},
+{
+"id": "pytorch",
+"label": "PyTorch",
+"type": "technology",
+"class": "ML framework",
+"by": "linux-foundation"
+},
+{
+"id": "tensorflow",
+"label": "TensorFlow",
+"type": "technology",
+"class": "ML framework",
+"by": "google"
+},
+{
+"id": "jax",
+"label": "JAX",
+"type": "technology",
+"class": "ML framework",
+"by": "google",
+"case": [
+"JAX"
+]
+},
+{
+"id": "scikit-learn",
+"label": "scikit-learn",
+"type": "technology",
+"class": "ML framework",
+"aliases": [
+"sklearn"
+]
+},
+{
+"id": "keras",
+"label": "Keras",
+"type": "technology",
+"class": "ML framework",
+"by": "google"
+},
+{
+"id": "hugging-face-transformers",
+"label": "Hugging Face Transformers",
+"type": "technology",
+"class": "ML framework",
+"by": "hugging-face"
+},
+{
+"id": "langchain",
+"label": "LangChain",
+"type": "technology",
+"class": "LLM framework",
+"aliases": [
+"LangGraph"
+]
+},
+{
+"id": "llamaindex",
+"label": "LlamaIndex",
+"type": "technology",
+"class": "LLM framework"
+},
+{
+"id": "mlflow",
+"label": "MLflow",
+"type": "technology",
+"class": "MLOps platform",
+"by": "databricks"
+},
+{
+"id": "kubeflow",
+"label": "Kubeflow",
+"type": "technology",
+"class": "MLOps platform",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "ray",
+"label": "Ray",
+"type": "technology",
+"class": "Distributed computing",
+"case": [
+"Ray"
+]
+},
+{
+"id": "vllm",
+"label": "vLLM",
+"type": "technology",
+"class": "Model serving"
+},
+{
+"id": "ollama",
+"label": "Ollama",
+"type": "technology",
+"class": "Model serving"
+},
+{
+"id": "onnx",
+"label": "ONNX",
+"type": "technology",
+"class": "Model format",
+"by": "linux-foundation"
+},
+{
+"id": "cuda",
+"label": "CUDA",
+"type": "technology",
+"class": "GPU computing",
+"by": "nvidia",
+"case": [
+"CUDA"
+]
+},
+{
+"id": "gpt",
+"label": "GPT",
+"type": "technology",
+"class": "Large language model",
+"by": "openai",
+"aliases": [
+"ChatGPT",
+"GPT-4o",
+"GPT-5",
+"GPT-4.1"
+],
+"case": [
+"GPT"
+]
+},
+{
+"id": "claude",
+"label": "Claude",
+"type": "technology",
+"class": "Large language model",
+"by": "anthropic",
+"aliases": [
+"Claude Code",
+"Claude Opus",
+"Claude Sonnet",
+"Claude Haiku"
+],
+"case": [
+"Claude"
+]
+},
+{
+"id": "gemini",
+"label": "Gemini",
+"type": "technology",
+"class": "Large language model",
+"by": "google",
+"aliases": [
+"Gemini Pro",
+"Gemini Flash"
+],
+"case": [
+"Gemini"
+]
+},
+{
+"id": "llama",
+"label": "Llama",
+"type": "technology",
+"class": "Large language model",
+"by": "meta",
+"aliases": [
+"Llama 4"
+],
+"case": [
+"Llama"
+]
+},
+{
+"id": "mistral-models",
+"label": "Mistral models",
+"type": "technology",
+"class": "Large language model",
+"by": "mistral-ai",
+"aliases": [
+"Mistral Large",
+"Mixtral",
+"Codestral"
+]
+},
+{
+"id": "deepseek-models",
+"label": "DeepSeek models",
+"type": "technology",
+"class": "Large language model",
+"by": "deepseek",
+"aliases": [
+"DeepSeek-R1",
+"DeepSeek-V3"
+]
+},
+{
+"id": "qwen",
+"label": "Qwen",
+"type": "technology",
+"class": "Large language model",
+"by": "alibaba",
+"case": [
+"Qwen"
+]
+},
+{
+"id": "grok",
+"label": "Grok",
+"type": "technology",
+"class": "Large language model",
+"by": "xai",
+"case": [
+"Grok"
+]
+},
+{
+"id": "github-copilot",
+"label": "GitHub Copilot",
+"type": "technology",
+"class": "AI coding assistant",
+"by": "github",
+"aliases": [
+"Copilot"
+],
+"case": [
+"Copilot"
+]
+},
+{
+"id": "cursor",
+"label": "Cursor",
+"type": "technology",
+"class": "AI coding assistant",
+"case": [
+"Cursor"
+]
+},
+{
+"id": "microsoft-azure",
+"label": "Microsoft Azure",
+"type": "cloud_service",
+"class": "Cloud provider",
+"by": "microsoft",
+"aliases": [
+"Azure"
+],
+"case": [
+"Azure"
+]
+},
+{
+"id": "google-cloud",
+"label": "Google Cloud",
+"type": "cloud_service",
+"class": "Cloud provider",
+"by": "google",
+"aliases": [
+"GCP",
+"Google Cloud Platform"
+],
+"case": [
+"GCP"
+]
+},
+{
+"id": "amazon-s3",
+"label": "Amazon S3",
+"type": "cloud_service",
+"class": "Object storage",
+"by": "amazon-web-services",
+"aliases": [
+"S3"
+],
+"case": [
+"S3"
+]
+},
+{
+"id": "amazon-ec2",
+"label": "Amazon EC2",
+"type": "cloud_service",
+"class": "Compute",
+"by": "amazon-web-services",
+"aliases": [
+"EC2"
+],
+"case": [
+"EC2"
+]
+},
+{
+"id": "aws-lambda",
+"label": "AWS Lambda",
+"type": "cloud_service",
+"class": "Serverless compute",
+"by": "amazon-web-services"
+},
+{
+"id": "google-cloud-run",
+"label": "Google Cloud Run",
+"type": "cloud_service",
+"class": "Serverless compute",
+"by": "google",
+"aliases": [
+"Cloud Run"
+]
+},
+{
+"id": "azure-functions",
+"label": "Azure Functions",
+"type": "cloud_service",
+"class": "Serverless compute",
+"by": "microsoft"
+},
+{
+"id": "amazon-bedrock",
+"label": "Amazon Bedrock",
+"type": "cloud_service",
+"class": "AI platform",
+"by": "amazon-web-services",
+"aliases": [
+"Bedrock"
+],
+"case": [
+"Bedrock"
+]
+},
+{
+"id": "vertex-ai",
+"label": "Vertex AI",
+"type": "cloud_service",
+"class": "AI platform",
+"by": "google"
+},
+{
+"id": "azure-openai",
+"label": "Azure OpenAI",
+"type": "cloud_service",
+"class": "AI platform",
+"by": "microsoft"
+},
+{
+"id": "amazon-sagemaker",
+"label": "Amazon SageMaker",
+"type": "cloud_service",
+"class": "AI platform",
+"by": "amazon-web-services",
+"aliases": [
+"SageMaker"
+]
+},
+{
+"id": "cloudflare-workers",
+"label": "Cloudflare Workers",
+"type": "cloud_service",
+"class": "Serverless compute",
+"by": "cloudflare"
+},
+{
+"id": "http-3",
+"label": "HTTP/3",
+"type": "standard",
+"class": "Network protocol"
+},
+{
+"id": "quic",
+"label": "QUIC",
+"type": "standard",
+"class": "Network protocol",
+"case": [
+"QUIC"
+]
+},
+{
+"id": "grpc",
+"label": "gRPC",
+"type": "standard",
+"class": "API standard",
+"by": "cloud-native-computing-foundation"
+},
+{
+"id": "graphql",
+"label": "GraphQL",
+"type": "standard",
+"class": "API standard"
+},
+{
+"id": "rest",
+"label": "REST",
+"type": "standard",
+"class": "API style",
+"aliases": [
+"RESTful"
+],
+"case": [
+"REST"
+]
+},
+{
+"id": "openapi",
+"label": "OpenAPI",
+"type": "standard",
+"class": "API standard",
+"by": "linux-foundation",
+"aliases": [
+"Swagger"
+]
+},
+{
+"id": "oauth",
+"label": "OAuth",
+"type": "standard",
+"class": "Security standard",
+"aliases": [
+"OAuth 2.0",
+"OAuth 2.1"
+]
+},
+{
+"id": "openid-connect",
+"label": "OpenID Connect",
+"type": "standard",
+"class": "Security standard",
+"aliases": [
+"OIDC"
+],
+"case": [
+"OIDC"
+]
+},
+{
+"id": "tls",
+"label": "TLS",
+"type": "standard",
+"class": "Security standard",
+"aliases": [
+"SSL/TLS"
+],
+"case": [
+"TLS"
+]
+},
+{
+"id": "ipv6",
+"label": "IPv6",
+"type": "standard",
+"class": "Network protocol"
+},
+{
+"id": "protocol-buffers",
+"label": "Protocol Buffers",
+"type": "standard",
+"class": "Data format",
+"by": "google",
+"aliases": [
+"Protobuf"
+]
+},
+{
+"id": "json",
+"label": "JSON",
+"type": "standard",
+"class": "Data format",
+"case": [
+"JSON"
+]
+},
+{
+"id": "yaml",
+"label": "YAML",
+"type": "standard",
+"class": "Data format",
+"case": [
+"YAML"
+]
+},
+{
+"id": "model-context-protocol",
+"label": "Model Context Protocol",
+"type": "standard",
+"class": "AI standard",
+"by": "anthropic",
+"aliases": [
+"MCP"
+],
+"case": [
+"MCP"
+]
+},
+{
+"id": "open-container-initiative",
+"label": "Open Container Initiative",
+"type": "standard",
+"class": "Container standard",
+"by": "linux-foundation",
+"aliases": [
+"OCI"
+],
+"case": [
+"OCI"
+]
+},
+{
+"id": "sbom",
+"label": "SBOM",
+"type": "standard",
+"class": "Supply chain standard",
+"aliases": [
+"software bill of materials",
+"SPDX",
+"CycloneDX"
+],
+"case": [
+"SBOM"
+]
+},
+{
+"id": "post-quantum-cryptography",
+"label": "Post-quantum cryptography",
+"type": "standard",
+"class": "Security standard",
+"aliases": [
+"PQC",
+"ML-KEM"
+],
+"case": [
+"PQC"
+]
+},
+{
+"id": "passkeys",
+"label": "Passkeys",
+"type": "standard",
+"class": "Security standard",
+"aliases": [
+"WebAuthn",
+"FIDO2"
+]
+},
+{
+"id": "data-mesh",
+"label": "Data mesh",
+"type": "concept",
+"class": "Data architecture"
+},
+{
+"id": "data-lakehouse",
+"label": "Data lakehouse",
+"type": "concept",
+"class": "Data architecture",
+"aliases": [
+"lakehouse"
+]
+},
+{
+"id": "data-lake",
+"label": "Data lake",
+"type": "concept",
+"class": "Data architecture"
+},
+{
+"id": "data-warehouse",
+"label": "Data warehouse",
+"type": "concept",
+"class": "Data architecture",
+"aliases": [
+"data warehousing"
+]
+},
+{
+"id": "medallion-architecture",
+"label": "Medallion architecture",
+"type": "concept",
+"class": "Data architecture",
+"aliases": [
+"bronze silver gold"
+]
+},
+{
+"id": "data-contract",
+"label": "Data contract",
+"type": "concept",
+"class": "Data governance",
+"aliases": [
+"data contracts"
+]
+},
+{
+"id": "change-data-capture",
+"label": "Change data capture",
+"type": "concept",
+"class": "Data integration",
+"aliases": [
+"CDC"
+],
+"case": [
+"CDC"
+]
+},
+{
+"id": "etl",
+"label": "ETL",
+"type": "concept",
+"class": "Data integration",
+"aliases": [
+"extract transform load"
+],
+"case": [
+"ETL"
+]
+},
+{
+"id": "elt",
+"label": "ELT",
+"type": "concept",
+"class": "Data integration",
+"case": [
+"ELT"
+]
+},
+{
+"id": "reverse-etl",
+"label": "Reverse ETL",
+"type": "concept",
+"class": "Data integration"
+},
+{
+"id": "data-observability",
+"label": "Data observability",
+"type": "concept",
+"class": "Data quality"
+},
+{
+"id": "data-lineage",
+"label": "Data lineage",
+"type": "concept",
+"class": "Data governance"
+},
+{
+"id": "data-governance",
+"label": "Data governance",
+"type": "concept",
+"class": "Data governance"
+},
+{
+"id": "data-quality",
+"label": "Data quality",
+"type": "concept",
+"class": "Data quality"
+},
+{
+"id": "semantic-layer",
+"label": "Semantic layer",
+"type": "concept",
+"class": "Data architecture"
+},
+{
+"id": "feature-store",
+"label": "Feature store",
+"type": "concept",
+"class": "Machine learning",
+"aliases": [
+"feature stores"
+]
+},
+{
+"id": "stream-processing",
+"label": "Stream processing",
+"type": "concept",
+"class": "Data processing",
+"aliases": [
+"streaming data",
+"real-time data"
+]
+},
+{
+"id": "batch-processing",
+"label": "Batch processing",
+"type": "concept",
+"class": "Data processing"
+},
+{
+"id": "vector-search",
+"label": "Vector search",
+"type": "concept",
+"class": "Information retrieval",
+"aliases": [
+"vector database",
+"embeddings search"
+]
+},
+{
+"id": "retrieval-augmented-generation",
+"label": "Retrieval-augmented generation",
+"type": "concept",
+"class": "Generative AI",
+"aliases": [
+"RAG"
+],
+"case": [
+"RAG"
+]
+},
+{
+"id": "fine-tuning",
+"label": "Fine-tuning",
+"type": "concept",
+"class": "Machine learning",
+"aliases": [
+"fine tuning"
+]
+},
+{
+"id": "ai-agents",
+"label": "AI agents",
+"type": "concept",
+"class": "Generative AI",
+"aliases": [
+"agentic AI",
+"AI agent",
+"agentic"
+]
+},
+{
+"id": "large-language-models",
+"label": "Large language models",
+"type": "concept",
+"class": "Generative AI",
+"aliases": [
+"LLM",
+"LLMs"
+],
+"case": [
+"LLM",
+"LLMs"
+]
+},
+{
+"id": "generative-ai",
+"label": "Generative AI",
+"type": "concept",
+"class": "Generative AI",
+"aliases": [
+"GenAI",
+"gen AI"
+],
+"case": [
+"GenAI"
+]
+},
+{
+"id": "mlops",
+"label": "MLOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "llmops",
+"label": "LLMOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "devops",
+"label": "DevOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "devsecops",
+"label": "DevSecOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "gitops",
+"label": "GitOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "dataops",
+"label": "DataOps",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "platform-engineering",
+"label": "Platform engineering",
+"type": "concept",
+"class": "Engineering practice",
+"aliases": [
+"internal developer platform"
+]
+},
+{
+"id": "site-reliability-engineering",
+"label": "Site reliability engineering",
+"type": "concept",
+"class": "Engineering practice",
+"aliases": [
+"SRE"
+],
+"case": [
+"SRE"
+]
+},
+{
+"id": "observability",
+"label": "Observability",
+"type": "concept",
+"class": "Engineering practice"
+},
+{
+"id": "infrastructure-as-code",
+"label": "Infrastructure as code",
+"type": "concept",
+"class": "Engineering practice",
+"aliases": [
+"IaC"
+],
+"case": [
+"IaC"
+]
+},
+{
+"id": "zero-trust",
+"label": "Zero trust",
+"type": "concept",
+"class": "Security practice",
+"aliases": [
+"zero-trust"
+]
+},
+{
+"id": "software-supply-chain-security",
+"label": "Software supply chain security",
+"type": "concept",
+"class": "Security practice",
+"aliases": [
+"supply chain attack",
+"supply-chain security"
+]
+},
+{
+"id": "microservices",
+"label": "Microservices",
+"type": "concept",
+"class": "Software architecture",
+"aliases": [
+"microservice"
+]
+},
+{
+"id": "serverless",
+"label": "Serverless",
+"type": "concept",
+"class": "Software architecture"
+},
+{
+"id": "event-driven-architecture",
+"label": "Event-driven architecture",
+"type": "concept",
+"class": "Software architecture",
+"aliases": [
+"event-driven"
+]
+},
+{
+"id": "monolith",
+"label": "Monolith",
+"type": "concept",
+"class": "Software architecture",
+"aliases": [
+"modular monolith"
+]
+},
+{
+"id": "ransomware",
+"label": "Ransomware",
+"type": "concept",
+"class": "Security threat"
+},
+{
+"id": "zero-day",
+"label": "Zero-day",
+"type": "concept",
+"class": "Security threat",
+"aliases": [
+"zero day",
+"0-day"
+]
+},
+{
+"id": "technical-debt",
+"label": "Technical debt",
+"type": "concept",
+"class": "Software practice",
+"aliases": [
+"tech debt"
+]
+},
+{
+"id": "open-source",
+"label": "Open source",
+"type": "concept",
+"class": "Software practice",
+"aliases": [
+"open-source"
+]
+},
+{
+"id": "finops",
+"label": "FinOps",
+"type": "concept",
+"class": "Engineering practice",
+"aliases": [
+"cloud cost"
+]
+}
+]
+}

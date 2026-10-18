@@ -3,6 +3,9 @@ package watch
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +15,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -30,7 +34,28 @@ type Handlers struct {
 	log    *slog.Logger
 	now    func() time.Time
 	speech *Speech // the operator's speech server, or nil (EP-132)
+	// dialogue writes the podcast as the hosts' conversation, when set.
+	dialogue DialogueWriter
+	// talks keeps each person's last conversation, so the same episode
+	// opened again costs no second model call: user id → writtenTalk.
+	talks sync.Map
 }
+
+type writtenTalk struct {
+	key   string
+	turns []Turn
+}
+
+// talkKey names an episode by what the hosts would say: its words, language,
+// format, and number of hosts, not the time it was built.
+func talkKey(ep Episode, hosts int) string {
+	raw, _ := json.Marshal([]any{ep.Lang, ep.Format, ep.Intro, ep.Chapters, ep.Outro, hosts})
+	sum := sha256.Sum256(raw)
+	return hex.EncodeToString(sum[:])
+}
+
+// SetDialogue lets the person's model write the podcast as a conversation.
+func (h *Handlers) SetDialogue(d DialogueWriter) { h.dialogue = d }
 
 // NewHandlers returns the endpoints.
 func NewHandlers(pool *pgxpool.Pool, log *slog.Logger) *Handlers {
@@ -195,7 +220,7 @@ func (h *Handlers) found(w http.ResponseWriter, r *http.Request, input string) (
 	defer cancel()
 	f, err := Discover(ctx, input)
 	if err != nil {
-		httpx.Problem(w, http.StatusUnprocessableEntity, "No feed found: "+err.Error()+".")
+		httpx.Problem(w, http.StatusUnprocessableEntity, fmt.Sprintf("No feed found: %s.", err))
 		return f, false
 	}
 	return f, true
@@ -725,11 +750,13 @@ func (h *Handlers) podcast(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
 	var o PodcastOptions
 	var on bool
+	var hosts int
 	// The settings package depends on agents, which reads the watch: the
 	// podcast's own key is read here.
 	err := h.db.QueryRow(r.Context(), `SELECT coalesce((doc->'podcast'->>'enabled')::boolean, false), coalesce(doc->'podcast'->>'format', ''),
-		coalesce(doc->'podcast'->>'lang', ''), coalesce((doc->'podcast'->>'minutes')::int, 0), coalesce((doc->'podcast'->>'days')::int, 0)
-		FROM user_settings WHERE user_id = $1`, who.UserID).Scan(&on, &o.Format, &o.Lang, &o.Minutes, &o.Days)
+		coalesce(doc->'podcast'->>'lang', ''), coalesce((doc->'podcast'->>'minutes')::int, 0), coalesce((doc->'podcast'->>'days')::int, 0),
+		coalesce((doc->'podcast'->>'hosts')::int, 1)
+		FROM user_settings WHERE user_id = $1`, who.UserID).Scan(&on, &o.Format, &o.Lang, &o.Minutes, &o.Days, &hosts)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		h.fail(w, err)
 		return
@@ -769,6 +796,25 @@ func (h *Handlers) podcast(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.fail(w, err)
 		return
+	}
+	if v := q.Get("hosts"); v == "1" || v == "2" {
+		hosts = int(v[0] - '0')
+	}
+	if h.dialogue != nil && len(ep.Chapters) > 0 && hosts >= 1 && hosts <= 2 {
+		// The conversation, when the person's model writes it; else as
+		// before. Writing it takes longer than the server's usual deadline.
+		key := talkKey(ep, hosts)
+		if v, ok := h.talks.Load(who.UserID); ok && v.(writtenTalk).key == key {
+			ep.Turns, ep.Hosts = v.(writtenTalk).turns, HostNames[ep.Lang][:hosts]
+		} else {
+			_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(4 * time.Minute))
+			if turns, err := h.dialogue.WriteDialogue(r.Context(), who.UserID, ep, hosts); err == nil && len(turns) > 0 {
+				h.talks.Store(who.UserID, writtenTalk{key, turns})
+				ep.Turns, ep.Hosts = turns, HostNames[ep.Lang][:hosts]
+			} else if err != nil {
+				h.log.Warn("podcast conversation not written", "err", err)
+			}
+		}
 	}
 	httpx.JSON(w, http.StatusOK, ep)
 }

@@ -41,6 +41,16 @@ type Chapter struct {
 	URL    string     `json:"url"`
 	Source string     `json:"source"`
 	Topic  string     `json:"topic"`
+	// Material is what the story's item says, for the hosts' conversation.
+	Material string `json:"-"`
+}
+
+// Turn is one host's line of the conversation; Chapter is the story it is
+// about, -1 for the opening and the close.
+type Turn struct {
+	Host    int    `json:"host"`
+	Chapter int    `json:"chapter"`
+	Text    string `json:"text"`
 }
 
 // Episode is a podcast episode's script.
@@ -55,6 +65,10 @@ type Episode struct {
 	Minutes  float64   `json:"minutes"` // at 150 words a minute
 	From     time.Time `json:"from"`
 	To       time.Time `json:"to"`
+	// The conversation the person's model wrote, when it did: the hosts'
+	// names and their lines, read in place of the parts above.
+	Hosts []string `json:"hosts"`
+	Turns []Turn   `json:"turns"`
 }
 
 // WordsPerMinute is a calm reading pace.
@@ -160,7 +174,7 @@ func BuildEpisode(ctx context.Context, q db.Querier, userID uuid.UUID, o Podcast
 		return Episode{}, err
 	}
 	w := podcastLang[o.Lang]
-	ep := Episode{Lang: o.Lang, Format: o.Format, Chapters: []Chapter{}, To: now, From: now.AddDate(0, 0, -o.Days)}
+	ep := Episode{Lang: o.Lang, Format: o.Format, Chapters: []Chapter{}, To: now, From: now.AddDate(0, 0, -o.Days), Hosts: []string{}, Turns: []Turn{}}
 	local := now.In(loc)
 	date := fmt.Sprintf("%d %s %d", local.Day(), w.months[local.Month()-1], local.Year())
 	if o.Lang == "en" {
@@ -217,7 +231,12 @@ func BuildEpisode(ctx context.Context, q db.Querier, userID uuid.UUID, o Podcast
 		if len(it.topics) > 0 {
 			topic = it.topics[0]
 		}
-		return Chapter{Title: it.Title, Text: spoken, ItemID: &id, URL: it.URL, Source: it.SourceTitle, Topic: topic}
+		material := it.Summary
+		if len(it.text) > len(material) {
+			material = it.text
+		}
+		return Chapter{Title: it.Title, Text: spoken, ItemID: &id, URL: it.URL, Source: it.SourceTitle, Topic: topic,
+			Material: firstSentences(forVoice(material), 2500)}
 	}
 	var chosen []Chapter
 	used := 0

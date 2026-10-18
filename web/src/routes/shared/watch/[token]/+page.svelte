@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from '$lib/dates';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
@@ -33,7 +34,7 @@
 		.then((d) => (data = d))
 		.catch((err) => (error = message(err)));
 	const day = (iso: string) =>
-		new Date(iso).toLocaleDateString(undefined, {
+		new Date(iso).toLocaleDateString(appLocale(), {
 			day: 'numeric',
 			month: 'short',
 			year: 'numeric'
