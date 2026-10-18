@@ -2,15 +2,11 @@
 
 All notable changes to Axon. Versions follow [Semantic Versioning](https://semver.org/); the support and deprecation policy is in [doc/support.md](doc/support.md).
 
-## 1.0.0 (prepared; tagged by the owner)
+## 1.0.0 (2026-10-18)
 
-The first release meant for someone other than its author to install, operate, upgrade, and recover: everything since 0.1.0, which is the release candidate of 11 October 2026 (below) and the owner requests that came after it, EP-47 to EP-162. It is the head of `dev`, served by staging and production, and reaches `main` through pull request #86. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)).
+The first release meant for someone other than its author to install, operate, upgrade, and recover: everything since 0.1.0, which is the release candidate of 11 October 2026 (below), and the owner requests that came after it, EP-47 to EP-169. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)). The trailer in 4K is attached to the release.
 
-Before the tag:
-
-- The owner merges pull request #86 and tags `v1.0.0` on `main`.
-- External security review with no open high-severity issue (see [doc/security/review-2026-10.md](doc/security/review-2026-10.md)).
-- A new operator installs from [doc/install.md](doc/install.md) while observed.
+Still to come after the tag: an external security review (see [doc/security/review-2026-10.md](doc/security/review-2026-10.md)) and an install by a new operator, observed, from [doc/install.md](doc/install.md).
 
 ### Added since the release candidate
 

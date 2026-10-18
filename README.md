@@ -1,522 +1,85 @@
 <p align="center"><img src="doc/assets/banner.svg" alt="Axon — Your self-hosted life, connected. Notes, action, learning, health, projects, and reflection in one humane graph." width="100%"></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-active%20development-blue" alt="Active development">
+  <img src="https://img.shields.io/badge/release-v1.0.0-0071e3" alt="Release 1.0.0">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-purple" alt="AGPL-3.0">
   <img src="https://img.shields.io/badge/API-OpenAPI%203.1-6BA539" alt="OpenAPI 3.1">
+  <img src="https://img.shields.io/badge/self--hosted-Docker%20Compose-2496ED" alt="Self-hosted with Docker Compose">
 </p>
 
 <p align="center"><strong>English</strong> · <a href="README.fr.md">Français</a></p>
 
-> [!NOTE]
-> Axon is in active development. Features marked ✅ work today; the others are planned, in the order given in the [roadmap](#roadmap). Axon is not a medical device, a therapist, or a promise of production readiness.
-
-## Table of contents
-
-- [Why Axon?](#why-axon)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech stack](#tech-stack)
-- [Hardware](#hardware-requirements)
-- [Quick start](#quick-start)
-- [Configuration](#configuration)
-- [Security and GDPR](#security-and-gdpr)
-- [AI agents](#ai-agents)
-- [Gamification](#gamification)
-- [Development](#development-workflow)
-- [Testing and operations](#testing-and-operations)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License and acknowledgements](#license-and-acknowledgements)
-
-## Why Axon?
-
-Axon brings together the things that are usually scattered across note apps, task lists, trackers, courses, and spreadsheets. Its center is not a feed or a streak counter: it is a user-owned graph of commitments, knowledge, and evidence. Self-hosting, exportability, explicit consent, and reversible automation are first-class requirements.
-
-> [!WARNING]
-> Do not enter medical emergencies, secrets, or another person’s personal data. Coach outputs are informational and require qualified professional judgment.
-
-### Operational principles
-
-1. **You own your data.** Everything exports in open formats; erasure is verified, not just queued.
-2. **Private by default.** Consent is explicit, per purpose, and revocable.
-3. **Agents propose, people decide.** No AI-generated change takes effect without approval.
-4. **Works without AI.** Every feature is useful with agents and external APIs turned off.
-5. **Reversible over clever.** Prefer explicit, reversible actions and boring technology.
-6. **Recovery, not punishment.** A missed day leads back in, never to shame.
-7. **Operable by others.** Anyone with the docs can run, observe, and restore it.
-
-## Features
-
-### 🧠 Second Brain and Zettelkasten
-- ✅ A notes workspace: folder tree, live Markdown editor with preview, `[[wikilinks]]` with suggestions, backlinks and mentions, tags, callouts, tables, daily notes, templates, and a command center (Ctrl+K).
-- ✅ PARA folders and Zettelkasten notes, Markdown import and export.
-- ✅ Two-way sync with the `~/SecondBrain` vault (Git), keeping both versions on conflict.
-- ✅ Vim keybindings in the note editor (optional), and keyboard shortcuts everywhere: press `?` for the list, `g` then a letter to jump to a page.
-- ✅ Live sync with your Markdown vault: add, edit, rename, or delete a file and the note follows within seconds, and the other way round; vault templates appear in Axon.
-- ✅ Your notes live in Axon by default; name a server and folder in Preferences and one command pairs it, syncs it both ways, and starts an empty vault with its folders and templates (Axon shows whether it is in step).
-- ✅ Drawing in notes: a sheet with a pen, a marker, arrows, boxes, and text saves an SVG the note embeds, shown in Axon and in the vault alike, and opened again for more drawing. The top of Notes says where your notes live: Axon only, or a vault kept in step both ways.
-- ✅ Daily, weekly, and monthly digests by email, Slack, Discord, Microsoft Teams, Telegram, ntfy, or a webhook: what to do today, what comes next (tasks, milestones, goals), what to learn and recall, how the week or month went, with a picture drawn for the day and a quote chosen for it.
-- ✅ A news digest: sources marked as general news (a FreshRSS import, for one) stay apart from the tech watch, and the day's top stories come ranked by how many outlets carry them.
-- ✅ Answer the digest in Slack, Discord, or Telegram: "done 2", "I finished the passport", "add call the bank tomorrow at 3pm", "snooze 3 monday", "note …", "undo" — Axon does it at once, in English or French, with no public address needed.
-- ✅ Sign in with Google, Microsoft, Apple, Discord, Slack, or your own OpenID Connect provider, linked by you from Account → Sign-in & security (never matched by email); passkeys stay the safest way in.
-- ✅ A tech watch: follow feeds, sites, Medium authors, Substacks, YouTube channels, and GitHub repositories (by hand, CSV, OPML, or from FreshRSS) on a schedule, midnight by default; each story is stored once however many sources carry it, labelled by local NLP, read as a feed note, and kept as a note when it matters; every source shows its health. A news graph shows the concepts of the news, how they go together, and what is rising, apart from the notes' graph, with a summary on hover. Any view exports to PDF, ODS, CSV, Markdown, feed notes, or JSON, or becomes a read-only link to share. Turn on its podcast to hear the best news read by your device, and find them in your digests, whose sections you choose. A Tech watch agent proposes sources and topics for you to approve.
-- ✅ A knowledge explorer (Notes → Explore): filter by PARA, Zettelkasten type, tag, text, date, or unconnected notes; charts of notes over time, by PARA and type, tags, and shared keywords; and a knowledge graph that adds local NLP edges to your links (shared entities, distinctive keywords, English and French synonyms, similar wording), each saying why it exists. No AI provider involved.
-- ✅ Analysis of literature and permanent notes (Notes → Analysis): English and French Snowball stemming, key phrases by TextRank, readability, topics found from similar wording, a concept graph whose links say why (together more than chance by NPMI, or synonyms from Open English WordNet), and on every note its key phrases, topic, and related ideas with reasons. All local.
-- ✅ Everything is a note in your vault: tasks, goals, milestones, projects, areas, resources, archives, habits, and films, series, and books are Markdown notes under `Axon/` (fields in the front matter, text in sections, a free Notes section), kept in step both ways: edit the note or the item and the other follows; a new note with a type creates the item; deleting the file deletes it; moving it into `Archive/` archives it. Food and training logs too, one way, when you turn them on.
-- ✅ Pictures and PDFs in notes: paste, drop, or pick a file in the editor and it is embedded (`![](Attachments/…)`); Obsidian embeds like `![[photo.png|300]]` show too. Photos lose their metadata and are scaled to 2400 px; files sync with the vault both ways and are part of the export.
-- ✅ Templates for every kind of note, with their sections shown before you create: fleeting, literature, permanent; project, area, resource, and archive notes; tasks, goals, milestones, projects, areas, resources, habits, films, series, books; daily and meeting notes; plus your vault's own `Templates/` (Notes → Templates).
-- ✅ A Zettelkasten knowledge graph on the Notes page: literature and permanent notes linked by combined evidence (IDF-weighted key phrases, WordNet synonyms, shared names, similar wording, your own links), communities found by Louvain modularity and named by class-based TF-IDF, centrality by PageRank, and bridge notes between communities; select a note to see why it connects.
-
-### ✅ Action and execution
-- ✅ Tasks with Today, week, and GTD views (inbox, next, waiting, someday), contexts, recurrence, one-key capture, and daily check-ins.
-- ✅ Projects with Kanban boards (keyboard-accessible, WIP limits), epics, issues, sub-tasks, and project docs; tasks open on a GTD board, with a Kanban board one click away; the calendar opens on a month grid.
-- ✅ Areas, Resources, and Archive pages (PARA), and templates for every kind of note, project, area, resource, goal, milestone, and habit, kept as files in your vault.
-- ✅ Today dashboard with defined KPIs, a calendar, and iCal feeds.
-- ✅ A command dashboard on Today: KPIs compared with the previous period, daily activity and 12-month charts, tables of what needs attention, and a network of your hard and soft skills with their prerequisites (skills only; books and courses stay under each skill).
-- ✅ Pomodoro focus sessions (25/5 × 4 with a 15-minute long break by default, all adjustable, any number of sessions) linked to the task, project, skill, or note you work on, with focus time on the dashboard, a daily streak, focus sounds generated in the browser (noise, rain), music composed as you work and matched to it (lo-fi beats for tasks and projects, ambient for notes, calm piano for skills and flashcards; nothing streamed), and your own music links per activity.
-- ✅ Personal finance in the spirit of Firefly III: asset and liability accounts with balances, income, expenses, and transfers (never counted as spending), categories with monthly budgets, tags, recurring transactions, rules that categorise, CSV import from bank exports without duplicates, reports (monthly flows, spending by category, savings rate, net worth), and savings pots (a *tirelire*) for something to buy later, with a target, an optional date, and how much to put in each month. Amounts are exact integer cents; finance data stays out of search and agents, and is in your export.
-
-### 🌱 Habits, goals, and roadmaps
-- ✅ Habits designed with James Clear's Atomic Habits: build good habits (obvious, attractive, easy, satisfying) or break bad ones (invisible, unattractive, difficult, unsatisfying), habit stacking ("After I…, I will…"), implementation intentions ("I will… at… in…"), an identity that every check-in votes for, habit contracts, the habits scorecard, two-minute versions, and gentle recovery prompts.
-- ✅ Goals and milestones connected to tasks, notes, habits, projects, and roadmaps, with explained progress and a weekly review.
-- ✅ Roadmaps you build by hand, or the one roadmap Axon ships: Top-5% in 37 engineering domains, 18 phases from Monday 19 October 2026 to January 2031 with their courses, books, a certification for every domain (45 in all) with the project work that proves it, and the skills assessment retaken at the end of each phase. Starting it creates the whole plan, with its weekly rhythm as study blocks on the calendar: the goal, a milestone and a project per phase with its exit check as tasks and subtasks, the 42 projects, four habits, the first week's tasks, areas, and resources. Each roadmap is shown as a list or a layered skill graph.
-- ✅ Your roadmap today: Today shows the plan's phase and week, the days to its milestone, today's study block, the phase's project, and the next certification, with focus, review, and practice one click away. The library shows the plan's 18 milestones before you start it.
-- ✅ A skills radar: the hard and the soft skills you have acquired, and those you are learning, area by area.
-- ✅ A skills assessment before you start: your situation, goals, and quick checks per domain give an explained level, and roadmaps start at your level.
-- ✅ A Tutor agent that interviews you and drafts a roadmap where every skill cites its source, and a Resources agent that finds material for what you are learning. Both wait for your approval.
-- ✅ Connect any element to any other, from wherever it is shown.
-
-### 📚 Learning and media
-- ✅ A practice log for problems, wargame levels, and labs (LeetCode, Codeforces, Advent of Code, OverTheWire, PortSwigger, Kaggle…): paste a link, mark each attempt solved unaided, with help, or not, and re-solve at growing intervals; solved by difficulty, topic, and week.
-- ✅ A decision journal: write down a choice, what you expect, and how likely it is; review it on its day and see how well calibrated your forecasts are (Brier score, reliability chart).
-- ✅ Coffee and tea: caffeine against EFSA's daily limit, what is left at bedtime, and the last coffee that keeps your sleep intact, set to your bedtime and metabolism.
-- ✅ Andrew Huberman's health protocols on Habits, each with its studies, an honest grade of the evidence, and a habit in one click.
-- ✅ A collection on Progress: a trophy per roadmap skill, a card per habit, and milestones, raised from bronze to silver to gold.
-- ✅ Invitations: the owner brings someone in with a link used once, even while registration is closed, and into the household.
-- ✅ Share as a picture: your level, a card, a goal, or a habit's run, drawn on your device for the share sheet or a post on X, LinkedIn, or Bluesky.
-- ✅ YouTube in the tech watch: a video's words from its captions, or your own Whisper server, in its analysis and the news graph, in English, French, or Spanish, with links cleaned of tracking.
-- ✅ Podcasts from your Audiobookshelf in the tech watch, each episode with its notes and, with Whisper, its words.
-- ✅ Certifications: planned, booked, passed, or failed, with the exam countdown, cost against the plan, credential, and expiry with a renewal warning; exams and expiries on the calendar. The roadmap plans its 45.
-- ✅ Study hours against the plan: focus time on a roadmap, this week day by day beside the plan's block and over 12 weeks against its weekly target, by skill and project.
-- ✅ Illustrated flashcards you can view, add, edit, and remove, reviewed with FSRS-5 (the Anki scheduler, matched to its reference implementation), practice tests, and a Teacher agent that writes retrieval questions from your literature and permanent notes for your approval.
-- ✅ A learning and memory engine after *Understanding How We Learn* and *Moonwalking with Einstein*: Learn → Today plans the day (cards due with the minutes they take, notes due for recall, a weekly mixed test, fleeting notes to process, leeches to practise); a few new cards a day and decks mixed (interleaving); write your answer before you see it; every card can carry the why, a concrete example, a vivid memory image, and a picture or an AI drawing (dual coding); free recall of whole notes on a blank page, compared with their key ideas and spaced further each time; memory palaces you walk place by place; cards drafted from what a note marks (`question :: answer`, `==term==`, `**Term**: definition`); and the Teacher writes illustrated cards for your approval.
-- ✅ Your memory, measured: Learn compares the recall the scheduler predicted with what you remembered, against your target retention, and says what to change.
-- ✅ Covers for films, series, books, and games, found for anything added by hand or imported, on a shelf of poster cards.
-- ✅ Reminders on tasks at a time of day: set in the task, or type "Call the bank friday at 15:00" in quick add.
-- ✅ Share to Axon: from any app's share sheet once installed, or a bookmarklet on a computer; save as a note or task, or keep the page's readable text as a literature note.
-- ✅ A trash: whatever you delete stays 30 days with what went with it (a goal's milestones, a habit's check-ins), Undo right after deleting, and Account → Trash to restore.
-- ✅ Bulk actions on tasks (status, context, due date, delete), and dragging tasks between days of the calendar or onto it from the undated next actions.
-- ✅ A Today you arrange: choose and order its cards, with learning, habits, today's calendar, and the household among them.
-- ✅ Only what you use: a new account says what it wants Axon for, and the menu and Today show just those pages; any page can be hidden or brought back in Preferences.
-- ✅ Search by meaning, if you want it: choose an embedding service (a local model server, OpenAI, or Voyage AI) and give its own consent; notes are then found by what they mean, in the command center and under "Close in meaning". Off, related notes use local word statistics.
-- ✅ Household sharing: people on the same Axon join with a one-time code and share lists (shopping, chores, anything), with items given to someone; nothing personal is shared.
-- ✅ Imports from other apps: Todoist and TickTick tasks, Goodreads books, Letterboxd films, Firefly III and bank OFX/QFX transactions, Notion pages; preview first, and importing again adds nothing twice.
-- ✅ A guided weekly review after Getting Things Done: empty your head, inbox to zero, fleeting notes, the week's highlights, the next two weeks, waiting for, stuck projects, goals, habits and learning, someday/maybe, and what matters next week; suggested on weekend mornings until done.
-- ✅ Your other calendars in Axon, read only: follow Google, Nextcloud or any CalDAV server, Outlook, or any ICS address; repeating events, time zones, and exceptions handled; shown in the month and agenda views with their colour.
-- ✅ Quick add for anything: press n and type `Call the plumber @phone tomorrow`, `book: Atomic Habits`, `habit: Read one page`, `goal: Run 10 km by 2027-05-01`, or `card: question :: answer #Deck`; Capture shows what it will add.
-- ✅ Reminders: a morning digest (tasks, cards to review with the minutes they take, notes to recall, habits, the weekly test) and an evening nudge (habits still open, with their two-minute version), as notifications on your devices, encrypted end to end, and by email if your server can send it; once a day, only with something to say, off by default.
-- ✅ Installable on phones and desktops; offline, Capture keeps tasks and notes on the device and sends them, once, when you are back online.
-- ✅ A menu in five groups (Do, Think, Grow, Life, Reflect) plus Today, and one Menu sheet on phones.
-- ✅ Agents where you work: every page offers the agents whose skills fit it (Task Manager on Tasks and Today, Goals, Habits, the Teacher on Notes, a note, Learn, and Flashcards, the Tutor and Resources on Roadmaps, Media, the Personal Trainer and Nutritionist on Health, Side-Projects and Code Review on Projects, Tech watch on the tech watch), with ready-made requests and what the page shows sent along; proposals are approved right there.
-- ✅ Jarvis, the master agent: an opt-in ⚡ button opens a side panel where you say what you want in your own words, and Jarvis asks the right agents ("I'm reading The Martian" becomes the book, being read, with its note, waiting for your approval), on your provider or a local Ollama model.
-- ✅ A model for all agents, or one for each, and the AI tokens each one used, this month and by month, with the measured saving of compacting what tools send the model.
-- ✅ Anki packages (.apkg) per deck, pictures included, and automatic sync to your own `anki-sync-server` (for example on `srv-services`), by hand or right after you approve the Teacher's cards; Anki-only cards are never deleted.
-- ✅ Films, series, books, and video games: want, in progress, finished, or dropped, with ratings out of 10, progress in pages, episodes, minutes, or hours played, and reviews. Once you allow lookups (they send the title you type), books come from Open Library, games from Wikipedia (with their cover, year, genre, and developer), and films and series from TMDB when the server has a key; anything can be added by hand. Covers are copied to Axon, so pages never load images from elsewhere. "Up next" ranks your list with the reasons (same creator or genre as what you rated 8 or more, or something you started), and a Media agent proposes new titles for your approval.
-
-### 🥗 Health and sport
-- ✅ Water: a glass or a bottle in one tap, against the drinks' share of your daily water need, with the week; health data under its consent.
-- ✅ A daily journal: mood, energy, and stress on five faces, hours of sleep, three things you are grateful for, and a note, with the last 30 days as a chart; on Today in two taps if you like. Health data, under its consent.
-- ✅ What helps you: which habits go with your better days (sleep, training, focus, habits, tasks, gratitude against mood, energy, and stress), with statistics that leave chance out, said as links, never as causes. Computed on your server, no AI.
-- ✅ Food and training logs, only after you consent to keeping health data (turning it off deletes them): meals with energy and macronutrients, looked up in Open Food Facts (by name or barcode) or USDA FoodData Central once you allow lookups, or typed in; workouts with sets, minutes, and effort. Never in search or AI agents. A photo of a meal estimated by your own AI provider into foods, portions, and macronutrients that you check before logging (the photo is not kept; camera and location details are removed first), and a photo of a barcode read on your device. Daily needs for keeping your weight (energy, protein, carbohydrates, fat, fibre, water) worked out from your age, sex, size, and activity with published references, each explained, with a warning to check with a dietitian; none before 18 or in pregnancy, and no weight-loss targets.
-- ✅ Personal Trainer and Nutritionist agents that read your logs only with a separate consent to share them with your AI provider, propose sessions or simple meal tasks for approval, hand red-flag topics (chest pain, fainting, eating disorders, pregnancy, medication…) to a professional without calling the model, and can never suggest under 1,200 kcal a day or multi-day fasts.
-
-### ✨ Humane progress
-- ✅ Opt-in progress rewards: points from every area (tasks, projects, habits, focus, flashcards, notes, roadmaps, goals), each traceable in a ledger, levels, badges, one daily streak with freezes bought only with earned points, and no shame or notifications.
-- ✅ Insights: nine weekly metrics (tasks completed and captured, habit check-ins, milestones, focus minutes, notes, flashcards reviewed, recall rate, skills learned), each with its formula, its source, a trend in plain words, and the items behind every number; a weekly review against the week before, with what changed and open tasks to carry over; CSV export. All computed on your server.
-- ✅ Ethical design: no dark patterns, no shame, no hidden consent, GDPR-aware controls.
-- ✅ A profile picture, with a generated default (your initials on your own colours); uploads are re-encoded so no location data survives.
-- ✅ Themed spaces: each area has its own original scenery, in light and dark: a Da Vinci notebook for notes, an Oxford library for learning, resources, and flashcards, a workshop blueprint for projects, a garden for habits, a contour map for goals and progress, a star chart for the calendar, a ledger for the budget, an old atlas for areas and the archive, and dotted paper for tasks and focus. Effects are slow, stop with reduced motion, and can be turned off in Preferences. Journal, Insights, the weekly review, and Agents have theirs too (Vermeer's evening light, an observatory, a lighthouse, clockwork automata); each page says what its picture shows and what it nods to, and each type of note has its own small drawing.
-- ✅ A sky that follows the sun: the home page and Today show the sky as it is now in your time zone, the sun and the moon (with its phase) where they are, stars after dusk, over the landscape you choose: mountains, forest, ocean, desert, the Earth from orbit, or a monument on each continent (Eiffel Tower, Pyramids of Giza, Taj Mahal, Statue of Liberty, Christ the Redeemer, Sydney Opera House). The theme can follow it too: light from dawn to dusk.
-- ✅ Move your whole Axon to another server: `axon instance export` and `axon instance import` carry every table and picture with a checksummed manifest, into a fresh installation, older versions included.
-- ✅ Preferences in one place: English or French (every page, with dates in your language), theme, font, text size, icons, motion, templates for notes, projects, and resources, and your AI provider and budget. Edit them in the app or as a YAML file (keys are write-only).
-
-## Screenshots
+<p align="center"><b>Notes, tasks, habits, learning, health, and projects in one graph you own.</b><br>
+Self-hosted, private by default, useful without AI, and every AI change waits for your approval.</p>
 
 [![The trailer: Axon in a minute](web/static/teaser/axon.jpg)](web/static/teaser/axon.mp4)
 
-**[Watch the trailer](web/static/teaser/axon.mp4)** (one minute, with music; also on the home page when the demo is on).
+<p align="center"><a href="web/static/teaser/axon.mp4">Watch the trailer</a> · <a href="https://github.com/thoutmose/axon/releases/download/v1.0.0/axon-trailer-4k.mp4">in 4K</a> · <a href="https://axon.thoutmose.me">Try the demo</a></p>
 
-| Today | Tasks | Notes |
-|---|---|---|
-| ![Today: tasks, habits, goals, and the day's counts](doc/screenshots/gallery/today.jpg) | ![Tasks on a Kanban board with contexts](doc/screenshots/gallery/tasks.jpg) | ![The notes' knowledge graph with its communities](doc/screenshots/gallery/notes.jpg) |
+## What it does
 
-| Learn | Roadmap | Focus |
-|---|---|---|
-| ![Learn: flashcards, recall, the weekly test, and memory measured](doc/screenshots/gallery/learn.jpg) | ![The roadmap's skills radar, hard and soft](doc/screenshots/gallery/roadmap.jpg) | ![Focus: Pomodoro with music and the week's sessions](doc/screenshots/gallery/focus.jpg) |
-
-| Tech watch | News graph | Health |
-|---|---|---|
-| ![The tech watch: news, topics, and labels](doc/screenshots/gallery/watch.jpg) | ![The news graph: concepts, links, and communities](doc/screenshots/gallery/graph.jpg) | ![Water, coffee and tea, and the journal on Today](doc/screenshots/gallery/health.jpg) |
-
-| Decisions | Collection | Habits |
-|---|---|---|
-| ![The decision journal's calibration chart](doc/screenshots/gallery/decisions.jpg) | ![The collection of trophies and cards](doc/screenshots/gallery/collection.jpg) | ![Habits and Huberman's protocols, sourced](doc/screenshots/gallery/habits.jpg) |
-
-| Home | Today (dark, phone) |
+| Area | Highlights |
 |---|---|
-| ![Home page with a night mountain scene and feature sections](doc/screenshots/home.png) | ![Today view in dark mode on a phone](doc/screenshots/today-mobile-dark.png) |
+| **Second brain** | Markdown notes with wikilinks, backlinks, maths, drawings, and pictures; a knowledge graph built on your server; two-way sync with an Obsidian-style vault. |
+| **Action** | Tasks with GTD views and quick add, Kanban projects, calendars in and out, reminders, a weekly review, and focus sessions with music. |
+| **Growth** | Atomic Habits, goals and milestones, a 47-domain engineering roadmap with its certifications, a skills radar, and a decision journal. |
+| **Learning** | FSRS flashcards with Anki sync, free recall, memory palaces, a practice log, and a tech watch with its news graph and podcast. |
+| **Life** | Films, series, books, and games; budget and savings; water, caffeine, food, training, and a daily journal, each under its own consent. |
+| **Agents** | Thirteen agents and Jarvis on the provider you choose, a local model included; they propose, you decide. |
 
-Captured from the demo account, with its sample data. `make teaser` takes them again and makes the trailer from a running Axon.
+The full list, with screenshots, is in **[doc/features.md](doc/features.md)**.
 
-<details><summary>Design direction</summary>
+## Principles
 
-Large typography, generous whitespace, dark mode, translucent glass over bundled scenery (ADR 0010). Motion should clarify state like a well-made instrument—not compete for attention. Respect reduced-motion preferences and keep every action usable without animation.
-
-</details>
-
-## Architecture
-
-Axon uses a Go modular monolith first, PostgreSQL 16 + pgvector as the system of record (background work runs in-process, coordinated through PostgreSQL), and SvelteKit + TypeScript for the web application. Agents call bounded tools through an approval-aware orchestration layer.
-
-### Mermaid — system context
-
-```mermaid
-flowchart LR
-  user(["Person: owns the data, approves every AI change"])
-  axon["Axon: self-hosted life OS"]
-  ai["AI provider of each person's choice: Anthropic, OpenAI, Mistral, Gemini, DeepSeek, or a local model"]
-  cat["Catalogues: Open Library, TMDB, Open Food Facts, USDA"]
-  anki["anki-sync-server"]
-  vault["Markdown vault, e.g. Obsidian"]
-  user -->|"plans, captures, learns, reviews"| axon
-  axon -->|"approved prompts and tools, with consent"| ai
-  axon -->|"lookups, with consent"| cat
-  axon -->|"flashcards"| anki
-  axon <-->|"notes and items, both ways"| vault
-```
-
-### Mermaid — containers
-
-```mermaid
-flowchart TB
-  user(["Browser or phone"])
-  subgraph host["One host per environment, Docker Compose"]
-    caddy["Caddy: HTTPS front, headers"]
-    web["Web: SvelteKit + TypeScript"]
-    api["API: Go + chi, REST and OpenAPI 3.1"]
-    workers["In-process workers: agents, vault mirror, demo reset, media prune"]
-    bridge["Anki bridge: official Anki library"]
-    db[("PostgreSQL 16 + pgvector: system of record")]
-    backup["Backup: encrypted dumps"]
-  end
-  user --> caddy
-  caddy --> web
-  caddy -->|"/api"| api
-  web -->|"server-side calls"| api
-  api --- workers
-  api --> db
-  workers --> db
-  api --> bridge
-  backup --> db
-```
-
-### Mermaid — deployment
-
-```mermaid
-flowchart LR
-  dev["Your machine: make up, make check"] -->|"deploy.sh staging, green CI only"| staging["srv-staging: Axon + PostgreSQL"]
-  staging -->|"deploy.sh prod, only what staging serves"| prod["srv-prod: Axon + PostgreSQL"]
-  prod -->|"Anki sync, encrypted backups, tailnet"| services["srv-services: anki-sync-server, backups"]
-  prod <-->|"notes-sync -watch, tailnet"| brain["srv-secondbrain: Markdown vault"]
-```
-
-### Mermaid — data model and universal links
-
-```mermaid
-erDiagram
-  USER ||--o{ ENTITY : owns
-  ENTITY ||--o{ LINK : "source or target"
-  ENTITY ||--o{ EVENT : "history"
-  ENTITY ||--o| NOTE : "is a"
-  ENTITY ||--o| TASK : "is a"
-  ENTITY ||--o| GOAL : "is a"
-  GOAL ||--o{ MILESTONE : has
-  ENTITY ||--o| PROJECT : "is a"
-  ENTITY ||--o| HABIT : "is a"
-  ENTITY ||--o| ROADMAP : "is a"
-  ROADMAP ||--o{ SKILL : has
-  ENTITY ||--o| CARD : "is a"
-  CARD ||--o{ CARD_REVIEW : "reviewed in"
-  ENTITY ||--o| MEDIA_ITEM : "is a"
-  ENTITY ||--o| VAULT_NOTE : "mirrored as"
-  ENTITY {
-    uuid id PK
-    uuid user_id FK
-    string type
-    string title
-  }
-  LINK {
-    uuid id PK
-    uuid source_id FK
-    string relation
-    uuid target_id FK
-  }
-  EVENT {
-    uuid id PK
-    string kind
-    string fields
-  }
-```
-
-### Mermaid — learning and memory loop
-
-```mermaid
-sequenceDiagram
-  actor P as Person
-  participant N as Notes
-  participant T as Teacher agent
-  participant R as Review engine, FSRS
-  participant L as Learn: today's plan
-  participant A as anki-sync-server
-  P->>N: captures fleeting notes, rewrites them as literature and permanent notes
-  P->>N: marks what to remember: q :: a, ==term==, **Term**: definition
-  N-->>R: Make cards: drafts from the marks, added by the person
-  P->>T: illustrated cards from these notes
-  T->>N: reads only literature and permanent notes
-  T-->>P: proposes cards with the why, an example, a vivid image, an SVG drawing
-  P->>R: approves, then places cards in a memory palace
-  loop Every day
-    L-->>P: cards due, a few new ones, decks mixed, and notes due for recall
-    P->>R: writes the answer, then sees it with the why, the example, and the image, and rates it
-    R->>R: schedules the next review at the chosen retention
-    P->>N: recalls a whole note on a blank page
-    N-->>L: ideas recalled and missed, next recall further away when recalled well
-  end
-  L-->>P: weekly mixed test, and leeches to practise and rewrite
-  R->>A: syncs approved cards
-```
-
-### Mermaid — assessment and Tutor roadmaps
-
-```mermaid
-sequenceDiagram
-  actor P as Person
-  participant As as Assessment
-  participant Tu as Tutor agent
-  participant L as Curated library
-  participant Ro as Roadmaps
-  P->>As: situation, job, goals, current level
-  As-->>Ro: places you on roadmaps
-  P->>Tu: what to learn, time, format
-  Tu->>L: searches the best resources
-  L-->>Tu: books, courses, papers, videos
-  Tu-->>P: draft roadmap, every skill cites its source
-  P->>Ro: approves, edits, or removes
-```
-
-### Mermaid — vault mirror, both ways
-
-```mermaid
-sequenceDiagram
-  participant I as Item, e.g. a task
-  participant M as Vault mirror worker
-  participant N as Note under Axon/
-  participant V as Markdown vault
-  I->>M: created, changed, or deleted
-  M->>N: writes front matter and sections
-  N->>V: notes-sync carries the file
-  V->>N: you edit, add, move, or delete the file
-  N->>M: change in the event log
-  M->>I: updates, creates, archives, or deletes the item
-```
-
-### Mermaid — daily streak and freezes
-
-```mermaid
-stateDiagram-v2
-  [*] --> Idle
-  Idle --> Active: first qualifying action of the day
-  Active --> Active: an action on each following day
-  Active --> AtRisk: a day passes without an action
-  AtRisk --> Active: act today
-  AtRisk --> Frozen: a freeze bought with earned points covers the day
-  Frozen --> Active: act on the next day
-  AtRisk --> Restart: two days without an action
-  Restart --> Active: start again, without shame
-```
-
-## Tech stack
-
-| Layer | Choice | Why |
-|---|---|---|
-| Backend | Go + chi | Low memory, explicit concurrency, simple deployment, strong tooling. |
-| API | REST + OpenAPI 3.1; optional GraphQL later | Cacheable, observable, generated clients; avoid premature flexibility. |
-| Frontend | SvelteKit + TypeScript, design tokens + scoped CSS ([ADR 0007](doc/adr/0007-styling-without-tailwind.md)) | Small, fast UI with accessible progressive enhancement. |
-| Data | PostgreSQL 16 + pgvector | Durable relational core, full text, vectors, constraints, extensions. |
-| Background work | In-process workers reading PostgreSQL (event log cursor, queue tables) | No extra service; the database stays the single source of truth ([ADR 0022](doc/adr/0022-no-valkey-yet.md)). |
-| Graph view | D3 or Sigma.js | Scalable interactive skill and relationship visualization. |
-| Auth | Built-in WebAuthn + TOTP | Passkeys, MFA, self-hosted control. |
-| Edge | Caddy or Traefik | Automatic TLS and clear routing. |
-| Ops | Prometheus, Grafana, Loki, OpenTelemetry | Metrics, dashboards, logs, traces. |
-| Delivery | GitOps or Compose + Ansible/OpenTofu | Reproducible promotion suited to small clusters. |
-| Security | SOPS/age, Trivy, SBOM, Renovate, SLSA practices | Reduce supply-chain and secret risk. |
-
-Where the table offers a choice, [ADR 0002](doc/adr/0002-initial-technology-stack.md) proposes one: built-in WebAuthn + TOTP, Caddy, and Compose + Ansible.
-
-**Why Go and not Rust?** Rust would give stronger compile-time guarantees and somewhat lower memory use. Axon's work, though, is I/O-bound (PostgreSQL, HTTP, AI providers), where Go is as fast in practice. Go also compiles in seconds, has first-party SDKs for the services Axon uses, and keeps the codebase easy for one maintainer and AI agents to read. Rewriting the existing API would stop feature work for months without a user-visible gain. The choice is recorded in ADR 0002, and the [change log](doc/BACKLOG.md#change-log) notes that a rewrite was considered and not scheduled.
-
-## Hardware requirements
-
-One host runs everything: Caddy, the API with its background workers, the web app, PostgreSQL with pgvector, the Anki bridge, and the backups ([ADR 0003](doc/adr/0003-single-host-first.md), [ADR 0004](doc/adr/0004-hosts-and-tailnet-only-access.md)). `srv-prod` is the example:
-
-| | Minimum | `srv-prod` (the example) | Axon uses there (measured 2026-10-17) |
-|---|---:|---:|---|
-| CPU | 2 vCPU | 8 vCPU | Under 1 % at rest; a tech watch fetch or an import uses one core for a few seconds. |
-| Memory | 4 GB | 16 GB | About 120 MB for all six containers at rest; 300 MB under load ([ADR 0021](doc/adr/0021-single-host-measured.md)). |
-| Disk | 40 GB SSD | 120 GB SSD | 1.8 GB of images, a 19 MB database, 1 MB of encrypted backups; notes' pictures and covers add to the database. |
-
-Measured on 2026-10-11, one host serves 700 requests a second. A separate database host is only worth it if a measurement shows the need. The optional speech server (Kokoro, for natural podcast voices) needs about 8 GB of disk and 2 GB of memory more; Whisper, for videos without captions, more still: run them on another machine through `AXON_TTS_URL` and `AXON_WHISPER_URL` if the host is small.
-
-> [!NOTE]
-> Small hosts work because workers are bounded, connections are pooled, lists are paginated, and models run elsewhere: AI calls go to the provider each person chooses, a local Ollama server included, rate-limited and within a monthly budget.
+1. **You own your data.** Everything exports in open formats; erasure is verified.
+2. **Private by default.** Consent is explicit, per purpose, and revocable.
+3. **Agents propose, people decide.** No AI change takes effect without approval.
+4. **Works without AI.** Every feature is useful with agents and external APIs turned off.
+5. **Recovery, not punishment.** A missed day leads back in, never to shame.
 
 ## Quick start
 
-> [!IMPORTANT]
-> Axon 1.0 is a release candidate: every area in this README works today. To run it for real, follow the **[install guide](doc/install.md)**; then spend **[your first afternoon](doc/getting-started.md)** setting it up with the agents, read the **[user guide](doc/user-guide.md)**, how to **[upgrade](doc/upgrading.md)**, and the **[support policy](doc/support.md)**. Release notes: [CHANGELOG.md](CHANGELOG.md).
-
-### Prerequisites
-
-- Docker Engine and Compose v2; Git; GNU Make for the checks.
-- Only if you use agents: a key for Anthropic, OpenAI, Mistral, Google Gemini, or DeepSeek, or a local model server (Ollama, LM Studio, vLLM). Each person can choose their own in the app.
-- Optional: TMDB, Open Library, USDA, and Open Food Facts credentials or public endpoints according to their terms.
+You need Docker Engine with Compose v2.
 
 ```bash
-git clone git@github.com:thoutmose/axon.git   # private repository
+git clone https://github.com/thoutmose/axon.git
 cd axon
 cp .env.example .env
 docker compose up -d --build --wait
 docker compose exec api axon migrate up
 ```
 
-Then open <http://localhost:3000>. The API is served under `/api` (for example `/api/healthz` and `/api/readyz`). The stack listens on `127.0.0.1` only. To try it with sample data, set `AXON_DEMO=1` in `.env`, restart, run `docker compose exec api axon demo reset`, and press **Try the demo**.
+Open <http://localhost:3000> and create the first account. To look around with sample data, set `AXON_DEMO=1` in `.env`, restart, run `docker compose exec api axon demo reset`, and press **Try the demo**.
 
-**API reference.** The OpenAPI 3.1 document is at `/api/v1/openapi.yaml` ([source](api/openapi/openapi.yaml)), and an interactive Swagger UI is at `/api-docs/index.html`, served by Axon itself.
+For a real server, follow the **[install guide](doc/install.md)**, then **[your first afternoon](doc/getting-started.md)**.
 
-### Checks
+## Documentation
 
-| Command | What it runs |
+| Guide | What it covers |
 |---|---|
-| `make check` | `gofmt`, golangci-lint, Go unit tests; `svelte-check`, Prettier, Vitest (Node 24 in a container); README language parity |
-| `make test-integration` | API, OpenAPI contract, agent eval, and migration tests against PostgreSQL 16 + pgvector |
-| `make up` / `make down` | Build and start, or stop, the local stack |
+| [Install](doc/install.md) · [Upgrade](doc/upgrading.md) | Running Axon on your own host, HTTPS, backups, and moving between versions. |
+| [User guide](doc/user-guide.md) | Every page, how to use it, and what it keeps. |
+| [Architecture](doc/architecture.md) | Diagrams, the stack, hardware, configuration, and security. |
+| [Operations](doc/operations.md) · [Runbooks](doc/runbooks.md) | Deploying, monitoring, restoring, and incidents. |
+| [Privacy](doc/privacy.md) · [Security](SECURITY.md) | What is collected, where it goes, and how to report a vulnerability. |
+| [Decisions](doc/adr/) · [Changelog](CHANGELOG.md) | Why Axon is built the way it is, and what changed. |
 
-## Configuration
+The API is described by OpenAPI 3.1 at `/api/v1/openapi.yaml` ([source](api/openapi/openapi.yaml)), with a Swagger UI at `/api-docs/`.
 
-| Variable | Required | Example | Purpose |
-|---|---|---|---|
-| `AXON_BASE_URL` | Yes | `https://axon.example` | Canonical URL and callback origin. |
-| `DATABASE_URL` | Yes | `postgres://...` | PostgreSQL connection; store as a secret. |
-| `AXON_ENCRYPTION_KEY` | Prod | `openssl rand -hex 32` | Encrypts TOTP secrets at rest; never commit. |
-| `AXON_REGISTRATION` | No | `first-user` | `first-user` lets only the first account register, and others only with the owner's invitation link; `open` allows anyone who can reach Axon. |
-| `AXON_DEMO` | No | `1` | Offer a shared demo account with sample data, reset every night, and show the one-minute teaser on the home page. |
-| `WEBAUTHN_RP_ID` | Prod | `axon.example` | Passkey relying-party ID. |
-| `ANTHROPIC_API_KEY` | Optional | secret | Server default Anthropic key for agents (people can also set their own provider). |
-| `AXON_ANTHROPIC_OAUTH` | Optional | config | `1` to use an `ant auth login` profile instead of a key. |
-| `TMDB_API_KEY` | Optional | secret | Film and series lookups (your own non-commercial TMDB key, v3 key or v4 read token). |
-| `USDA_API_KEY` | Optional | secret | USDA FoodData Central food search (a free data.gov key). |
-| `AXON_WHISPER_URL` | Optional | value | A speech-to-text server that speaks the OpenAI transcription API (faster-whisper-server, speaches, LocalAI…), on your network or not: YouTube videos without captions are transcribed there (EP-123). `AXON_WHISPER_MODEL` (default `whisper-1`) and `AXON_WHISPER_TOKEN` (a bearer token, a secret) go with it. |
-| `AXON_CALENDAR_PRIVATE` | Optional | value | `1` lets followed calendars live on your own network (a Nextcloud on the LAN or tailnet); off, only public HTTPS addresses are fetched. |
-| `AXON_SMTP_URL` | Optional | secret | Reminder emails through your mail server: `smtp://user:pass@host:587` or `smtps://user:pass@host:465`. |
-| `AXON_SMTP_FROM` | Optional | value | The sender address of reminder emails. |
-| `AXON_GOOGLE_CLIENT_ID`, `AXON_GOOGLE_CLIENT_SECRET` | Optional | secret | Sign in with Google; also `AXON_MICROSOFT_*` (with `AXON_MICROSOFT_TENANT`), `AXON_DISCORD_*`, `AXON_SLACK_*`. Redirect address: `AXON_BASE_URL/api/v1/auth/oauth/<provider>/callback`. |
-| `AXON_APPLE_CLIENT_ID`, `AXON_APPLE_TEAM_ID`, `AXON_APPLE_KEY_ID`, `AXON_APPLE_PRIVATE_KEY` | Optional | secret | Sign in with Apple: a Services ID and the `.p8` key (or `AXON_APPLE_PRIVATE_KEY_FILE`). |
-| `AXON_OIDC_ISSUER`, `AXON_OIDC_CLIENT_ID`, `AXON_OIDC_CLIENT_SECRET`, `AXON_OIDC_NAME` | Optional | secret | Sign in with any OpenID Connect provider (Authentik, Keycloak, GitLab…). |
-| `AXON_CONTACT` | Optional | `you@example.org` | How Open Library can reach the operator (sent in the User-Agent); defaults to `AXON_BASE_URL`. |
-| `ANKI_SYNC_URL` | Optional | private URL | Suggested anki-sync-server address for the Anki bridge (each person enters their own account). |
-| `AXON_PORT` | No | `3000` | The port Caddy publishes on 127.0.0.1 (compose); a second stack, such as the end-to-end tests, runs beside the first on another. |
-| `AXON_VERSION` | No | `dev` | The image tag compose builds and runs; `deploy.sh` sets it to the commit it deploys. |
-| `AXON_TRUSTED_PROXIES` | No | `100.95.163.114/32` | Addresses of a proxy in front of Tailscale Serve (one serving Axon's own domain), so Caddy sees each visitor's address rather than the proxy's. |
-| `AXON_ADDR`, `AXON_METRICS_ADDR` | No | `:8080`, `:9464` | Where the API listens, and where it serves Prometheus metrics apart from the public routes. |
+## Built with
 
-Never put secrets in Markdown, issue text, prompts, screenshots, or logs. Use SOPS/age and a secret manager appropriate to the deployment.
-
-## Security and GDPR
-
-Axon follows OWASP ASVS as a verification baseline and CIS guidance for hosts. Network traffic between servers uses WireGuard or Tailscale; public ingress is limited to the reverse proxy. WebAuthn/passkeys and TOTP protect accounts; sessions rotate and revoke. RBAC and per-user ownership checks apply at every API boundary.
-
-Privacy controls include consent records, purpose limitation, retention policies, export, erasure requests, audit trails, processor inventories, and redaction of prompts and logs. Backups are encrypted and have documented deletion windows. Health and learning data are sensitive; default visibility is private.
-
-> [!NOTE]
-> GDPR compliance is a continuing operational program, not a badge. Obtain appropriate legal advice for your deployment and jurisdiction.
-
-## AI agents
-
-| Agent | Responsibility | Guardrail | Status |
-|---|---|---|---|
-| Task Manager | Triage and schedule work. | Preview before changing due dates. | ✅ |
-| Goals/Milestones | Break outcomes into measurable steps. | No silent commitments or dates. | ✅ |
-| Habits | Suggest cues, stacks, recovery, and reviews. | No shame or manipulative pressure. | ✅ |
-| Side-Projects | Analyze repos into epics, issues, and tasks. | Read-only; issues are proposals. | ✅ |
-| Code Review | Review diffs, tests, security, and maintainability. | Can comment after approval; can never approve or merge. | ✅ |
-| Tutor | Interview, research, and draft roadmaps. | Every skill cites a source from the library or an allowlisted site; user approves. | ✅ |
-| Resource | Find and classify cited resources. | Allowlisted sites only, robots.txt honoured, 15 pages per run, links not copies. | ✅ |
-| Teacher | Generate reviewed retrieval practice and flashcards. | Reads only literature/permanent notes. | ✅ |
-| Media | Suggest what to watch or read next, and propose new titles. | Sees only your list (no reviews, no catalogue text); every addition needs approval. | ✅ |
-| Personal Trainer | Suggest next sessions from your training log, as tasks to approve. | Own consent (`health_ai`); red flags referred without a model call; non-medical. | ✅ |
-| Nutritionist | Gentle suggestions from your food log, as tasks to approve. | Own consent; never calorie targets, fasting, or diagnosis (enforced, not only prompted). | ✅ |
-| Chef & Nutritionist | Meal plans for the days you choose, within your budget, restrictions and allergies, constraints, and cooking time, close to your daily needs, with recipes, a shopping list, and a cost estimate; saved as a note once approved. | Own consent; strict restrictions, a reminder to check labels; no daily target under 1,200 kcal (enforced); red flags referred. | ✅ |
-
-All agents share a constitution: simple, explicit, small diffs, read before write, think in data, test everything, do not be clever. Skills are versioned `SKILL.md` files. Each task ends with reflection, lessons learned, evaluation evidence, and—when needed—human-in-the-loop approval.
-
-## Gamification
-
-Progress systems use XP, levels, streaks, badges, variable rewards, commitment devices, and earned-point streak freezes. The design is opt-in and transparent: users can disable competitive surfaces, see how points are calculated, and recover from missed days without humiliation. Inspiration includes *Hooked*, Octalysis, and Self-Determination Theory; the ethical constraint is stronger than engagement metrics.
-
-## Development workflow
-
-1. Pick the next ready issue in [BACKLOG.md](doc/BACKLOG.md); do not work across Epics.
-2. Create a scoped branch and write tests or acceptance examples first.
-3. Implement a small vertical slice; keep migrations reversible and APIs documented.
-4. Run formatting, linting, unit/integration/contract/accessibility/security checks.
-5. Open a Conventional Commit PR/MR with evidence, risk, rollback, and docs.
-6. Request independent review, human approval, merge, deploy to staging, and observe before promotion.
-
-## Testing and operations
-
-- **Testing:** Go unit tests, PostgreSQL integration tests, OpenAPI contract tests, Playwright browser tests, accessibility checks, agent evals, migration rehearsal, and backup restore drills.
-- **Observability:** Prometheus metrics, Grafana dashboards, Loki logs, OpenTelemetry traces, correlation IDs, queue depth, provider latency, token cost, and redacted agent decisions.
-- **Reliability:** Define SLOs, alerts, RPO/RTO, rate limits, idempotency keys, circuit breakers, and runbooks before calling a feature done.
-- **Supply chain:** Renovate, SBOMs, Trivy scans, pinned images, signed artifacts where practical, and SLSA-informed provenance.
-
-## Roadmap
-
-| Phase | Outcome | Backlog, in order |
-|---|---|---|
-| Foundation | Secure deployment, CI, observability, auth, privacy. | EP-00 → 01 → 02 → 03 → 04 |
-| Personal graph | Links, tasks, notes, goals, dashboard — no AI required. | EP-05 → 06 → 07 → 09 → 11 → 13 → 08 |
-| Guided growth | Agents, habits, projects, roadmaps, notes workspace, delivery and tutor agents. | EP-19 → 12 → 22 → 23 → 24 → 25 → 10 → 26 → 14 → 27 |
-| Daily driver | Demo, bilingual docs, dashboard, settings, shortcuts, avatars, Atomic Habits, Pomodoro, learning and Anki, gamification, live vault, knowledge graph, themed spaces, finance, portability. | EP-28 → 29 → 30 → 41 → 31 → 32 → 33 → 34 → 35 → 16 → 42 → 15 → 36 → 43 → 39 → 38 → 37 → 40 |
-| Whole-life beta | Media, health, nutrition, analytics. | EP-17 → 18 → 45 → 46 → 44 → 20 |
-| 1.0 | Hardening, recovery, documentation, upgrade path. | EP-21 |
-| 1.1 | Owner requests: Zettelkasten graph, everything in the vault, diagrams, pictures in notes, learning and memory engine, agents on every page, installable app, reminders, quick add, calendars in, weekly review, imports, household, search by meaning, custom Today, bulk actions, trash and undo, share to Axon, task reminders, clean code. | EP-47 → 48 → … → 69 |
-
-Current status: **EP-00–EP-16, EP-19, EP-22–EP-35, EP-36, EP-41, EP-42, EP-43, EP-39, EP-38, EP-37, EP-40, EP-17, EP-18, EP-45, EP-46, EP-44, EP-20, EP-21, and EP-47 to EP-68 done and merged; EP-69 to EP-87 (clean code, performance, hardening, the skills radar, focus music, the teaser, French everywhere), EP-88 to EP-90 (daily needs, a photo of a meal, the Chef & Nutritionist), and EP-91 to EP-105 (the daily journal, what helps you, journal days in the vault, only what you use, the Top-5% roadmap, the sky that follows the sun, the roadmap on the calendar, every page its picture, a readable year, the vault's templates, water, patched images, practice, certifications, study hours) are in review; 1.0 awaits the external security review and an observed install.** To look around without an account, use **Try the demo** on the landing page: a shared account with sample data, reset every night. Operations: [doc/operations.md](doc/operations.md). Details in [doc/BACKLOG.md](doc/BACKLOG.md#delivery-order).
+Go and chi, SvelteKit and TypeScript, PostgreSQL 16 with pgvector, and Caddy, on one host with Docker Compose. Two vCPU and 4 GB of memory are enough; the API serves 700 requests a second on a small server.
 
 ## Contributing
 
-Contributions are welcome when they improve user agency, accessibility, privacy, or maintainability. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md), open an issue with context and acceptance criteria, and keep changes small. For security vulnerabilities, follow [SECURITY.md](SECURITY.md) rather than opening a public issue.
+Contributions that improve user agency, accessibility, privacy, or maintainability are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md), and run `make check` before you open a pull request. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
-## License and acknowledgements
+## License
 
-Axon is licensed under **AGPL-3.0-or-later** so hosted modifications remain available to the community. See [LICENSE](LICENSE) for the authoritative text.
+[AGPL-3.0-or-later](LICENSE). Catalogue data comes from Open Library, TMDB, Open Food Facts, USDA FoodData Central, and Open English WordNet under their own terms; this product uses the TMDB API but is not endorsed or certified by TMDB.
 
-Acknowledgements and reading: [roadmap.sh](https://roadmap.sh/), [OSSU](https://github.com/ossu/computer-science), [Anki sync server](https://github.com/ankicommunity/anki-sync-server), [TMDB API](https://developer.themoviedb.org/docs/getting-started), [Open Library API](https://openlibrary.org/developers/api), [Open Food Facts](https://world.openfoodfacts.org/data), [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/), [Twelve-Factor App](https://12factor.net/), [Google SRE book](https://sre.google/sre-book/table-of-contents/), [FSRS](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler), and [Anthropic documentation](https://docs.anthropic.com/en/docs).
-
-Catalogue data: book data and covers come from [Open Library](https://openlibrary.org/); English synonyms from [Open English WordNet](https://github.com/globalwordnet/english-wordnet) (CC BY 4.0); food data from [Open Food Facts](https://world.openfoodfacts.org/) (ODbL) and [USDA FoodData Central](https://fdc.nal.usda.gov/) (public domain). This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
-
-Books that shape the product: *Understanding How We Learn* (Weinstein, Sumeracki, Caviglioli), *Moonwalking with Einstein* (Foer), *Make It Stick*, *Atomic Habits* (Clear), *Hooked* (Eyal), *The Octalysis Framework* (Chou), *Building a Second Brain* (Forte), *How to Take Smart Notes* (Ahrens), and *Designing Data-Intensive Applications* (Kleppmann).
+> [!NOTE]
+> Axon is not a medical device or a therapist. Health and coaching outputs are informational.
 
 ---
 

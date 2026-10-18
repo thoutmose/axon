@@ -24,7 +24,7 @@ What to expect:
 
 - Accounts, passkeys, sessions, personal access tokens, tasks, links, and the event log carry over unchanged.
 - Everything new starts empty, and every consent starts off (AI agents, catalogue lookups, health data).
-- New optional settings: `AXON_CONTACT`, `TMDB_API_KEY`, `USDA_API_KEY`, `ANKI_SYNC_URL` (see [install.md](install.md#3-configure)), and since the release candidate sign-in with other accounts, email reminders, and speech and transcription servers, all listed under **Configuration** in the [README](../README.md#configuration).
+- New optional settings: `AXON_CONTACT`, `TMDB_API_KEY`, `USDA_API_KEY`, `ANKI_SYNC_URL` (see [install.md](install.md#3-configure)), and since the release candidate sign-in with other accounts, email reminders, and speech and transcription servers, all listed under **Configuration** in the [architecture guide](architecture.md#configuration).
 
 How it was tested:
 
