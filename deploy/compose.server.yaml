@@ -37,3 +37,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  # Public access through a Cloudflare Tunnel (owner request): cloudflared
+  # dials out to Cloudflare, so no port opens on the network. Off until the
+  # settings name its profile (COMPOSE_PROFILES=tunnel) and the secrets its
+  # token; the tunnel's public hostname points at http://caddy:3000.
+  tunnel:
+    image: cloudflare/cloudflared:2026.9.3
+    profiles: [tunnel]
+    command: tunnel --no-autoupdate run
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-} # a secret: in the .env.age file
+    depends_on: [caddy]

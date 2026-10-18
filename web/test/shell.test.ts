@@ -566,7 +566,7 @@ test('run a project on a Kanban board by keyboard, with a WIP limit that asks fi
 test('take the skills assessment, then start the roadmap at your level', async () => {
 	await page.goto('/roadmaps');
 	// The library is one roadmap, with its plan (EP-95).
-	const library = page.getByRole('region', { name: 'Top-5% in 37 engineering domains' });
+	const library = page.getByRole('region', { name: 'Top-5% in 47 engineering domains' });
 	await expect(library).toContainText('18 phases');
 	await expect(library.getByRole('button', { name: 'Start this roadmap' })).toBeVisible();
 	await page.getByRole('link', { name: 'Take the assessment' }).click();
@@ -588,7 +588,7 @@ test('take the skills assessment, then start the roadmap at your level', async (
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Start the roadmap at my level' }).click();
 	await expect(
-		page.getByRole('heading', { level: 1, name: 'Top-5% in 37 engineering domains' })
+		page.getByRole('heading', { level: 1, name: 'Top-5% in 47 engineering domains' })
 	).toBeVisible();
 	// It opens on its plan (EP-142); the skills are in the list.
 	await page.getByRole('navigation', { name: 'View' }).getByRole('link', { name: 'List' }).click();
@@ -617,7 +617,7 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await page.goto('/roadmaps');
 	await page.getByRole('link', { name: 'Open the roadmap' }).click();
 	await page.getByRole('link', { name: 'Skill graph' }).click();
-	const graph = page.getByRole('group', { name: /Skill graph: 43 skills/ });
+	const graph = page.getByRole('group', { name: /Skill graph: 53 skills/ });
 	await graph.getByRole('link', { name: 'Operating systems, todo' }).click();
 	const detail = page.getByRole('complementary', { name: 'Operating systems' });
 	await expect(detail).toContainText('Needs first: C and C++');
@@ -637,10 +637,10 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(hours).toContainText('0 h of 22 h this week');
 	await hours.getByRole('link', { name: 'Focus on today’s block' }).click();
 	await expect(page).toHaveURL(/\/focus\?target=/);
-	await expect(page.getByText('Top-5% in 37 engineering domains').first()).toBeVisible();
+	await expect(page.getByText('Top-5% in 47 engineering domains').first()).toBeVisible();
 
 	await page.goto('/goals');
-	await expect(page.getByText('Top-5% in 37 engineering domains').first()).toBeVisible();
+	await expect(page.getByText('Top-5% in 47 engineering domains').first()).toBeVisible();
 	await page.goto('/projects');
 	await expect(
 		page.getByRole('link', { name: 'pipekit: mini orchestrator in Python' })
@@ -1086,7 +1086,7 @@ test('savings pots: put money aside for a later purchase', async () => {
 test('certifications: the plan exams, one booked with its countdown', async () => {
 	await page.goto('/learn/certifications');
 	await page.waitForLoadState('networkidle');
-	await expect(page.getByText('0 passed of 45')).toBeVisible();
+	await expect(page.getByText('0 passed of 141')).toBeVisible();
 	await page.getByRole('button', { name: 'Update Certified Kubernetes Administrator' }).click();
 	const card = page.getByRole('listitem').filter({ hasText: 'Certified Kubernetes Administrator' });
 	await card.getByLabel('Status').selectOption('booked');
@@ -1538,7 +1538,7 @@ test('tech watch: topics, an imported source waiting for its first fetch, and an
 	await expect(page.getByRole('row', { name: /E2E feed/ })).toHaveCount(0);
 	// The news graph is its own page, apart from the notes' graph.
 	await page.goto('/watch/graph');
-	await expect(page.getByRole('heading', { name: 'News graph', level: 1 })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Knowledge graph', level: 1 })).toBeVisible();
 	await expect(page.getByText(/Not enough news in this period/)).toBeVisible();
 	await noSeriousA11yViolations(page);
 });
@@ -2492,6 +2492,14 @@ test('try the shared demo without a passkey, with sample data in every area', as
 		page.getByRole('button', { name: 'Sign out', exact: true }).click()
 	]);
 	await page.goto('/');
+	// Registration is closed now: anyone else is sent to run their own Axon.
+	await expect(page.getByRole('link', { name: 'Create your account' })).toHaveAttribute(
+		'href',
+		'https://github.com/thoutmose/axon'
+	);
+	const closed = await page.request.get('/register', { maxRedirects: 0 });
+	expect(closed.status()).toBe(307);
+	expect(closed.headers()['location']).toBe('https://github.com/thoutmose/axon');
 	await page.getByRole('button', { name: 'Try the demo' }).click();
 	await expect(page).toHaveURL(/\/today$/);
 	await expect(page.getByRole('note')).toContainText('You are in the shared demo');
@@ -2522,7 +2530,7 @@ test('try the shared demo without a passkey, with sample data in every area', as
 	await expect(page.getByRole('link', { name: 'Personal website' })).toBeVisible();
 	await page.goto('/roadmaps');
 	await expect(
-		page.getByRole('link', { name: 'Top-5% in 37 engineering domains', exact: true })
+		page.getByRole('link', { name: 'Top-5% in 47 engineering domains', exact: true })
 	).toBeVisible();
 	// The skills radar: one roadmap, so a spoke per section.
 	await expect(

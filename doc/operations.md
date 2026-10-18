@@ -28,6 +28,17 @@ Each host runs the Compose stack in `/opt/axon`: Caddy on `127.0.0.1:3000`, the 
 3. **The address**, in `deploy/env/prod.env.age` (see [Secrets](#secrets)): `AXON_BASE_URL=https://axon.thoutmose.me` and `WEBAUTHN_RP_ID=axon.thoutmose.me`; then `deploy/deploy.sh prod`. `AXON_TRUSTED_PROXIES=100.95.163.114/32` in `prod.settings.env` already lets Caddy see each visitor's address through the proxy, not the proxy's.
 4. The old tailnet address keeps serving, but sign-in and changes need the configured address (same-origin checks); the vault server and `axon notes-sync` should use the new one too.
 
+### Open to the internet through a Cloudflare Tunnel
+
+The `thoutmose.me` zone is on Cloudflare. A tunnel makes `https://axon.thoutmose.me` public without opening a port: `cloudflared`, the `tunnel` service in `deploy/compose.server.yaml`, dials out to Cloudflare and forwards to Caddy.
+
+1. Cloudflare dashboard → **Zero Trust → Networks → Tunnels → Create a tunnel** (Cloudflared), named `axon-prod`. Copy its token; do not run the install command it shows.
+2. **Public hostname** of the tunnel: `axon.thoutmose.me`, service **HTTP** `caddy:3000`. Delete the old `A` record (`100.95.163.114`) first, so Cloudflare can create the proxied record.
+3. Secrets: `CLOUDFLARE_TUNNEL_TOKEN=<token>` in `deploy/env/prod.env.age`; settings: `COMPOSE_PROFILES=tunnel` in `deploy/env/prod.settings.env`. Then `deploy/deploy.sh prod`.
+4. Check from outside the tailnet (a phone on mobile data): the home page, **Try the demo**, and **Create your account**, which sends visitors to the source on GitHub while registration is closed (`AXON_REGISTRATION=first-user`; invitation links still register).
+
+Caddy sees each visitor's address: `cloudflared` reaches it from the Docker network, a private range Caddy trusts, and passes Cloudflare's `X-Forwarded-For`. The shared demo is public then: visitors see only their own session and no addresses in the activity, and none can sign the others out. `AXON_CALENDAR_PRIVATE=1` lets accounts (not the demo) follow calendars and feeds on the LAN: keep invitations to people you trust. To close it again, remove the profile and deploy; the tailnet path through `srv-npm` needs the `A` record back.
+
 ## Prerequisites on the operator machine
 
 - Docker, `age`, `rsync`, and SSH entries for the hosts in `~/.ssh/config`.

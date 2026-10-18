@@ -93,13 +93,21 @@
 		{#if status && !status.signed_in}
 			<div class="actions">
 				<Button href="/signin">{t('Sign in')}</Button>
-				{#if status.registration_open}<Button href="/register" variant="secondary"
-						>{t('Create your account')}</Button
-					>{/if}
+				<!-- Registration closed: accounts here are the owner's to give; anyone
+				     else can run their own Axon, from its source. -->
+				<Button
+					href={status.registration_open ? '/register' : 'https://github.com/thoutmose/axon'}
+					variant="secondary">{t('Create your account')}</Button
+				>
 				{#if status.demo_available}<Button variant="secondary" busy={entering} onclick={tryDemo}
 						>{t('Try the demo')}</Button
 					>{/if}
 			</div>
+			{#if !status.registration_open}<p class="demo-note">
+					{t(
+						'Accounts on this Axon are by invitation. Axon is free software: run your own from GitHub.'
+					)}
+				</p>{/if}
 			{#if status.demo_available}<p class="demo-note">
 					{t(
 						'The demo is a shared account with sample data, reset every night. No passkey needed.'
