@@ -20,7 +20,7 @@ const shots = [
 	{ name: 'sketch', path: (d) => `/notes/${d.note}` },
 	{ name: 'learn', path: '/learn' },
 	{ name: 'jarvis', path: '/today', open: 'Open Jarvis', close: 'Close Jarvis' },
-	{ name: 'graph', path: '/watch/graph', heading: 'News graph', offset: 160 },
+	{ name: 'graph', path: '/watch/graph', heading: 'Knowledge graph', offset: 160 },
 	{ name: 'media', path: '/media', heading: 'In progress' },
 	{ name: 'health', path: '/today', heading: 'Coffee and tea' },
 	{ name: 'budget', path: '/budget', region: 'Where the money went' },
@@ -38,7 +38,7 @@ const sketch = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" w
 const browser = await chromium.launch();
 const context = await browser.newContext({
 	viewport: { width: 1440, height: 900 },
-	deviceScaleFactor: 2,
+	deviceScaleFactor: 3, // sharp in a 4K film
 	colorScheme: 'light',
 	reducedMotion: 'reduce',
 	bypassCSP: true // to hide the demo banner in this capture only
