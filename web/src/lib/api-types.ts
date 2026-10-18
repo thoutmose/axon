@@ -3983,6 +3983,25 @@ export interface paths {
 		patch: operations['updateProject'];
 		trace?: never;
 	};
+	'/v1/tasks/{id}/card': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** Where a task sits on a project's board, its parent, and its subtasks */
+		get: operations['getTaskCard'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/projects/{id}/board': {
 		parameters: {
 			query?: never;
@@ -5297,6 +5316,16 @@ export interface components {
 			from: string;
 			/** Format: date-time */
 			to: string;
+			/** @description The hosts' names when the person's model wrote the conversation; empty otherwise. */
+			hosts: string[];
+			/** @description The conversation, read in place of intro, chapters, and outro when not empty. */
+			turns: {
+				/** @description 0 or 1. */
+				host: number;
+				/** @description The story's index, or -1 for the opening and the close. */
+				chapter: number;
+				text: string;
+			}[];
 		};
 		WatchShare: {
 			/** Format: uuid */
@@ -5354,8 +5383,30 @@ export interface components {
 		WatchGraph: {
 			nodes: {
 				id: string;
+				/**
+				 * @description A key phrase of the news, an entity of the ontology, or one of its classes.
+				 * @enum {string}
+				 */
+				kind: 'concept' | 'entity' | 'class';
 				/** @enum {string} */
-				kind: 'concept';
+				type:
+					| 'concept'
+					| 'class'
+					| 'organization'
+					| 'person'
+					| 'technology'
+					| 'product'
+					| 'language'
+					| 'database'
+					| 'cloud_service'
+					| 'standard'
+					| 'event'
+					| 'location'
+					| 'vulnerability'
+					| 'dataset'
+					| 'publication';
+				/** @description An entity's class in the ontology. */
+				class: string;
 				label: string;
 				/** @description News it appears in. */
 				count: number;
@@ -5380,9 +5431,52 @@ export interface components {
 			edges: {
 				from: string;
 				to: string;
+				/** @enum {string} */
+				predicate:
+					| 'related_to'
+					| 'is_a'
+					| 'developed_by'
+					| 'fork_of'
+					| 'acquires'
+					| 'releases'
+					| 'integrates_with'
+					| 'uses'
+					| 'alternative_to'
+					| 'migrates_to'
+					| 'partners_with'
+					| 'invests_in'
+					| 'deprecates'
+					| 'affects'
+					| 'part_of'
+					| 'mentioned_with'
+					| 'develops'
+					| 'announces'
+					| 'built_on'
+					| 'supports'
+					| 'competes_with'
+					| 'outperforms'
+					| 'funds'
+					| 'fixes'
+					| 'version_of'
+					| 'founded'
+					| 'leads'
+					| 'works_at'
+					| 'hires'
+					| 'located_in'
+					| 'regulates'
+					| 'adopts';
+				directed: boolean;
+				/** @description News it was read in (concepts: news they share). */
 				together: number;
 				npmi: number;
 				reason: string;
+				/** @description Up to three news it was read in, with the sentence. */
+				evidence: {
+					/** Format: uuid */
+					id: string;
+					title: string;
+					sentence: string;
+				}[];
 			}[];
 			communities: {
 				id: number;
@@ -5397,6 +5491,10 @@ export interface components {
 				communities: number;
 				modularity: number;
 				bridges: number;
+				entities: number;
+				/** @description Facts read in the news. */
+				facts: number;
+				classes: number;
 			};
 		};
 		Channel: {
@@ -5660,6 +5758,7 @@ export interface components {
 			notes: string;
 			/** Format: uuid */
 			skill_id: string | null;
+			labels: string[];
 			/** Format: date-time */
 			created_at: string;
 			/** Format: date-time */
@@ -5932,6 +6031,12 @@ export interface components {
 			created_at: string;
 			/** Format: date-time */
 			updated_at: string;
+		};
+		CardRef: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			status?: components['schemas']['TaskStatus'];
 		};
 		/** @enum {unknown} */
 		TaskStatus: 'inbox' | 'next' | 'doing' | 'waiting' | 'someday' | 'done' | 'cancelled';
@@ -6268,6 +6373,8 @@ export interface components {
 			spent_micros: number;
 			/** @description Videos and episodes are summarised in prose by your model. */
 			video_summaries: boolean;
+			/** @description Tech watch items are read by your model for the knowledge graph. */
+			watch_knowledge: boolean;
 		};
 		AITally: {
 			runs: number;
@@ -7149,6 +7256,8 @@ export interface components {
 				monthly_budget_cents: number;
 				/** @description Videos and episodes are summarised in prose by your model (EP-151). */
 				video_summaries: boolean;
+				/** @description Tech watch items are read by your model for the knowledge graph. */
+				watch_knowledge: boolean;
 			};
 		};
 		AssessmentProfile: {
@@ -8378,6 +8487,7 @@ export interface operations {
 				};
 				content?: never;
 			};
+			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
@@ -8399,6 +8509,7 @@ export interface operations {
 				};
 				content?: never;
 			};
+			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
 			403: components['responses']['Problem'];
 			422: components['responses']['Problem'];
@@ -8696,6 +8807,7 @@ export interface operations {
 			};
 			400: components['responses']['Problem'];
 			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	createLink: {
@@ -9920,6 +10032,7 @@ export interface operations {
 					notes?: string;
 					/** Format: uuid */
 					skill_id?: string | null;
+					labels?: string[];
 				};
 			};
 		};
@@ -9991,6 +10104,7 @@ export interface operations {
 					notes?: string;
 					/** Format: uuid */
 					skill_id?: string | null;
+					labels?: string[];
 				};
 			};
 		};
@@ -14009,6 +14123,8 @@ export interface operations {
 					monthly_budget_cents: number;
 					/** @description Have your model summarise each video and episode once, in 5 to 10 lines with 5 to 10 keywords, within the budget (EP-151). Left out, it stays as it is. */
 					video_summaries?: boolean;
+					/** @description Have your model read each tech watch item once for the knowledge graph: its entities and the facts the text states, within the budget. Left out, it stays as it is. */
+					watch_knowledge?: boolean;
 				};
 			};
 		};
@@ -16173,6 +16289,8 @@ export interface operations {
 								| 'roadmap'
 								| 'project'
 								| 'goal'
+								| 'cert'
+								| 'resource'
 								| 'practice'
 								| 'focus'
 								| 'reviews'
@@ -17056,6 +17174,39 @@ export interface operations {
 			412: components['responses']['Problem'];
 			422: components['responses']['Problem'];
 			428: components['responses']['Problem'];
+		};
+	};
+	getTaskCard: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The card, or null for a task on no board. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': {
+						card: null | {
+							project: components['schemas']['CardRef'];
+							column: string;
+							kind: string;
+							parent: null | components['schemas']['CardRef'];
+							children: components['schemas']['CardRef'][];
+						};
+					};
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			404: components['responses']['Problem'];
 		};
 	};
 	getBoard: {

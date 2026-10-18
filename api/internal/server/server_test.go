@@ -43,6 +43,17 @@ func TestHealthzReportsVersion(t *testing.T) {
 	}
 }
 
+func TestProbesAnswerHead(t *testing.T) {
+	h := newTestServer("dev", fakeDB{})
+	for _, path := range []string{"/healthz", "/readyz"} {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequest(http.MethodHead, path, nil))
+		if rec.Code != http.StatusOK {
+			t.Errorf("HEAD %s = %d", path, rec.Code)
+		}
+	}
+}
+
 func TestReadyz(t *testing.T) {
 	tests := []struct {
 		name   string

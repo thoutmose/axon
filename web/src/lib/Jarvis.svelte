@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from './dates';
 	import { onDestroy, tick } from 'svelte';
 	import { api, message, type Schemas } from '$lib/api';
 	import type { paths } from '$lib/api-types';
@@ -88,7 +89,7 @@
 	const available = $derived(!listing || listing.status.available);
 	const pending = (turn: Turn) => turn.proposals.filter((p) => p.status === 'pending');
 	const time = (iso: string) =>
-		new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+		new Date(iso).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
 
 	async function load() {
 		if (!listing) listing = await api<Listing>('/v1/agents').catch(() => null);

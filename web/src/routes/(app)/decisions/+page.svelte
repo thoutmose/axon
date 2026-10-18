@@ -87,9 +87,11 @@
 				method: 'POST',
 				body: { happened, outcome: r.outcome, lessons: r.lessons }
 			});
-			delete reviewing[d.id];
 			toast(t('Reviewed.'));
+			// Reload first: the form is bound to reviewing[d.id] until the
+			// decision leaves the due list.
 			await load();
+			delete reviewing[d.id];
 		} catch (err) {
 			toast(message(err), 'error');
 		}

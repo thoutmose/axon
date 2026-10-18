@@ -329,20 +329,20 @@ func (d Doc) Validate() error {
 	seen := map[string]bool{}
 	for _, sec := range d.Today.Sections {
 		if !slices.Contains(TodaySections, sec) || seen[sec] {
-			return FieldError{"today.sections", "lists each of " + strings.Join(TodaySections, ", ") + " at most once"}
+			return FieldError{"today.sections", fmt.Sprintf("lists each of %s at most once", strings.Join(TodaySections, ", "))}
 		}
 		seen[sec] = true
 	}
 	for _, sec := range d.Today.Hidden {
 		if !slices.Contains(TodaySections, sec) || seen[sec] {
-			return FieldError{"today.hidden", "lists sections of " + strings.Join(TodaySections, ", ") + " that are not shown, each at most once"}
+			return FieldError{"today.hidden", fmt.Sprintf("lists sections of %s that are not shown, each at most once", strings.Join(TodaySections, ", "))}
 		}
 		seen[sec] = true
 	}
 	seen = map[string]bool{}
 	for _, p := range d.Menu.Hidden {
 		if !slices.Contains(MenuPages, p) || seen[p] {
-			return FieldError{"menu.hidden", "lists each of " + strings.Join(MenuPages, ", ") + " at most once"}
+			return FieldError{"menu.hidden", fmt.Sprintf("lists each of %s at most once", strings.Join(MenuPages, ", "))}
 		}
 		seen[p] = true
 	}
@@ -350,7 +350,7 @@ func (d Doc) Validate() error {
 		seen := map[string]bool{}
 		for _, sec := range list {
 			if !slices.Contains(DigestSections[kind], sec) || seen[sec] {
-				return FieldError{"digest." + kind, "lists each of " + strings.Join(DigestSections[kind], ", ") + " at most once"}
+				return FieldError{"digest." + kind, fmt.Sprintf("lists each of %s at most once", strings.Join(DigestSections[kind], ", "))}
 			}
 			seen[sec] = true
 		}

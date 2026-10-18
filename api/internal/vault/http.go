@@ -225,8 +225,8 @@ func (h *Handlers) installScript(w http.ResponseWriter, _ *http.Request) {
 func (h *Handlers) agent(w http.ResponseWriter, r *http.Request) {
 	goos, goarch := r.URL.Query().Get("os"), r.URL.Query().Get("arch")
 	if goos != runtime.GOOS || goarch != runtime.GOARCH {
-		httpx.Problem(w, http.StatusNotFound, fmt.Sprintf("This Axon runs on %s/%s and can only hand out that build. Build axon for %s/%s from the source (cd api && GOOS=%[3]s GOARCH=%[4]s go build ./cmd/axon), or use the Docker command.",
-			runtime.GOOS, runtime.GOARCH, goos, goarch))
+		httpx.Problem(w, http.StatusNotFound, fmt.Sprintf("This Axon runs on %s/%s and can only hand out that build. Build axon for %s/%s from the source (cd api && GOOS=%s GOARCH=%s go build ./cmd/axon), or use the Docker command.",
+			runtime.GOOS, runtime.GOARCH, goos, goarch, goos, goarch))
 		return
 	}
 	exe, err := os.Executable()

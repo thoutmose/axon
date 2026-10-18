@@ -502,6 +502,9 @@
 			border-radius: 999px;
 			padding: var(--space-1) var(--space-3);
 			cursor: pointer;
+			/* A word on one line: squeezed, it stacked one letter per line. */
+			white-space: nowrap;
+			flex-shrink: 0;
 		}
 		.sheet:not([hidden]) {
 			display: grid;

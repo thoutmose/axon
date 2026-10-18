@@ -375,7 +375,10 @@ func checkCategory(ctx context.Context, q db.Querier, userID uuid.UUID, id *uuid
 		return err
 	}
 	if c.Kind != kind {
-		return ValidationError{"Use an " + kind + " category for an " + kind + "."}
+		if kind == "income" {
+			return ValidationError{"Use an income category for an income."}
+		}
+		return ValidationError{"Use an expense category for an expense."}
 	}
 	return nil
 }

@@ -24,14 +24,24 @@
 	});
 </script>
 
-<svelte:head><title>{t('Search “{q}” · Axon', { q })}</title></svelte:head>
+<svelte:head><title>{q ? t('Search “{q}” · Axon', { q }) : t('Search · Axon')}</title></svelte:head>
 
 <h1>{t('Search')}</h1>
-<p class="muted">
-	{t('Notes matching “{q}”. Use quotes for a phrase and -word to exclude.', { q })}
-</p>
+{#if !q}
+	<p class="muted">
+		{t(
+			'Type words in “Search notes” to find a note. Use quotes for a phrase and -word to exclude.'
+		)}
+	</p>
+{:else}
+	<p class="muted">
+		{t('Notes matching “{q}”. Use quotes for a phrase and -word to exclude.', { q })}
+	</p>
+{/if}
 
-{#if error}
+{#if !q}
+	<!-- Nothing asked yet: no results to show. -->
+{:else if error}
 	<Status kind="error" message={error} />
 {:else if !hits}
 	<Status kind="loading" message={t('Searching…')} />

@@ -25,12 +25,12 @@ func New(version string, db Pinger, log *slog.Logger, m *Metrics, mount ...func(
 	r.Use(middleware.Recoverer)
 
 	// Liveness: the process is up. Never depends on other services.
-	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+	healthz := func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "version": version})
-	})
+	}
 
 	// Readiness: the API can serve requests that need the database.
-	r.Get("/readyz", func(w http.ResponseWriter, r *http.Request) {
+	readyz := func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
 		if err := db.Ping(ctx); err != nil {
@@ -39,7 +39,12 @@ func New(version string, db Pinger, log *slog.Logger, m *Metrics, mount ...func(
 			return
 		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
-	})
+	}
+	// HEAD too: uptime probes often use it.
+	for path, h := range map[string]http.HandlerFunc{"/healthz": healthz, "/readyz": readyz} {
+		r.Get(path, h)
+		r.Head(path, h)
+	}
 
 	for _, f := range mount {
 		f(r)

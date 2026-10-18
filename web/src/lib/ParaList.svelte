@@ -46,9 +46,13 @@
 		title = '';
 	}
 
+	// A template is used once an item has its title, in either language.
 	const unused = $derived(
 		kind.templates.filter(
-			(t) => !items?.some((i) => i.title.toLowerCase() === t.title.toLowerCase())
+			(tpl) =>
+				!items?.some((i) =>
+					[tpl.title, t(tpl.title)].some((x) => x.toLowerCase() === i.title.toLowerCase())
+				)
 		)
 	);
 </script>
@@ -68,7 +72,7 @@
 		<label for="new-{kind.type}" class="visually-hidden">{t('New {one}', { one: kind.one })}</label>
 		<input
 			id="new-{kind.type}"
-			placeholder={kind.placeholder}
+			placeholder={t(kind.placeholder)}
 			bind:value={title}
 			maxlength="500"
 			required
@@ -80,7 +84,10 @@
 		<div class="templates" role="group" aria-label={t('Start from a template')}>
 			<span class="muted small">{t('Templates:')}</span>
 			{#each unused as tpl (tpl.title)}
-				<button onclick={() => create(tpl)} title={tpl.description}>＋ {tpl.title}</button>
+				<button
+					onclick={() => create({ title: t(tpl.title), description: t(tpl.description) })}
+					title={t(tpl.description)}>＋ {t(tpl.title)}</button
+				>
 			{/each}
 		</div>
 	{/if}
@@ -100,7 +107,7 @@
 		{#each items as it (it.id)}
 			<li>
 				<a href="/{kind.path}/{it.id}">{it.title}</a>
-				{#if it.description}<p class="muted small">{it.description}</p>{/if}
+				{#if it.description}<p class="muted small summary">{it.description}</p>{/if}
 				<span class="muted small">{it.linked} {it.linked === 1 ? 'connection' : 'connections'}</span
 				>
 			</li>
@@ -109,6 +116,14 @@
 {/if}
 
 <style>
+	/* The first lines only: the whole description is on the item's page. */
+	.summary {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 4;
+		line-clamp: 4;
+		overflow: hidden;
+	}
 	.hint,
 	.small {
 		font-size: var(--text-sm);
@@ -171,7 +186,7 @@
 		padding: 0;
 		margin: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
 		gap: var(--space-3);
 	}
 	.grid li {

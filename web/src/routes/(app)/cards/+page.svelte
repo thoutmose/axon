@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { api, message } from '$lib/api';
-	import type { Flashcard } from '$lib/flashcards';
+	import { deckName, type Flashcard } from '$lib/flashcards';
 	import AnkiSync from '$lib/AnkiSync.svelte';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
@@ -59,12 +59,12 @@
 	});
 
 	async function upload(id: string, file: File) {
-		const res = await fetch(`/api/v1/flashcards/${id}/image`, {
+		// Through api(): the API's reason reaches the toast, in the interface's language.
+		await api(`/v1/flashcards/${id}/image`, {
 			method: 'PUT',
 			headers: { 'Content-Type': file.type },
 			body: file
 		});
-		if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
 		version = Date.now();
 	}
 
@@ -184,7 +184,7 @@
 		<ul class="decks">
 			{#each decks as d (d.name)}
 				<li class="card glass" class:current={d.name === deck}>
-					<a class="name" href="/cards?deck={encodeURIComponent(d.name)}">{d.name}</a>
+					<a class="name" href="/cards?deck={encodeURIComponent(d.name)}">{deckName(d.name)}</a>
 					<p class="muted small">
 						{t('{total} cards · {due} due · {new} new', { total: d.total, due: d.due, new: d.new })}
 					</p>
@@ -278,7 +278,7 @@
 
 	{#if deck}
 		<section class="card glass" aria-labelledby="deck-title">
-			<h2 id="deck-title">{deck}</h2>
+			<h2 id="deck-title">{deckName(deck)}</h2>
 			{#if cards.length}
 				<ul class="cards">
 					{#each cards as c (c.id)}

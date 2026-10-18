@@ -19,6 +19,8 @@ import (
 	"github.com/thoutmose/axon/api/internal/audit"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
+	"github.com/thoutmose/axon/api/internal/settings"
 )
 
 // Feed is a calendar subscription; its URL is shown once, at creation.
@@ -151,15 +153,32 @@ func (h *Handlers) feed(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	// Calendar apps send no language: the feed speaks the person's own.
+	doc, err := settings.Get(ctx, h.db, userID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
 	w.Header().Set("Cache-Control", "private, max-age=300")
-	_, _ = w.Write([]byte(ICal(evs, h.now())))
+	_, _ = w.Write([]byte(ICal(evs, h.now(), doc.Language)))
 }
 
-var prefixes = map[string]string{"scheduled": "", "due": "Due: ", "target": "Goal: ", "milestone": "Milestone: "}
+// summary is an event's title, said as what the date is for.
+func summary(lang string, ev Event) string {
+	switch ev.Kind {
+	case "due":
+		return l10n.Tr(lang, "Due: %s", ev.Title)
+	case "target":
+		return l10n.Tr(lang, "Goal: %s", ev.Title)
+	case "milestone":
+		return l10n.Tr(lang, "Milestone: %s", ev.Title)
+	}
+	return ev.Title
+}
 
-// ICal renders events as an RFC 5545 calendar of all-day events.
-func ICal(evs []Event, now time.Time) string {
+// ICal renders events as an RFC 5545 calendar of all-day events, in lang.
+func ICal(evs []Event, now time.Time, lang string) string {
 	var b strings.Builder
 	line := func(s string) { b.WriteString(fold(s) + "\r\n") }
 	line("BEGIN:VCALENDAR")
@@ -178,7 +197,7 @@ func ICal(evs []Event, now time.Time) string {
 		line("DTSTAMP:" + stamp)
 		line("DTSTART;VALUE=DATE:" + ev.Date.Format("20060102"))
 		line("DTEND;VALUE=DATE:" + ev.Date.AddDate(0, 0, 1).Format("20060102"))
-		line("SUMMARY:" + escapeText(prefixes[ev.Kind]+ev.Title))
+		line("SUMMARY:" + escapeText(summary(lang, ev)))
 		line("TRANSP:TRANSPARENT")
 		line("END:VEVENT")
 	}

@@ -180,6 +180,33 @@ body {
 	-webkit-font-smoothing: antialiased;
 	min-height: 100vh;
 }
+/* In tables and controls, words wrap only when they must: with "anywhere",
+   a phone squeezed table columns and buttons to one letter a line. A table
+   wider than the screen scrolls in its own box instead. */
+table,
+button,
+select,
+nav a,
+.btn {
+	overflow-wrap: break-word;
+}
+/* A select is as wide as its longest option unless held to its box, and
+   the field or label around it may shrink below that width. */
+select {
+	max-width: 100%;
+}
+:where(.field, label, select, input[type='file']) {
+	min-width: 0;
+}
+@media (max-width: 760px) {
+	/* Sideways only: a box that scrolled down too would need keyboard focus. */
+	main :has(> table) {
+		overflow-x: auto;
+		overflow-y: hidden;
+		/* Holds the table's visually hidden parts, which are absolutely placed. */
+		position: relative;
+	}
+}
 /* A soft, fixed field of colour behind every page: what the glass blurs. */
 body::before {
 	content: '';

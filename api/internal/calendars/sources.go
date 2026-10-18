@@ -3,7 +3,6 @@ package calendars
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/clock"
+	"github.com/thoutmose/axon/api/internal/l10n"
 	"github.com/thoutmose/axon/api/internal/netsafe"
 	"github.com/thoutmose/axon/api/internal/telemetry"
 )
@@ -73,11 +73,11 @@ func Fetch(ctx context.Context, u *url.URL, now time.Time, loc *time.Location) (
 		if errors.Is(err, netsafe.ErrPrivate) {
 			return nil, ErrAddress{"That address is on a private network. The operator can allow it with AXON_CALENDAR_PRIVATE=1."}
 		}
-		return nil, fmt.Errorf("could not reach the calendar: %w", err)
+		return nil, l10n.Errorf("could not reach the calendar: %w", err)
 	}
 	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("the calendar answered %d", res.StatusCode)
+		return nil, l10n.Errorf("the calendar answered %d", res.StatusCode)
 	}
 	data, err := io.ReadAll(io.LimitReader(res.Body, maxICS+1))
 	if err != nil {

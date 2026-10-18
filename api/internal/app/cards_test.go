@@ -58,6 +58,13 @@ func TestFlashcardsScheduleReviewIllustrateAndExportToAnki(t *testing.T) {
 	}
 	alice.mustDo(201, "POST", "/v1/flashcards", []byte(`{"front":"What is interleaving?","back":"Mixing related topics.","deck":"Learning science"}`))
 	alice.mustDo(422, "POST", "/v1/flashcards", []byte(`{"front":" "}`))
+	// A card can start suspended: kept, never due.
+	if out := alice.mustDo(201, "POST", "/v1/flashcards", []byte(`{"front":"Parked?","deck":"Parked","suspended":true}`)); !bytes.Contains(out, []byte(`"suspended":true`)) {
+		t.Fatalf("suspended card = %s", out)
+	}
+	if bytes.Contains(alice.mustDo(200, "GET", "/v1/flashcards/due?deck=Parked", nil), []byte("Parked?")) {
+		t.Fatal("a suspended card is due")
+	}
 	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/entities/"+note.ID+"/links?direction=incoming", nil), []byte("derived_from")) {
 		t.Fatal("the note does not show its card")
 	}

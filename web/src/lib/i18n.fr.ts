@@ -49,6 +49,8 @@ export const fr: Record<string, string> = {
 		'Notes, tâches, objectifs, habitudes et réflexion dans un graphe apaisé, sur votre propre serveur.',
 	'Sign in': 'Se connecter',
 	'Create your account': 'Créer votre compte',
+	'Accounts on this Axon are by invitation. Axon is free software: run your own from GitHub.':
+		'Les comptes de cet Axon se font sur invitation. Axon est un logiciel libre : installez le vôtre depuis GitHub.',
 	'Try the demo': 'Essayer la démo',
 	'Axon in a minute': 'Axon en une minute',
 	'A tour of the demo, with music Axon composed itself.':
@@ -1128,7 +1130,7 @@ export const fr: Record<string, string> = {
 	'From account': 'Depuis le compte',
 	'Choose…': 'Choisir…',
 	'To account': 'Vers le compte',
-	'Uncategorised (or by your rules)': 'Sans catégorie (ou selon vos règles)',
+	'By your rules': 'Selon vos règles',
 	Tags: 'Étiquettes',
 	'#holiday #work': '#vacances #travail',
 	Payee: 'Bénéficiaire',
@@ -2014,6 +2016,10 @@ export const fr: Record<string, string> = {
 	Backlog: 'Backlog',
 	'To do': 'À faire',
 	Doing: 'En cours',
+	'Move “{title}” anyway?': 'Déplacer « {title} » quand même ?',
+	'the board': 'le tableau',
+	'{title} is in {column}, reordered.': '{title} est dans {column}, à sa nouvelle place.',
+	'{title} is in {column}.': '{title} est dans {column}.',
 	'{title} stayed where it was.': '{title} est resté à sa place.',
 	'Title of the new doc': 'Titre du nouveau document',
 	'Project deleted; its tasks are still in your task list.':
@@ -3005,11 +3011,12 @@ export const fr: Record<string, string> = {
 	'Credential link': 'Lien du certificat',
 	'Update {name}': 'Mettre à jour {name}',
 	Update: 'Mettre à jour',
-	'No certifications yet. Add one below, or start the roadmap: it plans its 45 certifications.':
-		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses 45 certifications.',
+	'No certifications yet. Add one below, or start the roadmap: it plans its 141 certifications.':
+		'Aucune certification pour l’instant. Ajoutez-en une ci-dessous, ou démarrez le parcours : il prévoit ses 141 certifications.',
 	'Add a certification': 'Ajouter une certification',
 	'Aim to take it by': 'À passer d’ici le',
 	'Valid for (months)': 'Valable (mois)',
+	'data engineering, cloud, aws': 'data engineering, cloud, aws',
 	CKA: 'CKA',
 	'Study hours': 'Heures d’étude',
 	'{done} h of {target} h this week': '{done} h sur {target} h cette semaine',
@@ -3609,6 +3616,8 @@ export const fr: Record<string, string> = {
 	'Toward {tier}': 'Vers {tier}',
 	'Your collection': 'Votre collection',
 	'{earned} of {total} tiers collected': '{earned} paliers sur {total} obtenus',
+	'{cards} cards, each with three tiers (bronze, silver, gold): {earned} of {total} tiers collected':
+		'{cards} cartes, chacune avec trois paliers (bronze, argent, or) : {earned} paliers sur {total} obtenus',
 	'{n} bronze': '{n} bronze',
 	'{n} gold': '{n} or',
 	'{n} silver': '{n} argent',
@@ -3626,6 +3635,215 @@ export const fr: Record<string, string> = {
 	'{n} more projects done for {tier}': 'Encore {n} projets terminés pour {tier}',
 	'{n} more goals achieved for {tier}': 'Encore {n} objectifs atteints pour {tier}',
 	'{n} more habit check-ins for {tier}': 'Encore {n} pointages d’habitudes pour {tier}',
+	Class: 'Classe',
+	'No progress measure yet': 'Pas encore de mesure de progression',
+	'{every}, on day {day}': '{every}, le {day}',
+	'Search · Axon': 'Recherche · Axon',
+	'Type words in “Search notes” to find a note. Use quotes for a phrase and -word to exclude.':
+		'Tapez des mots dans « Rechercher dans les notes » pour trouver une note. Mettez une expression entre guillemets et -mot pour exclure.',
+	// What each agent tool does, as /v1/agents describes it (the Agents page).
+	"The person's daily reference intakes for keeping their weight (energy, protein, fat, carbohydrates, fibre, water), worked out by Axon from their profile, or why there are none (no profile yet, under 18, or pregnancy: then use no numbers).":
+		'Les apports de référence quotidiens de la personne pour garder son poids (énergie, protéines, lipides, glucides, fibres, eau), calculés par Axon à partir de son profil, ou la raison pour laquelle il n’y en a pas (pas encore de profil, moins de 18 ans, ou grossesse : alors aucun chiffre).',
+	"The person's food log over the last days (default 7, up to 30): each day's entries (meal, name, grams, kcal, macros) and totals.":
+		'Le journal alimentaire de la personne sur les derniers jours (7 par défaut, jusqu’à 30) : les entrées de chaque jour (repas, nom, grammes, kcal, macros) et les totaux.',
+	'Propose a meal plan, saved as a note in "Meal plans/" once the person approves it. markdown holds each day and meal with its recipe, then the shopping list as checkboxes and the estimated cost. Nothing is saved until the person approves.':
+		'Proposer un plan de repas, enregistré comme note dans « Meal plans/ » une fois que la personne l’approuve. markdown contient chaque jour et chaque repas avec sa recette, puis la liste de courses en cases à cocher et le coût estimé. Rien n’est enregistré avant l’approbation.',
+	'Propose remembering a stable preference the person stated, for future runs. Needs approval; the person can delete it any time.':
+		'Proposer de retenir une préférence stable que la personne a exprimée, pour les prochaines exécutions. Demande une approbation ; la personne peut la supprimer à tout moment.',
+	'List the repositories the person connected, with their ids and whether comments are allowed.':
+		'Lister les dépôts que la personne a connectés, avec leurs identifiants et si les commentaires sont autorisés.',
+	'List open pull requests (up to 30).': 'Lister les pull requests ouvertes (jusqu’à 30).',
+	"Read a pull request's unified diff (first 200 KB).":
+		'Lire le diff unifié d’une pull request (les 200 premiers Ko).',
+	'Read a file on the default branch (first 100 KB).':
+		'Lire un fichier de la branche par défaut (les 100 premiers Ko).',
+	'Propose a comment on a pull request. It is posted only after the person approves, and only if they allowed comments on this repository. Comments cannot approve or merge.':
+		'Proposer un commentaire sur une pull request. Il n’est publié qu’après l’approbation de la personne, et seulement si elle a autorisé les commentaires sur ce dépôt. Un commentaire ne peut ni approuver ni fusionner.',
+	"List the person's active goals with their milestones and progress.":
+		'Lister les objectifs actifs de la personne avec leurs jalons et leur progression.',
+	'Read one goal: outcome, measure, milestones, and the tasks linked to it.':
+		'Lire un objectif : résultat, mesure, jalons et tâches qui lui sont liées.',
+	"List the person's open tasks (up to 50), soonest date first. Optionally filter by status.":
+		'Lister les tâches ouvertes de la personne (jusqu’à 50), les plus proches d’abord. Filtrage facultatif par statut.',
+	'Propose a milestone for a goal. Nothing is added until the person approves. Set due_on only if the person gave a date.':
+		'Proposer un jalon pour un objectif. Rien n’est ajouté avant l’approbation de la personne. due_on seulement si la personne a donné une date.',
+	'Propose linking a task to a goal it moves forward. Nothing changes until the person approves.':
+		'Proposer de lier une tâche à un objectif qu’elle fait avancer. Rien ne change avant l’approbation de la personne.',
+	"List the person's active habits: cue, stack, two-minute version, schedule (ISO weekdays), and how today stands.":
+		'Lister les habitudes actives de la personne : déclencheur, enchaînement, version de deux minutes, jours (ISO) et où en est la journée.',
+	'Propose a new habit. Nothing is created until the person approves. title is the action ("Read one page").':
+		'Proposer une nouvelle habitude. Rien n’est créé avant l’approbation de la personne. title est l’action (« Lire une page »).',
+	"Propose changes to a habit's design (cue, stack, two-minute version, reward, schedule). Nothing changes until the person approves.":
+		'Proposer des changements à la conception d’une habitude (déclencheur, enchaînement, version de deux minutes, récompense, jours). Rien ne change avant l’approbation de la personne.',
+	"Ask one of Axon's agents to do something for the person, with a complete instruction. It answers in text; any change it wants is a proposal the person approves. The agents are listed in your instructions.":
+		'Demander à l’un des agents d’Axon de faire quelque chose pour la personne, avec une consigne complète. Il répond par écrit ; tout changement qu’il veut est une proposition que la personne approuve. Les agents sont listés dans tes instructions.',
+	"List the person's films, series, and books: status (want, doing, done, dropped), rating out of 10, creators, genres, and progress.":
+		'Lister les films, séries et livres de la personne : statut (envie, en cours, fini, abandonné), note sur 10, auteurs, genres et progression.',
+	"Axon's own ranking of the person's want list and unfinished items, each with its reasons (shared creators and genres with what they rated 8 or more).":
+		'Le classement d’Axon de la liste d’envies et des œuvres non terminées de la personne, chacune avec ses raisons (auteurs et genres en commun avec ce qu’elle a noté 8 ou plus).',
+	"Propose adding a film, series, book, or video game to the person's list: on the want list, or as being read, watched, or played (status doing) or finished (done) when they say so. Give what you know for sure of its metadata (year, creators, genres, total pages or episodes); the cover is found by Axon. note also creates its literature note from the vault template. reason says why it fits them, or that they asked. Nothing is added until the person approves.":
+		'Proposer d’ajouter un film, une série, un livre ou un jeu vidéo à la liste de la personne : en envie, ou en cours de lecture, de visionnage ou de jeu (statut doing), ou fini (done) quand elle le dit. Donner ce que l’on sait de sûr de ses métadonnées (année, auteurs, genres, nombre de pages ou d’épisodes) ; la couverture est trouvée par Axon. note crée aussi sa note de lecture à partir du modèle du coffre. reason dit pourquoi elle lui convient, ou qu’elle l’a demandée. Rien n’est ajouté avant l’approbation de la personne.',
+	"The person's workouts over the last days (default 14, up to 90): date, kind, title, minutes, effort (RPE 1-10), and sets.":
+		'Les séances de sport de la personne sur les derniers jours (14 par défaut, jusqu’à 90) : date, type, titre, minutes, effort (RPE 1-10) et séries.',
+	'Propose a new task. Nothing is created until the person approves.':
+		'Proposer une nouvelle tâche. Rien n’est créé avant l’approbation de la personne.',
+	"Get the person's latest skills assessment: their role, experience, goals, hours per week, preferred formats, and their level (0 to 5, with the reason) in each domain they chose. Use it instead of asking again.":
+		'Obtenir le dernier bilan de compétences de la personne : son rôle, son expérience, ses objectifs, ses heures par semaine, ses formats préférés et son niveau (0 à 5, avec la raison) dans chaque domaine choisi. À utiliser au lieu de redemander.',
+	"List the curated library's domains (id, title, number of resources). Import them as roadmaps from the Learn page.":
+		'Lister les domaines de la bibliothèque sélectionnée (identifiant, titre, nombre de ressources). Ils s’importent comme parcours depuis la page Apprendre.',
+	"Search Axon's curated library of widely recommended books, papers, courses, videos, and channels across computing domains. Every word must match the title, author, section, or domain.":
+		'Chercher dans la bibliothèque sélectionnée par Axon des livres, articles, cours, vidéos et chaînes largement recommandés dans les domaines de l’informatique. Chaque mot doit correspondre au titre, à l’auteur, à la section ou au domaine.',
+	'Read the text of a public learning page (up to 12,000 characters). Only allowlisted educational sites (wikipedia.org, wikibooks.org, developer.mozilla.org, ocw.mit.edu, openlearninglibrary.mit.edu, www.coursera.org, www.edx.org, www.khanacademy.org, arxiv.org, docs.python.org, go.dev, pkg.go.dev, doc.rust-lang.org, www.freecodecamp.org, openstax.org, www.gutenberg.org, ossu.dev and their subdomains) are reachable, robots.txt is honoured, and a run may read 15 pages.':
+		'Lire le texte d’une page d’apprentissage publique (jusqu’à 12 000 caractères). Seuls des sites éducatifs autorisés (wikipedia.org, wikibooks.org, developer.mozilla.org, ocw.mit.edu, openlearninglibrary.mit.edu, www.coursera.org, www.edx.org, www.khanacademy.org, arxiv.org, docs.python.org, go.dev, pkg.go.dev, doc.rust-lang.org, www.freecodecamp.org, openstax.org, www.gutenberg.org, ossu.dev et leurs sous-domaines) sont accessibles, robots.txt est respecté, et une exécution peut lire 15 pages.',
+	"List the person's roadmaps with progress.":
+		'Lister les parcours de la personne avec leur progression.',
+	"Get a roadmap's skills (title, section, status, link) and prerequisites.":
+		'Obtenir les compétences d’un parcours (titre, section, statut, lien) et leurs prérequis.',
+	"Propose adding learning resources to one of the person's roadmaps, each with its link and attribution. Nothing changes until the person approves.":
+		'Proposer d’ajouter des ressources d’apprentissage à l’un des parcours de la personne, chacune avec son lien et son attribution. Rien ne change avant l’approbation de la personne.',
+	'List file paths on the default branch (up to 2,000), optionally under a folder prefix.':
+		'Lister les chemins de fichiers de la branche par défaut (jusqu’à 2 000), éventuellement sous un dossier.',
+	"Propose an issue for the repository's project board. Nothing is created until the person approves.":
+		'Proposer une issue pour le tableau de projet du dépôt. Rien n’est créé avant l’approbation de la personne.',
+	'Read one task, including its notes.': 'Lire une tâche, avec ses notes.',
+	'Propose changes to one task. Nothing changes until the person approves. Include only the fields to change.':
+		'Proposer des changements à une tâche. Rien ne change avant l’approbation de la personne. N’inclure que les champs à changer.',
+	"List the person's literature and permanent notes (id, title, path, type, tags), newest first. Fleeting notes are never listed.":
+		'Lister les notes de lecture et permanentes de la personne (identifiant, titre, chemin, type, étiquettes), les plus récentes d’abord. Les notes éphémères ne sont jamais listées.',
+	"Read a literature or permanent note's Markdown. Any other kind of note is refused.":
+		'Lire le Markdown d’une note de lecture ou permanente. Tout autre type de note est refusé.',
+	"List the person's flashcard decks with how many cards each holds and how many are due.":
+		'Lister les paquets de fiches de la personne avec le nombre de fiches de chacun et le nombre à revoir.',
+	"List the person's flashcards (id, deck, front, back, whether it has a picture or a memory image, lapses), newest first.":
+		'Lister les fiches de la personne (identifiant, paquet, recto, verso, si elle a une image ou une image mentale, oublis), les plus récentes d’abord.',
+	'Propose flashcards for retrieval practice. Each card asks one thing, has a short answer, and names the note it comes from. Nothing is created until the person approves.':
+		'Proposer des fiches pour la pratique de rappel. Chaque fiche pose une seule question, a une réponse courte et nomme la note dont elle vient. Rien n’est créé avant l’approbation de la personne.',
+	"Add a drawing (SVG) and/or a vivid memory image to existing flashcards, for dual coding. A card's current picture is replaced only when a drawing is given. Nothing changes until the person approves.":
+		'Ajouter un dessin (SVG) et/ou une image mentale frappante à des fiches existantes, pour le double codage. L’image actuelle d’une fiche n’est remplacée que si un dessin est donné. Rien ne change avant l’approbation de la personne.',
+	"List the person's tech watch topics with their keywords and how many news each had in the last 30 days.":
+		'Lister les sujets de veille de la personne avec leurs mots-clés et le nombre d’actualités de chacun sur les 30 derniers jours.',
+	'List the sources the person follows: title, address, health (ok, failing, waiting, off), news this week, and topics.':
+		'Lister les sources que suit la personne : titre, adresse, état (ok, en échec, en attente, désactivée), actualités de la semaine et sujets.',
+	"List recent news from the person's tech watch, newest first, at most 50: title, source, date, kind, labels, a short summary, and the other sources that carried it.":
+		'Lister les actualités récentes de la veille de la personne, les plus récentes d’abord, au plus 50 : titre, source, date, type, étiquettes, un court résumé et les autres sources qui l’ont relayée.',
+	"The concepts of the person's news over the last 30 days, from their news graph: how many news carry each, its trend (above 1.5 rising, below -1.5 fading), the concepts it goes with, and whether their own notes share it.":
+		'Les concepts des actualités de la personne sur les 30 derniers jours, d’après son graphe : combien d’actualités portent chacun, sa tendance (au-dessus de 1,5 en hausse, sous -1,5 en baisse), les concepts qui l’accompagnent, et si ses propres notes le partagent.',
+	'Propose following a source in the tech watch: a feed, a site, a Medium author, a Substack, a YouTube channel, or a GitHub repository. Axon finds the feed behind the address and fetches it once approved. topics are names of existing or new topics; schedule is a five-field cron, midnight by default. reason says what it adds to what they already follow. Nothing changes until the person approves.':
+		'Proposer de suivre une source dans la veille : un flux, un site, un auteur Medium, un Substack, une chaîne YouTube ou un dépôt GitHub. Axon trouve le flux derrière l’adresse et le récupère une fois approuvé. topics sont des noms de sujets existants ou nouveaux ; schedule est un cron à cinq champs, minuit par défaut. reason dit ce qu’elle apporte à ce que la personne suit déjà. Rien ne change avant l’approbation de la personne.',
+	'Propose a tech watch topic: a name and keywords (a keyword in a title, or two in the text, label a news item with the topic; synonyms count). reason says which news or interests it gathers. Nothing changes until the person approves.':
+		'Proposer un sujet de veille : un nom et des mots-clés (un mot-clé dans un titre, ou deux dans le texte, étiquettent une actualité avec le sujet ; les synonymes comptent). reason dit quelles actualités ou quels intérêts il rassemble. Rien ne change avant l’approbation de la personne.',
+	'Propose a new roadmap. Every skill cites the source it is based on; prerequisites name earlier skills by title. Nothing is created until the person approves.':
+		'Proposer un nouveau parcours. Chaque compétence cite la source sur laquelle elle s’appuie ; les prérequis nomment des compétences antérieures par leur titre. Rien n’est créé avant l’approbation de la personne.',
+	reads: 'lit',
+	'Ideas and practices': 'Idées et pratiques',
+	'Classes (ontology)': 'Classes (ontologie)',
+	'Cloud services': 'Services cloud',
+	'Concepts that go together': 'Concepts qui vont ensemble',
+	Concepts: 'Concepts',
+	Databases: 'Bases de données',
+	'Facts from the news': 'Faits tirés des actualités',
+	'Facts read in the news': 'Faits lus dans les actualités',
+	Facts: 'Faits',
+	'Knowledge graph: {n} nodes. The tables below list them and their facts.':
+		'Graphe de connaissances : {n} nœuds. Les tableaux ci-dessous les listent avec leurs faits.',
+	Languages: 'Langages',
+	'Mentioned together': 'Cités ensemble',
+	'Mentioned with': 'Cité avec',
+	'No fact read yet: entities are only mentioned together.':
+		'Aucun fait lu pour l’instant : les entités sont seulement citées ensemble.',
+	'Not enough news in this period to see entities. A concept needs at least two news items.':
+		'Pas assez d’actualités sur cette période pour voir des entités. Un concept doit apparaître dans au moins deux actualités.',
+	Object: 'Objet',
+	'Ontology: is a, developed by, fork of': 'Ontologie : est un, développé par, fork de',
+	Organizations: 'Organisations',
+	Predicate: 'Prédicat',
+	'Read in': 'Lu dans',
+	'Select a node for its facts and the sentences they were read in. Arrows point from subject to object; dashed lines join an entity to its class. Larger nodes are more central; a ring means your notes share it.':
+		'Sélectionnez un nœud pour voir ses faits et les phrases où ils ont été lus. Les flèches vont du sujet à l’objet ; les pointillés relient une entité à sa classe. Les nœuds plus grands sont plus centraux ; un anneau signifie que vos notes le partagent.',
+	'Show the entities and concepts as a table': 'Afficher les entités et concepts en tableau',
+	'Show the facts as a table': 'Afficher les faits en tableau',
+	'Show the {n} most central': 'Afficher les {n} plus centraux',
+	Standards: 'Standards',
+	Subject: 'Sujet',
+	Technologies: 'Technologies',
+	'The entities of your news (technologies, organizations, databases, standards…), each an instance of a class, and the facts the news state about them, with the news they were read in. Built from the tech watch only; your notes have their own graph.':
+		'Les entités de vos actualités (technologies, organisations, bases de données, standards…), chacune instance d’une classe, et les faits que les actualités énoncent à leur sujet, avec les actualités où ils ont été lus. Construit à partir de la veille uniquement ; vos notes ont leur propre graphe.',
+	'The ontology': 'L’ontologie',
+	Types: 'Types',
+	Vulnerabilities: 'Vulnérabilités',
+	acquires: 'rachète',
+	affects: 'touche',
+	'alternative to': 'alternative à',
+	deprecates: 'déprécie',
+	'developed by': 'développé par',
+	'fork of': 'fork de',
+	'goes with': 'va avec',
+	'integrates with': 's’intègre à',
+	'invests in': 'investit dans',
+	'is a': 'est un',
+	'mentioned with': 'cité avec',
+	'migrates to': 'migre vers',
+	'part of': 'fait partie de',
+	'partners with': 's’associe à',
+	releases: 'publie',
+	uses: 'utilise',
+	'{items} news · {entities} entities in {classes} classes · {facts} facts read in the news · {concepts} concepts · {communities} communities':
+		'{items} actualités · {entities} entités dans {classes} classes · {facts} faits lus dans les actualités · {concepts} concepts · {communities} communautés',
+	Listen: 'Écouter',
+	Products: 'Produits',
+	Events: 'Événements',
+	Datasets: 'Jeux de données',
+	Publications: 'Publications',
+	develops: 'développe',
+	announces: 'annonce',
+	'built on': 'repose sur',
+	supports: 'prend en charge',
+	'competes with': 'concurrence',
+	outperforms: 'surpasse',
+	funds: 'finance',
+	fixes: 'corrige',
+	'version of': 'version de',
+	founded: 'a fondé',
+	leads: 'dirige',
+	'works at': 'travaille chez',
+	hires: 'recrute',
+	'located in': 'situé à',
+	regulates: 'réglemente',
+	adopts: 'adopte',
+	'Build the tech watch’s knowledge graph with my model: it reads each article once (not general news) for its people, organizations, technologies, events, and the facts the text states, each with its sentence, within the budget. Without it, the graph reads only the names Axon knows.':
+		'Construire le graphe de connaissances de la veille avec mon modèle : il lit chaque article une fois (pas les actualités générales) pour en tirer les personnes, organisations, technologies, événements et les faits que le texte énonce, chacun avec sa phrase, dans la limite du budget. Sans cela, le graphe ne lit que les noms qu’Axon connaît.',
+	Issue: 'Ticket',
+	Subtask: 'Sous-tâche',
+	Card: 'Carte',
+	'Moved to {day}.': 'Déplacée au {day}.',
+	'Delete “{title}”? It goes to the trash.': 'Supprimer « {title} » ? Elle va dans la corbeille.',
+	'Moved to the trash.': 'Mise à la corbeille.',
+	Reopen: 'Rouvrir',
+	'Done. Well done!': 'Terminé. Bravo !',
+	'Mark done': 'Marquer terminée',
+	'Started.': 'Commencée.',
+	'Focus on it': 'Me concentrer dessus',
+	'Next week': 'Semaine prochaine',
+	'Part of': 'Fait partie de',
+	Subtasks: 'Sous-tâches',
+	'Show the notes panel': 'Afficher le panneau des notes',
+	'Hide the notes panel': 'Masquer le panneau des notes',
+	'Listen to {voice}': 'Écouter {voice}',
+	'Type an amount like 150.00.': 'Saisissez un montant comme 150,00.',
+	'Transferred {amount}.': '{amount} transférés.',
+	'Transfer between accounts': 'Virement entre comptes',
+	'Book the exam for {tier}': 'Réservez l’examen pour {tier}',
+	'Pass it for {tier}': 'Réussissez-le pour {tier}',
+	'Link its credential for {tier}': 'Ajoutez le lien du certificat pour {tier}',
+	'{n} more notes taken from it for {tier}':
+		'Encore {n} notes tirées de cette ressource pour {tier}',
+	'Roadmap resources': 'Ressources du parcours',
+	'A certification exam booked.': 'Un examen de certification réservé.',
+	'A certification passed.': 'Une certification obtenue.',
+	'A certification passed, its credential linked.':
+		'Une certification obtenue, son certificat en lien.',
+	'{n} notes taken from a resource of my roadmap.':
+		'{n} notes tirées d’une ressource de mon parcours.',
 	'{n} more certifications passed for {tier}': 'Encore {n} certifications pour {tier}',
 	'{n} % of a roadmap of my own learned.': '{n} % d’un parcours à moi acquis.',
 	'{n} % of a project of my roadmap done.': '{n} % d’un projet de mon parcours terminé.',
@@ -3799,6 +4017,9 @@ export const fr: Record<string, string> = {
 	'The year to {month}': 'L’année jusqu’à {month}',
 	'Show the figures as a table': 'Afficher les chiffres en tableau',
 	'Something went wrong. Try again.': 'Un problème est survenu. Réessayez.',
+	'Request failed (HTTP {status}).': 'La requête a échoué (HTTP {status}).',
+	'The passkey request was cancelled or timed out.':
+		'La demande de clé d’accès a été annulée ou a expiré.',
 	Hosts: 'Animateurs',
 	'One host': 'Un animateur',
 	'A conversation: two hosts take turns': 'Une conversation : deux animateurs se relaient',
@@ -3957,8 +4178,8 @@ export const fr: Record<string, string> = {
 	'See the plan: its milestones, projects, and certifications':
 		'Voir le plan : ses jalons, ses projets et ses certifications',
 	'The Top-5% roadmap, version 2': 'Le parcours Top 5 %, version 2',
-	'37 domains in 18 phases from Monday 19 October 2026, a certification for each (45 in all), and its 18 milestones readable before you start.':
-		'37 domaines en 18 phases à partir du lundi 19 octobre 2026, une certification pour chacun (45 en tout), et ses 18 jalons lisibles avant de commencer.',
+	'47 domains in 18 phases from Monday 19 October 2026, certifications for each domain (141 in all), and its 18 milestones readable before you start.':
+		'47 domaines en 18 phases à partir du lundi 19 octobre 2026, des certifications pour chaque domaine (141 en tout), et ses 18 jalons lisibles avant de commencer.',
 	'The phase, today’s study block, its project, and the next certification, on Today.':
 		'La phase, le créneau d’étude du jour, son projet et la prochaine certification, sur Aujourd’hui.',
 	'Draw in notes': 'Dessiner dans les notes',

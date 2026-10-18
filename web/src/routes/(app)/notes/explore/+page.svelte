@@ -406,7 +406,7 @@
 	}
 	.kpis {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
 		gap: var(--space-3);
 		margin-bottom: var(--space-4);
 	}
@@ -557,7 +557,7 @@
 	}
 	.charts {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 		gap: var(--space-4);
 	}
 	.bars {

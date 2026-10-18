@@ -278,9 +278,9 @@
 					{#each a.tools as toolCall (toolCall.name)}
 						<li>
 							<span class="chip" class:write={toolCall.write}
-								>{toolCall.write ? t('needs approval') : 'reads'}</span
+								>{toolCall.write ? t('needs approval') : t('reads')}</span
 							>
-							{toolCall.description}
+							{t(toolCall.description)}
 						</li>
 					{/each}
 				</ul>

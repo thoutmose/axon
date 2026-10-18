@@ -97,7 +97,7 @@ var LearningNotes = [][2]string{
 // 2031, and 20 € a month of rewards; the demo puts one month in each.
 var Funds = []budget.PotFields{
 	{Name: ptr("Certification fund"), TargetCents: ptr(int64(750000)), TargetDate: ptr("2031-01-05"),
-		Note: ptr("The roadmap's 45 certifications, from PCPP1 to the Google Professional Data Engineer: 150 € a month.")},
+		Note: ptr("The roadmap's 141 certifications, from PCEP to the Databricks Data Engineer Professional: 150 € a month.")},
 	{Name: ptr("Reward fund"), TargetCents: ptr(int64(24000)), TargetDate: ptr(""),
 		Note: ptr("Streak rewards for the study block, and one for every milestone: 20 € a month.")},
 }
@@ -106,7 +106,7 @@ var Funds = []budget.PotFields{
 func assessment() roadmaps.AssessmentInput {
 	return roadmaps.AssessmentInput{
 		Profile: roadmaps.Profile{Role: "Data engineer", Experience: "Python, SQL, ELT/ETL, Snowflake, Airflow, dbt Core, Docker, Linux, Bash",
-			Goals: "Top 5% in 37 engineering domains by January 2031.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
+			Goals: "Top 5% in 47 engineering domains by January 2031.", HoursPerWeek: 22, Formats: []string{"book", "course", "practice"}},
 		Interests: []string{"python", "dsa", "maths", "linux-bash", "databases", "data-engineering"},
 		Ratings:   map[string]int{"python": 4, "dsa": 2, "maths": 2, "linux-bash": 3, "databases": 3, "data-engineering": 4},
 		Answers:   map[string]int{},
@@ -740,8 +740,15 @@ func seedHistory(ctx context.Context, tx pgx.Tx, user uuid.UUID, now time.Time) 
 			batch = append(batch, []any{uuid.Must(uuid.NewV7()), user, "user", it.Type, it.ID, "updated", []string{}, at})
 		}
 	}
-	_, err = tx.CopyFrom(ctx, pgx.Identifier{"events"}, []string{"id", "user_id", "actor", "entity_type", "entity_id", "kind", "fields", "created_at"},
-		pgx.CopyFromRows(batch))
+	if _, err = tx.CopyFrom(ctx, pgx.Identifier{"events"}, []string{"id", "user_id", "actor", "entity_type", "entity_id", "kind", "fields", "created_at"},
+		pgx.CopyFromRows(batch)); err != nil {
+		return err
+	}
+	// Tasks and notes date from their first edit: made tonight, Insights would
+	// count the whole demo as captured and written this week.
+	_, err = tx.Exec(ctx, `UPDATE entities e SET created_at = f.first
+		FROM (SELECT entity_id, min(created_at) AS first FROM events WHERE user_id = $1 GROUP BY entity_id) f
+		WHERE e.id = f.entity_id AND e.user_id = $1 AND e.type IN ('task', 'note') AND f.first < e.created_at`, user)
 	return err
 }
 

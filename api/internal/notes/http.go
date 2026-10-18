@@ -27,6 +27,7 @@ import (
 const (
 	maxNoteBody   = 2 << 20
 	maxImportBody = 50 << 20
+	importTime    = 10 * time.Minute // reading and importing one archive
 )
 
 // Handlers serves notes, import, and sync.
@@ -253,6 +254,11 @@ type ImportResult struct {
 
 func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
+	// A vault of thousands of notes, sent over a slow link, outlasts the
+	// server's 15-second limits: this route gets its own.
+	rc := http.NewResponseController(w)
+	_ = rc.SetReadDeadline(time.Now().Add(importTime))
+	_ = rc.SetWriteDeadline(time.Now().Add(importTime))
 	data, err := io.ReadAll(io.LimitReader(r.Body, maxImportBody+1))
 	if err != nil || len(data) > maxImportBody {
 		httpx.Problem(w, http.StatusRequestEntityTooLarge, "Imports are limited to 50 MB.")
@@ -265,6 +271,7 @@ func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 	}
 	res := ImportResult{Created: []string{}, Unchanged: []string{}, Conflicts: []string{}, Skipped: []string{}}
 	err = pgx.BeginFunc(r.Context(), h.db, func(tx pgx.Tx) error {
+		var batch Batch
 		for _, f := range zr.File {
 			if f.FileInfo().IsDir() {
 				continue
@@ -293,7 +300,7 @@ func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 			cur, err := GetByPath(r.Context(), tx, who.UserID, p)
 			switch {
 			case errors.Is(err, graph.ErrNotFound):
-				if _, err := Create(r.Context(), tx, who.UserID, graph.UserActor, p, string(content)); err != nil {
+				if _, err := batch.Add(r.Context(), tx, who.UserID, graph.UserActor, p, string(content)); err != nil {
 					return err
 				}
 				res.Created = append(res.Created, p)
@@ -305,7 +312,7 @@ func (h *Handlers) importZip(w http.ResponseWriter, r *http.Request) {
 				res.Conflicts = append(res.Conflicts, p)
 			}
 		}
-		return nil
+		return batch.Finish(r.Context(), tx, who.UserID, graph.UserActor)
 	})
 	if err != nil {
 		h.fail(w, err)

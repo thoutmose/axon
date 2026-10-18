@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyDay, hasContent, scaleArt } from './journal';
+import { emptyDay, fieldsOf, hasContent, scaleArt } from './journal';
 
 describe('a journal day', () => {
 	it('is worth saving with any one thing in it', () => {
@@ -7,6 +7,26 @@ describe('a journal day', () => {
 		expect(hasContent({ ...emptyDay(), mood: 3 })).toBe(true);
 		expect(hasContent({ ...emptyDay(), gratitude: ['', ' Sun ', ''] })).toBe(true);
 		expect(hasContent({ ...emptyDay(), note: '   ' })).toBe(false);
+	});
+});
+
+describe('an entry written back', () => {
+	it('carries only the fields the API takes', () => {
+		const stored = {
+			...emptyDay(),
+			mood: 4,
+			day: '2026-10-18',
+			updated_at: '2026-10-18T09:00:00Z'
+		};
+		expect(Object.keys(fieldsOf(stored)).sort()).toEqual([
+			'energy',
+			'gratitude',
+			'mood',
+			'note',
+			'sleep_hours',
+			'stress'
+		]);
+		expect(fieldsOf(stored).mood).toBe(4);
 	});
 });
 

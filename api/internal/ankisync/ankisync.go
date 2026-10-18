@@ -142,7 +142,7 @@ func (s *Service) send(ctx context.Context, userID uuid.UUID, a *Account, passwo
 		if e.Error == "" {
 			e.Error = resp.Status
 		}
-		return Result{}, errors.New("Anki: " + e.Error)
+		return Result{}, errors.New("Anki: " + summary(e.Error))
 	}
 	var r Result
 	err = json.Unmarshal(raw, &r)
@@ -286,4 +286,11 @@ func (s *Service) Export(ctx context.Context, q db.Querier, userID uuid.UUID) (a
 		return nil, err
 	}
 	return a, nil
+}
+
+// summary keeps the first line of the Anki library's error, without the
+// Unicode isolation marks it wraps details in: the rest is for developers.
+func summary(msg string) string {
+	first, _, _ := strings.Cut(msg, "\n")
+	return strings.TrimSpace(strings.NewReplacer("\u2068", "", "\u2069", "").Replace(first))
 }

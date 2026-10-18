@@ -139,6 +139,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	priv.Register("vault_source", vaultsrv.Export)
 	notifyAPI := notify.NewHandlers(pool, log, sealer, cfg.BaseURL)
 	watchAPI := watch.NewHandlers(pool, log)
+	watchAPI.SetDialogue(agentsAPI)
 	absAPI := audiobookshelf.NewStore(pool, log, sealer)
 	priv.Register("channels", notify.Export)
 	priv.Register("sign_in_identities", auth.ExportIdentities)

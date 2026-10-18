@@ -34,7 +34,7 @@ func TestAgentModelsAndVideoSummaries(t *testing.T) {
 	for _, a := range m.Agents {
 		found[a.Agent] = a.Default != "" && a.Model == ""
 	}
-	if m.All != "" || !found["tutor"] || !found["task-manager"] || !found["jarvis"] || !found["video-summary"] {
+	if m.All != "" || !found["tutor"] || !found["task-manager"] || !found["jarvis"] || !found["video-summary"] || !found["watch-knowledge"] {
 		t.Fatalf("models = %+v", m)
 	}
 	alice.mustDo(422, "PUT", "/v1/me/agent-models", []byte(`{"models":{"nobody":"claude-sonnet-5-5"}}`))
@@ -109,6 +109,40 @@ func TestAgentModelsAndVideoSummaries(t *testing.T) {
 		t.Fatal("summarised twice")
 	}
 	if runs := alice.mustDo(200, "GET", "/v1/agent-runs", nil); !bytes.Contains(runs, []byte(`"video-summary"`)) {
+		t.Fatalf("runs = %s", runs)
+	}
+
+	// The tech watch's knowledge graph (owner request): off until asked for,
+	// then each item read once (outliers, set aside from the graph, are not);
+	// a fact the item does not state is dropped.
+	if _, err := pool.Exec(ctx, `UPDATE watch_items SET outlier = '', content = 'Raft elects a leader. The etcd store is built on Raft for consensus.'`); err != nil {
+		t.Fatal(err)
+	}
+	fake.load()
+	if err := runner.ExtractKnowledge(ctx, 5); err != nil || len(fake.lastRequests()) != 0 {
+		t.Fatalf("read without being asked: %v, %d calls", err, len(fake.lastRequests()))
+	}
+	alice.mustDo(200, "PUT", "/v1/me/agent-settings", []byte(`{"monthly_budget_cents":200,"watch_knowledge":true}`))
+	fake.load(finalText(`{"entities":[{"name":"etcd","type":"database","class":"Key-value store","aliases":[]},` +
+		`{"name":"Raft","type":"concept","class":"Consensus algorithm","aliases":[]}],` +
+		`"facts":[{"subject":"etcd","predicate":"built_on","object":"Raft","sentence":"The etcd store is built on Raft for consensus."},` +
+		`{"subject":"Raft","predicate":"outperforms","object":"etcd","sentence":"Raft beats etcd every time."}]}`))
+	if err := runner.ExtractKnowledge(ctx, 5); err != nil {
+		t.Fatal(err)
+	}
+	if reqs := fake.lastRequests(); len(reqs) != 1 || reqs[0].Model != "claude-sonnet-5-5" || len(reqs[0].Tools) != 0 {
+		t.Fatalf("knowledge requests = %d", len(reqs))
+	}
+	var facts int
+	if err := pool.QueryRow(ctx, `SELECT jsonb_array_length(kg->'facts') FROM watch_items WHERE kg IS NOT NULL`).Scan(&facts); err != nil || facts != 1 {
+		t.Fatalf("stored facts = %d, %v", facts, err)
+	}
+	fake.load()
+	_ = runner.ExtractKnowledge(ctx, 5)
+	if len(fake.lastRequests()) != 0 {
+		t.Fatal("read twice")
+	}
+	if runs := alice.mustDo(200, "GET", "/v1/agent-runs", nil); !bytes.Contains(runs, []byte(`"watch-knowledge"`)) {
 		t.Fatalf("runs = %s", runs)
 	}
 }

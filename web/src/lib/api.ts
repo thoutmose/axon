@@ -47,10 +47,17 @@ export async function apiResponse<T = unknown>(
 		connection.apiDown = true;
 		throw new ApiError(0, t('Axon is unreachable. Check your connection and try again.'));
 	}
-	connection.apiDown = res.status === 502 || res.status === 503 || res.status === 504;
+	// Axon's own errors are problem details; a gateway error without one means
+	// the API did not answer at all (an API 502 about another server does not).
+	connection.apiDown =
+		[502, 503, 504].includes(res.status) &&
+		!res.headers.get('Content-Type')?.startsWith('application/problem+json');
 	if (!res.ok) {
 		const problem = await res.json().catch(() => null);
-		throw new ApiError(res.status, problem?.detail ?? `Request failed (HTTP ${res.status}).`);
+		throw new ApiError(
+			res.status,
+			problem?.detail ?? t('Request failed (HTTP {status}).', { status: res.status })
+		);
 	}
 	const etag = res.headers.get('ETag') ?? '';
 	if (res.status === 204 || res.status === 201) {
@@ -63,9 +70,9 @@ export async function apiResponse<T = unknown>(
 export function message(err: unknown): string {
 	if (err instanceof ApiError) return err.message;
 	if (err instanceof Error && err.name === 'NotAllowedError') {
-		return 'The passkey request was cancelled or timed out.';
+		return t('The passkey request was cancelled or timed out.');
 	}
-	return 'Something went wrong. Try again.';
+	return t('Something went wrong. Try again.');
 }
 
 /** Response shapes generated from api/openapi/openapi.yaml (npm run gen:api). */

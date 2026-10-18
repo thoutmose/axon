@@ -11,8 +11,8 @@
 	{#each folder.folders as f (f.path)}
 		<li>
 			<details open={depth < 1}>
-				<summary
-					><span class="folder" aria-hidden="true">▸</span>{f.name}
+				<summary title={f.path}
+					><span class="folder" aria-hidden="true">▸</span><span class="name">{f.name}</span>
 					<span class="count">{f.count}</span></summary
 				>
 				<NoteFolder folder={f} depth={depth + 1} />
@@ -33,6 +33,18 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
+		min-width: 0;
+	}
+	li,
+	details {
+		min-width: 0;
+	}
+	.name {
+		flex: 1;
+		min-width: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.nested {
 		padding-left: var(--space-3);

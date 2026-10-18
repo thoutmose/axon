@@ -61,7 +61,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		}
 	}
 	// The one roadmap, under way (EP-95).
-	if r := visitor.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(r, []byte("Top-5% in 37 engineering domains")) {
+	if r := visitor.mustDo(200, "GET", "/v1/roadmaps", nil); !bytes.Contains(r, []byte("Top-5% in 47 engineering domains")) {
 		t.Errorf("roadmaps = %s", r)
 	}
 	// A tech watch on the roadmap's domains, in the morning digest (EP-110).
@@ -170,6 +170,7 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		{"DELETE", "/v1/me", `{"confirm":"DELETE"}`},
 		{"PUT", "/v1/me/agent-provider", `{"provider":"anthropic","model":"claude-opus-5-5","api_key":"sk-x"}`},
 		{"POST", "/v1/repos", `{"owner":"a","repo":"b","token":"t"}`},
+		{"POST", "/v1/me/logout-all", ``},
 	} {
 		var body []byte
 		if req.body != "" {
@@ -178,6 +179,18 @@ func TestDemoAccountHasSampleDataAndCannotTouchAnythingElse(t *testing.T) {
 		if code, out := visitor.do(req.method, req.path, body); code != 403 || !bytes.Contains(out, []byte("demo account cannot")) {
 			t.Errorf("%s %s = %d %s", req.method, req.path, code, out)
 		}
+	}
+	// Visitors share the account, not each other's sessions or addresses.
+	other := e.client()
+	other.mustDo(204, "POST", "/v1/auth/demo", nil)
+	others := ids(t, other.mustDo(200, "GET", "/v1/me/sessions", nil))
+	if n := count(t, visitor, "/v1/me/sessions"); len(others) != 1 || n != 1 {
+		t.Fatalf("sessions seen: visitor %d, other %d; want only one's own", n, len(others))
+	}
+	visitor.mustDo(403, "DELETE", "/v1/me/sessions/"+others[0], nil)
+	other.mustDo(200, "GET", "/v1/me", nil)
+	if n := count(t, visitor, "/v1/me/audit"); n != 0 {
+		t.Fatalf("audit shows %d events of other visitors", n)
 	}
 	visitor.mustDo(204, "PUT", "/v1/me/consents/ai_agents", []byte(`{"granted":true}`))
 	if !bytes.Contains(visitor.mustDo(200, "GET", "/v1/agents", nil), []byte(`"reason":"demo"`)) {
@@ -242,7 +255,7 @@ func TestDemoStarterGivesARealAccountTheRoadmap(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps", nil), &list)
-	if len(list.Items) != 1 || list.Items[0].Title != "Top-5% in 37 engineering domains" {
+	if len(list.Items) != 1 || list.Items[0].Title != "Top-5% in 47 engineering domains" {
 		t.Fatalf("roadmaps = %+v", list.Items)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/habits", nil), &list)

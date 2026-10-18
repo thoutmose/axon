@@ -9,7 +9,7 @@
 	import AudiobookshelfSettings from '$lib/AudiobookshelfSettings.svelte';
 	import ChannelSettings from '$lib/ChannelSettings.svelte';
 	import { api, message, type Schemas } from '$lib/api';
-	import { setLocale, t } from '$lib/i18n.svelte';
+	import { setLocale, storedLocale, t } from '$lib/i18n.svelte';
 	import { applyAppearance, type Appearance } from '$lib/preferences';
 	import { setHidden } from '$lib/menu.svelte';
 	import { PAGES, pageLabels } from '$lib/uses';
@@ -134,6 +134,7 @@
 	let saving = $state(false);
 	let budget = $state('2.00');
 	let videoSummaries = $state(false);
+	let watchKnowledge = $state(false);
 	let wip = $state('');
 
 	async function load() {
@@ -161,6 +162,7 @@
 			};
 			budget = ((s.ai?.monthly_budget_cents ?? 200) / 100).toFixed(2);
 			videoSummaries = s.ai?.video_summaries ?? false;
+			watchKnowledge = s.ai?.watch_knowledge ?? false;
 			wip = s.templates.project.wip_limit?.toString() ?? '';
 		} catch (err) {
 			error = message(err);
@@ -204,7 +206,8 @@
 				method: 'PUT',
 				body: {
 					monthly_budget_cents: Math.round(Number(budget) * 100),
-					video_summaries: videoSummaries
+					video_summaries: videoSummaries,
+					watch_knowledge: watchKnowledge
 				}
 			});
 			toast(t('Preferences saved.'));
@@ -221,7 +224,7 @@
 		try {
 			const res = await fetch('/api/v1/me/settings.yaml', {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/yaml' },
+				headers: { 'Content-Type': 'application/yaml', 'Accept-Language': storedLocale() },
 				body: await file.text()
 			});
 			const out = await res.json();
@@ -663,6 +666,12 @@
 				<input type="checkbox" bind:checked={videoSummaries} />
 				{t(
 					'Summarise videos and podcast episodes in prose with my model (5 to 10 lines and keywords each, once, within the budget). Without it, Axon summarises them itself, from their own sentences.'
+				)}
+			</label>
+			<label class="check">
+				<input type="checkbox" bind:checked={watchKnowledge} />
+				{t(
+					'Build the tech watch’s knowledge graph with my model: it reads each article once (not general news) for its people, organizations, technologies, events, and the facts the text states, each with its sentence, within the budget. Without it, the graph reads only the names Axon knows.'
 				)}
 			</label>
 			<label class="check">

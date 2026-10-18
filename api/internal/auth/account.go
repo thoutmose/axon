@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -131,9 +132,11 @@ func (s *Service) listSessions(w http.ResponseWriter, r *http.Request) {
 		LastSeenAt time.Time `json:"last_seen_at"`
 		Current    bool      `json:"current"`
 	}
+	// A demo visitor sees only their own session: the others are strangers'.
 	rows, err := s.db.Query(r.Context(),
 		`SELECT id, user_agent, created_at, last_seen_at FROM sessions
-		 WHERE user_id = $1 AND expires_at > now() ORDER BY last_seen_at DESC LIMIT 100`, id.UserID)
+		 WHERE user_id = $1 AND expires_at > now() AND (NOT $2 OR id = $3)
+		 ORDER BY last_seen_at DESC LIMIT 100`, id.UserID, id.Demo, id.SessionID)
 	if err != nil {
 		s.fail(w, r, err)
 		return
@@ -336,6 +339,7 @@ func (s *Service) regenerateRecoveryCodes(w http.ResponseWriter, r *http.Request
 // and records the step, so the same code cannot be used twice. Call it inside
 // the transaction that acts on the code, after locking the user's row.
 func (s *Service) useTOTP(ctx context.Context, tx pgx.Tx, userID uuid.UUID, sealed []byte, code string) bool {
+	code = totpDigits(code)
 	if s.sealer == nil || sealed == nil || len(code) != 6 {
 		return false
 	}
@@ -443,6 +447,10 @@ func (s *Service) totpSwitch(w http.ResponseWriter, r *http.Request, on bool) {
 
 func (s *Service) listAudit(w http.ResponseWriter, r *http.Request) {
 	id, _ := FromContext(r.Context())
+	if id.Demo { // the shared account's events carry other visitors' addresses
+		httpx.JSON(w, http.StatusOK, map[string]any{"items": []any{}})
+		return
+	}
 	events, err := audit.List(r.Context(), s.db, id.UserID, 200)
 	if err != nil {
 		s.fail(w, r, err)
@@ -458,4 +466,15 @@ func validZone(tz string) bool {
 	}
 	_, err := time.LoadLocation(tz)
 	return err == nil
+}
+
+// totpDigits keeps a code's digits: authenticator apps show "123 456", and
+// a pasted code may carry spaces.
+func totpDigits(code string) string {
+	return strings.Map(func(r rune) rune {
+		if r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, code)
 }

@@ -12,7 +12,13 @@ const config = {
 			directives: {
 				'default-src': ['self'],
 				'script-src': ['self'],
-				'style-src': ['self'],
+				// SvelteKit's page-title announcer has one fixed style attribute; this
+				// hash allows exactly it (lib/csp.test.ts checks it still matches).
+				'style-src': [
+					'self',
+					'unsafe-hashes',
+					'sha256-S8qMpvofolR8Mpjy4kQvEm7m1q8clzU4dfDH0AmvZjo='
+				],
 				'img-src': ['self', 'data:'],
 				'object-src': ['none'],
 				'base-uri': ['self'],

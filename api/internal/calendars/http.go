@@ -3,6 +3,7 @@ package calendars
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -121,7 +122,7 @@ func (s *Store) create(w http.ResponseWriter, r *http.Request) {
 		_, _ = s.db.Exec(r.Context(), `DELETE FROM calendar_sources WHERE id = $1`, id)
 		var ea ErrAddress
 		if !errors.As(err, &ea) {
-			err = ErrAddress{"Axon could not read that calendar: " + err.Error() + "."}
+			err = ErrAddress{fmt.Sprintf("Axon could not read that calendar: %s.", err)}
 		}
 		s.fail(w, err)
 		return

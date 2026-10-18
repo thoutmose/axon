@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"slices"
 	"strings"
@@ -184,7 +185,7 @@ func (r *Runner) SetProvider(ctx context.Context, q db.Querier, userID uuid.UUID
 	in.Model = strings.TrimSpace(in.Model)
 	switch {
 	case !slices.Contains(providerNames(), in.Provider):
-		return InputError{"Choose a provider: " + strings.Join(providerNames(), ", ") + "."}
+		return InputError{fmt.Sprintf("Choose a provider: %s.", strings.Join(providerNames(), ", "))}
 	case !validModel(in.Model):
 		return InputError{"Enter the model name your provider uses, like claude-opus-5-5 or llama3.1:8b."}
 	case in.Provider == "local" && (in.BaseURL == nil || !validBaseURL(*in.BaseURL)):
@@ -232,11 +233,20 @@ func SetVideoSummaries(ctx context.Context, q db.Querier, userID uuid.UUID, on b
 	return err
 }
 
+// SetWatchKnowledge turns the model's reading of tech watch items for the
+// knowledge graph on or off (owner request).
+func SetWatchKnowledge(ctx context.Context, q db.Querier, userID uuid.UUID, on bool) error {
+	_, err := q.Exec(ctx, `INSERT INTO agent_settings (user_id, watch_knowledge) VALUES ($1, $2)
+		ON CONFLICT (user_id) DO UPDATE SET watch_knowledge = $2, updated_at = now()`, userID, on)
+	return err
+}
+
 // AIConfig is the agent part of a person's settings; the key is never read back.
 type AIConfig struct {
 	Provider           *ProviderSettings `json:"provider"`
 	MonthlyBudgetCents int               `json:"monthly_budget_cents"`
 	VideoSummaries     bool              `json:"video_summaries"`
+	WatchKnowledge     bool              `json:"watch_knowledge"`
 }
 
 // GetAIConfig returns a person's provider (nil for the server default) and budget.
@@ -247,6 +257,7 @@ func (r *Runner) GetAIConfig(ctx context.Context, q db.Querier, userID uuid.UUID
 	}
 	c := AIConfig{Provider: s, MonthlyBudgetCents: 200}
 	err = q.QueryRow(ctx, `SELECT coalesce((SELECT monthly_budget_cents FROM agent_settings WHERE user_id = $1), 200),
-		coalesce((SELECT video_summaries FROM agent_settings WHERE user_id = $1), false)`, userID).Scan(&c.MonthlyBudgetCents, &c.VideoSummaries)
+		coalesce((SELECT video_summaries FROM agent_settings WHERE user_id = $1), false),
+		coalesce((SELECT watch_knowledge FROM agent_settings WHERE user_id = $1), false)`, userID).Scan(&c.MonthlyBudgetCents, &c.VideoSummaries, &c.WatchKnowledge)
 	return c, err
 }

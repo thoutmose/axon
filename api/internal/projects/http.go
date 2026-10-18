@@ -42,6 +42,69 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/projects/{id}/cards", h.addCard)
 	r.Put("/v1/projects/{id}/cards/{task}", h.placeCard)
 	r.Delete("/v1/cards/{task}", h.removeCard)
+	r.Get("/v1/tasks/{id}/card", h.taskCard)
+}
+
+// TaskCard is where a task sits on a project's board (owner request: a task
+// opened from the calendar shows its project, its parent, and its subtasks).
+type TaskCard struct {
+	Project  CardRef   `json:"project"`
+	Column   string    `json:"column"`
+	Kind     string    `json:"kind"`
+	Parent   *CardRef  `json:"parent"`
+	Children []CardRef `json:"children"`
+}
+
+// CardRef names a project, or a task with its status.
+type CardRef struct {
+	ID     uuid.UUID `json:"id"`
+	Title  string    `json:"title"`
+	Status string    `json:"status,omitempty"`
+}
+
+// taskCard answers {"card": null} for a task on no board.
+func (h *Handlers) taskCard(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	id, err := uuidParam(r, "id")
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var c TaskCard
+	var parent *uuid.UUID
+	err = h.db.QueryRow(r.Context(), `SELECT c.project_id, p.title, c.col, c.kind, c.parent_id
+		FROM project_cards c JOIN entities p ON p.id = c.project_id JOIN entities t ON t.id = c.task_id
+		WHERE c.task_id = $1 AND t.user_id = $2`, id, who.UserID).Scan(&c.Project.ID, &c.Project.Title, &c.Column, &c.Kind, &parent)
+	if errors.Is(err, pgx.ErrNoRows) {
+		httpx.JSON(w, http.StatusOK, map[string]any{"card": nil})
+		return
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	if parent != nil {
+		c.Parent = &CardRef{ID: *parent}
+		if err := h.db.QueryRow(r.Context(), `SELECT e.title, t.status FROM entities e JOIN tasks t ON t.id = e.id WHERE e.id = $1`, *parent).
+			Scan(&c.Parent.Title, &c.Parent.Status); err != nil {
+			h.fail(w, err)
+			return
+		}
+	}
+	rows, err := h.db.Query(r.Context(), `SELECT e.id, e.title, t.status FROM project_cards c JOIN entities e ON e.id = c.task_id
+		JOIN tasks t ON t.id = c.task_id WHERE c.parent_id = $1 ORDER BY c.position`, id)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	if c.Children, err = pgx.CollectRows(rows, pgx.RowToStructByPos[CardRef]); err != nil {
+		h.fail(w, err)
+		return
+	}
+	if c.Children == nil {
+		c.Children = []CardRef{}
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"card": c})
 }
 
 func (h *Handlers) fail(w http.ResponseWriter, err error) {

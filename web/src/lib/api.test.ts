@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api, ApiError, message } from './api';
+import { connection } from './connection.svelte';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -38,5 +39,18 @@ describe('api', () => {
 		const err = await api('/v1/me').catch((e) => e);
 		expect(err).toBeInstanceOf(ApiError);
 		expect(message(err)).toMatch(/unreachable/);
+	});
+
+	it('says Axon is down only when Axon itself does not answer', async () => {
+		// The API answering 502 about another server (Audiobookshelf, Anki) is up.
+		respond(502, '{"detail":"Audiobookshelf did not answer."}', 'application/problem+json');
+		await expect(api('/v1/audiobookshelf', { method: 'PUT', body: {} })).rejects.toThrow(
+			'Audiobookshelf did not answer.'
+		);
+		expect(connection.apiDown).toBe(false);
+		// Caddy's own 502, with the API stopped, is not.
+		respond(502, '', 'text/plain');
+		await expect(api('/v1/me')).rejects.toBeInstanceOf(ApiError);
+		expect(connection.apiDown).toBe(true);
 	});
 });

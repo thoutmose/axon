@@ -4,6 +4,7 @@
 	import { api, message } from '$lib/api';
 	import {
 		frequencies,
+		ruleLabel,
 		loadBasics,
 		type Account,
 		type Category,
@@ -32,7 +33,6 @@
 		payee: ''
 	});
 	const money = (c: number) => formatCents(c, currency);
-	const every = (rule: string) => t(frequencies.find((f) => f.rule === rule)?.label ?? rule);
 	const name = (list: { id: string; name: string }[], id: string | null) =>
 		list.find((x) => x.id === id)?.name ?? '';
 
@@ -145,7 +145,7 @@
 											: name(categories, r.category_id) || t('Uncategorised'))}</span
 								></td
 							>
-							<td>{every(r.rule)}</td>
+							<td>{ruleLabel(r.rule)}</td>
 							<td>{r.next_on ?? t('Ended')}{r.active ? '' : ' (paused)'}</td>
 							<td class="num" class:ok={r.kind === 'income'}
 								>{r.kind === 'income' ? '+' : r.kind === 'transfer' ? '⇄' : '−'}{money(

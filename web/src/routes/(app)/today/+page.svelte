@@ -233,11 +233,10 @@
 		}
 	}
 
-	const dateLabel = new Date().toLocaleDateString(appLocale(), {
-		weekday: 'long',
-		day: 'numeric',
-		month: 'long'
-	});
+	// Derived: the saved language is applied after this page is first made.
+	const dateLabel = $derived(
+		new Date().toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
+	);
 
 	function greeting(): string {
 		const h = new Date().getHours();

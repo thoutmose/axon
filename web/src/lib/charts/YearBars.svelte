@@ -9,7 +9,9 @@
 	const top = $derived(Math.max(1, ...months.flatMap((m) => [m.income, m.expense])));
 	const pct = (v: number) => `${(v / top) * 100}%`;
 	let active = $state<number | null>(null);
-	const shown = $derived(active ?? months.length - 1);
+	// At rest, the latest month with money in or out: this month, not December.
+	const latest = $derived(months.findLastIndex((m) => m.income > 0 || m.expense > 0));
+	const shown = $derived(active ?? (latest >= 0 ? latest : months.length - 1));
 </script>
 
 <figure>

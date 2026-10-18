@@ -86,7 +86,7 @@ func run(args []string) error {
 }
 
 func serve() error {
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log := slog.New(clientGone{slog.NewJSONHandler(os.Stdout, nil)})
 
 	dsn, err := databaseURL()
 	if err != nil {
@@ -149,19 +149,25 @@ func serve() error {
 	if err != nil {
 		return err
 	}
-	if demoEnabled() {
-		go keepDemo(ctx, pool, log)
-	}
-	go pruneMedia(ctx, pool, log)
-	go mirror.New(pool, log).Run(ctx)
-	if !demoEnabled() { // the shared demo sends and fetches nothing
-		go reminders.Run(ctx)
-		go cals.Run(ctx)
-		go index.Run(ctx)
-		go listeners.Run(ctx)
-		go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
-		go summaries.RunVideoSummaries(ctx)
-	}
+	go func() {
+		if !waitForSchema(ctx, pool, log) {
+			return
+		}
+		if demoEnabled() {
+			go keepDemo(ctx, pool, log)
+		}
+		go pruneMedia(ctx, pool, log)
+		go mirror.New(pool, log).Run(ctx)
+		if !demoEnabled() { // the shared demo sends and fetches nothing
+			go reminders.Run(ctx)
+			go cals.Run(ctx)
+			go index.Run(ctx)
+			go listeners.Run(ctx)
+			go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
+			go summaries.RunVideoSummaries(ctx)
+			go summaries.RunWatchKnowledge(ctx)
+		}
+	}()
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
@@ -184,6 +190,57 @@ func serve() error {
 	_ = metricsSrv.Shutdown(shutdownCtx)
 	return api.Shutdown(shutdownCtx)
 }
+
+// waitForSchema waits until `axon migrate up` has brought the database to
+// this build's latest migration: on a fresh install the workers would fail
+// on missing tables, and maintenance would wait a day for its next round.
+func waitForSchema(ctx context.Context, pool *pgxpool.Pool, log *slog.Logger) bool {
+	latest, err := db.Latest()
+	if err != nil {
+		log.Error("cannot read the migrations; workers not started", "err", err)
+		return false
+	}
+	for waiting := false; ; waiting = true {
+		var v int64
+		err := pool.QueryRow(ctx, `SELECT coalesce(max(version_id), 0) FROM goose_db_version WHERE is_applied`).Scan(&v)
+		if err == nil && v >= latest {
+			if waiting {
+				log.Info("database migrated; starting workers", "version", v)
+			}
+			return true
+		}
+		if !waiting {
+			log.Info("waiting for `axon migrate up` before starting workers", "want", latest)
+		}
+		select {
+		case <-ctx.Done():
+			return false
+		case <-time.After(5 * time.Second):
+		}
+	}
+}
+
+// clientGone logs as INFO an error that only says the request was cancelled:
+// a closed tab is not a failure of Axon, and would page whoever watches ERRORs.
+type clientGone struct{ slog.Handler }
+
+func (h clientGone) Handle(ctx context.Context, r slog.Record) error {
+	if r.Level == slog.LevelError {
+		r.Attrs(func(a slog.Attr) bool {
+			if err, ok := a.Value.Any().(error); ok && errors.Is(err, context.Canceled) {
+				r.Level = slog.LevelInfo
+				return false
+			}
+			return true
+		})
+	}
+	return h.Handler.Handle(ctx, r)
+}
+
+func (h clientGone) WithAttrs(as []slog.Attr) slog.Handler {
+	return clientGone{h.Handler.WithAttrs(as)}
+}
+func (h clientGone) WithGroup(name string) slog.Handler { return clientGone{h.Handler.WithGroup(name)} }
 
 // demoEnabled reports whether this server offers the demo account (AXON_DEMO=1).
 func demoEnabled() bool { return os.Getenv("AXON_DEMO") == "1" }

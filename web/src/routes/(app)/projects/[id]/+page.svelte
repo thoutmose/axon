@@ -88,7 +88,8 @@
 			}
 			if (
 				!confirm(
-					`${err.message.replace(' Send over_limit to move it anyway.', '')}\n\nMove “${card.title}” anyway?`
+					// The API's hint for scripts (over_limit) is not for people.
+					`${err.message.replace(/\s*(Send|Envoyez) over_limit.*$/, '')}\n\n${t('Move “{title}” anyway?', { title: card.title })}`
 				)
 			) {
 				announce = t('{title} stayed where it was.', { title: card.title });
@@ -98,7 +99,10 @@
 		}
 		await load();
 		const col = columns.find((c) => c.cards.some((x) => x.task_id === card.task_id));
-		announce = `${card.title} is in ${col?.label ?? 'the board'}${body.before ? ', reordered' : ''}.`;
+		const where = col ? (labels[col.id] ?? col.label) : t('the board');
+		announce = body.before
+			? t('{title} is in {column}, reordered.', { title: card.title, column: where })
+			: t('{title} is in {column}.', { title: card.title, column: where });
 		if (focus) {
 			await tick();
 			document.getElementById(`card-${card.task_id}`)?.focus();
@@ -234,7 +238,7 @@
 				ondrop={(e) => drop(e, col)}
 			>
 				<h2 id="col-{col.id}">
-					{col.label}
+					{labels[col.id] ?? col.label}
 					{#if w}<span class="wip" class:full={w.full} title={t('WIP limit')}>{w.label}</span
 						>{:else}<span class="count">{col.cards.length}</span>{/if}
 				</h2>
@@ -291,7 +295,7 @@
 				{#if col.id !== 'done'}
 					<form onsubmit={(e) => add(e, col)}>
 						<label for="add-{col.id}" class="visually-hidden"
-							>{t('Add a card to {label}', { label: col.label })}</label
+							>{t('Add a card to {label}', { label: labels[col.id] ?? col.label })}</label
 						>
 						<input
 							id="add-{col.id}"

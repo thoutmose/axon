@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from './dates';
 	import { api, message, type Schemas } from './api';
 	import { t } from './i18n.svelte';
 	import Button from './ui/Button.svelte';
@@ -86,7 +87,8 @@
 		}
 	}
 
-	const when = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString() : '—');
+	const when = (iso: string | null | undefined) =>
+		iso ? new Date(iso).toLocaleString(appLocale()) : '—';
 	const statusText: Record<string, string> = {
 		waiting: 'Waiting for the server to pair',
 		connected: 'In step',
@@ -177,7 +179,7 @@
 				{t('On {host}, run this once. The code {code} works once, until {time}.', {
 					host,
 					code: setup.code,
-					time: new Date(setup.expires_at).toLocaleTimeString()
+					time: new Date(setup.expires_at).toLocaleTimeString(appLocale())
 				})}
 			</p>
 			<pre><code>{setup.install}</code></pre>

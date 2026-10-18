@@ -18,6 +18,23 @@
 	let tags = $state<{ tag: string; count: number }[]>([]);
 	const groups = $derived(tree(noteIndex.notes));
 
+	// The sidebar can be hidden (owner request), and stays as it was left on
+	// this device.
+	let hidden = $state(false);
+	try {
+		hidden = localStorage.getItem('notes.sidebar') === 'hidden';
+	} catch {
+		// no storage: shown
+	}
+	function toggleSidebar() {
+		hidden = !hidden;
+		try {
+			localStorage.setItem('notes.sidebar', hidden ? 'hidden' : 'shown');
+		} catch {
+			// not remembered, still toggled
+		}
+	}
+
 	// The command center opens "New note" with ?new=1; ?new=<template> picks one.
 	$effect(() => {
 		const wanted = page.url.searchParams.get('new');
@@ -51,8 +68,19 @@
 	}
 </script>
 
-<div class="workspace">
-	<aside class="sidebar glass" aria-label={t('Notes')}>
+<div class="workspace" class:wide={hidden}>
+	<button
+		type="button"
+		class="toggle"
+		aria-expanded={!hidden}
+		aria-controls="notes-sidebar"
+		title={hidden ? t('Show the notes panel') : t('Hide the notes panel')}
+		onclick={toggleSidebar}
+		>{hidden ? '»' : '«'}<span class="visually-hidden"
+			>{hidden ? t('Show the notes panel') : t('Hide the notes panel')}</span
+		></button
+	>
+	<aside id="notes-sidebar" class="sidebar glass" aria-label={t('Notes')} {hidden}>
 		<div class="actions">
 			<button class="primary" onclick={() => (creating = true)}>{t('＋ New note')}</button>
 			<button onclick={daily}>{t("Today's note")}</button>
@@ -72,7 +100,7 @@
 			{#each groups as g (g.para)}
 				{#if g.root.count > 0}
 					<details open>
-						<summary>{g.label} <span class="count">{g.root.count}</span></summary>
+						<summary>{t(g.label)} <span class="count">{g.root.count}</span></summary>
 						<NoteFolder folder={g.root} />
 					</details>
 				{/if}
@@ -105,10 +133,35 @@
 
 <style>
 	.workspace {
+		position: relative;
 		display: grid;
 		grid-template-columns: 17rem minmax(0, 1fr);
 		gap: var(--space-8);
 		align-items: start;
+	}
+	.workspace.wide {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.toggle {
+		position: absolute;
+		top: var(--space-2);
+		left: calc(17rem + var(--space-8) / 2 - 1rem); /* in the gap beside the sidebar */
+		z-index: 2;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--fg);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.wide .toggle {
+		left: 0;
+	}
+	.wide .content {
+		padding-left: 2.75rem;
 	}
 	@media (max-width: 60rem) {
 		.workspace {
@@ -118,6 +171,9 @@
 		.sidebar {
 			position: static;
 			max-height: none;
+		}
+		.toggle {
+			display: none;
 		}
 		.sidebar nav,
 		.sidebar .tags {
@@ -129,12 +185,20 @@
 		top: 4.5rem;
 		max-height: calc(100vh - 6rem);
 		overflow-y: auto;
+		overflow-x: hidden; /* long names are cut, never scrolled sideways */
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
 		padding: var(--space-3);
 		display: grid;
 		gap: var(--space-3);
+	}
+	.sidebar[hidden] {
+		display: none;
+	}
+	.sidebar > *,
+	.sidebar nav > details {
+		min-width: 0;
 	}
 	.actions {
 		display: grid;

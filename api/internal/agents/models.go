@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"slices"
 	"strings"
@@ -25,7 +26,7 @@ import (
 const AllAgents = "*"
 
 // Helpers that call a model outside an agent run, chosen like agents.
-var helpers = []string{"food-photo", "video-summary", Jarvis}
+var helpers = []string{"food-photo", "video-summary", "watch-knowledge", "podcast-script", Jarvis}
 
 // ModelChoice is one agent and the model it would use.
 type ModelChoice struct {
@@ -87,8 +88,9 @@ func (r *Runner) ListModels(ctx context.Context, q db.Querier, userID uuid.UUID)
 		names = append(names, n)
 	}
 	slices.Sort(names)
-	defaults := map[string]string{"food-photo": photoModel, "video-summary": summaryModel, "jarvis": jarvisModel}
-	titles := map[string]string{"food-photo": l10n.Mark("Meal photos"), "video-summary": l10n.Mark("Video summaries"), "jarvis": "Jarvis"}
+	defaults := map[string]string{"food-photo": photoModel, "video-summary": summaryModel, "watch-knowledge": knowledgeModel, "podcast-script": podcastModel, "jarvis": jarvisModel}
+	titles := map[string]string{"food-photo": l10n.Mark("Meal photos"), "video-summary": l10n.Mark("Video summaries"),
+		"watch-knowledge": l10n.Mark("Tech watch knowledge graph"), "podcast-script": l10n.Mark("Podcast conversation"), "jarvis": "Jarvis"}
 	for _, h := range helpers {
 		if _, ok := r.Skills[h]; !ok { // Jarvis is a skill too
 			names = append(names, h)
@@ -116,7 +118,7 @@ func (r *Runner) SetModels(ctx context.Context, tx pgx.Tx, userID uuid.UUID, in 
 		model = strings.TrimSpace(model)
 		switch {
 		case !r.known(agent):
-			return InputError{"There is no agent called " + agent + "."}
+			return InputError{fmt.Sprintf("There is no agent called %s.", agent)}
 		case model != "" && !validModel(model):
 			return InputError{"Enter the model name your provider uses, like claude-sonnet-5-5 or llama3.1:8b."}
 		}

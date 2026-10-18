@@ -38,6 +38,19 @@ export const emptyDay = (): JournalFields => ({
 });
 
 /** Whether a day has anything worth saving: the API refuses an empty one. */
+/** The fields an entry is written with: the API takes no others (not its
+ * day or dates), and refuses the whole body if they are sent. */
+export function fieldsOf(e: JournalFields): JournalFields {
+	return {
+		mood: e.mood,
+		energy: e.energy,
+		stress: e.stress,
+		sleep_hours: e.sleep_hours,
+		gratitude: e.gratitude,
+		note: e.note
+	};
+}
+
 export function hasContent(f: JournalFields): boolean {
 	return (
 		f.mood != null ||

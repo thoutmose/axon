@@ -19,8 +19,9 @@ var graphStories = [][2]string{
 	{"A year of Rust in the Linux kernel", "One year on, Rust in the Linux kernel carries graphics and storage drivers. Memory safety bugs in those drivers dropped compared with C. The kernel team plans better bindings and a minimum Rust toolchain, and more subsystems now accept Rust drivers."},
 }
 
-// The knowledge graph of the news groups concepts that go together, sums
-// each one up on hover, and points to the notes that share it.
+// The knowledge graph of the news: entities of the ontology with their
+// classes, the concepts that go with them, grouped, each summed up on
+// hover and pointing to the notes that share it.
 func TestWatchGraph(t *testing.T) {
 	e := newEnv(t, true)
 	alice, bob := e.client(), e.client()
@@ -45,38 +46,49 @@ func TestWatchGraph(t *testing.T) {
 
 	var g struct {
 		Nodes []struct {
-			ID, Label, Summary string
-			Community, Count   int
-			Fringe             bool
-			Related            []string
-			Items              []struct{ Title string }
-			InNotes            []struct{ Title string } `json:"in_notes"`
+			ID, Kind, Class  string
+			Label, Summary   string
+			Community, Count int
+			Fringe           bool
+			Related          []string
+			Items            []struct{ Title string }
+			InNotes          []struct{ Title string } `json:"in_notes"`
 		}
-		Edges       []struct{ From, To string }
+		Edges       []struct{ From, To, Predicate string }
 		Communities []struct {
 			ID    int
 			Label string
 		}
-		Stats struct{ Items, Concepts, Communities, Bridges int }
+		Stats struct{ Items, Concepts, Communities, Bridges, Entities int }
 	}
 	out := alice.mustDo(200, "GET", "/v1/watch/graph?from=2026-09-01&to=2026-11-01", nil)
 	_ = json.Unmarshal(out, &g)
-	if g.Stats.Items != 6 || len(g.Edges) == 0 || len(g.Communities) != 2 || g.Stats.Bridges != 1 {
+	if g.Stats.Items != 6 || len(g.Edges) == 0 || len(g.Communities) != 2 || g.Stats.Bridges != 1 || g.Stats.Entities < 4 {
 		t.Fatalf("graph = %+v", g)
 	}
 	byLabel := map[string]int{}
-	for _, want := range []string{"linux kernel", "pgvector", "memory safety", "vector search"} {
+	for _, want := range []string{"Linux", "pgvector", "memory safety", "Vector search"} {
 		if !strings.Contains(string(out), `"label":"`+want+`"`) {
 			t.Fatalf("no %q in %s", want, out)
 		}
 	}
 	for i, n := range g.Nodes {
 		byLabel[n.Label] = i
-		if n.Fringe || n.Community == 0 || n.Summary == "" || len(n.Items) == 0 {
+		if n.Fringe || n.Community == 0 || n.Kind != "class" && (n.Summary == "" || len(n.Items) == 0) {
 			t.Fatalf("node = %+v", n)
 		}
 	}
-	kernel, pgvector, safety, search := g.Nodes[byLabel["linux kernel"]], g.Nodes[byLabel["pgvector"]], g.Nodes[byLabel["memory safety"]], g.Nodes[byLabel["vector search"]]
+	kernel, pgvector, safety, search := g.Nodes[byLabel["Linux"]], g.Nodes[byLabel["pgvector"]], g.Nodes[byLabel["memory safety"]], g.Nodes[byLabel["Vector search"]]
+	if kernel.Kind != "entity" || kernel.Class != "Operating system" || safety.Kind != "concept" {
+		t.Fatalf("kinds: %+v / %+v", kernel, safety)
+	}
+	isA := false
+	for _, e := range g.Edges {
+		isA = isA || e.From == kernel.ID && e.Predicate == "is_a" && e.To == "k:Operating system"
+	}
+	if !isA {
+		t.Fatalf("Linux is not an operating system: %+v", g.Edges)
+	}
 	if kernel.Community == pgvector.Community || kernel.Community != safety.Community {
 		t.Fatalf("communities: kernel %d, pgvector %d, memory safety %d", kernel.Community, pgvector.Community, safety.Community)
 	}

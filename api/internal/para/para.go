@@ -7,7 +7,6 @@ package para
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -17,19 +16,27 @@ import (
 
 	"github.com/thoutmose/axon/api/internal/db"
 	"github.com/thoutmose/axon/api/internal/graph"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Kind is areas or resources: same shape, different table and wording.
 type Kind struct {
 	Type  string // entity type
 	Table string // fixed table name, never user input
-	Name  string // for messages
+	// Messages, whole sentences so each kind reads right and translates.
+	NoTitle, BadTitle, Missing string
 }
 
 // The two kinds.
 var (
-	Areas     = Kind{Type: "area", Table: "areas", Name: "area"}
-	Resources = Kind{Type: "resource", Table: "resources", Name: "resource"}
+	Areas = Kind{Type: "area", Table: "areas",
+		NoTitle:  l10n.Mark("An area needs a title."),
+		BadTitle: l10n.Mark("An area needs a title of 1 to 500 characters."),
+		Missing:  l10n.Mark("No such area.")}
+	Resources = Kind{Type: "resource", Table: "resources",
+		NoTitle:  l10n.Mark("A resource needs a title."),
+		BadTitle: l10n.Mark("A resource needs a title of 1 to 500 characters."),
+		Missing:  l10n.Mark("No such resource.")}
 )
 
 // InArea files anything under an area.
@@ -107,7 +114,7 @@ func (k Kind) validate(f *Fields) error {
 	if f.Title != nil {
 		*f.Title = strings.TrimSpace(*f.Title)
 		if *f.Title == "" || len([]rune(*f.Title)) > 500 {
-			return ValidationError{fmt.Sprintf("An %s needs a title of 1 to 500 characters.", k.Name)}
+			return ValidationError{k.BadTitle}
 		}
 	}
 	if f.Description != nil && len(*f.Description) > 20000 {
@@ -135,7 +142,7 @@ func nullable(p *string) *string {
 // Create adds an item.
 func (k Kind) Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, f Fields) (Item, error) {
 	if f.Title == nil {
-		return Item{}, ValidationError{fmt.Sprintf("An %s needs a title.", k.Name)}
+		return Item{}, ValidationError{k.NoTitle}
 	}
 	if err := k.validate(&f); err != nil {
 		return Item{}, err

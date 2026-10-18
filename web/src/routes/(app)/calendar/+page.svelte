@@ -618,10 +618,12 @@
 		list-style: none;
 		padding: 0;
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-1);
 	}
 	.undated li {
 		display: flex;
+		flex-wrap: wrap; /* on a phone, the date goes under the title */
 		gap: var(--space-2);
 		align-items: center;
 		padding: var(--space-1) var(--space-2);
@@ -811,6 +813,8 @@
 		margin: 0;
 		padding: 0;
 		display: grid;
+		/* Events shrink to their day's width and end in an ellipsis. */
+		grid-template-columns: minmax(0, 1fr);
 		gap: 2px;
 	}
 	.ev {

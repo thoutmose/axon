@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { appLocale } from '\$lib/dates';
-	import { t } from '$lib/i18n.svelte';
+	import { storedLocale, t } from '$lib/i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { api, apiResponse, message, type Schemas } from '$lib/api';
@@ -75,7 +75,7 @@
 		try {
 			const res = await fetch('/api/v1/me/avatar', {
 				method: 'PUT',
-				headers: { 'Content-Type': file.type },
+				headers: { 'Content-Type': file.type, 'Accept-Language': storedLocale() },
 				body: file
 			});
 			if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);

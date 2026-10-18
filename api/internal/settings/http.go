@@ -18,6 +18,7 @@ import (
 	"github.com/thoutmose/axon/api/internal/agents"
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/httpx"
+	"github.com/thoutmose/axon/api/internal/l10n"
 )
 
 // Handlers serves the settings endpoints.
@@ -54,14 +55,20 @@ type File struct {
 	AI      AIFile `yaml:"ai"`
 }
 
+// tr translates a message that is joined to a path before httpx.Problem
+// sees it, in the language l10n.Middleware chose.
+func tr(w http.ResponseWriter, msg string) string {
+	return l10n.Tr(w.Header().Get("Content-Language"), msg)
+}
+
 func (h *Handlers) fail(w http.ResponseWriter, err error) {
 	var f FieldError
 	var ie agents.InputError
 	switch {
 	case errors.As(err, &f):
-		httpx.Problem(w, http.StatusUnprocessableEntity, f.Error())
+		httpx.Problem(w, http.StatusUnprocessableEntity, f.Path+": "+tr(w, f.Msg))
 	case errors.As(err, &ie):
-		httpx.Problem(w, http.StatusUnprocessableEntity, "ai: "+ie.Msg)
+		httpx.Problem(w, http.StatusUnprocessableEntity, "ai: "+tr(w, ie.Msg))
 	default:
 		h.log.Error("settings request failed", "err", err)
 		httpx.Problem(w, http.StatusInternalServerError, "Something went wrong. Try again.")
@@ -192,7 +199,7 @@ func (h *Handlers) putYAML(w http.ResponseWriter, r *http.Request) {
 	if err := f.Validate(); err != nil {
 		var fe FieldError
 		errors.As(err, &fe)
-		httpx.Problem(w, http.StatusUnprocessableEntity, fmt.Sprintf("line %d: %s", lineOf(&root, fe.Path), fe.Error()))
+		httpx.Problem(w, http.StatusUnprocessableEntity, fmt.Sprintf("line %d: %s", lineOf(&root, fe.Path), fe.Path+": "+tr(w, fe.Msg)))
 		return
 	}
 	if who.Demo && f.AI.Provider != nil {

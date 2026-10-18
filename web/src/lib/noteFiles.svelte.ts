@@ -1,4 +1,5 @@
 import { api, type Schemas } from './api';
+import { storedLocale } from './i18n.svelte';
 
 export type NoteFile = Schemas['NoteFile'];
 
@@ -39,7 +40,7 @@ export async function upload(file: File): Promise<string> {
 	const base = file.name.replace(/\.[^.]*$/, '') || 'picture';
 	const res = await fetch(`/api/v1/notes/files?name=${encodeURIComponent(`${base}.${ext}`)}`, {
 		method: 'POST',
-		headers: { 'Content-Type': file.type },
+		headers: { 'Content-Type': file.type, 'Accept-Language': storedLocale() },
 		body: file
 	});
 	const body = await res.json().catch(() => ({}));

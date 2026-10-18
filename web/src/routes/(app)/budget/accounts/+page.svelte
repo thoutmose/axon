@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n.svelte';
 	import { api, message } from '$lib/api';
+	import { localDate } from '$lib/dates';
 	import { roleNames, type Account } from '$lib/finance';
 	import { formatCents, toCents } from '$lib/money';
 	import Button from '$lib/ui/Button.svelte';
@@ -46,6 +47,37 @@
 				}
 			});
 			form = { name: '', type: 'asset', role: 'checking', opening: '', owed: false };
+			await load();
+		} catch (err) {
+			toast(message(err), 'error');
+		}
+	}
+
+	// Move money from one account to another (owner request): a transfer,
+	// which changes both balances and never counts as spending.
+	let move = $state({ from: '', to: '', amount: '', on: localDate(new Date()), note: '' });
+	const open = $derived((accounts ?? []).filter((a) => !a.archived));
+	async function transfer(e: SubmitEvent) {
+		e.preventDefault();
+		const cents = toCents(move.amount);
+		if (!cents || cents <= 0) {
+			toast(t('Type an amount like 150.00.'), 'error');
+			return;
+		}
+		try {
+			await api('/v1/budget/transactions', {
+				method: 'POST',
+				body: {
+					kind: 'transfer',
+					amount_cents: cents,
+					account_id: move.from,
+					to_account_id: move.to,
+					occurred_on: move.on,
+					note: move.note
+				}
+			});
+			toast(t('Transferred {amount}.', { amount: money(cents) }));
+			move = { ...move, amount: '', note: '' };
 			await load();
 		} catch (err) {
 			toast(message(err), 'error');
@@ -121,6 +153,54 @@
 			</table>
 		{/if}
 	</section>
+
+	{#if open.length >= 2}
+		<section class="card" aria-labelledby="move">
+			<h2 id="move">{t('Transfer between accounts')}</h2>
+			<form class="grid" onsubmit={transfer}>
+				<div class="field">
+					<label for="mv-from">{t('From account')}</label>
+					<select id="mv-from" bind:value={move.from} required>
+						<option value="" disabled>{t('Choose…')}</option>
+						{#each open as a (a.id)}<option value={a.id}>{a.name} · {money(a.balance_cents)}</option
+							>{/each}
+					</select>
+				</div>
+				<div class="field">
+					<label for="mv-to">{t('To account')}</label>
+					<select id="mv-to" bind:value={move.to} required>
+						<option value="" disabled>{t('Choose…')}</option>
+						{#each open.filter((a) => a.id !== move.from) as a (a.id)}<option value={a.id}
+								>{a.name} · {money(a.balance_cents)}</option
+							>{/each}
+					</select>
+				</div>
+				<div class="field">
+					<label for="mv-amount">{t('Amount')}</label>
+					<input
+						id="mv-amount"
+						inputmode="decimal"
+						placeholder="0.00"
+						bind:value={move.amount}
+						required
+					/>
+				</div>
+				<div class="field">
+					<label for="mv-on">{t('Date')}</label>
+					<input id="mv-on" type="date" bind:value={move.on} required />
+				</div>
+				<div class="field">
+					<label for="mv-note">{t('Note')}</label>
+					<input id="mv-note" bind:value={move.note} maxlength="500" />
+				</div>
+				<div>
+					<Button type="submit" disabled={!move.from || !move.to || move.from === move.to}
+						>{t('Transfer')}</Button
+					>
+				</div>
+			</form>
+		</section>
+	{/if}
 
 	<section class="card" aria-labelledby="new">
 		<h2 id="new">{t('Add an account')}</h2>

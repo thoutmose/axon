@@ -1,3 +1,4 @@
+import { t } from './i18n.svelte';
 import type { Schemas } from './api';
 
 export type Flashcard = Schemas['Flashcard'];
@@ -34,3 +35,6 @@ export const ratings = [
 	{ value: 3, label: 'Good', key: '3', next: 'good' },
 	{ value: 4, label: 'Easy', key: '4', next: 'easy' }
 ] as const;
+
+/** A deck's name to show: the one Axon creates, "Default", in the interface's language. */
+export const deckName = (name: string) => (name === 'Default' ? t('Default') : name);

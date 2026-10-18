@@ -1,4 +1,5 @@
 import { api, type Schemas } from './api';
+import { t } from './i18n.svelte';
 
 export type Account = Schemas['BudgetAccount'];
 export type Category = Schemas['BudgetCategory'];
@@ -45,3 +46,14 @@ export const frequencies: { label: string; rule: string }[] = [
 	{ label: 'Every year', rule: 'FREQ=YEARLY' },
 	{ label: 'Every day', rule: 'FREQ=DAILY' }
 ];
+
+/** A rule in words: its preset, with its day of the month when it has one
+ * ("Every month, on day 2"); a rule Axon did not write stays as it is. */
+export function ruleLabel(rule: string): string {
+	const parts = rule.split(';');
+	const day = parts.find((p) => p.startsWith('BYMONTHDAY='))?.slice('BYMONTHDAY='.length);
+	const base = parts.filter((p) => !p.startsWith('BYMONTHDAY=')).join(';');
+	const preset = frequencies.find((f) => f.rule === base);
+	if (!preset) return rule;
+	return day ? t('{every}, on day {day}', { every: t(preset.label), day }) : t(preset.label);
+}

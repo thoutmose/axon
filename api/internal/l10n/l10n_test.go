@@ -60,6 +60,33 @@ func TestTranslatesFromTheCatalog(t *testing.T) {
 	}
 }
 
+func TestTranslatesMessagesFormattedBeforehand(t *testing.T) {
+	catalog["Line %d is not valid CSV."] = "La ligne %d n’est pas un CSV valide."
+	catalog["Unknown field %q."] = "Champ inconnu %q."
+	catalog["line %d: %s"] = "ligne %d : %s"
+	defer func() {
+		delete(catalog, "Line %d is not valid CSV.")
+		delete(catalog, "Unknown field %q.")
+		delete(catalog, "line %d: %s")
+	}()
+	patterns.reset()
+	defer patterns.reset()
+	// A ValidationError{fmt.Sprintf(…)} reaches Tr already formatted.
+	for en, want := range map[string]string{
+		"Line 12 is not valid CSV.":          "La ligne 12 n’est pas un CSV valide.",
+		`Unknown field "colour".`:            `Champ inconnu "colour".`,
+		`line 3: Unknown field "x".`:         `ligne 3 : Champ inconnu "x".`, // the argument is translated too
+		"Line twelve is not valid CSV, sir.": "Line twelve is not valid CSV, sir.",
+	} {
+		if got := Tr("fr", en); got != want {
+			t.Errorf("Tr(fr, %q) = %q, want %q", en, got, want)
+		}
+	}
+	if got := Tr("en", "Line 12 is not valid CSV."); got != "Line 12 is not valid CSV." {
+		t.Fatalf("en = %q", got)
+	}
+}
+
 func TestNumbersInTheLanguage(t *testing.T) {
 	if got := Num("fr", 1234.5, 1); got != "1234,5" {
 		t.Fatalf("fr = %q", got)

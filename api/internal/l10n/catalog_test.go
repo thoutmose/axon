@@ -18,6 +18,15 @@ func keysInCode(t *testing.T) []string {
 	t.Helper()
 	seen := map[string]bool{}
 	add := func(e ast.Expr) {
+		// A message formatted where it is made, fmt.Sprintf("Line %d …", n),
+		// is translated from its format (l10n.Tr matches it).
+		if call, ok := e.(*ast.CallExpr); ok && len(call.Args) > 0 {
+			if fn, ok := call.Fun.(*ast.SelectorExpr); ok && fn.Sel.Name == "Sprintf" {
+				if x, ok := fn.X.(*ast.Ident); ok && x.Name == "fmt" {
+					e = call.Args[0]
+				}
+			}
+		}
 		if lit, ok := e.(*ast.BasicLit); ok && lit.Kind == token.STRING {
 			if s, err := strconv.Unquote(lit.Value); err == nil {
 				seen[s] = true
@@ -52,6 +61,8 @@ func keysInCode(t *testing.T) []string {
 					add(n.Args[1])
 				case name == "l10n.Mark" && len(n.Args) == 1:
 					add(n.Args[0])
+				case name == "l10n.Errorf" && len(n.Args) >= 1:
+					add(n.Args[0])
 				}
 			case *ast.CompositeLit:
 				typ := ""
@@ -61,11 +72,20 @@ func keysInCode(t *testing.T) []string {
 				case *ast.SelectorExpr:
 					typ = tt.Sel.Name
 				}
-				if typ == "ValidationError" && len(n.Elts) == 1 {
-					if kv, ok := n.Elts[0].(*ast.KeyValueExpr); ok {
+				// The message of ValidationError{msg}, InputError{msg}, Err…{msg},
+				// and FieldError{path, msg}.
+				msg := -1
+				switch {
+				case (typ == "ValidationError" || typ == "InputError" || strings.HasPrefix(typ, "Err")) && len(n.Elts) == 1:
+					msg = 0
+				case typ == "FieldError" && len(n.Elts) == 2:
+					msg = 1
+				}
+				if msg >= 0 {
+					if kv, ok := n.Elts[msg].(*ast.KeyValueExpr); ok {
 						add(kv.Value)
 					} else {
-						add(n.Elts[0])
+						add(n.Elts[msg])
 					}
 				}
 			}

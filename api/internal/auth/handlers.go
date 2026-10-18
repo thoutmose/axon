@@ -44,9 +44,10 @@ func (s *Service) Routes(r chi.Router) {
 		r.Get("/v1/me/tokens", s.listTokens)
 		r.With(NotDemo).Post("/v1/me/tokens", s.createToken)
 		r.Delete("/v1/me/tokens/{id}", s.revokeToken)
-		r.Post("/v1/me/logout-all", s.logoutAll)
+		// Demo visitors share one account: none may end the others' sessions.
+		r.With(NotDemo).Post("/v1/me/logout-all", s.logoutAll)
 		r.Get("/v1/me/sessions", s.listSessions)
-		r.Delete("/v1/me/sessions/{id}", s.revokeSession)
+		r.With(NotDemo).Delete("/v1/me/sessions/{id}", s.revokeSession)
 		r.Get("/v1/me/passkeys", s.listPasskeys)
 		r.With(NotDemo).Post("/v1/me/passkeys/begin", s.addPasskeyBegin)
 		r.With(NotDemo).Post("/v1/me/passkeys/finish", s.addPasskeyFinish)

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { api, ApiError, message, type Schemas } from '$lib/api';
 	import { t } from '$lib/i18n.svelte';
-	import { emptyDay, hasContent, scales, type JournalFields } from '$lib/journal';
+	import { emptyDay, fieldsOf, hasContent, scales, type JournalFields } from '$lib/journal';
 	import Scale from '$lib/Scale.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 
@@ -19,7 +19,7 @@
 			const r = await api<{ items: Schemas['JournalEntry'][]; today: string }>('/v1/journal');
 			day = r.today;
 			const e = r.items.find((x) => x.day === r.today);
-			form = e ? { ...e, gratitude: e.gratitude } : emptyDay();
+			form = e ? fieldsOf(e) : emptyDay();
 		} catch (err) {
 			if (err instanceof ApiError && err.status === 403) off = true;
 			else toast(message(err), 'error');

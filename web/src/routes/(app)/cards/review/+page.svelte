@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
-	import { interval, ratings, type Flashcard } from '$lib/flashcards';
+	import { deckName, interval, ratings, type Flashcard } from '$lib/flashcards';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -113,7 +113,11 @@
 
 <p class="crumbs"><a href="/cards">{t('← Flashcards')}</a></p>
 <h1>
-	{practice ? t('Practise weak cards') : deck ? t('Review: {deck}', { deck }) : t('Review')}
+	{practice
+		? t('Practise weak cards')
+		: deck
+			? t('Review: {deck}', { deck: deckName(deck) })
+			: t('Review')}
 </h1>
 <LearnTabs />
 {#if practice}
@@ -152,7 +156,7 @@
 		{t(practice ? '{done} of {total} practised · {deck}' : '{done} of {total} reviewed · {deck}', {
 			done,
 			total,
-			deck: card.deck
+			deck: deckName(card.deck)
 		})}
 	</p>
 	<section class="flash card glass" aria-labelledby="question">
@@ -275,7 +279,7 @@
 	kbd {
 		font-family: var(--font-mono);
 		font-size: var(--text-sm);
-		opacity: 0.7;
+		/* Full opacity: faded, it fell below AA contrast inside a primary button. */
 		margin-left: var(--space-1);
 	}
 	.done {

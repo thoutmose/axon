@@ -18,7 +18,7 @@ func TestICal(t *testing.T) {
 	out := ICal([]Event{
 		{Date: tasks.Date{Time: day}, Type: "task", Kind: "due", ID: id, Title: "Pay rent; call landlord, then\nrelax \\ rest"},
 		{Date: tasks.Date{Time: day}, Type: "goal", Kind: "target", ID: id, Title: long},
-	}, day)
+	}, day, "en")
 
 	for _, want := range []string{
 		"BEGIN:VCALENDAR\r\nVERSION:2.0\r\n",
@@ -39,5 +39,10 @@ func TestICal(t *testing.T) {
 	unfolded := strings.ReplaceAll(out, "\r\n ", "")
 	if !strings.Contains(unfolded, "SUMMARY:Goal: "+long) {
 		t.Error("folding changed the text")
+	}
+	// The person's language, which calendar apps do not send.
+	fr := ICal([]Event{{Date: tasks.Date{Time: day}, Type: "task", Kind: "due", ID: id, Title: "Payer"}}, day, "fr")
+	if !strings.Contains(fr, "SUMMARY:Échéance : Payer\r\n") {
+		t.Errorf("French feed:\n%s", fr)
 	}
 }

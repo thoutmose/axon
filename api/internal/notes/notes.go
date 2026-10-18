@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"slices"
 	"strings"
 	"time"
 
@@ -110,30 +111,119 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if len(content) > 1_000_000 {
 		return Note{}, ErrTooLarge
 	}
-	m := Parse(p, content)
-	id, err := graph.CreateEntity(ctx, tx, userID, actor, Type, m.Title, content)
+	id, names, err := insert(ctx, tx, userID, actor, p, content)
 	if err != nil {
-		return Note{}, err
-	}
-	_, err = tx.Exec(ctx, `INSERT INTO notes (id, user_id, path, content, kind, para, tags) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		id, userID, p, content, m.Kind, m.Para, m.Tags)
-	if isUnique(err) {
-		return Note{}, ErrPathTaken
-	}
-	if err != nil {
-		return Note{}, err
-	}
-	if _, err := tx.Exec(ctx, `DELETE FROM note_tombstones WHERE user_id = $1 AND path = $2`, userID, p); err != nil {
 		return Note{}, err
 	}
 	if err := relink(ctx, tx, userID, actor, id, content); err != nil {
 		return Note{}, err
 	}
 	// Notes that already linked to this name, before it existed, now resolve.
-	if err := relinkReferrers(ctx, tx, userID, actor, []string{Stem(p), m.Title}); err != nil {
+	if err := relinkReferrers(ctx, tx, userID, actor, names); err != nil {
 		return Note{}, err
 	}
 	return Get(ctx, tx, userID, id)
+}
+
+// insert adds a note without resolving links, and returns the names other
+// notes can link to it by. p is clean and content within size.
+func insert(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, p, content string) (uuid.UUID, []string, error) {
+	m := Parse(p, content)
+	id, err := graph.CreateEntity(ctx, tx, userID, actor, Type, m.Title, content)
+	if err != nil {
+		return uuid.Nil, nil, err
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO notes (id, user_id, path, content, kind, para, tags) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		id, userID, p, content, m.Kind, m.Para, m.Tags)
+	if isUnique(err) {
+		return uuid.Nil, nil, ErrPathTaken
+	}
+	if err != nil {
+		return uuid.Nil, nil, err
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM note_tombstones WHERE user_id = $1 AND path = $2`, userID, p); err != nil {
+		return uuid.Nil, nil, err
+	}
+	return id, []string{Stem(p), m.Title}, nil
+}
+
+// Batch creates many notes, as an import does, and resolves links once at
+// the end: per note, finding the notes that named it scans them all, which
+// made a vault of thousands take minutes.
+type Batch struct {
+	created map[uuid.UUID]string // id → content
+	names   map[string]bool      // lower-cased names of the new notes
+}
+
+// Add creates one note of the batch; its links resolve in Finish.
+func (b *Batch) Add(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, p, content string) (uuid.UUID, error) {
+	p, ok := CleanPath(p)
+	if !ok {
+		return uuid.Nil, ErrBadPath
+	}
+	if len(content) > 1_000_000 {
+		return uuid.Nil, ErrTooLarge
+	}
+	id, names, err := insert(ctx, tx, userID, actor, p, content)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if b.created == nil {
+		b.created, b.names = map[uuid.UUID]string{}, map[string]bool{}
+	}
+	b.created[id] = content
+	for _, n := range names {
+		if n != "" {
+			b.names[strings.ToLower(n)] = true
+		}
+	}
+	return id, nil
+}
+
+// Finish links the new notes, and the older notes that named one of them,
+// resolving every name in one query.
+func (b *Batch) Finish(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor) error {
+	if len(b.created) == 0 {
+		return nil
+	}
+	pending := map[uuid.UUID][]string{} // note → its link targets
+	for id, content := range b.created {
+		pending[id] = Wikilinks(content)
+	}
+	rows, err := tx.Query(ctx, `SELECT id, content FROM notes WHERE user_id = $1 AND content LIKE '%[[%'`, userID)
+	if err != nil {
+		return err
+	}
+	type ref struct {
+		ID      uuid.UUID
+		Content string
+	}
+	refs, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ref])
+	if err != nil {
+		return err
+	}
+	for _, r := range refs {
+		if _, isNew := b.created[r.ID]; isNew {
+			continue
+		}
+		if targets := Wikilinks(r.Content); slices.ContainsFunc(targets, func(t string) bool { return b.names[strings.ToLower(t)] }) {
+			pending[r.ID] = targets
+		}
+	}
+	var all []string
+	for _, targets := range pending {
+		all = append(all, targets...)
+	}
+	ids, err := resolve(ctx, tx, userID, all)
+	if err != nil {
+		return err
+	}
+	for id, targets := range pending {
+		if err := setLinks(ctx, tx, userID, actor, id, targets, ids); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Update replaces a note's content and/or path if version is still current.
@@ -262,6 +352,11 @@ func relink(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err != nil {
 		return err
 	}
+	return setLinks(ctx, tx, userID, actor, id, targets, ids)
+}
+
+// setLinks makes a note's references the resolved targets, no more, no less.
+func setLinks(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor, id uuid.UUID, targets []string, ids map[string]uuid.UUID) error {
 	want := map[uuid.UUID]bool{}
 	for _, t := range targets {
 		if target, ok := ids[strings.ToLower(t)]; ok && target != id {

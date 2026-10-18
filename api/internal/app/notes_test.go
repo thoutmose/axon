@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/thoutmose/axon/api/internal/notes"
 	"github.com/thoutmose/axon/api/internal/notesync"
@@ -374,4 +376,48 @@ func TestNoteEndpoints(t *testing.T) {
 	alice.mustDo(409, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"two","base_hash":"not-the-current-hash"}`))
 	alice.mustDo(200, "POST", "/v1/notes/sync", []byte(`{"path":"Zettel/a.md","content":"two","base_hash":"`+notes.Hash("one")+`"}`))
 	alice.mustDo(409, "POST", "/v1/notes/sync/delete", []byte(`{"path":"Zettel/a.md","base_hash":"`+notes.Hash("one")+`"}`))
+}
+
+// A vault of thousands of notes imports in one request, quickly, with every
+// link resolved: forward references in the archive, and older notes that
+// named an imported one before it existed.
+func TestImportingThousandsOfNotesLinksThemAll(t *testing.T) {
+	e := newEnv(t, false)
+	alice := e.client()
+	alice.register("Alice")
+	alice.mustDo(201, "POST", "/v1/notes", []byte(`{"path":"Zettel/older.md","content":"# Older\n\nSee [[Imported 1499]]."}`))
+	const n = 1500
+	filler := strings.Repeat("Spaced practice beats massed practice for long-term memory. ", 20) // about 1 KB, as in a real vault
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for i := range n {
+		w, _ := zw.Create(fmt.Sprintf("Zettel/imported/Imported %d.md", i))
+		_, _ = fmt.Fprintf(w, "# Imported %d\n\n%s\n\nNext: [[Imported %d]]. Back to [[older]].\n", i, filler, (i+1)%n)
+	}
+	_ = zw.Close()
+	start := time.Now()
+	code, out := alice.do("POST", "/v1/notes/import", buf.Bytes(), "Content-Type", "application/zip")
+	if code != 200 {
+		t.Fatalf("import = %d %s", code, out)
+	}
+	if took := time.Since(start); took > 20*time.Second {
+		t.Errorf("importing %d notes took %s", n, took)
+	}
+	var me struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me", nil), &me)
+	var links, toOlder, fromOlder int
+	err := pool.QueryRow(context.Background(), `SELECT count(*),
+		count(*) FILTER (WHERE t.path = 'Zettel/older.md'),
+		count(*) FILTER (WHERE s.path = 'Zettel/older.md')
+		FROM links l JOIN notes s ON s.id = l.source_id JOIN notes t ON t.id = l.target_id
+		WHERE l.user_id = $1 AND l.relation = $2`, me.ID, notes.References).Scan(&links, &toOlder, &fromOlder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Each imported note links to the next and to the older note; the older one to the last.
+	if links != 2*n+1 || toOlder != n || fromOlder != 1 {
+		t.Fatalf("links = %d (to older %d, from older %d), want %d, %d, 1", links, toOlder, fromOlder, 2*n+1, n)
+	}
 }

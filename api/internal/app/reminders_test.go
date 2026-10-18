@@ -164,7 +164,8 @@ func TestReminders(t *testing.T) {
 	var doc map[string]any
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/me/settings", nil), &doc)
 	delete(doc, "ai")
-	doc["reminders"] = map[string]any{"enabled": true, "morning": "08:00", "evening": "20:00", "email": ""}
+	// No weekly or monthly digest: on their day they would go out beside these.
+	doc["reminders"] = map[string]any{"enabled": true, "morning": "08:00", "evening": "20:00", "email": "", "weekly_at": "", "monthly_at": ""}
 	body, _ := json.Marshal(doc)
 	if out := alice.mustDo(200, "PUT", "/v1/me/settings", body); !strings.Contains(string(out), `"reminders":{"enabled":true,"morning":"08:00"`) {
 		t.Fatalf("settings do not show reminders: %s", out)

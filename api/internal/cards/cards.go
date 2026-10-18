@@ -217,8 +217,9 @@ func Create(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Actor,
 	if err != nil {
 		return Card{}, err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO cards (id, deck, front, back, due, step, elaboration, example, mnemonic) VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8)`,
-		id, deck, *f.Front, back, now, deref(f.Elaboration), deref(f.Example), deref(f.Mnemonic)); err != nil {
+	suspended := f.Suspended != nil && *f.Suspended
+	if _, err := tx.Exec(ctx, `INSERT INTO cards (id, deck, front, back, due, step, elaboration, example, mnemonic, suspended) VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9)`,
+		id, deck, *f.Front, back, now, deref(f.Elaboration), deref(f.Example), deref(f.Mnemonic), suspended); err != nil {
 		return Card{}, err
 	}
 	if f.Palace != nil && *f.Palace != "" {

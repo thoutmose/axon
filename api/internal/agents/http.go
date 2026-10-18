@@ -120,6 +120,7 @@ func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 	var body struct {
 		MonthlyBudgetCents int   `json:"monthly_budget_cents"`
 		VideoSummaries     *bool `json:"video_summaries"`
+		WatchKnowledge     *bool `json:"watch_knowledge"`
 	}
 	if err := httpx.Decode(req, &body); err != nil {
 		httpx.Problem(w, http.StatusBadRequest, err.Error())
@@ -135,6 +136,12 @@ func (r *Runner) settings(w http.ResponseWriter, req *http.Request) {
 	}
 	if body.VideoSummaries != nil {
 		if err := SetVideoSummaries(req.Context(), r.db, who.UserID, *body.VideoSummaries); err != nil {
+			r.fail(w, err)
+			return
+		}
+	}
+	if body.WatchKnowledge != nil {
+		if err := SetWatchKnowledge(req.Context(), r.db, who.UserID, *body.WatchKnowledge); err != nil {
 			r.fail(w, err)
 			return
 		}

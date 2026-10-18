@@ -240,7 +240,7 @@
 		padding: 0;
 		margin: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
 		gap: var(--space-2);
 	}
 	.picks li {

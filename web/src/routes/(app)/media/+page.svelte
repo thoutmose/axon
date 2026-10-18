@@ -538,6 +538,7 @@
 		overflow-x: auto;
 	}
 	.tabs a {
+		white-space: nowrap; /* the row scrolls sideways on a phone */
 		padding: var(--space-2) var(--space-3);
 		border-radius: var(--radius);
 		color: var(--muted);

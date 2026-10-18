@@ -70,7 +70,7 @@ func Fetch(ctx context.Context, raw string) (Page, error) {
 		return Page{}, ErrPage{fmt.Sprintf("The page answered %d.", res.StatusCode)}
 	}
 	if ct, _, _ := mime.ParseMediaType(res.Header.Get("Content-Type")); ct != "text/html" && ct != "application/xhtml+xml" {
-		return Page{}, ErrPage{"That address is not a web page (" + ct + ")."}
+		return Page{}, ErrPage{fmt.Sprintf("That address is not a web page (%s).", ct)}
 	}
 	data, err := io.ReadAll(io.LimitReader(res.Body, maxPage))
 	if err != nil {

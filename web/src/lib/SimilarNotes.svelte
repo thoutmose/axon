@@ -11,7 +11,13 @@
 	$effect(() => {
 		void id;
 		items = [];
-		api<{ items: Hit[] }>(`/v1/notes/${id}/similar`)
+		// Asked only when search by meaning is on: otherwise the API answers 409.
+		api<{ settings: object | null; consent: boolean; indexed: number }>('/v1/me/embeddings')
+			.then((e) =>
+				e.settings && e.consent && e.indexed > 0
+					? api<{ items: Hit[] }>(`/v1/notes/${id}/similar`)
+					: { items: [] }
+			)
 			.then((r) => (items = r.items.filter((h) => h.score >= 0.3).slice(0, 6)))
 			.catch(() => (items = []));
 	});

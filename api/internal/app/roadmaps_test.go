@@ -185,7 +185,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/sources/top5-engineer/plan", nil), &preview)
 	if preview.Started || len(preview.Phases) != 18 || preview.Phases[0].Milestone != nil || preview.Phases[0].Project == nil ||
-		preview.Phases[0].Project.ID != nil || !strings.HasPrefix(preview.Phases[0].Project.Title, "pipekit") || len(preview.Phases[0].Certs) != 1 {
+		preview.Phases[0].Project.ID != nil || !strings.HasPrefix(preview.Phases[0].Project.Title, "pipekit") || len(preview.Phases[0].Certs) != 3 {
 		t.Fatalf("preview = %+v", preview)
 	}
 	if last := preview.Phases[0].Exit[len(preview.Phases[0].Exit)-1].Title; !strings.HasPrefix(last, "Skills assessment retaken") {
@@ -198,14 +198,14 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 
 	var rm roadmapJSON
 	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
-	if rm.Source != "library" || len(rm.Skills) != 43 || len(rm.Edges) < 8 {
+	if rm.Source != "library" || len(rm.Skills) != 53 || len(rm.Edges) < 8 {
 		t.Fatalf("roadmap = %d skills, %d edges", len(rm.Skills), len(rm.Edges))
 	}
 	var radar struct {
 		Hard, Soft struct{ Spokes []struct{ Label string } }
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/radar", nil), &radar)
-	if len(radar.Hard.Spokes) != 37 || len(radar.Soft.Spokes) != 6 { // a spoke per domain (EP-163)
+	if len(radar.Hard.Spokes) != 47 || len(radar.Soft.Spokes) != 6 { // a spoke per domain (EP-163)
 		t.Fatalf("radar = %+v", radar)
 	}
 
@@ -232,7 +232,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 			i = j
 		}
 	}
-	if len(goals.Items) != 12 || i < 0 || goals.Items[i].Measure == nil || goals.Items[i].Measure.Target != 37 || len(goals.Items[i].Milestones) != 18 {
+	if len(goals.Items) != 12 || i < 0 || goals.Items[i].Measure == nil || goals.Items[i].Measure.Target != 47 || len(goals.Items[i].Milestones) != 18 {
 		t.Fatalf("goals = %+v", goals)
 	}
 	g := goals.Items[i]
@@ -266,9 +266,10 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 			side = p.ID
 		}
 	}
-	// A project per phase, the 42 cursus, and a portfolio per group of
-	// domains (EP-171): those with a domain in phase 1 are under way.
-	if len(later.Items) != 17+7 || active != 2+4 || pipekit == "" || side == "" {
+	// A project per phase, the 42 cursus, a portfolio per group of domains
+	// (EP-171), and the 18 portfolio projects: those with a domain in phase
+	// 1 are under way.
+	if len(later.Items) != 17+6+18 || active != 2+5 || pipekit == "" || side == "" {
 		t.Fatalf("projects = %+v", projects.Items)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/projects?status=on_hold", nil), &projects)
@@ -354,12 +355,12 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Errorf("pipekit's project note is missing: %.300s", n)
 	}
 
-	// The plan's 45 certifications, planned for the end of their phases (EP-104, EP-141).
+	// The plan's 141 certifications, planned for the end of their phases (EP-104, EP-141).
 	var certs struct {
 		Items []certJSON `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
-	if len(certs.Items) != 45 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
+	if len(certs.Items) != 141 || certs.Items[0].TargetOn == nil || certs.Items[0].Status != "planned" {
 		t.Fatalf("certifications = %+v", certs.Items)
 	}
 
@@ -427,7 +428,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 	}
 	p1 := plan.Phases[0]
 	if p1.Milestone == nil || p1.Milestone.Done || p1.Project == nil || p1.Project.ID != pipekit || p1.Project.Total == 0 ||
-		len(p1.Certs) != 1 || p1.Certs[0].Code != "PCPP1" || p1.Certs[0].ID == nil || p1.Certs[0].Status != "planned" {
+		len(p1.Certs) != 3 || p1.Certs[0].Code != "PCPP1" || p1.Certs[0].ID == nil || p1.Certs[0].Status != "planned" {
 		t.Fatalf("phase 1 = %+v", p1)
 	}
 	for _, ph := range plan.Phases {
@@ -491,7 +492,7 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 		t.Fatalf("old plan after the new start = %+v", old)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/certifications", nil), &certs)
-	if len(certs.Items) != 45 {
+	if len(certs.Items) != 141 {
 		t.Errorf("certifications after the new start = %d", len(certs.Items))
 	}
 	if h := alice.mustDo(200, "GET", "/v1/habits?status=active", nil); bytes.Count(h, []byte(`"title":`)) != 16 {

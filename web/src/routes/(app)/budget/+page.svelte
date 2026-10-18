@@ -472,7 +472,7 @@
 						<div class="field">
 							<label for="tx-category">{t('Category')}</label>
 							<select id="tx-category" bind:value={form.category_id}>
-								<option value="">{t('Uncategorised (or by your rules)')}</option>
+								<option value="">{t('By your rules')}</option>
 								{#each formCategories as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
 							</select>
 						</div>
@@ -520,7 +520,7 @@
 									<td
 										>{txn.kind === 'transfer'
 											? `${accountName(txn.account_id)} → ${accountName(txn.to_account_id)}`
-											: nameOf(txn.category_id)}{#if txn.tags.length}<span class="muted small">
+											: nameOf(txn.category_id)}{#if txn.tags.length}{' '}<span class="muted small">
 												{txn.tags.map((x) => `#${x}`).join(' ')}</span
 											>{/if}</td
 									>
@@ -609,7 +609,7 @@
 	}
 	.kpis {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 		gap: var(--space-3);
 		margin: var(--space-4) 0;
 	}
@@ -632,7 +632,7 @@
 	}
 	.layout {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
 		gap: var(--space-4);
 		align-items: start;
 	}
@@ -712,7 +712,7 @@
 	}
 	form.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
 		gap: var(--space-3);
 	}
 	.field {

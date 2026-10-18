@@ -556,6 +556,7 @@ paths:
       security: [{ session: [] }]
       requestBody: { $ref: "#/components/requestBodies/TOTPCode" }
       responses:
+        "400": { $ref: "#/components/responses/Problem" }
         "204": { description: On. }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
@@ -568,6 +569,7 @@ paths:
       security: [{ session: [] }]
       requestBody: { $ref: "#/components/requestBodies/TOTPCode" }
       responses:
+        "400": { $ref: "#/components/responses/Problem" }
         "204": { description: Off. }
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
@@ -792,6 +794,7 @@ paths:
           schema: { type: string, format: uuid }
         - $ref: "#/components/parameters/Limit"
       responses:
+        "404": { $ref: "#/components/responses/Problem" }
         "200":
           description: A page of events.
           content:
@@ -1729,6 +1732,7 @@ paths:
                 credential_url: { type: [string, "null"], format: uri }
                 notes: { type: string, maxLength: 5000 }
                 skill_id: { type: [string, "null"], format: uuid }
+                labels: { type: array, maxItems: 20, items: { type: string, maxLength: 40 } }
       responses:
         "201":
           description: The certification.
@@ -1771,6 +1775,7 @@ paths:
                 credential_url: { type: [string, "null"], format: uri }
                 notes: { type: string, maxLength: 5000 }
                 skill_id: { type: [string, "null"], format: uuid }
+                labels: { type: array, maxItems: 20, items: { type: string, maxLength: 40 } }
       responses:
         "200":
           description: The certification.
@@ -4661,6 +4666,7 @@ paths:
               properties:
                 monthly_budget_cents: { type: integer, minimum: 0, maximum: 100000 }
                 video_summaries: { type: boolean, description: "Have your model summarise each video and episode once, in 5 to 10 lines with 5 to 10 keywords, within the budget (EP-151). Left out, it stays as it is." }
+                watch_knowledge: { type: boolean, description: "Have your model read each tech watch item once for the knowledge graph: its entities and the facts the text states, within the budget. Left out, it stays as it is." }
       responses:
         "200":
           description: Your agent status with the new budget.
@@ -6229,7 +6235,7 @@ paths:
                       required: [id, family, title, kind, tier, value, unit, next]
                       properties:
                         id: { type: string, example: "practice:hard" }
-                        family: { enum: [skill, habit, roadmap, project, goal, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams] }
+                        family: { enum: [skill, habit, roadmap, project, goal, cert, resource, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams] }
                         title: { type: string, description: "The skill's or habit's name; empty for the others." }
                         kind: { type: string, description: "For practice: easy, medium, or hard." }
                         tier: { enum: ["", bronze, silver, gold] }
@@ -6806,6 +6812,35 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/tasks/{id}/card:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [projects]
+      operationId: getTaskCard
+      summary: Where a task sits on a project's board, its parent, and its subtasks
+      responses:
+        "404": { $ref: "#/components/responses/Problem" }
+        "200":
+          description: The card, or null for a task on no board.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [card]
+                properties:
+                  card:
+                    oneOf:
+                      - { type: "null" }
+                      - type: object
+                        required: [project, column, kind, parent, children]
+                        properties:
+                          project: { $ref: "#/components/schemas/CardRef" }
+                          column: { type: string }
+                          kind: { type: string }
+                          parent: { oneOf: [{ type: "null" }, { $ref: "#/components/schemas/CardRef" }] }
+                          children: { type: array, items: { $ref: "#/components/schemas/CardRef" } }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
   /v1/projects/{id}/board:
     parameters: [{ $ref: "#/components/parameters/ID" }]
     get:
@@ -8758,7 +8793,7 @@ components:
         source_url: { type: string, description: "Where the source lives (the channel, the blog, the show), its feed when it gives none; empty once unfollowed (EP-126)." }
     WatchEpisode:
       type: object
-      required: [title, lang, format, intro, chapters, outro, words, minutes, from, to]
+      required: [title, lang, format, intro, chapters, outro, words, minutes, from, to, hosts, turns]
       properties:
         title: { type: string }
         lang: { type: string }
@@ -8781,6 +8816,17 @@ components:
         minutes: { type: number, description: At 150 words a minute. }
         from: { type: string, format: date-time }
         to: { type: string, format: date-time }
+        hosts: { type: array, items: { type: string }, description: "The hosts' names when the person's model wrote the conversation; empty otherwise." }
+        turns:
+          type: array
+          description: "The conversation, read in place of intro, chapters, and outro when not empty."
+          items:
+            type: object
+            required: [host, chapter, text]
+            properties:
+              host: { type: integer, description: "0 or 1." }
+              chapter: { type: integer, description: "The story's index, or -1 for the opening and the close." }
+              text: { type: string }
     WatchShare:
       type: object
       required: [id, name, description, query, expires_at, created_at, last_viewed_at, views]
@@ -8799,8 +8845,8 @@ components:
       properties:
         sources:
           type: object
-          required: [total, ok, failing, waiting, off]
-          properties: { total: { type: integer }, ok: { type: integer }, failing: { type: integer }, waiting: { type: integer }, off: { type: integer } }
+          required: [total, ok, failing, waiting, "off"]
+          properties: { total: { type: integer }, ok: { type: integer }, failing: { type: integer }, waiting: { type: integer }, "off": { type: integer } }
         items:
           type: object
           required: [total, unread, saved, today, week, outliers, merged, articles, videos, podcasts]
@@ -8824,10 +8870,12 @@ components:
           type: array
           items:
             type: object
-            required: [id, kind, label, count, sources, community, rank, trend, fringe, summary, items, related, in_notes, topics, first_seen]
+            required: [id, kind, type, class, label, count, sources, community, rank, trend, fringe, summary, items, related, in_notes, topics, first_seen]
             properties:
               id: { type: string }
-              kind: { type: string, enum: [concept] }
+              kind: { type: string, enum: [concept, entity, class], description: "A key phrase of the news, an entity of the ontology, or one of its classes." }
+              type: { type: string, enum: [concept, class, organization, person, technology, product, language, database, cloud_service, standard, event, location, vulnerability, dataset, publication] }
+              class: { type: string, description: "An entity's class in the ontology." }
               label: { type: string }
               count: { type: integer, description: "News it appears in." }
               sources: { type: integer }
@@ -8845,14 +8893,31 @@ components:
           type: array
           items:
             type: object
-            required: [from, to, together, npmi, reason]
-            properties: { from: { type: string }, to: { type: string }, together: { type: integer }, npmi: { type: number }, reason: { type: string } }
+            description: "A fact: subject (from), predicate, object (to)."
+            required: [from, to, predicate, directed, together, npmi, reason, evidence]
+            properties:
+              from: { type: string }
+              to: { type: string }
+              predicate:
+                type: string
+                enum: [related_to, is_a, developed_by, fork_of, acquires, releases, integrates_with, uses, alternative_to, migrates_to, partners_with, invests_in, deprecates, affects, part_of, mentioned_with, develops, announces, built_on, supports, competes_with, outperforms, funds, fixes, version_of, founded, leads, works_at, hires, located_in, regulates, adopts]
+              directed: { type: boolean }
+              together: { type: integer, description: "News it was read in (concepts: news they share)." }
+              npmi: { type: number }
+              reason: { type: string }
+              evidence:
+                type: array
+                description: "Up to three news it was read in, with the sentence."
+                items:
+                  type: object
+                  required: [id, title, sentence]
+                  properties: { id: { type: string, format: uuid }, title: { type: string }, sentence: { type: string } }
         communities:
           type: array
           items: { type: object, required: [id, label, size], properties: { id: { type: integer }, label: { type: string }, size: { type: integer } } }
         stats:
           type: object
-          required: [items, outliers, concepts, edges, communities, modularity, bridges]
+          required: [items, outliers, concepts, edges, communities, modularity, bridges, entities, facts, classes]
           properties:
             items: { type: integer }
             outliers: { type: integer }
@@ -8861,6 +8926,9 @@ components:
             communities: { type: integer }
             modularity: { type: number }
             bridges: { type: integer }
+            entities: { type: integer }
+            facts: { type: integer, description: "Facts read in the news." }
+            classes: { type: integer }
     Channel:
       type: object
       required: [id, kind, name, target, mode, digests, reminders, enabled, linked, peer_name, link_expires_at, created_at, last_sent_at, last_error]
@@ -9089,7 +9157,7 @@ components:
         minutes: { type: integer }
     Certification:
       type: object
-      required: [id, name, provider, code, url, status, target_on, exam_on, passed_on, expires_on, validity_months, score, cost_cents, currency, credential_url, notes, skill_id, created_at, updated_at]
+      required: [id, name, provider, code, url, status, target_on, exam_on, passed_on, expires_on, validity_months, score, cost_cents, currency, credential_url, notes, skill_id, labels, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
@@ -9108,6 +9176,7 @@ components:
         credential_url: { type: [string, "null"] }
         notes: { type: string }
         skill_id: { type: [string, "null"], format: uuid }
+        labels: { type: array, items: { type: string } }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     Invite:
@@ -9334,6 +9403,13 @@ components:
         remind_at: { type: [string, "null"], format: date-time }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    CardRef:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
     TaskStatus:
       enum: [inbox, next, doing, waiting, someday, done, cancelled]
     TaskFields:
@@ -9686,7 +9762,7 @@ components:
         last_used_at: { type: [string, "null"], format: date-time }
     AgentStatus:
       type: object
-      required: [available, reason, provider, monthly_budget_cents, spent_micros, video_summaries]
+      required: [available, reason, provider, monthly_budget_cents, spent_micros, video_summaries, watch_knowledge]
       properties:
         available: { type: boolean }
         provider: { type: [string, "null"], description: The provider runs would use. }
@@ -9694,6 +9770,7 @@ components:
         monthly_budget_cents: { type: integer }
         spent_micros: { type: integer, description: "US dollars × 1,000,000 spent this calendar month (UTC)." }
         video_summaries: { type: boolean, description: Videos and episodes are summarised in prose by your model. }
+        watch_knowledge: { type: boolean, description: Tech watch items are read by your model for the knowledge graph. }
     AITally:
       type: object
       required: [runs, input_tokens, output_tokens, cost_micros, tool_chars_raw, tool_chars_sent]
@@ -10449,7 +10526,7 @@ components:
           properties:
             ai:
               type: object
-              required: [provider, monthly_budget_cents, video_summaries]
+              required: [provider, monthly_budget_cents, video_summaries, watch_knowledge]
               properties:
                 provider:
                   type: [object, "null"]
@@ -10463,6 +10540,7 @@ components:
                     output_price: { type: [number, "null"] }
                 monthly_budget_cents: { type: integer }
                 video_summaries: { type: boolean, description: Videos and episodes are summarised in prose by your model (EP-151). }
+                watch_knowledge: { type: boolean, description: Tech watch items are read by your model for the knowledge graph. }
     AssessmentProfile:
       type: object
       required: [role, experience, goals, hours_per_week, formats]

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appLocale } from './dates';
 	import { api, message } from '$lib/api';
 	import type { paths } from '$lib/api-types';
 	import { formatDate } from '$lib/dates';
@@ -20,9 +21,9 @@
 	}
 	load();
 
-	const n = (v: number) => v.toLocaleString();
+	const n = (v: number) => v.toLocaleString(appLocale());
 	const dollars = (micros: number) =>
-		(micros / 1_000_000).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+		(micros / 1_000_000).toLocaleString(appLocale(), { style: 'currency', currency: 'USD' });
 	// About four characters a token: an estimate, said as one.
 	const saved = (raw: number, sent: number) => Math.round((raw - sent) / 4);
 	const share = (raw: number, sent: number) => (raw ? Math.round(((raw - sent) / raw) * 100) : 0);

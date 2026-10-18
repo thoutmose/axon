@@ -65,6 +65,10 @@ func (h *Handlers) importFile(w http.ResponseWriter, r *http.Request) {
 		httpx.Problem(w, http.StatusNotFound, "Axon imports from todoist, ticktick, goodreads, letterboxd, firefly, ofx, and notion.")
 		return
 	}
+	// A 50 MB export over a slow link outlasts the server's 15-second limits.
+	rc := http.NewResponseController(w)
+	_ = rc.SetReadDeadline(time.Now().Add(10 * time.Minute))
+	_ = rc.SetWriteDeadline(time.Now().Add(10 * time.Minute))
 	data, err := io.ReadAll(io.LimitReader(r.Body, maxFile+1))
 	if err != nil || len(data) > maxFile {
 		httpx.Problem(w, http.StatusRequestEntityTooLarge, "Imports are limited to 50 MB.")
@@ -209,11 +213,13 @@ func (h *Handlers) run(ctx context.Context, tx pgx.Tx, userID uuid.UUID, source 
 				return err
 			}
 		}
+		var batch notes.Batch // links resolve once, after every page
 		for _, n := range pages {
-			if err := each(ctx, tx, res, n.Path, func(sp pgx.Tx) (outcome, error) { return h.note(ctx, sp, userID, n) }); err != nil {
+			if err := each(ctx, tx, res, n.Path, func(sp pgx.Tx) (outcome, error) { return h.note(ctx, sp, userID, &batch, n) }); err != nil {
 				return err
 			}
 		}
+		return batch.Finish(ctx, tx, userID, graph.UserActor)
 	}
 	return nil
 }
@@ -264,7 +270,7 @@ func (h *Handlers) media(ctx context.Context, tx pgx.Tx, userID uuid.UUID, m Med
 	return created, nil
 }
 
-func (h *Handlers) note(ctx context.Context, tx pgx.Tx, userID uuid.UUID, n Note) (outcome, error) {
+func (h *Handlers) note(ctx context.Context, tx pgx.Tx, userID uuid.UUID, batch *notes.Batch, n Note) (outcome, error) {
 	p, ok := notes.CleanPath(n.Path)
 	if !ok {
 		return skipped, notes.ErrBadPath
@@ -272,7 +278,7 @@ func (h *Handlers) note(ctx context.Context, tx pgx.Tx, userID uuid.UUID, n Note
 	cur, err := notes.GetByPath(ctx, tx, userID, p)
 	switch {
 	case errors.Is(err, graph.ErrNotFound):
-		if _, err := notes.Create(ctx, tx, userID, graph.UserActor, p, n.Content); err != nil {
+		if _, err := batch.Add(ctx, tx, userID, graph.UserActor, p, n.Content); err != nil {
 			return skipped, err
 		}
 		return created, nil

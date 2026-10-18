@@ -236,6 +236,7 @@
 	}
 	.tabs {
 		display: flex;
+		flex-wrap: wrap;
 		gap: var(--space-2);
 		margin-bottom: var(--space-4);
 	}

@@ -81,6 +81,26 @@ func TestProjectBoardHierarchyAndWIP(t *testing.T) {
 	alice.mustDo(422, "POST", "/v1/projects/"+p.ID+"/cards", []byte(`{"title":"x","kind":"epic","parent_id":"`+epic.TaskID+`"}`))
 	alice.mustDo(422, "POST", "/v1/projects/"+p.ID+"/cards", []byte(`{"title":"x","column":"someday"}`))
 
+	// A task knows its card: its project, its parent, and its subtasks.
+	var where struct {
+		Card *struct {
+			Project  struct{ Title string }
+			Kind     string
+			Parent   *struct{ Title string }
+			Children []struct{ Title, Status string }
+		}
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/tasks/"+issue.TaskID+"/card", nil), &where)
+	if where.Card == nil || where.Card.Project.Title != "Axon mobile app" || where.Card.Kind != "issue" || where.Card.Parent == nil ||
+		where.Card.Parent.Title != "Offline mode" || len(where.Card.Children) != 1 || where.Card.Children[0].Title != "Pick storage" {
+		t.Fatalf("card = %+v", where.Card)
+	}
+	var bare struct{ ID string }
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/tasks", []byte(`{"title":"Not on a board"}`)), &bare)
+	if c := alice.mustDo(200, "GET", "/v1/tasks/"+bare.ID+"/card", nil); !bytes.Contains(c, []byte(`"card":null`)) {
+		t.Errorf("a task on no board = %s", c)
+	}
+
 	b := alice.board(p.ID)
 	if got := b.column("todo"); len(got) != 3 || b.column("backlog")[0] != "Offline mode" {
 		t.Fatalf("board = %+v", b)

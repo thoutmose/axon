@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { api, message } from '$lib/api';
-	import { sample, type Flashcard } from '$lib/flashcards';
+	import { deckName, sample, type Flashcard } from '$lib/flashcards';
 	import LearnTabs from '$lib/LearnTabs.svelte';
 	import Button from '$lib/ui/Button.svelte';
 	import Status from '$lib/ui/Status.svelte';
@@ -53,7 +53,7 @@
 <p class="crumbs">
 	<a href="/cards?deck={encodeURIComponent(deck)}">← {deck || t('Flashcards')}</a>
 </p>
-<h1>{deck ? t('Practice test: {deck}', { deck }) : t('Practice test')}</h1>
+<h1>{deck ? t('Practice test: {deck}', { deck: deckName(deck) }) : t('Practice test')}</h1>
 <LearnTabs />
 <p class="muted hint">
 	{t(

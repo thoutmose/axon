@@ -2,7 +2,6 @@ package para
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -46,7 +45,7 @@ func (h *Handlers) fail(w http.ResponseWriter, k Kind, err error) {
 	case errors.As(err, &v):
 		httpx.Problem(w, http.StatusUnprocessableEntity, v.Msg)
 	case errors.Is(err, graph.ErrNotFound):
-		httpx.Problem(w, http.StatusNotFound, fmt.Sprintf("No such %s.", k.Name))
+		httpx.Problem(w, http.StatusNotFound, k.Missing)
 	case errors.Is(err, ErrStale):
 		httpx.Problem(w, http.StatusPreconditionFailed, "This changed since you loaded it. Reload and try again.")
 	default:

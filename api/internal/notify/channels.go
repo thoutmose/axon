@@ -171,7 +171,7 @@ func check(kind string, c Config) (string, error) {
 		u, _ := url.Parse(c.WebhookURL)
 		return u.Host + "/…", nil
 	}
-	return "", ValidationError{"The kind is one of " + strings.Join(Kinds, ", ") + "."}
+	return "", ValidationError{fmt.Sprintf("The kind is one of %s.", strings.Join(Kinds, ", "))}
 }
 
 // merge keeps the current secrets where the change leaves them empty.
