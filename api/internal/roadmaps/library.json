@@ -3,8 +3,8 @@
 	"roadmaps": [
 		{
 			"id": "top5-engineer",
-			"title": "Top-5% in 37 engineering domains",
-			"description": "Top 5% in all of: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Cybersecurity, DevSecOps.\n\n18 phases, about 4,840 hours at 22 hours a week, from 2026-10-19 (a Monday) to 2031-01-05. Each phase has a project that builds on the previous one, and each domain has a certification (45 in all) and project work that proves it. The skills assessment is retaken at every phase's end. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday theory, Tuesday the core track, Wednesday practice, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
+			"title": "Top-5% in 47 engineering domains",
+			"description": "Top 5% in all of: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Analytics engineering, Cloud data warehouses, Lakehouse platforms, Data orchestration, Data governance and quality, Business intelligence, NoSQL and search, Machine learning, Deep learning, MLOps, Generative AI and LLM engineering, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Infrastructure as code, Observability and SRE, Cybersecurity, DevSecOps.\n\n18 phases, about 4,840 hours at 22 hours a week, from 2026-10-19 (a Monday) to 2031-01-05. Each phase has a project that builds on the previous one, and each domain has its certifications (141 in all, labelled by field and vendor) and project work that proves it. The skills assessment is retaken at every phase's end. 22–26 hours a week, 200 € a month (books, a cloud sandbox, a certification fund, a reward fund).\n\nWeekly rhythm: Monday theory, Tuesday the core track, Wednesday practice, Thursday whichever is behind, Friday spaced tests and 3 DSA problems, Saturday 4 h project + 2 h DSA + 1 h notes, Sunday 3 h project + 2 h reading + 1 h Zettel + the weekly reflection.",
 			"skills": [
 				{
 					"title": "Computer science",
@@ -178,6 +178,69 @@
 					]
 				},
 				{
+					"title": "Analytics engineering",
+					"section": "4 · Data",
+					"description": "Modelling for analytics: dimensional models, dbt, tests, docs, and metrics (phases 8, 9). Proof: dbt Analytics Engineering certification; a Kimball star schema in dbt with tests, docs, contracts, and a semantic layer, deployed by CI.",
+					"assess": "analytics-engineering",
+					"requires": [
+						"Databases"
+					]
+				},
+				{
+					"title": "Cloud data warehouses",
+					"section": "4 · Data",
+					"description": "Snowflake, BigQuery, and Redshift: storage and compute, clustering, cost, and governance (phases 8, 12, 18). Proof: SnowPro Core then SnowPro Advanced: Data Engineer; the same model run on Snowflake and BigQuery with a cost report.",
+					"assess": "cloud-data-warehouses",
+					"requires": [
+						"Databases"
+					]
+				},
+				{
+					"title": "Lakehouse platforms",
+					"section": "4 · Data",
+					"description": "Delta Lake, Iceberg, and Hudi tables, Databricks and Fabric, and the medallion architecture (phases 8, 12, 18). Proof: Databricks Certified Data Engineer Associate then Professional; a medallion lakehouse on Delta and Iceberg.",
+					"assess": "lakehouse",
+					"requires": [
+						"Spark and batch processing"
+					]
+				},
+				{
+					"title": "Data orchestration",
+					"section": "4 · Data",
+					"description": "Airflow, Dagster, and Prefect: scheduling, dependencies, retries, backfills, and assets (phases 1, 8). Proof: Astronomer Airflow Fundamentals and DAG Authoring certifications; pipekit, then the platform's DAGs, idempotent and backfillable.",
+					"assess": "orchestration",
+					"requires": [
+						"Python"
+					]
+				},
+				{
+					"title": "Data governance and quality",
+					"section": "4 · Data",
+					"description": "Data quality, contracts, lineage, catalogs, metadata, and privacy (phases 8, 9). Proof: DAMA CDMP Associate; data contracts, quality checks, lineage, and a catalog on the platform; GDPR handled (IAPP CIPP/E).",
+					"assess": "data-governance",
+					"requires": [
+						"Data engineering"
+					]
+				},
+				{
+					"title": "Business intelligence",
+					"section": "4 · Data",
+					"description": "Dashboards, semantic models, and data storytelling with Power BI, Tableau, Superset, and Looker (phases 9). Proof: Microsoft PL-300 or Tableau Certified Data Analyst; three published dashboards built on the semantic layer.",
+					"assess": "bi",
+					"requires": [
+						"Data analysis"
+					]
+				},
+				{
+					"title": "NoSQL and search",
+					"section": "4 · Data",
+					"description": "Document, key-value, wide-column, graph, and search stores: when and how to use each (phases 6). Proof: MongoDB Associate Developer and Elastic Certified Engineer; a search service over the tech watch, and a graph model in Neo4j.",
+					"assess": "nosql-search",
+					"requires": [
+						"Databases"
+					]
+				},
+				{
 					"title": "Machine learning",
 					"section": "5 · AI",
 					"description": "Phase 14. Proof: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.",
@@ -202,6 +265,15 @@
 					"assess": "mlops",
 					"requires": [
 						"Machine learning"
+					]
+				},
+				{
+					"title": "Generative AI and LLM engineering",
+					"section": "5 · AI",
+					"description": "LLMs, embeddings, RAG, agents, evaluation, and LLMOps (phases 15, 18). Proof: Databricks Generative AI Engineer Associate; a RAG assistant with evaluations, guardrails, and cost tracking in production.",
+					"assess": "genai",
+					"requires": [
+						"Deep learning"
 					]
 				},
 				{
@@ -274,6 +346,24 @@
 					"assess": "cloud",
 					"requires": [
 						"Kubernetes"
+					]
+				},
+				{
+					"title": "Infrastructure as code",
+					"section": "7 · Infrastructure",
+					"description": "Terraform and OpenTofu, Ansible, modules, state, drift, and policy as code (phases 11, 12). Proof: HashiCorp Terraform Associate; the whole cloud data platform created and destroyed from code, with policy checks in CI.",
+					"assess": "iac",
+					"requires": [
+						"Linux"
+					]
+				},
+				{
+					"title": "Observability and SRE",
+					"section": "7 · Infrastructure",
+					"description": "Metrics, logs, and traces with Prometheus, Grafana, and OpenTelemetry; SLOs, incidents, and postmortems (phases 11, 18). Proof: Prometheus Certified Associate and OpenTelemetry Certified Associate; SLOs with error budgets and alerts on the platform.",
+					"assess": "observability",
+					"requires": [
+						"Linux"
 					]
 				},
 				{
@@ -375,6 +465,15 @@
 					"skill": "Computer science"
 				},
 				{
+					"title": "CS50x: Introduction to Computer Science",
+					"kind": "course",
+					"by": "Harvard University",
+					"free": true,
+					"url": "https://cs50.harvard.edu/x/",
+					"section": "1 · Foundations",
+					"skill": "Computer science"
+				},
+				{
 					"title": "MIT 6.006 Introduction to Algorithms",
 					"kind": "course",
 					"by": "MIT OpenCourseWare",
@@ -416,6 +515,24 @@
 					"by": "LeetCode",
 					"free": true,
 					"url": "https://leetcode.com/problemset/",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "Competitive Programmer's Handbook",
+					"kind": "book",
+					"by": "Antti Laaksonen",
+					"free": true,
+					"url": "https://cses.fi/book/book.pdf",
+					"section": "1 · Foundations",
+					"skill": "Data structures and algorithms"
+				},
+				{
+					"title": "CSES Problem Set",
+					"kind": "practice",
+					"by": "CSES",
+					"free": true,
+					"url": "https://cses.fi/problemset/",
 					"section": "1 · Foundations",
 					"skill": "Data structures and algorithms"
 				},
@@ -465,6 +582,15 @@
 					"skill": "Maths"
 				},
 				{
+					"title": "3Blue1Brown: Essence of Linear Algebra",
+					"kind": "course",
+					"by": "Grant Sanderson",
+					"free": true,
+					"url": "https://www.3blue1brown.com/topics/linear-algebra",
+					"section": "1 · Foundations",
+					"skill": "Maths"
+				},
+				{
 					"title": "Stat 110: Probability",
 					"kind": "course",
 					"by": "Joe Blitzstein, Harvard",
@@ -488,6 +614,15 @@
 					"by": "MIT OpenCourseWare",
 					"free": true,
 					"url": "https://ocw.mit.edu/courses/6-041sc-probabilistic-systems-analysis-and-applied-probability-fall-2013/",
+					"section": "1 · Foundations",
+					"skill": "Probability"
+				},
+				{
+					"title": "Seeing the probability: Harvard Stat 110 on edX",
+					"kind": "course",
+					"by": "Harvard University (edX)",
+					"free": true,
+					"url": "https://www.edx.org/learn/probability/harvard-university-introduction-to-probability",
 					"section": "1 · Foundations",
 					"skill": "Probability"
 				},
@@ -524,6 +659,15 @@
 					"by": "Brown University",
 					"free": true,
 					"url": "https://seeing-theory.brown.edu/",
+					"section": "1 · Foundations",
+					"skill": "Statistics"
+				},
+				{
+					"title": "Statistical Rethinking",
+					"kind": "course",
+					"by": "Richard McElreath",
+					"free": true,
+					"url": "https://github.com/rmcelreath/stat_rethinking_2024",
 					"section": "1 · Foundations",
 					"skill": "Statistics"
 				},
@@ -573,6 +717,15 @@
 					"skill": "C and C++"
 				},
 				{
+					"title": "Beej's Guide to C Programming",
+					"kind": "book",
+					"by": "Brian Hall",
+					"free": true,
+					"url": "https://beej.us/guide/bgc/",
+					"section": "2 · Systems",
+					"skill": "C and C++"
+				},
+				{
 					"title": "Operating Systems: Three Easy Pieces",
 					"kind": "book",
 					"by": "Remzi and Andrea Arpaci-Dusseau",
@@ -609,6 +762,15 @@
 					"skill": "Operating systems"
 				},
 				{
+					"title": "Linux Kernel Development, 3rd edition",
+					"kind": "book",
+					"by": "Robert Love",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/linux-kernel-development/9780768696974/",
+					"section": "2 · Systems",
+					"skill": "Operating systems"
+				},
+				{
 					"title": "The Linux Command Line",
 					"kind": "book",
 					"by": "William Shotts",
@@ -632,6 +794,15 @@
 					"by": "The Linux Foundation",
 					"free": false,
 					"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
+					"section": "2 · Systems",
+					"skill": "Linux"
+				},
+				{
+					"title": "Red Hat System Administration training (RH124)",
+					"kind": "course",
+					"by": "Red Hat",
+					"free": false,
+					"url": "https://www.redhat.com/en/services/training/rh124-red-hat-system-administration-i",
 					"section": "2 · Systems",
 					"skill": "Linux"
 				},
@@ -717,6 +888,15 @@
 					"skill": "Network"
 				},
 				{
+					"title": "Networking for Systems Administrators",
+					"kind": "book",
+					"by": "Michael W. Lucas",
+					"free": false,
+					"url": "https://mwl.io/nonfiction/networking",
+					"section": "2 · Systems",
+					"skill": "Network"
+				},
+				{
 					"title": "Fluent Python, 2nd edition",
 					"kind": "book",
 					"by": "Luciano Ramalho",
@@ -753,6 +933,15 @@
 					"skill": "Python"
 				},
 				{
+					"title": "Python Testing with pytest, 2nd edition",
+					"kind": "book",
+					"by": "Brian Okken",
+					"free": false,
+					"url": "https://pragprog.com/titles/bopytest2/python-testing-with-pytest-second-edition/",
+					"section": "3 · Languages",
+					"skill": "Python"
+				},
+				{
 					"title": "dev.java: learn Java",
 					"kind": "site",
 					"by": "Oracle",
@@ -776,6 +965,15 @@
 					"by": "Brian Goetz et al.",
 					"free": false,
 					"url": "https://jcip.net/",
+					"section": "3 · Languages",
+					"skill": "Java"
+				},
+				{
+					"title": "Modern Java in Action",
+					"kind": "book",
+					"by": "Raoul-Gabriel Urma, Mario Fusco, Alan Mycroft",
+					"free": false,
+					"url": "https://www.manning.com/books/modern-java-in-action",
 					"section": "3 · Languages",
 					"skill": "Java"
 				},
@@ -816,6 +1014,15 @@
 					"skill": "Rust"
 				},
 				{
+					"title": "Zero To Production In Rust",
+					"kind": "book",
+					"by": "Luca Palmieri",
+					"free": false,
+					"url": "https://www.zero2prod.com/",
+					"section": "3 · Languages",
+					"skill": "Rust"
+				},
+				{
 					"title": "CMU 15-445/645 Database Systems, with BusTub",
 					"kind": "course",
 					"by": "Andy Pavlo, Carnegie Mellon",
@@ -843,6 +1050,24 @@
 					"skill": "Databases"
 				},
 				{
+					"title": "Database System Concepts, 7th edition",
+					"kind": "book",
+					"by": "Silberschatz, Korth, Sudarshan",
+					"free": false,
+					"url": "https://db-book.com/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
+					"title": "pgexercises",
+					"kind": "practice",
+					"by": "Alisdair Owens",
+					"free": true,
+					"url": "https://pgexercises.com/",
+					"section": "4 · Data",
+					"skill": "Databases"
+				},
+				{
 					"title": "Choose a data store",
 					"kind": "site",
 					"by": "Microsoft Azure Architecture Center",
@@ -866,6 +1091,15 @@
 					"by": "Bill Karwin",
 					"free": false,
 					"url": "https://pragprog.com/titles/bksqla/sql-antipatterns-volume-1/",
+					"section": "4 · Data",
+					"skill": "Database architecture"
+				},
+				{
+					"title": "Designing Data-Intensive Applications reading notes: PostgreSQL wiki on replication",
+					"kind": "site",
+					"by": "PostgreSQL",
+					"free": true,
+					"url": "https://wiki.postgresql.org/wiki/Replication,_Clustering,_and_Connection_Pooling",
 					"section": "4 · Data",
 					"skill": "Database architecture"
 				},
@@ -915,6 +1149,15 @@
 					"skill": "Database administration"
 				},
 				{
+					"title": "PostgreSQL documentation: server administration",
+					"kind": "site",
+					"by": "PostgreSQL",
+					"free": true,
+					"url": "https://www.postgresql.org/docs/current/admin.html",
+					"section": "4 · Data",
+					"skill": "Database administration"
+				},
+				{
 					"title": "Designing Data-Intensive Applications, 2nd edition",
 					"kind": "book",
 					"by": "Martin Kleppmann",
@@ -938,6 +1181,15 @@
 					"by": "Alex Petrov",
 					"free": false,
 					"url": "https://www.databass.dev/",
+					"section": "4 · Data",
+					"skill": "Data-intensive systems"
+				},
+				{
+					"title": "Jepsen analyses",
+					"kind": "site",
+					"by": "Kyle Kingsbury",
+					"free": true,
+					"url": "https://jepsen.io/analyses",
 					"section": "4 · Data",
 					"skill": "Data-intensive systems"
 				},
@@ -996,6 +1248,15 @@
 					"skill": "Kafka and streaming"
 				},
 				{
+					"title": "Designing Event-Driven Systems",
+					"kind": "book",
+					"by": "Ben Stopford",
+					"free": true,
+					"url": "https://www.confluent.io/designing-event-driven-systems/",
+					"section": "4 · Data",
+					"skill": "Kafka and streaming"
+				},
+				{
 					"title": "Spark Structured Streaming guide",
 					"kind": "site",
 					"by": "The Apache Software Foundation",
@@ -1019,6 +1280,15 @@
 					"by": "The Apache Software Foundation",
 					"free": true,
 					"url": "https://spark.apache.org/docs/latest/",
+					"section": "4 · Data",
+					"skill": "Spark and batch processing"
+				},
+				{
+					"title": "Spark: The Definitive Guide",
+					"kind": "book",
+					"by": "Bill Chambers and Matei Zaharia",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/spark-the-definitive/9781491912201/",
 					"section": "4 · Data",
 					"skill": "Spark and batch processing"
 				},
@@ -1059,6 +1329,33 @@
 					"skill": "Data engineering"
 				},
 				{
+					"title": "Data Engineering Design Patterns",
+					"kind": "book",
+					"by": "Bartosz Konieczny",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/data-engineering-design/9781098165826/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "Start Data Engineering",
+					"kind": "site",
+					"by": "Joseph Machado",
+					"free": true,
+					"url": "https://www.startdataengineering.com/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
+					"title": "Data Engineering Weekly",
+					"kind": "site",
+					"by": "Ananth Packkildurai",
+					"free": true,
+					"url": "https://www.dataengineeringweekly.com/",
+					"section": "4 · Data",
+					"skill": "Data engineering"
+				},
+				{
 					"title": "OpenLineage documentation",
 					"kind": "site",
 					"by": "OpenLineage",
@@ -1091,6 +1388,15 @@
 					"by": "The Apache Software Foundation",
 					"free": true,
 					"url": "https://airflow.apache.org/docs/",
+					"section": "4 · Data",
+					"skill": "DataOps"
+				},
+				{
+					"title": "The DataOps Cookbook",
+					"kind": "book",
+					"by": "DataKitchen",
+					"free": true,
+					"url": "https://datakitchen.io/the-dataops-cookbook/",
 					"section": "4 · Data",
 					"skill": "DataOps"
 				},
@@ -1131,6 +1437,15 @@
 					"skill": "Data analysis"
 				},
 				{
+					"title": "Mode SQL tutorial",
+					"kind": "course",
+					"by": "Mode",
+					"free": true,
+					"url": "https://mode.com/sql-tutorial/",
+					"section": "4 · Data",
+					"skill": "Data analysis"
+				},
+				{
 					"title": "MITx MicroMasters in Statistics and Data Science",
 					"kind": "course",
 					"by": "MIT (edX)",
@@ -1156,6 +1471,294 @@
 					"url": "https://jakevdp.github.io/PythonDataScienceHandbook/",
 					"section": "4 · Data",
 					"skill": "Data science"
+				},
+				{
+					"title": "Kaggle Learn",
+					"kind": "course",
+					"by": "Kaggle",
+					"free": true,
+					"url": "https://www.kaggle.com/learn",
+					"section": "4 · Data",
+					"skill": "Data science"
+				},
+				{
+					"title": "dbt Fundamentals",
+					"kind": "course",
+					"by": "dbt Labs",
+					"free": true,
+					"url": "https://learn.getdbt.com/courses/dbt-fundamentals",
+					"section": "4 · Data",
+					"skill": "Analytics engineering"
+				},
+				{
+					"title": "dbt best practice guides",
+					"kind": "site",
+					"by": "dbt Labs",
+					"free": true,
+					"url": "https://docs.getdbt.com/best-practices",
+					"section": "4 · Data",
+					"skill": "Analytics engineering"
+				},
+				{
+					"title": "Jaffle Shop: dbt's reference project",
+					"kind": "practice",
+					"by": "dbt Labs",
+					"free": true,
+					"url": "https://github.com/dbt-labs/jaffle-shop",
+					"section": "4 · Data",
+					"skill": "Analytics engineering"
+				},
+				{
+					"title": "Analytics Engineering with SQL and dbt",
+					"kind": "book",
+					"by": "Rui Machado and Hélder Russa",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/analytics-engineering-with/9781098142377/",
+					"section": "4 · Data",
+					"skill": "Analytics engineering"
+				},
+				{
+					"title": "Snowflake Quickstarts",
+					"kind": "practice",
+					"by": "Snowflake",
+					"free": true,
+					"url": "https://quickstarts.snowflake.com/",
+					"section": "4 · Data",
+					"skill": "Cloud data warehouses"
+				},
+				{
+					"title": "Snowflake documentation",
+					"kind": "site",
+					"by": "Snowflake",
+					"free": true,
+					"url": "https://docs.snowflake.com/",
+					"section": "4 · Data",
+					"skill": "Cloud data warehouses"
+				},
+				{
+					"title": "BigQuery documentation",
+					"kind": "site",
+					"by": "Google Cloud",
+					"free": true,
+					"url": "https://cloud.google.com/bigquery/docs",
+					"section": "4 · Data",
+					"skill": "Cloud data warehouses"
+				},
+				{
+					"title": "Amazon Redshift Database Developer Guide",
+					"kind": "site",
+					"by": "Amazon Web Services",
+					"free": true,
+					"url": "https://docs.aws.amazon.com/redshift/latest/dg/welcome.html",
+					"section": "4 · Data",
+					"skill": "Cloud data warehouses"
+				},
+				{
+					"title": "Snowflake: The Definitive Guide",
+					"kind": "book",
+					"by": "Joyce Kay Avila",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/snowflake-the-definitive/9781098103811/",
+					"section": "4 · Data",
+					"skill": "Cloud data warehouses"
+				},
+				{
+					"title": "Databricks Academy",
+					"kind": "course",
+					"by": "Databricks",
+					"free": true,
+					"url": "https://www.databricks.com/learn/training/home",
+					"section": "4 · Data",
+					"skill": "Lakehouse platforms"
+				},
+				{
+					"title": "Delta Lake documentation",
+					"kind": "site",
+					"by": "Linux Foundation",
+					"free": true,
+					"url": "https://docs.delta.io/",
+					"section": "4 · Data",
+					"skill": "Lakehouse platforms"
+				},
+				{
+					"title": "Apache Iceberg documentation",
+					"kind": "site",
+					"by": "Apache Software Foundation",
+					"free": true,
+					"url": "https://iceberg.apache.org/docs/latest/",
+					"section": "4 · Data",
+					"skill": "Lakehouse platforms"
+				},
+				{
+					"title": "Lakehouse: A New Generation of Open Platforms (CIDR 2021)",
+					"kind": "paper",
+					"by": "Armbrust, Ghodsi, Xin, Zaharia",
+					"free": true,
+					"url": "https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf",
+					"section": "4 · Data",
+					"skill": "Lakehouse platforms"
+				},
+				{
+					"title": "Delta Lake: The Definitive Guide",
+					"kind": "book",
+					"by": "Denny Lee, Tristen Wentling, Scott Haines, Prashanth Babu",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/delta-lake-the/9781098151935/",
+					"section": "4 · Data",
+					"skill": "Lakehouse platforms"
+				},
+				{
+					"title": "Astronomer Academy",
+					"kind": "course",
+					"by": "Astronomer",
+					"free": true,
+					"url": "https://academy.astronomer.io/",
+					"section": "4 · Data",
+					"skill": "Data orchestration"
+				},
+				{
+					"title": "Dagster University",
+					"kind": "course",
+					"by": "Dagster Labs",
+					"free": true,
+					"url": "https://courses.dagster.io/",
+					"section": "4 · Data",
+					"skill": "Data orchestration"
+				},
+				{
+					"title": "Data Pipelines with Apache Airflow, 2nd edition",
+					"kind": "book",
+					"by": "Julian de Ruiter, Ismael Cabral, Kris Geusebroek, Daniel van der Ende, Bas Harenslak",
+					"free": false,
+					"url": "https://www.manning.com/books/data-pipelines-with-apache-airflow-second-edition",
+					"section": "4 · Data",
+					"skill": "Data orchestration"
+				},
+				{
+					"title": "Prefect documentation",
+					"kind": "site",
+					"by": "Prefect",
+					"free": true,
+					"url": "https://docs.prefect.io/",
+					"section": "4 · Data",
+					"skill": "Data orchestration"
+				},
+				{
+					"title": "DAMA-DMBOK: Data Management Body of Knowledge",
+					"kind": "book",
+					"by": "DAMA International",
+					"free": false,
+					"url": "https://www.dama.org/cpages/body-of-knowledge",
+					"section": "4 · Data",
+					"skill": "Data governance and quality"
+				},
+				{
+					"title": "Data Quality Fundamentals",
+					"kind": "book",
+					"by": "Barr Moses, Lior Gavish, Molly Vorwerck",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/data-quality-fundamentals/9781098112035/",
+					"section": "4 · Data",
+					"skill": "Data governance and quality"
+				},
+				{
+					"title": "Open Data Contract Standard",
+					"kind": "site",
+					"by": "Bitol (Linux Foundation AI & Data)",
+					"free": true,
+					"url": "https://bitol-io.github.io/open-data-contract-standard/latest/",
+					"section": "4 · Data",
+					"skill": "Data governance and quality"
+				},
+				{
+					"title": "DataHub documentation",
+					"kind": "site",
+					"by": "DataHub project",
+					"free": true,
+					"url": "https://docs.datahub.com/",
+					"section": "4 · Data",
+					"skill": "Data governance and quality"
+				},
+				{
+					"title": "CNIL: GDPR guide for developers",
+					"kind": "site",
+					"by": "CNIL",
+					"free": true,
+					"url": "https://www.cnil.fr/en/gdpr-developers-guide",
+					"section": "4 · Data",
+					"skill": "Data governance and quality"
+				},
+				{
+					"title": "Power BI training",
+					"kind": "course",
+					"by": "Microsoft Learn",
+					"free": true,
+					"url": "https://learn.microsoft.com/en-us/training/powerplatform/power-bi",
+					"section": "4 · Data",
+					"skill": "Business intelligence"
+				},
+				{
+					"title": "Storytelling with Data",
+					"kind": "book",
+					"by": "Cole Nussbaumer Knaflic",
+					"free": false,
+					"url": "https://www.storytellingwithdata.com/books",
+					"section": "4 · Data",
+					"skill": "Business intelligence"
+				},
+				{
+					"title": "Tableau free training",
+					"kind": "course",
+					"by": "Tableau",
+					"free": true,
+					"url": "https://www.tableau.com/learn/training",
+					"section": "4 · Data",
+					"skill": "Business intelligence"
+				},
+				{
+					"title": "Apache Superset documentation",
+					"kind": "site",
+					"by": "Apache Software Foundation",
+					"free": true,
+					"url": "https://superset.apache.org/docs/intro",
+					"section": "4 · Data",
+					"skill": "Business intelligence"
+				},
+				{
+					"title": "NoSQL Distilled",
+					"kind": "book",
+					"by": "Pramod Sadalage and Martin Fowler",
+					"free": false,
+					"url": "https://martinfowler.com/books/nosql.html",
+					"section": "4 · Data",
+					"skill": "NoSQL and search"
+				},
+				{
+					"title": "Neo4j GraphAcademy",
+					"kind": "course",
+					"by": "Neo4j",
+					"free": true,
+					"url": "https://graphacademy.neo4j.com/",
+					"section": "4 · Data",
+					"skill": "NoSQL and search"
+				},
+				{
+					"title": "Elastic training",
+					"kind": "course",
+					"by": "Elastic",
+					"free": true,
+					"url": "https://www.elastic.co/training/",
+					"section": "4 · Data",
+					"skill": "NoSQL and search"
+				},
+				{
+					"title": "Introduction to Information Retrieval",
+					"kind": "book",
+					"by": "Manning, Raghavan, Schütze",
+					"free": true,
+					"url": "https://nlp.stanford.edu/IR-book/",
+					"section": "4 · Data",
+					"skill": "NoSQL and search"
 				},
 				{
 					"title": "An Introduction to Statistical Learning with Python",
@@ -1190,6 +1793,15 @@
 					"by": "Aurélien Géron",
 					"free": false,
 					"url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9798341607972/colophon01.html",
+					"section": "5 · AI",
+					"skill": "Machine learning"
+				},
+				{
+					"title": "Machine Learning Specialization",
+					"kind": "course",
+					"by": "DeepLearning.AI and Stanford (Coursera)",
+					"free": false,
+					"url": "https://www.coursera.org/specializations/machine-learning-introduction",
 					"section": "5 · AI",
 					"skill": "Machine learning"
 				},
@@ -1248,6 +1860,15 @@
 					"skill": "Deep learning"
 				},
 				{
+					"title": "Deep Learning (Goodfellow, Bengio, Courville)",
+					"kind": "book",
+					"by": "Ian Goodfellow, Yoshua Bengio, Aaron Courville",
+					"free": true,
+					"url": "https://www.deeplearningbook.org/",
+					"section": "5 · AI",
+					"skill": "Deep learning"
+				},
+				{
 					"title": "Designing Machine Learning Systems",
 					"kind": "book",
 					"by": "Chip Huyen",
@@ -1273,6 +1894,60 @@
 					"url": "https://madewithml.com/",
 					"section": "5 · AI",
 					"skill": "MLOps"
+				},
+				{
+					"title": "MLOps Zoomcamp",
+					"kind": "course",
+					"by": "DataTalks.Club",
+					"free": true,
+					"url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+					"section": "5 · AI",
+					"skill": "MLOps"
+				},
+				{
+					"title": "Hugging Face LLM Course",
+					"kind": "course",
+					"by": "Hugging Face",
+					"free": true,
+					"url": "https://huggingface.co/learn/llm-course",
+					"section": "5 · AI",
+					"skill": "Generative AI and LLM engineering"
+				},
+				{
+					"title": "AI Engineering",
+					"kind": "book",
+					"by": "Chip Huyen",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/ai-engineering/9781098166298/",
+					"section": "5 · AI",
+					"skill": "Generative AI and LLM engineering"
+				},
+				{
+					"title": "DeepLearning.AI short courses",
+					"kind": "course",
+					"by": "DeepLearning.AI",
+					"free": true,
+					"url": "https://www.deeplearning.ai/short-courses/",
+					"section": "5 · AI",
+					"skill": "Generative AI and LLM engineering"
+				},
+				{
+					"title": "Anthropic courses",
+					"kind": "course",
+					"by": "Anthropic",
+					"free": true,
+					"url": "https://github.com/anthropics/courses",
+					"section": "5 · AI",
+					"skill": "Generative AI and LLM engineering"
+				},
+				{
+					"title": "OWASP Top 10 for LLM Applications",
+					"kind": "site",
+					"by": "OWASP",
+					"free": true,
+					"url": "https://genai.owasp.org/llm-top-10/",
+					"section": "5 · AI",
+					"skill": "Generative AI and LLM engineering"
 				},
 				{
 					"title": "Cosmic Python: Architecture Patterns with Python",
@@ -1302,6 +1977,15 @@
 					"skill": "Software engineering"
 				},
 				{
+					"title": "Refactoring, 2nd edition",
+					"kind": "book",
+					"by": "Martin Fowler",
+					"free": false,
+					"url": "https://martinfowler.com/books/refactoring.html",
+					"section": "6 · Software",
+					"skill": "Software engineering"
+				},
+				{
 					"title": "The System Design Primer",
 					"kind": "site",
 					"by": "Donne Martin",
@@ -1325,6 +2009,15 @@
 					"by": "Alex Xu",
 					"free": true,
 					"url": "https://blog.bytebytego.com/",
+					"section": "6 · Software",
+					"skill": "System design"
+				},
+				{
+					"title": "Hello Interview: system design in a hurry",
+					"kind": "site",
+					"by": "Hello Interview",
+					"free": true,
+					"url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/introduction",
 					"section": "6 · Software",
 					"skill": "System design"
 				},
@@ -1365,6 +2058,15 @@
 					"skill": "API design"
 				},
 				{
+					"title": "OpenAPI Specification",
+					"kind": "site",
+					"by": "OpenAPI Initiative",
+					"free": true,
+					"url": "https://spec.openapis.org/oas/latest.html",
+					"section": "6 · Software",
+					"skill": "API design"
+				},
+				{
 					"title": "Full Stack Open",
 					"kind": "course",
 					"by": "University of Helsinki",
@@ -1401,6 +2103,15 @@
 					"skill": "Web development"
 				},
 				{
+					"title": "SvelteKit documentation",
+					"kind": "site",
+					"by": "Svelte",
+					"free": true,
+					"url": "https://svelte.dev/docs/kit/introduction",
+					"section": "6 · Software",
+					"skill": "Web development"
+				},
+				{
 					"title": "Docker: get started",
 					"kind": "site",
 					"by": "Docker",
@@ -1424,6 +2135,15 @@
 					"by": "Daniel Walsh",
 					"free": true,
 					"url": "https://developers.redhat.com/e-books/podman-action",
+					"section": "7 · Infrastructure",
+					"skill": "Docker and Podman"
+				},
+				{
+					"title": "Docker Deep Dive",
+					"kind": "book",
+					"by": "Nigel Poulton",
+					"free": false,
+					"url": "https://nigelpoulton.com/books/",
 					"section": "7 · Infrastructure",
 					"skill": "Docker and Podman"
 				},
@@ -1460,6 +2180,15 @@
 					"by": "The Linux Foundation",
 					"free": false,
 					"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/",
+					"section": "7 · Infrastructure",
+					"skill": "Kubernetes"
+				},
+				{
+					"title": "Kubernetes Up & Running, 3rd edition",
+					"kind": "book",
+					"by": "Brendan Burns, Joe Beda, Kelsey Hightower, Lachlan Evenson",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/kubernetes-up-and/9781098110192/",
 					"section": "7 · Infrastructure",
 					"skill": "Kubernetes"
 				},
@@ -1509,6 +2238,15 @@
 					"skill": "DevOps"
 				},
 				{
+					"title": "GitHub Actions documentation",
+					"kind": "site",
+					"by": "GitHub",
+					"free": true,
+					"url": "https://docs.github.com/en/actions",
+					"section": "7 · Infrastructure",
+					"skill": "DevOps"
+				},
+				{
 					"title": "Argo CD documentation",
 					"kind": "site",
 					"by": "Argo Project",
@@ -1532,6 +2270,15 @@
 					"by": "Flux Authors",
 					"free": true,
 					"url": "https://fluxcd.io/flux/",
+					"section": "7 · Infrastructure",
+					"skill": "GitOps"
+				},
+				{
+					"title": "GitOps and Kubernetes",
+					"kind": "book",
+					"by": "Billy Yuen, Alexander Matyushentsev, Todd Ekenstam, Jesse Suen",
+					"free": false,
+					"url": "https://www.manning.com/books/gitops-and-kubernetes",
 					"section": "7 · Infrastructure",
 					"skill": "GitOps"
 				},
@@ -1570,6 +2317,96 @@
 					"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
 					"section": "7 · Infrastructure",
 					"skill": "Cloud"
+				},
+				{
+					"title": "AWS Skill Builder",
+					"kind": "course",
+					"by": "Amazon Web Services",
+					"free": true,
+					"url": "https://skillbuilder.aws/",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Microsoft Learn: Azure training",
+					"kind": "course",
+					"by": "Microsoft",
+					"free": true,
+					"url": "https://learn.microsoft.com/en-us/training/azure/",
+					"section": "7 · Infrastructure",
+					"skill": "Cloud"
+				},
+				{
+					"title": "Terraform: Up & Running, 3rd edition",
+					"kind": "book",
+					"by": "Yevgeniy Brikman",
+					"free": false,
+					"url": "https://www.terraformupandrunning.com/",
+					"section": "7 · Infrastructure",
+					"skill": "Infrastructure as code"
+				},
+				{
+					"title": "OpenTofu documentation",
+					"kind": "site",
+					"by": "Linux Foundation",
+					"free": true,
+					"url": "https://opentofu.org/docs/",
+					"section": "7 · Infrastructure",
+					"skill": "Infrastructure as code"
+				},
+				{
+					"title": "Ansible documentation",
+					"kind": "site",
+					"by": "Red Hat",
+					"free": true,
+					"url": "https://docs.ansible.com/",
+					"section": "7 · Infrastructure",
+					"skill": "Infrastructure as code"
+				},
+				{
+					"title": "Checkov: policy as code",
+					"kind": "practice",
+					"by": "Prisma Cloud",
+					"free": true,
+					"url": "https://www.checkov.io/",
+					"section": "7 · Infrastructure",
+					"skill": "Infrastructure as code"
+				},
+				{
+					"title": "Observability Engineering",
+					"kind": "book",
+					"by": "Charity Majors, Liz Fong-Jones, George Miranda",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/observability-engineering/9781492076438/",
+					"section": "7 · Infrastructure",
+					"skill": "Observability and SRE"
+				},
+				{
+					"title": "Prometheus documentation",
+					"kind": "site",
+					"by": "CNCF",
+					"free": true,
+					"url": "https://prometheus.io/docs/introduction/overview/",
+					"section": "7 · Infrastructure",
+					"skill": "Observability and SRE"
+				},
+				{
+					"title": "Grafana tutorials",
+					"kind": "practice",
+					"by": "Grafana Labs",
+					"free": true,
+					"url": "https://grafana.com/tutorials/",
+					"section": "7 · Infrastructure",
+					"skill": "Observability and SRE"
+				},
+				{
+					"title": "Implementing Service Level Objectives",
+					"kind": "book",
+					"by": "Alex Hidalgo",
+					"free": false,
+					"url": "https://www.oreilly.com/library/view/implementing-service-level/9781492076803/",
+					"section": "7 · Infrastructure",
+					"skill": "Observability and SRE"
 				},
 				{
 					"title": "MIT 6.566 Computer Systems Security",
@@ -1617,6 +2454,24 @@
 					"skill": "Cybersecurity"
 				},
 				{
+					"title": "TryHackMe",
+					"kind": "practice",
+					"by": "TryHackMe",
+					"free": false,
+					"url": "https://tryhackme.com/",
+					"section": "8 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
+					"title": "ANSSI guides",
+					"kind": "site",
+					"by": "ANSSI",
+					"free": true,
+					"url": "https://cyber.gouv.fr/publications",
+					"section": "8 · Security",
+					"skill": "Cybersecurity"
+				},
+				{
 					"title": "OWASP DevSecOps Guideline",
 					"kind": "site",
 					"by": "OWASP",
@@ -1642,6 +2497,15 @@
 					"url": "https://docs.sigstore.dev/",
 					"section": "8 · Security",
 					"skill": "DevSecOps"
+				},
+				{
+					"title": "OWASP Top 10",
+					"kind": "site",
+					"by": "OWASP",
+					"free": true,
+					"url": "https://owasp.org/www-project-top-ten/",
+					"section": "8 · Security",
+					"skill": "DevSecOps"
 				}
 			],
 			"plan": {
@@ -1651,8 +2515,8 @@
 				"budget": "200 EUR/month",
 				"note_path": "Roadmaps/top5-engineer.md",
 				"goal": {
-					"title": "Top-5% in 37 engineering domains",
-					"outcome": "By 2031-01-05, every domain has its proof (the full matrix and the 45 certifications are in the roadmap):\n\n- [ ] Computer science: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.\n- [ ] Data structures and algorithms: The Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.\n- [ ] Maths: The Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.\n- [ ] Probability: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.\n- [ ] Statistics: MITx 18.6501x verified certificate; a Bayesian A/B project.\n- [ ] C and C++: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.\n- [ ] Operating systems: The Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.\n- [ ] Linux: LFCS.\n- [ ] Bash: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.\n- [ ] Network: CCNA.\n- [ ] Python: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.\n- [ ] Java: Oracle OCP Java SE 21 (1Z0-830).\n- [ ] Rust: A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.\n- [ ] Databases: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.\n- [ ] Database architecture: Google Cloud Professional Cloud Database Engineer; architecture decision records for every streamhouse store.\n- [ ] Database administration: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.\n- [ ] Data-intensive systems: The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.\n- [ ] Kafka and streaming: Confluent CCDAK.\n- [ ] Spark and batch processing: Databricks Certified Associate Developer for Apache Spark.\n- [ ] Data engineering: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.\n- [ ] DataOps: Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.\n- [ ] Data analysis: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).\n- [ ] Data science: The MITx MicroMasters in Statistics and Data Science.\n- [ ] Machine learning: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.\n- [ ] Deep learning: The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.\n- [ ] MLOps: Google Professional Machine Learning Engineer; a model in production with drift monitoring.\n- [ ] Software engineering: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.\n- [ ] System design: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.\n- [ ] API design: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.\n- [ ] Web development: The Full Stack Open certificate (University of Helsinki), all parts.\n- [ ] Docker and Podman: Red Hat EX188 (containers with Podman); a rootless build pipeline.\n- [ ] Kubernetes: CKAD, CKA, and CKS.\n- [ ] DevOps: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.\n- [ ] GitOps: CNCF GitOps Certified Associate (CGOA); every platform-gitops environment rebuilt from its repository alone.\n- [ ] Cloud: AWS SAA, Google Cloud ACE, and Azure AZ-104.\n- [ ] Cybersecurity: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.\n- [ ] DevSecOps: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
+					"title": "Top-5% in 47 engineering domains",
+					"outcome": "By 2031-01-05, every domain has its proof (the full matrix and the 141 certifications, labelled by field and vendor, are in the roadmap):\n\n- [ ] Computer science: Nand to Tetris 12 projects and the Coursera certificate for part I, CS:APP labs, both Crafting Interpreters interpreters, 18.404 problem sets ≥ 80%.\n- [ ] Data structures and algorithms: The Stanford Algorithms Specialization certificate, at least 400 LeetCode problems, and a contest rating in the top 5%.\n- [ ] Maths: The Mathematics for Machine Learning Specialization certificate (Imperial College London); 6.042J, 18.01, 18.02, 18.06 finals ≥ 80%.\n- [ ] Probability: MITx 6.431x verified certificate; Stat 110 final ≥ 80%.\n- [ ] Statistics: MITx 18.6501x verified certificate; a Bayesian A/B project.\n- [ ] C and C++: C++ Institute CPP certification, CS:APP labs, all BusTub projects, sqlc-cpp clang-tidy clean.\n- [ ] Operating systems: The Linux Foundation's Linux kernel development certificate (LFD103) and a patch sent upstream; all MIT 6.1810 xv6 labs pass make grade.\n- [ ] Linux: LFCS.\n- [ ] Bash: LPIC-1 (its exams cover shell scripting); OverTheWire Bandit 0–33 and a tested, ShellCheck-clean automation library.\n- [ ] Network: CCNA.\n- [ ] Python: Python Institute PCPP1; pipekit on PyPI and merged PRs in Python OSS.\n- [ ] Java: Oracle OCP Java SE 21 (1Z0-830).\n- [ ] Rust: A course certificate from a Rust Foundation accredited trainer (no individual Rust exam exists yet); rustkv and a merged PR in a Rust project.\n- [ ] Databases: Oracle Database SQL Certified Associate (1Z0-071); all CMU 15-445 projects and an advanced SQL portfolio.\n- [ ] Database architecture: Google Cloud Professional Cloud Database Engineer; architecture decision records for every streamhouse store.\n- [ ] Database administration: EDB PostgreSQL Associate then Professional; PostgreSQL, MySQL, MongoDB, Redis, and Cassandra runbooks with recorded failover and restore drills.\n- [ ] Data-intensive systems: The Cloud Computing Concepts certificates, parts 1 and 2 (University of Illinois); all MIT 6.5840 labs, DDIA permanent notes.\n- [ ] Kafka and streaming: Confluent CCDAK.\n- [ ] Spark and batch processing: Databricks Certified Associate Developer for Apache Spark.\n- [ ] Data engineering: Google Professional Data Engineer; streamhouse in production; ≥ 3 merged PRs in data OSS.\n- [ ] DataOps: Dbt Analytics Engineering and Astronomer Airflow certifications; a merged PR in GX or OpenLineage.\n- [ ] Data analysis: Microsoft PL-300 and 3 published analyses (EDA, dashboard, A/B).\n- [ ] Data science: The MITx MicroMasters in Statistics and Data Science.\n- [ ] Machine learning: MITx 6.86x (in the MicroMasters) and a Kaggle silver medal in a 1,000+ team competition.\n- [ ] Deep learning: The DeepLearning.AI Deep Learning Specialization; a GPT trained from scratch and a fine-tuned model served.\n- [ ] MLOps: Google Professional Machine Learning Engineer; a model in production with drift monitoring.\n- [ ] Software engineering: IEEE Computer Society Professional Software Developer (PSD); public design docs and reviewed OSS PRs.\n- [ ] System design: AWS Solutions Architect – Professional; 5 public design docs reviewed by peers.\n- [ ] API design: MuleSoft Certified Developer – API Design Associate; lint-clean REST and gRPC APIs against Google AIP and Zalando rules, with a public design doc.\n- [ ] Web development: The Full Stack Open certificate (University of Helsinki), all parts.\n- [ ] Docker and Podman: Red Hat EX188 (containers with Podman); a rootless build pipeline.\n- [ ] Kubernetes: CKAD, CKA, and CKS.\n- [ ] DevOps: HashiCorp Terraform Associate and GitHub Actions (GH-200); pipelines at DORA elite level.\n- [ ] GitOps: CNCF GitOps Certified Associate (CGOA); every platform-gitops environment rebuilt from its repository alone.\n- [ ] Cloud: AWS SAA, Google Cloud ACE, and Azure AZ-104.\n- [ ] Cybersecurity: BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs.\n- [ ] DevSecOps: Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy.\n- [ ] Analytics engineering: dbt Analytics Engineering certification; a Kimball star schema in dbt with tests, docs, contracts, and a semantic layer, deployed by CI.\n- [ ] Cloud data warehouses: SnowPro Core then SnowPro Advanced: Data Engineer; the same model run on Snowflake and BigQuery with a cost report.\n- [ ] Lakehouse platforms: Databricks Certified Data Engineer Associate then Professional; a medallion lakehouse on Delta and Iceberg.\n- [ ] Data orchestration: Astronomer Airflow Fundamentals and DAG Authoring certifications; pipekit, then the platform's DAGs, idempotent and backfillable.\n- [ ] Data governance and quality: DAMA CDMP Associate; data contracts, quality checks, lineage, and a catalog on the platform; GDPR handled (IAPP CIPP/E).\n- [ ] Infrastructure as code: HashiCorp Terraform Associate; the whole cloud data platform created and destroyed from code, with policy checks in CI.\n- [ ] Observability and SRE: Prometheus Certified Associate and OpenTelemetry Certified Associate; SLOs with error budgets and alerts on the platform.\n- [ ] Generative AI and LLM engineering: Databricks Generative AI Engineer Associate; a RAG assistant with evaluations, guardrails, and cost tracking in production.\n- [ ] Business intelligence: Microsoft PL-300 or Tableau Certified Data Analyst; three published dashboards built on the semantic layer.\n- [ ] NoSQL and search: MongoDB Associate Developer and Elastic Certified Engineer; a search service over the tech watch, and a graph model in Neo4j.\n\n## Why it matters\n\nMoving from \"data engineer who uses the tools\" to an engineer who masters every\nlayer, with external proof for each."
 				},
 				"phases": [
 					{
@@ -1668,7 +2532,8 @@
 							"Maths",
 							"Software engineering",
 							"Bash",
-							"Linux"
+							"Linux",
+							"Data orchestration"
 						],
 						"project": {
 							"slug": "pipekit",
@@ -2042,7 +2907,8 @@
 							"Databases",
 							"Database architecture",
 							"Database administration",
-							"Statistics"
+							"Statistics",
+							"NoSQL and search"
 						],
 						"project": {
 							"slug": "raft-polystore",
@@ -2163,7 +3029,12 @@
 							"Spark and batch processing",
 							"Data engineering",
 							"DataOps",
-							"Python"
+							"Python",
+							"Analytics engineering",
+							"Cloud data warehouses",
+							"Lakehouse platforms",
+							"Data orchestration",
+							"Data governance and quality"
 						],
 						"project": {
 							"slug": "streamhouse-lakehouse",
@@ -2208,7 +3079,10 @@
 							"Data analysis",
 							"Data science",
 							"Statistics",
-							"Python"
+							"Python",
+							"Analytics engineering",
+							"Data governance and quality",
+							"Business intelligence"
 						],
 						"project": {
 							"slug": "insights-lab",
@@ -2301,7 +3175,9 @@
 							"DevOps",
 							"GitOps",
 							"DevSecOps",
-							"Kubernetes"
+							"Kubernetes",
+							"Infrastructure as code",
+							"Observability and SRE"
 						],
 						"project": {
 							"slug": "platform-gitops",
@@ -2346,7 +3222,10 @@
 							"Cloud",
 							"DevOps",
 							"GitOps",
-							"Data engineering"
+							"Data engineering",
+							"Cloud data warehouses",
+							"Lakehouse platforms",
+							"Infrastructure as code"
 						],
 						"project": {
 							"slug": "multicloud-streamhouse",
@@ -2503,7 +3382,8 @@
 							"Deep learning",
 							"Machine learning",
 							"Maths",
-							"Python"
+							"Python",
+							"Generative AI and LLM engineering"
 						],
 						"project": {
 							"slug": "dl-lab",
@@ -2678,7 +3558,11 @@
 							"Database architecture",
 							"Cloud",
 							"Data engineering",
-							"Data structures and algorithms"
+							"Data structures and algorithms",
+							"Cloud data warehouses",
+							"Lakehouse platforms",
+							"Observability and SRE",
+							"Generative AI and LLM engineering"
 						],
 						"project": {
 							"slug": "oss-and-portfolio",
@@ -3147,6 +4031,34 @@
 					{
 						"title": "Health",
 						"description": "Sleep, light, movement, water, and screens off at night: the energy five years of study run on."
+					},
+					{
+						"title": "Data platforms",
+						"description": "Snowflake, BigQuery, Databricks, dbt, and the lakehouse: the platforms a data engineer runs every day."
+					},
+					{
+						"title": "Generative AI",
+						"description": "LLMs, RAG, agents, and their evaluation, built into real products."
+					},
+					{
+						"title": "Observability and reliability",
+						"description": "SLOs, metrics, logs, traces, incidents, and postmortems on everything that runs."
+					},
+					{
+						"title": "Certifications",
+						"description": "Every exam of the roadmap: booked on time, prepared with practice tests, passed, and renewed before it expires."
+					},
+					{
+						"title": "Portfolio and open source",
+						"description": "Public projects with their design docs, and merged contributions to open source."
+					},
+					{
+						"title": "Learning system",
+						"description": "Notes, flashcards, reviews, and the weekly plan that keep what is learned."
+					},
+					{
+						"title": "Study budget",
+						"description": "The roadmap's 200 EUR a month: books, courses, exam fees, and cloud credits, tracked in Budget."
 					}
 				],
 				"resources": [
@@ -3210,15 +4122,41 @@
 						"provider": "Python Institute",
 						"url": "https://pythoninstitute.org/pcpp1",
 						"phase": 1,
-						"skill": "Python"
+						"skill": "Python",
+						"labels": [
+							"languages",
+							"python",
+							"core",
+							"professional"
+						]
 					},
 					{
-						"name": "Algorithms Specialization (Stanford)",
-						"code": "Stanford Algorithms",
-						"provider": "Coursera",
-						"url": "https://www.coursera.org/specializations/algorithms",
-						"phase": 2,
-						"skill": "Data structures and algorithms"
+						"name": "Certified Associate in Python Programming",
+						"code": "PCAP",
+						"provider": "Python Institute",
+						"url": "https://pythoninstitute.org/pcap",
+						"phase": 1,
+						"skill": "Python",
+						"labels": [
+							"languages",
+							"python",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Certified Entry-Level Python Programmer",
+						"code": "PCEP",
+						"provider": "Python Institute",
+						"url": "https://pythoninstitute.org/pcep",
+						"phase": 1,
+						"skill": "Python",
+						"labels": [
+							"languages",
+							"python",
+							"recommended",
+							"foundational"
+						]
 					},
 					{
 						"name": "Nand to Tetris, part I",
@@ -3226,7 +4164,69 @@
 						"provider": "Coursera",
 						"url": "https://www.coursera.org/learn/build-a-computer",
 						"phase": 2,
-						"skill": "Computer science"
+						"skill": "Computer science",
+						"labels": [
+							"foundations",
+							"coursera",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Algorithms Specialization (Stanford)",
+						"code": "Stanford Algorithms",
+						"provider": "Coursera",
+						"url": "https://www.coursera.org/specializations/algorithms",
+						"phase": 2,
+						"skill": "Data structures and algorithms",
+						"labels": [
+							"foundations",
+							"coursera",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "C Programming Language Certified Associate",
+						"code": "CLA",
+						"provider": "C++ Institute",
+						"url": "https://cppinstitute.org/cla",
+						"phase": 2,
+						"skill": "C and C++",
+						"labels": [
+							"systems",
+							"c++",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "CS50x: Introduction to Computer Science certificate",
+						"code": "CS50x",
+						"provider": "Harvard University (edX)",
+						"url": "https://cs50.harvard.edu/x/certificate/",
+						"phase": 2,
+						"skill": "Computer science",
+						"labels": [
+							"foundations",
+							"edx",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Data Structures and Algorithms Specialization",
+						"code": "UCSD DSA",
+						"provider": "UC San Diego (Coursera)",
+						"url": "https://www.coursera.org/specializations/data-structures-algorithms",
+						"phase": 2,
+						"skill": "Data structures and algorithms",
+						"labels": [
+							"foundations",
+							"coursera",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "A Beginner's Guide to Linux Kernel Development",
@@ -3234,35 +4234,69 @@
 						"provider": "The Linux Foundation",
 						"url": "https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/",
 						"phase": 3,
-						"skill": "Operating systems"
+						"skill": "Operating systems",
+						"labels": [
+							"systems",
+							"linux foundation",
+							"core",
+							"course"
+						]
 					},
 					{
-						"name": "Probability: the science of uncertainty and data",
-						"code": "MITx 6.431x",
-						"provider": "MITx on edX",
-						"url": "https://micromasters.mit.edu/ds/",
-						"phase": 4,
-						"skill": "Probability"
+						"name": "C++ Certified Associate Programmer",
+						"code": "CPA",
+						"provider": "C++ Institute",
+						"url": "https://cppinstitute.org/cpa",
+						"phase": 3,
+						"skill": "C and C++",
+						"labels": [
+							"systems",
+							"c++",
+							"recommended",
+							"associate"
+						]
 					},
 					{
-						"name": "Linux Foundation Certified System Administrator",
-						"code": "LFCS",
+						"name": "CompTIA Network+",
+						"code": "N10-009",
+						"provider": "CompTIA",
+						"url": "https://www.comptia.org/certifications/network",
+						"phase": 3,
+						"skill": "Network",
+						"labels": [
+							"systems",
+							"comptia",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Linux Kernel Internals and Development (LFD420)",
+						"code": "LFD420",
 						"provider": "The Linux Foundation",
-						"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
-						"cost_cents": 44500,
-						"validity_months": 24,
-						"phase": 4,
-						"skill": "Linux"
+						"url": "https://training.linuxfoundation.org/training/linux-kernel-internals-and-development/",
+						"phase": 3,
+						"skill": "Operating systems",
+						"labels": [
+							"systems",
+							"linux foundation",
+							"recommended",
+							"course"
+						]
 					},
 					{
-						"name": "Cisco Certified Network Associate",
-						"code": "CCNA 200-301",
-						"provider": "Cisco",
-						"url": "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
-						"cost_cents": 30000,
-						"validity_months": 36,
-						"phase": 4,
-						"skill": "Network"
+						"name": "Introduction to Probability",
+						"code": "HarvardX Stat110x",
+						"provider": "HarvardX on edX",
+						"url": "https://www.edx.org/learn/probability/harvard-university-introduction-to-probability",
+						"phase": 3,
+						"skill": "Probability",
+						"labels": [
+							"foundations",
+							"edx",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "LPIC-1: Linux Administrator (exams 101 and 102)",
@@ -3272,24 +4306,101 @@
 						"cost_cents": 40000,
 						"validity_months": 60,
 						"phase": 4,
-						"skill": "Bash"
+						"skill": "Bash",
+						"labels": [
+							"systems",
+							"lpi",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "Rust course certificate from a Rust Foundation Trusted Training provider",
-						"code": "RFTT course",
-						"provider": "Rust Foundation accredited trainer",
-						"url": "https://rustfoundation.org/training/",
-						"phase": 5,
-						"skill": "Rust"
+						"name": "Linux Foundation Certified System Administrator",
+						"code": "LFCS",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/",
+						"cost_cents": 44500,
+						"validity_months": 24,
+						"phase": 4,
+						"skill": "Linux",
+						"labels": [
+							"systems",
+							"linux foundation",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "Oracle Database SQL Certified Associate",
-						"code": "1Z0-071",
-						"provider": "Oracle",
-						"url": "https://education.oracle.com/oracle-database-sql/pexam_1Z0-071",
-						"cost_cents": 24500,
-						"phase": 5,
-						"skill": "Databases"
+						"name": "Cisco Certified Network Associate",
+						"code": "CCNA 200-301",
+						"provider": "Cisco",
+						"url": "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
+						"cost_cents": 30000,
+						"validity_months": 36,
+						"phase": 4,
+						"skill": "Network",
+						"labels": [
+							"systems",
+							"cisco",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Probability: the science of uncertainty and data",
+						"code": "MITx 6.431x",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 4,
+						"skill": "Probability",
+						"labels": [
+							"foundations",
+							"edx",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Red Hat Certified System Administrator",
+						"code": "RHCSA EX200",
+						"provider": "Red Hat",
+						"url": "https://www.redhat.com/en/services/certification/rhcsa",
+						"phase": 4,
+						"skill": "Linux",
+						"labels": [
+							"systems",
+							"red hat",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "CompTIA Linux+",
+						"code": "XK0-005",
+						"provider": "CompTIA",
+						"url": "https://www.comptia.org/certifications/linux",
+						"phase": 4,
+						"skill": "Linux",
+						"labels": [
+							"systems",
+							"comptia",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Juniper Networks Certified Associate – Junos",
+						"code": "JNCIA-Junos",
+						"provider": "Juniper Networks",
+						"url": "https://www.juniper.net/us/en/training/certification/tracks/junos/jncia-junos.html",
+						"phase": 4,
+						"skill": "Network",
+						"labels": [
+							"systems",
+							"juniper",
+							"recommended",
+							"associate"
+						]
 					},
 					{
 						"name": "EDB PostgreSQL Associate Certification",
@@ -3298,7 +4409,43 @@
 						"url": "https://www.enterprisedb.com/training",
 						"cost_cents": 20000,
 						"phase": 5,
-						"skill": "Database administration"
+						"skill": "Database administration",
+						"labels": [
+							"data engineering",
+							"data",
+							"postgresql",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Oracle Database SQL Certified Associate",
+						"code": "1Z0-071",
+						"provider": "Oracle",
+						"url": "https://education.oracle.com/oracle-database-sql/pexam_1Z0-071",
+						"cost_cents": 24500,
+						"phase": 5,
+						"skill": "Databases",
+						"labels": [
+							"data engineering",
+							"data",
+							"oracle",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Rust course certificate from a Rust Foundation Trusted Training provider",
+						"code": "RFTT course",
+						"provider": "Rust Foundation accredited trainer",
+						"url": "https://rustfoundation.org/training/",
+						"phase": 5,
+						"skill": "Rust",
+						"labels": [
+							"languages",
+							"core",
+							"course"
+						]
 					},
 					{
 						"name": "Fundamentals of Statistics",
@@ -3306,7 +4453,42 @@
 						"provider": "MITx on edX",
 						"url": "https://micromasters.mit.edu/ds/",
 						"phase": 5,
-						"skill": "Statistics"
+						"skill": "Statistics",
+						"labels": [
+							"foundations",
+							"edx",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "PostgreSQL CE Certified Associate",
+						"code": "PG CE Associate",
+						"provider": "Postgres Professional",
+						"url": "https://postgrespro.com/education/cert",
+						"phase": 5,
+						"skill": "Databases",
+						"labels": [
+							"data engineering",
+							"data",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Cloud Computing Concepts, parts 1 and 2",
+						"code": "UIUC CCC",
+						"provider": "University of Illinois (Coursera)",
+						"url": "https://www.coursera.org/learn/cloud-computing",
+						"phase": 6,
+						"skill": "Data-intensive systems",
+						"labels": [
+							"data engineering",
+							"data",
+							"coursera",
+							"core",
+							"course"
+						]
 					},
 					{
 						"name": "EDB PostgreSQL Professional Certification",
@@ -3315,15 +4497,14 @@
 						"url": "https://www.enterprisedb.com/training",
 						"cost_cents": 20000,
 						"phase": 6,
-						"skill": "Database administration"
-					},
-					{
-						"name": "Cloud Computing Concepts, parts 1 and 2",
-						"code": "UIUC CCC",
-						"provider": "University of Illinois (Coursera)",
-						"url": "https://www.coursera.org/learn/cloud-computing",
-						"phase": 6,
-						"skill": "Data-intensive systems"
+						"skill": "Database administration",
+						"labels": [
+							"data engineering",
+							"data",
+							"postgresql",
+							"core",
+							"professional"
+						]
 					},
 					{
 						"name": "Google Cloud Professional Cloud Database Engineer",
@@ -3333,7 +4514,107 @@
 						"cost_cents": 20000,
 						"validity_months": 24,
 						"phase": 6,
-						"skill": "Database architecture"
+						"skill": "Database architecture",
+						"labels": [
+							"data engineering",
+							"data",
+							"gcp",
+							"cloud",
+							"core",
+							"professional"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure Database Administrator Associate",
+						"code": "DP-300",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-database-administrator-associate/",
+						"phase": 6,
+						"skill": "Database administration",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure Cosmos DB Developer Specialty",
+						"code": "DP-420",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-cosmos-db-developer-specialty/",
+						"phase": 6,
+						"skill": "Database architecture",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"specialty"
+						]
+					},
+					{
+						"name": "Elastic Certified Engineer",
+						"code": "Elastic Certified Engineer",
+						"provider": "Elastic",
+						"url": "https://www.elastic.co/training/elastic-certified-engineer-exam",
+						"phase": 6,
+						"skill": "NoSQL and search",
+						"labels": [
+							"data engineering",
+							"data",
+							"elastic",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "MongoDB Associate Database Administrator",
+						"code": "MongoDB Associate DBA",
+						"provider": "MongoDB",
+						"url": "https://learn.mongodb.com/pages/mongodb-associate-database-administrator-exam",
+						"phase": 6,
+						"skill": "NoSQL and search",
+						"labels": [
+							"data engineering",
+							"data",
+							"mongodb",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "MongoDB Associate Developer (Python)",
+						"code": "MongoDB Associate Developer",
+						"provider": "MongoDB",
+						"url": "https://learn.mongodb.com/pages/mongodb-associate-developer-exam",
+						"phase": 6,
+						"skill": "NoSQL and search",
+						"labels": [
+							"data engineering",
+							"data",
+							"mongodb",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Neo4j Certified Professional",
+						"code": "Neo4j Professional",
+						"provider": "Neo4j",
+						"url": "https://graphacademy.neo4j.com/certifications/neo4j-certification",
+						"phase": 6,
+						"skill": "NoSQL and search",
+						"labels": [
+							"data engineering",
+							"data",
+							"neo4j",
+							"recommended",
+							"professional"
+						]
 					},
 					{
 						"name": "Confluent Certified Developer for Apache Kafka",
@@ -3343,7 +4624,88 @@
 						"cost_cents": 15000,
 						"validity_months": 24,
 						"phase": 7,
-						"skill": "Kafka and streaming"
+						"skill": "Kafka and streaming",
+						"labels": [
+							"data engineering",
+							"data",
+							"confluent",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Oracle Certified Foundations Associate, Java",
+						"code": "1Z0-811",
+						"provider": "Oracle",
+						"url": "https://education.oracle.com/java-foundations/pexam_1Z0-811",
+						"phase": 7,
+						"skill": "Java",
+						"labels": [
+							"languages",
+							"oracle",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "Confluent Certified Administrator for Apache Kafka",
+						"code": "CCAAK",
+						"provider": "Confluent",
+						"url": "https://www.confluent.io/certification/",
+						"phase": 7,
+						"skill": "Kafka and streaming",
+						"labels": [
+							"data engineering",
+							"data",
+							"confluent",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Confluent Cloud Certified Operator",
+						"code": "CCAC",
+						"provider": "Confluent",
+						"url": "https://training.confluent.io/",
+						"phase": 7,
+						"skill": "Kafka and streaming",
+						"labels": [
+							"data engineering",
+							"data",
+							"confluent",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "dbt Analytics Engineering Certification",
+						"code": "dbt AE",
+						"provider": "dbt Labs",
+						"url": "https://www.getdbt.com/certifications",
+						"phase": 8,
+						"skill": "Analytics engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"dbt",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Astronomer Certification for Apache Airflow Fundamentals",
+						"code": "Airflow Fundamentals",
+						"provider": "Astronomer",
+						"url": "https://www.astronomer.io/certification/",
+						"phase": 8,
+						"skill": "Data orchestration",
+						"labels": [
+							"data engineering",
+							"data",
+							"airflow",
+							"core",
+							"associate"
+						]
 					},
 					{
 						"name": "Databricks Certified Associate Developer for Apache Spark",
@@ -3353,23 +4715,155 @@
 						"cost_cents": 20000,
 						"validity_months": 24,
 						"phase": 8,
-						"skill": "Spark and batch processing"
+						"skill": "Spark and batch processing",
+						"labels": [
+							"data engineering",
+							"data",
+							"databricks",
+							"cloud",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "dbt Analytics Engineering Certification",
-						"code": "dbt AE",
+						"name": "dbt Fundamentals course badge",
+						"code": "dbt Fundamentals",
 						"provider": "dbt Labs",
-						"url": "https://www.getdbt.com/certifications",
+						"url": "https://learn.getdbt.com/courses/dbt-fundamentals",
 						"phase": 8,
-						"skill": "DataOps"
+						"skill": "Analytics engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"dbt",
+							"recommended",
+							"course"
+						]
 					},
 					{
-						"name": "Astronomer Certification for Apache Airflow Fundamentals",
-						"code": "Airflow Fundamentals",
+						"name": "SnowPro Core Certification",
+						"code": "SnowPro Core",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-core-c03/",
+						"phase": 8,
+						"skill": "Cloud data warehouses",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Data Engineering Professional Certificate",
+						"code": "DLAI DE Certificate",
+						"provider": "DeepLearning.AI and AWS (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/data-engineering",
+						"phase": 8,
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"coursera",
+							"deeplearning.ai",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "IBM Data Engineering Professional Certificate",
+						"code": "IBM DE Certificate",
+						"provider": "IBM (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/ibm-data-engineer",
+						"phase": 8,
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"coursera",
+							"ibm",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Certified Information Privacy Professional/Europe",
+						"code": "CIPP/E",
+						"provider": "IAPP",
+						"url": "https://iapp.org/certify/cippe/",
+						"phase": 8,
+						"skill": "Data governance and quality",
+						"labels": [
+							"data engineering",
+							"data",
+							"iapp",
+							"privacy",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Astronomer Certification: DAG Authoring for Apache Airflow",
+						"code": "Airflow DAG Authoring",
 						"provider": "Astronomer",
 						"url": "https://www.astronomer.io/certification/",
 						"phase": 8,
-						"skill": "DataOps"
+						"skill": "Data orchestration",
+						"labels": [
+							"data engineering",
+							"data",
+							"airflow",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Dagster Essentials course certificate",
+						"code": "Dagster Essentials",
+						"provider": "Dagster University",
+						"url": "https://courses.dagster.io/",
+						"phase": 8,
+						"skill": "Data orchestration",
+						"labels": [
+							"data engineering",
+							"data",
+							"dagster",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "DataOps Fundamentals certification",
+						"code": "DataOps Fundamentals",
+						"provider": "DataKitchen",
+						"url": "https://datakitchen.io/certifications/dataops-fundamentals/",
+						"phase": 8,
+						"skill": "DataOps",
+						"labels": [
+							"data engineering",
+							"data",
+							"dataops",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Databricks Certified Data Engineer Associate",
+						"code": "Databricks DE Associate",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/data-engineer-associate",
+						"phase": 8,
+						"skill": "Lakehouse platforms",
+						"labels": [
+							"data engineering",
+							"data",
+							"databricks",
+							"cloud",
+							"recommended",
+							"associate"
+						]
 					},
 					{
 						"name": "Microsoft Power BI Data Analyst",
@@ -3378,7 +4872,166 @@
 						"url": "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
 						"validity_months": 12,
 						"phase": 9,
-						"skill": "Data analysis"
+						"skill": "Data analysis",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Fabric Analytics Engineer Associate",
+						"code": "DP-600",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/fabric-analytics-engineer-associate/",
+						"phase": 9,
+						"skill": "Analytics engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "dbt Architect Certification",
+						"code": "dbt Architect",
+						"provider": "dbt Labs",
+						"url": "https://www.getdbt.com/certifications",
+						"phase": 9,
+						"skill": "Analytics engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"dbt",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Databricks Certified Data Analyst Associate",
+						"code": "Databricks Data Analyst",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/data-analyst-associate",
+						"phase": 9,
+						"skill": "Business intelligence",
+						"labels": [
+							"data engineering",
+							"data",
+							"databricks",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "SnowPro Advanced: Data Analyst",
+						"code": "SnowPro Adv Analyst",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-advanced-dataanalyst/",
+						"phase": 9,
+						"skill": "Business intelligence",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"advanced"
+						]
+					},
+					{
+						"name": "Tableau Certified Data Analyst",
+						"code": "Tableau Data Analyst",
+						"provider": "Tableau",
+						"url": "https://www.tableau.com/learn/certification/data-analyst",
+						"phase": 9,
+						"skill": "Business intelligence",
+						"labels": [
+							"data engineering",
+							"data",
+							"tableau",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Google Data Analytics Professional Certificate",
+						"code": "Google Data Analytics",
+						"provider": "Google (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/google-data-analytics",
+						"phase": 9,
+						"skill": "Data analysis",
+						"labels": [
+							"data engineering",
+							"data",
+							"coursera",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Certified Data Management Professional – Associate",
+						"code": "CDMP Associate",
+						"provider": "DAMA International",
+						"url": "https://cdmp.info/",
+						"phase": 9,
+						"skill": "Data governance and quality",
+						"labels": [
+							"data engineering",
+							"data",
+							"dama",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Certified Data Management Professional – Practitioner",
+						"code": "CDMP Practitioner",
+						"provider": "DAMA International",
+						"url": "https://cdmp.info/",
+						"phase": 9,
+						"skill": "Data governance and quality",
+						"labels": [
+							"data engineering",
+							"data",
+							"dama",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Certified Professional in Python Programming 2",
+						"code": "PCPP2",
+						"provider": "Python Institute",
+						"url": "https://pythoninstitute.org/pcpp2",
+						"phase": 9,
+						"skill": "Python",
+						"labels": [
+							"languages",
+							"python",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Google Advanced Data Analytics Professional Certificate",
+						"code": "Google Advanced Data Analytics",
+						"provider": "Google (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/google-advanced-data-analytics",
+						"phase": 9,
+						"skill": "Statistics",
+						"labels": [
+							"foundations",
+							"coursera",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "Red Hat Certified Specialist in Containers",
@@ -3387,17 +5040,13 @@
 						"url": "https://www.redhat.com/en/services/training/ex188-red-hat-certified-specialist-containers-exam",
 						"validity_months": 36,
 						"phase": 10,
-						"skill": "Docker and Podman"
-					},
-					{
-						"name": "Certified Kubernetes Application Developer",
-						"code": "CKAD",
-						"provider": "The Linux Foundation",
-						"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-application-developer-ckad/",
-						"cost_cents": 44500,
-						"validity_months": 24,
-						"phase": 10,
-						"skill": "Kubernetes"
+						"skill": "Docker and Podman",
+						"labels": [
+							"infrastructure",
+							"red hat",
+							"core",
+							"specialist"
+						]
 					},
 					{
 						"name": "Certified Kubernetes Administrator",
@@ -3407,16 +5056,71 @@
 						"cost_cents": 44500,
 						"validity_months": 24,
 						"phase": 10,
-						"skill": "Kubernetes"
+						"skill": "Kubernetes",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "HashiCorp Certified: Terraform Associate",
-						"code": "Terraform Associate",
-						"provider": "HashiCorp",
-						"url": "https://developer.hashicorp.com/certifications/infrastructure-automation",
+						"name": "Certified Kubernetes Application Developer",
+						"code": "CKAD",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/certified-kubernetes-application-developer-ckad/",
+						"cost_cents": 44500,
 						"validity_months": 24,
-						"phase": 11,
-						"skill": "DevOps"
+						"phase": 10,
+						"skill": "Kubernetes",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Docker Certified Associate",
+						"code": "DCA",
+						"provider": "Mirantis",
+						"url": "https://training.mirantis.com/certification/dca-certification-exam/",
+						"phase": 10,
+						"skill": "Docker and Podman",
+						"labels": [
+							"infrastructure",
+							"docker",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Kubernetes and Cloud Native Associate",
+						"code": "KCNA",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/kubernetes-cloud-native-associate/",
+						"phase": 10,
+						"skill": "Kubernetes",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "LPIC-2: Linux Engineer",
+						"code": "LPIC-2",
+						"provider": "Linux Professional Institute",
+						"url": "https://www.lpi.org/our-certifications/lpic-2-overview/",
+						"phase": 10,
+						"skill": "Linux",
+						"labels": [
+							"systems",
+							"lpi",
+							"recommended",
+							"professional"
+						]
 					},
 					{
 						"name": "GitHub Actions",
@@ -3426,7 +5130,26 @@
 						"cost_cents": 9900,
 						"validity_months": 24,
 						"phase": 11,
-						"skill": "DevOps"
+						"skill": "DevOps",
+						"labels": [
+							"infrastructure",
+							"github",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Certified DevSecOps Professional",
+						"code": "CDP",
+						"provider": "Practical DevSecOps",
+						"url": "https://www.practical-devsecops.com/certified-devsecops-professional/",
+						"phase": 11,
+						"skill": "DevSecOps",
+						"labels": [
+							"security",
+							"core",
+							"professional"
+						]
 					},
 					{
 						"name": "GitOps Certified Associate",
@@ -3436,25 +5159,112 @@
 						"cost_cents": 25000,
 						"validity_months": 24,
 						"phase": 11,
-						"skill": "GitOps"
+						"skill": "GitOps",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "Certified DevSecOps Professional",
-						"code": "CDP",
-						"provider": "Practical DevSecOps",
-						"url": "https://www.practical-devsecops.com/certified-devsecops-professional/",
+						"name": "HashiCorp Certified: Terraform Associate",
+						"code": "Terraform Associate",
+						"provider": "HashiCorp",
+						"url": "https://developer.hashicorp.com/certifications/infrastructure-automation",
+						"validity_months": 24,
 						"phase": 11,
-						"skill": "DevSecOps"
+						"skill": "Infrastructure as code",
+						"labels": [
+							"infrastructure",
+							"hashicorp",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "AWS Certified Solutions Architect – Associate",
-						"code": "SAA-C03",
-						"provider": "Amazon Web Services",
-						"url": "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
-						"cost_cents": 15000,
-						"validity_months": 36,
-						"phase": 12,
-						"skill": "Cloud"
+						"name": "Certified Argo Project Associate",
+						"code": "CAPA",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/certified-argo-project-associate-capa/",
+						"phase": 11,
+						"skill": "GitOps",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Red Hat Certified Engineer (Ansible automation)",
+						"code": "RHCE EX294",
+						"provider": "Red Hat",
+						"url": "https://www.redhat.com/en/services/certification/rhce",
+						"phase": 11,
+						"skill": "Infrastructure as code",
+						"labels": [
+							"infrastructure",
+							"red hat",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "HashiCorp Certified: Terraform Authoring and Operations Professional",
+						"code": "Terraform Professional",
+						"provider": "HashiCorp",
+						"url": "https://developer.hashicorp.com/certifications/infrastructure-automation",
+						"phase": 11,
+						"skill": "Infrastructure as code",
+						"labels": [
+							"infrastructure",
+							"hashicorp",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "OpenTelemetry Certified Associate",
+						"code": "OTCA",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/opentelemetry-certified-associate-otca/",
+						"phase": 11,
+						"skill": "Observability and SRE",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Prometheus Certified Associate",
+						"code": "PCA",
+						"provider": "The Linux Foundation",
+						"url": "https://training.linuxfoundation.org/certification/prometheus-certified-associate/",
+						"phase": 11,
+						"skill": "Observability and SRE",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Site Reliability Engineering Foundation",
+						"code": "SRE Foundation",
+						"provider": "DevOps Institute (PeopleCert)",
+						"url": "https://www.devopsinstitute.com/certifications/sre-foundation/",
+						"phase": 11,
+						"skill": "Observability and SRE",
+						"labels": [
+							"infrastructure",
+							"devops institute",
+							"recommended",
+							"foundational"
+						]
 					},
 					{
 						"name": "Google Cloud Associate Cloud Engineer",
@@ -3464,7 +5274,14 @@
 						"cost_cents": 12500,
 						"validity_months": 36,
 						"phase": 12,
-						"skill": "Cloud"
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"gcp",
+							"cloud",
+							"core",
+							"associate"
+						]
 					},
 					{
 						"name": "Microsoft Azure Administrator",
@@ -3473,33 +5290,233 @@
 						"url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104",
 						"validity_months": 12,
 						"phase": 12,
-						"skill": "Cloud"
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"azure",
+							"cloud",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "Oracle Certified Professional: Java SE 21 Developer",
-						"code": "1Z0-830",
-						"provider": "Oracle",
-						"url": "https://education.oracle.com/",
-						"cost_cents": 24500,
-						"phase": 13,
-						"skill": "Java"
-					},
-					{
-						"name": "Full Stack Open certificate",
-						"code": "FSO",
-						"provider": "University of Helsinki",
-						"url": "https://fullstackopen.com/en/",
-						"phase": 13,
-						"skill": "Web development"
-					},
-					{
-						"name": "IEEE CS Professional Software Developer",
-						"code": "PSD",
-						"provider": "IEEE Computer Society",
-						"url": "https://www.computer.org/product/education/professional-software-developer-certification",
+						"name": "AWS Certified Solutions Architect – Associate",
+						"code": "SAA-C03",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
+						"cost_cents": 15000,
 						"validity_months": 36,
-						"phase": 13,
-						"skill": "Software engineering"
+						"phase": 12,
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"aws",
+							"cloud",
+							"core",
+							"associate"
+						]
+					},
+					{
+						"name": "Microsoft Azure Fundamentals",
+						"code": "AZ-900",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/",
+						"phase": 12,
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"azure",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "AWS Certified Cloud Practitioner",
+						"code": "CLF-C02",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-cloud-practitioner/",
+						"phase": 12,
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"aws",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "Google Cloud Digital Leader",
+						"code": "GCP CDL",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/cloud-digital-leader",
+						"phase": 12,
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"gcp",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "SnowPro Advanced: Administrator",
+						"code": "SnowPro Adv Admin",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-advanced-administrator-c02/",
+						"phase": 12,
+						"skill": "Cloud data warehouses",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"advanced"
+						]
+					},
+					{
+						"name": "SnowPro Advanced: Data Engineer",
+						"code": "SnowPro Adv DE",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-advanced-dataengineer-C02/",
+						"phase": 12,
+						"skill": "Cloud data warehouses",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"advanced"
+						]
+					},
+					{
+						"name": "SnowPro Specialty: Snowpark",
+						"code": "SnowPro Snowpark",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-snowpark/",
+						"phase": 12,
+						"skill": "Cloud data warehouses",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"specialty"
+						]
+					},
+					{
+						"name": "AWS Certified Data Engineer – Associate",
+						"code": "DEA-C01",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-data-engineer-associate/",
+						"phase": 12,
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"aws",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Microsoft Azure Data Fundamentals",
+						"code": "DP-900",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/",
+						"phase": 12,
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "Google Cloud Associate Data Practitioner",
+						"code": "GCP ADP",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/data-practitioner",
+						"phase": 12,
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"gcp",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Microsoft Certified: DevOps Engineer Expert",
+						"code": "AZ-400",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/devops-engineer/",
+						"phase": 12,
+						"skill": "DevOps",
+						"labels": [
+							"infrastructure",
+							"azure",
+							"cloud",
+							"recommended",
+							"expert"
+						]
+					},
+					{
+						"name": "AWS Certified DevOps Engineer – Professional",
+						"code": "DOP-C02",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-devops-engineer-professional/",
+						"phase": 12,
+						"skill": "DevOps",
+						"labels": [
+							"infrastructure",
+							"aws",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Google Cloud Professional Cloud DevOps Engineer",
+						"code": "GCP PCDOE",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/cloud-devops-engineer",
+						"phase": 12,
+						"skill": "DevOps",
+						"labels": [
+							"infrastructure",
+							"gcp",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Fabric Data Engineer Associate",
+						"code": "DP-700",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/fabric-data-engineer-associate/",
+						"phase": 12,
+						"skill": "Lakehouse platforms",
+						"labels": [
+							"data engineering",
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
 					},
 					{
 						"name": "MuleSoft Certified Developer – API Design Associate",
@@ -3508,23 +5525,139 @@
 						"url": "https://training.mulesoft.com/exam/mcd-raml",
 						"validity_months": 24,
 						"phase": 13,
-						"skill": "API design"
+						"skill": "API design",
+						"labels": [
+							"software",
+							"core",
+							"associate"
+						]
 					},
 					{
-						"name": "Mathematics for Machine Learning Specialization",
-						"code": "Imperial MML",
-						"provider": "Imperial College London (Coursera)",
-						"url": "https://www.coursera.org/specializations/mathematics-machine-learning",
-						"phase": 14,
-						"skill": "Maths"
+						"name": "Oracle Certified Professional: Java SE 21 Developer",
+						"code": "1Z0-830",
+						"provider": "Oracle",
+						"url": "https://education.oracle.com/",
+						"cost_cents": 24500,
+						"phase": 13,
+						"skill": "Java",
+						"labels": [
+							"languages",
+							"oracle",
+							"core",
+							"professional"
+						]
 					},
 					{
-						"name": "Machine Learning with Python",
-						"code": "MITx 6.86x",
-						"provider": "MITx on edX",
-						"url": "https://micromasters.mit.edu/ds/",
-						"phase": 14,
-						"skill": "Machine learning"
+						"name": "IEEE CS Professional Software Developer",
+						"code": "PSD",
+						"provider": "IEEE Computer Society",
+						"url": "https://www.computer.org/product/education/professional-software-developer-certification",
+						"validity_months": 36,
+						"phase": 13,
+						"skill": "Software engineering",
+						"labels": [
+							"software",
+							"core",
+							"professional"
+						]
+					},
+					{
+						"name": "Full Stack Open certificate",
+						"code": "FSO",
+						"provider": "University of Helsinki",
+						"url": "https://fullstackopen.com/en/",
+						"phase": 13,
+						"skill": "Web development",
+						"labels": [
+							"software",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Postman API Fundamentals Student Expert",
+						"code": "Postman API Fundamentals",
+						"provider": "Postman",
+						"url": "https://academy.postman.com/",
+						"phase": 13,
+						"skill": "API design",
+						"labels": [
+							"software",
+							"postman",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Spring Certified Professional",
+						"code": "Spring Professional",
+						"provider": "Broadcom",
+						"url": "https://spring.academy/",
+						"phase": 13,
+						"skill": "Java",
+						"labels": [
+							"languages",
+							"spring",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "AWS Certified Developer – Associate",
+						"code": "DVA-C02",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-developer-associate/",
+						"phase": 13,
+						"skill": "Software engineering",
+						"labels": [
+							"software",
+							"aws",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "ISTQB Certified Tester Foundation Level",
+						"code": "ISTQB CTFL",
+						"provider": "ISTQB",
+						"url": "https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/",
+						"phase": 13,
+						"skill": "Software engineering",
+						"labels": [
+							"software",
+							"istqb",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "Meta Front-End Developer Professional Certificate",
+						"code": "Meta Front-End",
+						"provider": "Meta (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/meta-front-end-developer",
+						"phase": 13,
+						"skill": "Web development",
+						"labels": [
+							"software",
+							"coursera",
+							"meta",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "freeCodeCamp Responsive Web Design certification",
+						"code": "fCC RWD",
+						"provider": "freeCodeCamp",
+						"url": "https://www.freecodecamp.org/learn/2022/responsive-web-design/",
+						"phase": 13,
+						"skill": "Web development",
+						"labels": [
+							"software",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "MicroMasters in Statistics and Data Science",
@@ -3532,7 +5665,13 @@
 						"provider": "MITx on edX",
 						"url": "https://micromasters.mit.edu/ds/",
 						"phase": 14,
-						"skill": "Data science"
+						"skill": "Data science",
+						"labels": [
+							"data",
+							"edx",
+							"core",
+							"course"
+						]
 					},
 					{
 						"name": "Google Cloud Professional Machine Learning Engineer",
@@ -3542,7 +5681,162 @@
 						"cost_cents": 20000,
 						"validity_months": 24,
 						"phase": 14,
-						"skill": "MLOps"
+						"skill": "MLOps",
+						"labels": [
+							"ai",
+							"gcp",
+							"cloud",
+							"core",
+							"professional"
+						]
+					},
+					{
+						"name": "Machine Learning with Python",
+						"code": "MITx 6.86x",
+						"provider": "MITx on edX",
+						"url": "https://micromasters.mit.edu/ds/",
+						"phase": 14,
+						"skill": "Machine learning",
+						"labels": [
+							"ai",
+							"edx",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Mathematics for Machine Learning Specialization",
+						"code": "Imperial MML",
+						"provider": "Imperial College London (Coursera)",
+						"url": "https://www.coursera.org/specializations/mathematics-machine-learning",
+						"phase": 14,
+						"skill": "Maths",
+						"labels": [
+							"foundations",
+							"coursera",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure Data Scientist Associate",
+						"code": "DP-100",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-data-scientist/",
+						"phase": 14,
+						"skill": "Data science",
+						"labels": [
+							"data",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "IBM Data Science Professional Certificate",
+						"code": "IBM Data Science",
+						"provider": "IBM (Coursera)",
+						"url": "https://www.coursera.org/professional-certificates/ibm-data-science",
+						"phase": 14,
+						"skill": "Data science",
+						"labels": [
+							"data",
+							"coursera",
+							"ibm",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "SnowPro Advanced: Data Scientist",
+						"code": "SnowPro Adv DS",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-advanced-datascientist",
+						"phase": 14,
+						"skill": "Data science",
+						"labels": [
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"advanced"
+						]
+					},
+					{
+						"name": "Databricks Certified Machine Learning Professional",
+						"code": "Databricks ML Professional",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/machine-learning-professional",
+						"phase": 14,
+						"skill": "MLOps",
+						"labels": [
+							"ai",
+							"databricks",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "AWS Certified Machine Learning Engineer – Associate",
+						"code": "MLA-C01",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-machine-learning-engineer-associate/",
+						"phase": 14,
+						"skill": "MLOps",
+						"labels": [
+							"ai",
+							"aws",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Databricks Certified Machine Learning Associate",
+						"code": "Databricks ML Associate",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/machine-learning-associate",
+						"phase": 14,
+						"skill": "Machine learning",
+						"labels": [
+							"ai",
+							"databricks",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Machine Learning Specialization",
+						"code": "ML Specialization",
+						"provider": "DeepLearning.AI and Stanford (Coursera)",
+						"url": "https://www.coursera.org/specializations/machine-learning-introduction",
+						"phase": 14,
+						"skill": "Machine learning",
+						"labels": [
+							"ai",
+							"coursera",
+							"deeplearning.ai",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Mathematics for Machine Learning and Data Science Specialization",
+						"code": "DLAI M4ML",
+						"provider": "DeepLearning.AI (Coursera)",
+						"url": "https://www.coursera.org/specializations/mathematics-for-machine-learning-and-data-science",
+						"phase": 14,
+						"skill": "Maths",
+						"labels": [
+							"foundations",
+							"coursera",
+							"deeplearning.ai",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "Deep Learning Specialization",
@@ -3550,7 +5844,101 @@
 						"provider": "DeepLearning.AI",
 						"url": "https://www.coursera.org/specializations/deep-learning",
 						"phase": 15,
-						"skill": "Deep learning"
+						"skill": "Deep learning",
+						"labels": [
+							"ai",
+							"deeplearning.ai",
+							"core",
+							"course"
+						]
+					},
+					{
+						"name": "Fundamentals of Deep Learning certificate",
+						"code": "NVIDIA DLI FDL",
+						"provider": "NVIDIA Deep Learning Institute",
+						"url": "https://www.nvidia.com/en-us/training/",
+						"phase": 15,
+						"skill": "Deep learning",
+						"labels": [
+							"ai",
+							"nvidia",
+							"recommended",
+							"course"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure AI Engineer Associate",
+						"code": "AI-102",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-engineer/",
+						"phase": 15,
+						"skill": "Generative AI and LLM engineering",
+						"labels": [
+							"ai",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "AWS Certified AI Practitioner",
+						"code": "AIF-C01",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-ai-practitioner/",
+						"phase": 15,
+						"skill": "Generative AI and LLM engineering",
+						"labels": [
+							"ai",
+							"aws",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "Databricks Certified Generative AI Engineer Associate",
+						"code": "Databricks GenAI Associate",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/genai-engineer-associate",
+						"phase": 15,
+						"skill": "Generative AI and LLM engineering",
+						"labels": [
+							"ai",
+							"databricks",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Google Cloud Generative AI Leader",
+						"code": "GCP GenAI Leader",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/generative-ai-leader",
+						"phase": 15,
+						"skill": "Generative AI and LLM engineering",
+						"labels": [
+							"ai",
+							"gcp",
+							"cloud",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "NVIDIA-Certified Associate: Generative AI LLMs",
+						"code": "NCA-GENL",
+						"provider": "NVIDIA",
+						"url": "https://www.nvidia.com/en-us/learn/certification/generative-ai-llm-associate/",
+						"phase": 15,
+						"skill": "Generative AI and LLM engineering",
+						"labels": [
+							"ai",
+							"nvidia",
+							"recommended",
+							"associate"
+						]
 					},
 					{
 						"name": "Burp Suite Certified Practitioner",
@@ -3559,7 +5947,28 @@
 						"url": "https://portswigger.net/web-security/certification",
 						"cost_cents": 9900,
 						"phase": 16,
-						"skill": "Cybersecurity"
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"portswigger",
+							"core",
+							"practitioner"
+						]
+					},
+					{
+						"name": "OffSec Certified Professional+",
+						"code": "OSCP+",
+						"provider": "OffSec",
+						"url": "https://www.offsec.com/courses/pen-200/",
+						"validity_months": 36,
+						"phase": 16,
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"offsec",
+							"core",
+							"professional"
+						]
 					},
 					{
 						"name": "Certified Kubernetes Security Specialist",
@@ -3569,16 +5978,115 @@
 						"cost_cents": 44500,
 						"validity_months": 24,
 						"phase": 16,
-						"skill": "Kubernetes"
+						"skill": "Kubernetes",
+						"labels": [
+							"infrastructure",
+							"linux foundation",
+							"core",
+							"specialist"
+						]
 					},
 					{
-						"name": "OffSec Certified Professional+",
-						"code": "OSCP+",
-						"provider": "OffSec",
-						"url": "https://www.offsec.com/courses/pen-200/",
-						"validity_months": 36,
+						"name": "AWS Certified Security – Specialty",
+						"code": "AWS Security Specialty",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-security-specialty/",
 						"phase": 16,
-						"skill": "Cybersecurity"
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"aws",
+							"cloud",
+							"recommended",
+							"specialty"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure Security Engineer Associate",
+						"code": "AZ-500",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-security-engineer/",
+						"phase": 16,
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"azure",
+							"cloud",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "Google Cloud Professional Cloud Security Engineer",
+						"code": "GCP PCSE",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/cloud-security-engineer",
+						"phase": 16,
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"gcp",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "ISC2 Certified in Cybersecurity",
+						"code": "ISC2 CC",
+						"provider": "ISC2",
+						"url": "https://www.isc2.org/certifications/cc",
+						"phase": 16,
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"isc2",
+							"recommended",
+							"foundational"
+						]
+					},
+					{
+						"name": "CompTIA Security+",
+						"code": "SY0-701",
+						"provider": "CompTIA",
+						"url": "https://www.comptia.org/certifications/security",
+						"phase": 16,
+						"skill": "Cybersecurity",
+						"labels": [
+							"security",
+							"comptia",
+							"recommended",
+							"associate"
+						]
+					},
+					{
+						"name": "GIAC Cloud Security Automation",
+						"code": "GCSA",
+						"provider": "GIAC",
+						"url": "https://www.giac.org/certifications/cloud-security-automation-gcsa/",
+						"phase": 16,
+						"skill": "DevSecOps",
+						"labels": [
+							"security",
+							"giac",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "AWS Certified Advanced Networking – Specialty",
+						"code": "ANS-C01",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-advanced-networking-specialty/",
+						"phase": 16,
+						"skill": "Network",
+						"labels": [
+							"systems",
+							"aws",
+							"cloud",
+							"recommended",
+							"specialty"
+						]
 					},
 					{
 						"name": "C++ Certified Professional Programmer",
@@ -3586,17 +6094,27 @@
 						"provider": "C++ Institute",
 						"url": "https://cppinstitute.org/cpp",
 						"phase": 17,
-						"skill": "C and C++"
+						"skill": "C and C++",
+						"labels": [
+							"systems",
+							"c++",
+							"core",
+							"professional"
+						]
 					},
 					{
-						"name": "AWS Certified Solutions Architect – Professional",
-						"code": "SAP-C02",
-						"provider": "Amazon Web Services",
-						"url": "https://aws.amazon.com/certification/certified-solutions-architect-professional/",
-						"cost_cents": 30000,
-						"validity_months": 36,
-						"phase": 18,
-						"skill": "System design"
+						"name": "Nand to Tetris, part II",
+						"code": "Nand2Tetris II",
+						"provider": "Coursera",
+						"url": "https://www.coursera.org/learn/nand2tetris2",
+						"phase": 17,
+						"skill": "Computer science",
+						"labels": [
+							"foundations",
+							"coursera",
+							"recommended",
+							"course"
+						]
 					},
 					{
 						"name": "Google Cloud Professional Data Engineer",
@@ -3606,10 +6124,111 @@
 						"cost_cents": 20000,
 						"validity_months": 24,
 						"phase": 18,
-						"skill": "Data engineering"
+						"skill": "Data engineering",
+						"labels": [
+							"data engineering",
+							"data",
+							"gcp",
+							"cloud",
+							"core",
+							"professional"
+						]
+					},
+					{
+						"name": "AWS Certified Solutions Architect – Professional",
+						"code": "SAP-C02",
+						"provider": "Amazon Web Services",
+						"url": "https://aws.amazon.com/certification/certified-solutions-architect-professional/",
+						"cost_cents": 30000,
+						"validity_months": 36,
+						"phase": 18,
+						"skill": "System design",
+						"labels": [
+							"software",
+							"aws",
+							"cloud",
+							"core",
+							"professional"
+						]
+					},
+					{
+						"name": "Google Cloud Professional Cloud Architect",
+						"code": "GCP PCA",
+						"provider": "Google Cloud",
+						"url": "https://cloud.google.com/learn/certification/cloud-architect",
+						"phase": 18,
+						"skill": "Cloud",
+						"labels": [
+							"infrastructure",
+							"gcp",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "SnowPro Advanced: Architect",
+						"code": "SnowPro Adv Architect",
+						"provider": "Snowflake",
+						"url": "https://learn.snowflake.com/en/certifications/snowpro-advanced-architect/",
+						"phase": 18,
+						"skill": "Cloud data warehouses",
+						"labels": [
+							"data engineering",
+							"data",
+							"snowflake",
+							"cloud",
+							"recommended",
+							"advanced"
+						]
+					},
+					{
+						"name": "Databricks Certified Data Engineer Professional",
+						"code": "Databricks DE Professional",
+						"provider": "Databricks",
+						"url": "https://www.databricks.com/learn/certification/data-engineer-professional",
+						"phase": 18,
+						"skill": "Lakehouse platforms",
+						"labels": [
+							"data engineering",
+							"data",
+							"databricks",
+							"cloud",
+							"recommended",
+							"professional"
+						]
+					},
+					{
+						"name": "Microsoft Certified: Azure Solutions Architect Expert",
+						"code": "AZ-305",
+						"provider": "Microsoft",
+						"url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-solutions-architect/",
+						"phase": 18,
+						"skill": "System design",
+						"labels": [
+							"software",
+							"azure",
+							"cloud",
+							"recommended",
+							"expert"
+						]
+					},
+					{
+						"name": "TOGAF Enterprise Architecture Foundation",
+						"code": "TOGAF Foundation",
+						"provider": "The Open Group",
+						"url": "https://www.opengroup.org/certifications/togaf",
+						"phase": 18,
+						"skill": "System design",
+						"labels": [
+							"software",
+							"togaf",
+							"recommended",
+							"foundational"
+						]
 					}
 				],
-				"version": 2,
+				"version": 3,
 				"stages": [
 					{
 						"title": "Foundations: Computer science, Data structures and algorithms, Maths, Probability, Statistics",
@@ -3630,14 +6249,14 @@
 						"area": "Programming languages"
 					},
 					{
-						"title": "Data: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science",
-						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science.",
+						"title": "Data: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Analytics engineering, Cloud data warehouses, Lakehouse platforms, Data orchestration, Data governance and quality, Business intelligence, NoSQL and search",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Analytics engineering, Cloud data warehouses, Lakehouse platforms, Data orchestration, Data governance and quality, Business intelligence, NoSQL and search.",
 						"section": "4 · Data",
 						"area": "Data"
 					},
 					{
-						"title": "AI: Machine learning, Deep learning, MLOps",
-						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Machine learning, Deep learning, MLOps.",
+						"title": "AI: Machine learning, Deep learning, MLOps, Generative AI and LLM engineering",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Machine learning, Deep learning, MLOps, Generative AI and LLM engineering.",
 						"section": "5 · AI",
 						"area": "AI and machine learning"
 					},
@@ -3648,8 +6267,8 @@
 						"area": "Software engineering"
 					},
 					{
-						"title": "Infrastructure: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud",
-						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud.",
+						"title": "Infrastructure: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Infrastructure as code, Observability and SRE",
+						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Infrastructure as code, Observability and SRE.",
 						"section": "7 · Infrastructure",
 						"area": "Infrastructure and DevOps"
 					},
@@ -3676,6 +6295,208 @@
 						"outcome": "Each of these domains proven by its external check, as the roadmap note says: Consistency, Planning and reflection, Learning how to learn.",
 						"section": "11 · Self-management",
 						"area": "Engineering mastery"
+					}
+				],
+				"projects": [
+					{
+						"slug": "elt-dbt-duckdb",
+						"phase": 8,
+						"title": "Batch ELT with dbt and DuckDB",
+						"outcome": "A source → raw → staging → marts pipeline on DuckDB with dbt: Kimball marts, tests, docs, and a CI that builds every pull request.",
+						"domains": [
+							"Analytics engineering",
+							"Data orchestration"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "cdc-streaming",
+						"phase": 7,
+						"title": "Real-time CDC: PostgreSQL → Debezium → Kafka → Flink → Iceberg",
+						"outcome": "Change data capture from PostgreSQL into Iceberg tables in under a minute, exactly once, with schema evolution and a replay drill.",
+						"domains": [
+							"Kafka and streaming",
+							"Lakehouse platforms"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "medallion-lakehouse",
+						"phase": 8,
+						"title": "A medallion lakehouse on Delta and Databricks",
+						"outcome": "Bronze, silver, and gold layers on Delta Lake with Auto Loader, expectations, Unity Catalog permissions, and compaction jobs.",
+						"domains": [
+							"Lakehouse platforms",
+							"Spark and batch processing"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "data-contracts",
+						"phase": 8,
+						"title": "Data contracts and quality gates",
+						"outcome": "Contracts in the Open Data Contract Standard, Great Expectations checks, OpenLineage lineage, and a CI that blocks a breaking change.",
+						"domains": [
+							"Data governance and quality",
+							"DataOps"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "semantic-layer-bi",
+						"phase": 9,
+						"title": "A semantic layer and three dashboards",
+						"outcome": "dbt metrics behind Superset or Power BI dashboards for three real questions, each with its decision and its owner.",
+						"domains": [
+							"Business intelligence",
+							"Analytics engineering"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "finance-pipeline",
+						"phase": 9,
+						"title": "My own finance data: bank CSV → dbt → dashboard",
+						"outcome": "Axon's Budget exports and bank statements loaded, categorised, and modelled with dbt, with a monthly spending dashboard by category.",
+						"domains": [
+							"Analytics engineering",
+							"Business intelligence",
+							"Data analysis"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "snowflake-platform",
+						"phase": 12,
+						"title": "A data platform on Snowflake",
+						"outcome": "Snowpipe ingestion, streams and tasks, Snowpark transformations, role-based access, and a weekly cost report with resource monitors.",
+						"domains": [
+							"Cloud data warehouses",
+							"Infrastructure as code"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "bigquery-twin",
+						"phase": 12,
+						"title": "The same model on BigQuery",
+						"outcome": "The dbt project of elt-dbt-duckdb run on BigQuery with partitioning and clustering, and a cost and speed comparison with Snowflake.",
+						"domains": [
+							"Cloud data warehouses",
+							"Cloud"
+						],
+						"area": "Data platforms"
+					},
+					{
+						"slug": "terraform-data-platform",
+						"phase": 12,
+						"title": "The cloud data platform as code",
+						"outcome": "Terraform modules that create and destroy the whole platform (network, storage, warehouse, orchestration), with Checkov policies in CI.",
+						"domains": [
+							"Infrastructure as code",
+							"Cloud",
+							"DevOps"
+						],
+						"area": "Infrastructure and DevOps"
+					},
+					{
+						"slug": "observability-stack",
+						"phase": 11,
+						"title": "SLOs for the pipelines",
+						"outcome": "Prometheus, Grafana, Loki, and OpenTelemetry on the platform: freshness and latency SLOs with error budgets, alerts, and a postmortem template.",
+						"domains": [
+							"Observability and SRE",
+							"DevOps"
+						],
+						"area": "Observability and reliability"
+					},
+					{
+						"slug": "search-tech-watch",
+						"phase": 6,
+						"title": "A search engine over the tech watch",
+						"outcome": "OpenSearch indexing of the tech watch with BM25 and vector search, synonyms, and relevance measured on 50 judged queries.",
+						"domains": [
+							"NoSQL and search",
+							"Data-intensive systems"
+						],
+						"area": "Data"
+					},
+					{
+						"slug": "tech-knowledge-graph",
+						"phase": 6,
+						"title": "A tech knowledge graph in Neo4j",
+						"outcome": "The tech watch's entities and facts loaded into Neo4j, with Cypher queries for questions such as “which tools integrate with Iceberg?”.",
+						"domains": [
+							"NoSQL and search",
+							"Database architecture"
+						],
+						"area": "Data"
+					},
+					{
+						"slug": "rag-notes-assistant",
+						"phase": 15,
+						"title": "A RAG assistant over my notes",
+						"outcome": "pgvector embeddings of the vault, retrieval with reranking, an evaluation set of 100 questions, prompt-injection tests, and cost per answer.",
+						"domains": [
+							"Generative AI and LLM engineering",
+							"MLOps"
+						],
+						"area": "Generative AI"
+					},
+					{
+						"slug": "llm-agent-tools",
+						"phase": 18,
+						"title": "An LLM agent with tools, evaluated",
+						"outcome": "An agent that answers data questions through SQL and the catalog, with tool permissions, traces, and a regression suite.",
+						"domains": [
+							"Generative AI and LLM engineering",
+							"Data engineering"
+						],
+						"area": "Generative AI"
+					},
+					{
+						"slug": "feature-store-ml",
+						"phase": 14,
+						"title": "An ML pipeline with a feature store",
+						"outcome": "Features computed once for training and serving, an MLflow model registry, a canary deploy, and drift monitoring.",
+						"domains": [
+							"MLOps",
+							"Machine learning"
+						],
+						"area": "AI and machine learning"
+					},
+					{
+						"slug": "secure-supply-chain",
+						"phase": 16,
+						"title": "A secure software supply chain",
+						"outcome": "SBOMs, cosign signatures, SLSA provenance, and admission policies so only signed images run on the cluster.",
+						"domains": [
+							"DevSecOps",
+							"Kubernetes"
+						],
+						"area": "Security"
+					},
+					{
+						"slug": "raft-kv",
+						"phase": 6,
+						"title": "A Raft key-value store",
+						"outcome": "The MIT 6.5840 labs, then a linearizable key-value store tested with Jepsen-style fault injection.",
+						"domains": [
+							"Data-intensive systems",
+							"System design"
+						],
+						"area": "Data"
+					},
+					{
+						"slug": "oss-data-contributions",
+						"phase": 18,
+						"title": "Five merged pull requests in data open source",
+						"outcome": "Contributions to projects such as dbt, Airflow, DuckDB, Iceberg, or OpenLineage, each with its issue, review, and release note.",
+						"domains": [
+							"Data engineering",
+							"Code review and open source"
+						],
+						"area": "Portfolio and open source"
 					}
 				]
 			}

@@ -47,26 +47,39 @@ type Plan struct {
 		Title   string `json:"title"`
 		Outcome string `json:"outcome"`
 	} `json:"goal"`
-	Phases    []Phase        `json:"phases"`
-	Habits    []PlanHabit    `json:"habits"`
-	Tasks     []PlanTask     `json:"tasks"`
-	Areas     []PlanArea     `json:"areas"`
-	Stages    []PlanStage    `json:"stages"`
-	Resources []PlanResource `json:"resources"`
-	Rhythm    []PlanDay      `json:"rhythm"`
-	Certs     []PlanCert     `json:"certifications"`
+	Phases    []Phase            `json:"phases"`
+	Habits    []PlanHabit        `json:"habits"`
+	Tasks     []PlanTask         `json:"tasks"`
+	Areas     []PlanArea         `json:"areas"`
+	Stages    []PlanStage        `json:"stages"`
+	Resources []PlanResource     `json:"resources"`
+	Rhythm    []PlanDay          `json:"rhythm"`
+	Certs     []PlanCert         `json:"certifications"`
+	Projects  []PortfolioProject `json:"projects"`
+}
+
+// PortfolioProject is a portfolio project beside the phases' own (owner
+// request), worked on in its phase, on the plan's domains it names.
+type PortfolioProject struct {
+	Slug    string   `json:"slug"`
+	Phase   int      `json:"phase"`
+	Title   string   `json:"title"`
+	Outcome string   `json:"outcome"`
+	Domains []string `json:"domains"`
+	Area    string   `json:"area"`
 }
 
 // PlanCert is an exam the plan takes, by the end of its phase.
 type PlanCert struct {
-	Name           string `json:"name"`
-	Code           string `json:"code"`
-	Provider       string `json:"provider"`
-	URL            string `json:"url"`
-	CostCents      *int64 `json:"cost_cents"`
-	ValidityMonths *int   `json:"validity_months"`
-	Phase          int    `json:"phase"`
-	Skill          string `json:"skill"`
+	Name           string   `json:"name"`
+	Code           string   `json:"code"`
+	Provider       string   `json:"provider"`
+	URL            string   `json:"url"`
+	CostCents      *int64   `json:"cost_cents"`
+	ValidityMonths *int     `json:"validity_months"`
+	Phase          int      `json:"phase"`
+	Skill          string   `json:"skill"`
+	Labels         []string `json:"labels"`
 }
 
 // PlanDay is a weekday's study block (1 Monday to 7 Sunday): {M}, {C},
@@ -463,7 +476,7 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 			}
 		}
 		f := certs.Fields{Name: c.Name, Code: c.Code, Provider: c.Provider, Status: "planned", TargetOn: &target,
-			CostCents: c.CostCents, Currency: "USD", ValidityMonths: c.ValidityMonths}
+			CostCents: c.CostCents, Currency: "USD", ValidityMonths: c.ValidityMonths, Labels: c.Labels}
 		if c.URL != "" {
 			f.URL = str(c.URL)
 		}
@@ -472,6 +485,46 @@ func StartPlan(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph.Act
 		}
 		if _, err := certs.Create(ctx, tx, userID, f); err != nil {
 			return s, fmt.Errorf("certification %s: %w", c.Code, err)
+		}
+	}
+
+	// The portfolio projects, each shipped by the end of its phase.
+	for _, pp := range p.Projects {
+		i := slices.IndexFunc(p.Phases, func(ph Phase) bool { return ph.N == pp.Phase })
+		if i < 0 {
+			return s, fmt.Errorf("portfolio project %s: no phase %d in the plan", pp.Slug, pp.Phase)
+		}
+		ph := p.Phases[i]
+		end := at(ph.End)
+		status := "on_hold"
+		if pp.Phase == p.Phases[0].N {
+			status = "active"
+		}
+		desc := fmt.Sprintf("%s\n\nPortfolio project of %s, %s → %s. Domains: %s.", pp.Outcome, ph.Title,
+			at(ph.Start).Format(time.DateOnly), end.Format(time.DateOnly), strings.Join(pp.Domains, ", "))
+		pr, err := projects.Create(ctx, tx, userID, actor, projects.Fields{Title: &pp.Title, Description: &desc,
+			Status: &status, DocsFolder: str("1-Projects/" + pp.Slug), WIPLimit: new(3)})
+		if err != nil {
+			return s, err
+		}
+		s.Projects[pp.Slug] = pr.ID
+		if err := link(pr.ID, goals.Supports, g.ID); err != nil {
+			return s, err
+		}
+		if area, ok := areaIDs[strings.ToLower(pp.Area)]; ok {
+			if err := link(pr.ID, para.InArea, area); err != nil {
+				return s, err
+			}
+		}
+		for _, dom := range pp.Domains {
+			if id, ok := skills[dom]; ok {
+				if err := link(id, graph.RelatesTo, pr.ID); err != nil {
+					return s, err
+				}
+			}
+		}
+		if err := backlogCard(ctx, tx, userID, actor, pr.ID, "Ship "+pp.Title, pp.Outcome, end); err != nil {
+			return s, err
 		}
 	}
 

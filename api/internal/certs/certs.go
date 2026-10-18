@@ -46,6 +46,7 @@ type Fields struct {
 	CredentialURL  *string    `json:"credential_url"`
 	Notes          string     `json:"notes"`
 	SkillID        *uuid.UUID `json:"skill_id"`
+	Labels         []string   `json:"labels"` // the field and vendor it belongs to, to filter by
 }
 
 // Cert is a stored certification.
@@ -80,6 +81,13 @@ func date(p *string) (*time.Time, error) {
 func (f *Fields) check() error {
 	f.Name, f.Provider, f.Code, f.Score = strings.TrimSpace(f.Name), strings.TrimSpace(f.Provider), strings.TrimSpace(f.Code), strings.TrimSpace(f.Score)
 	f.Currency = strings.ToUpper(strings.TrimSpace(f.Currency))
+	labels := []string{}
+	for _, l := range f.Labels {
+		if l = strings.ToLower(strings.TrimSpace(l)); l != "" && !slices.Contains(labels, l) {
+			labels = append(labels, l)
+		}
+	}
+	f.Labels = labels
 	if f.Currency == "" {
 		f.Currency = "USD"
 	}
@@ -98,6 +106,8 @@ func (f *Fields) check() error {
 		return ValidationError{"Validity is 1 to 240 months."}
 	case utf8.RuneCountInString(f.Notes) > 5000:
 		return ValidationError{"Notes are limited to 5,000 characters."}
+	case len(f.Labels) > 20 || slices.ContainsFunc(f.Labels, func(l string) bool { return utf8.RuneCountInString(l) > 40 }):
+		return ValidationError{"Up to 20 labels of 40 characters each."}
 	}
 	if badLink(f.URL) {
 		return ValidationError{"The link is an http or https address."}
@@ -136,12 +146,12 @@ func (f *Fields) check() error {
 }
 
 const columns = `id, name, provider, code, url, status, target_on::text, exam_on::text, passed_on::text, expires_on::text,
-	validity_months, score, cost_cents, currency, credential_url, notes, skill_id, created_at, updated_at`
+	validity_months, score, cost_cents, currency, credential_url, notes, skill_id, labels, created_at, updated_at`
 
 func scan(row pgx.Row) (Cert, error) {
 	var c Cert
 	err := row.Scan(&c.ID, &c.Name, &c.Provider, &c.Code, &c.URL, &c.Status, &c.TargetOn, &c.ExamOn, &c.PassedOn, &c.ExpiresOn,
-		&c.ValidityMonths, &c.Score, &c.CostCents, &c.Currency, &c.CredentialURL, &c.Notes, &c.SkillID, &c.CreatedAt, &c.UpdatedAt)
+		&c.ValidityMonths, &c.Score, &c.CostCents, &c.Currency, &c.CredentialURL, &c.Notes, &c.SkillID, &c.Labels, &c.CreatedAt, &c.UpdatedAt)
 	return c, err
 }
 
@@ -175,10 +185,11 @@ func Create(ctx context.Context, q db.Querier, userID uuid.UUID, f Fields) (Cert
 		return Cert{}, err
 	}
 	return scan(q.QueryRow(ctx, `INSERT INTO certifications (id, user_id, name, provider, code, url, status, target_on, exam_on, passed_on,
-		expires_on, validity_months, score, cost_cents, currency, credential_url, notes, skill_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING `+columns,
+		expires_on, validity_months, score, cost_cents, currency, credential_url, notes, skill_id, labels)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING `+columns,
 		uuid.Must(uuid.NewV7()), userID, f.Name, f.Provider, f.Code, nullable(f.URL), f.Status, nullable(f.TargetOn), nullable(f.ExamOn),
-		nullable(f.PassedOn), nullable(f.ExpiresOn), f.ValidityMonths, f.Score, f.CostCents, f.Currency, nullable(f.CredentialURL), f.Notes, f.SkillID))
+		nullable(f.PassedOn), nullable(f.ExpiresOn), f.ValidityMonths, f.Score, f.CostCents, f.Currency, nullable(f.CredentialURL), f.Notes, f.SkillID,
+		f.Labels))
 }
 
 // Replace rewrites one of the person's certifications.
@@ -191,9 +202,9 @@ func Replace(ctx context.Context, q db.Querier, userID, id uuid.UUID, f Fields) 
 	}
 	c, err := scan(q.QueryRow(ctx, `UPDATE certifications SET name = $3, provider = $4, code = $5, url = $6, status = $7, target_on = $8,
 		exam_on = $9, passed_on = $10, expires_on = $11, validity_months = $12, score = $13, cost_cents = $14, currency = $15,
-		credential_url = $16, notes = $17, skill_id = $18, updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING `+columns,
+		credential_url = $16, notes = $17, skill_id = $18, labels = $19, updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING `+columns,
 		id, userID, f.Name, f.Provider, f.Code, nullable(f.URL), f.Status, nullable(f.TargetOn), nullable(f.ExamOn), nullable(f.PassedOn),
-		nullable(f.ExpiresOn), f.ValidityMonths, f.Score, f.CostCents, f.Currency, nullable(f.CredentialURL), f.Notes, f.SkillID))
+		nullable(f.ExpiresOn), f.ValidityMonths, f.Score, f.CostCents, f.Currency, nullable(f.CredentialURL), f.Notes, f.SkillID, f.Labels))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return c, ErrNotFound
 	}

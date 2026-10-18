@@ -2317,6 +2317,616 @@
      "answer": 3
     }
    ]
+  },
+  {
+   "id": "analytics-engineering",
+   "title": "Analytics engineering",
+   "questions": [
+    {
+     "id": "analytics-engineering-1",
+     "question": "In a Kimball star schema, what does a fact table hold?",
+     "choices": [
+      "Descriptive attributes such as a customer's name",
+      "Measurements of a business process at a declared grain, with keys to dimensions",
+      "Only lookup codes",
+      "Copies of every source table"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "analytics-engineering-2",
+     "question": "What is a slowly changing dimension of type 2?",
+     "choices": [
+      "A dimension overwritten in place",
+      "A dimension that keeps history by adding a new row, with validity dates, for each change",
+      "A dimension that is deleted daily",
+      "A fact table without keys"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "analytics-engineering-3",
+     "question": "In dbt, what does ref() give you?",
+     "choices": [
+      "A random sample of a table",
+      "The dependency graph between models and the right relation name in each environment",
+      "A connection to the warehouse",
+      "A Python virtual environment"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "analytics-engineering-4",
+     "question": "Which dbt feature checks that a column is unique and not null?",
+     "choices": [
+      "Snapshots",
+      "Data tests",
+      "Seeds",
+      "Exposures"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "analytics-engineering-5",
+     "question": "What does an incremental model avoid?",
+     "choices": [
+      "Writing SQL",
+      "Rebuilding the whole table on every run",
+      "Testing the data",
+      "Documenting columns"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "cloud-data-warehouses",
+   "title": "Cloud data warehouses",
+   "questions": [
+    {
+     "id": "cloud-data-warehouses-1",
+     "question": "What do Snowflake and BigQuery separate that classic warehouses tied together?",
+     "choices": [
+      "SQL and Python",
+      "Storage and compute",
+      "Rows and columns",
+      "Users and roles"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "cloud-data-warehouses-2",
+     "question": "Why do columnar warehouses read analytical queries fast?",
+     "choices": [
+      "They keep every row in memory",
+      "They read only the columns a query needs, compressed, and skip blocks by their min/max",
+      "They forbid joins",
+      "They sort every table by its primary key"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "cloud-data-warehouses-3",
+     "question": "In BigQuery, what does partitioning a table by date mainly save?",
+     "choices": [
+      "Storage of nulls",
+      "Bytes scanned, and so cost, when queries filter on the date",
+      "The need for a schema",
+      "Network latency"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "cloud-data-warehouses-4",
+     "question": "What is Snowflake's Time Travel?",
+     "choices": [
+      "A scheduler",
+      "Querying or restoring data as it was at an earlier point within a retention period",
+      "A replication to another region",
+      "A query cache"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "cloud-data-warehouses-5",
+     "question": "Which practice keeps warehouse costs under control?",
+     "choices": [
+      "Running every query on the largest warehouse",
+      "Auto-suspend, right-sized warehouses, and monitoring the costliest queries",
+      "Disabling result caching",
+      "Copying data into every team's database"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "lakehouse",
+   "title": "Lakehouse platforms",
+   "questions": [
+    {
+     "id": "lakehouse-1",
+     "question": "What does an open table format such as Delta Lake or Iceberg add to files in object storage?",
+     "choices": [
+      "A graphical interface",
+      "ACID transactions, schema evolution, and time travel over Parquet files",
+      "A message broker",
+      "A web server"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "lakehouse-2",
+     "question": "In the medallion architecture, what is the silver layer?",
+     "choices": [
+      "Raw data as it arrived",
+      "Cleaned, conformed, deduplicated data",
+      "Only dashboards",
+      "Deleted data"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "lakehouse-3",
+     "question": "Why does compaction matter on a lakehouse table?",
+     "choices": [
+      "It encrypts files",
+      "Many small files slow reads; compaction rewrites them into fewer, larger ones",
+      "It removes the schema",
+      "It turns tables into views"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "lakehouse-4",
+     "question": "What is Iceberg's hidden partitioning?",
+     "choices": [
+      "Partitions users cannot query",
+      "Partition values derived from columns by transforms, so queries need not name the partition column",
+      "A security feature",
+      "Random file names"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "lakehouse-5",
+     "question": "What does a catalog such as Unity Catalog or Polaris provide?",
+     "choices": [
+      "GPU scheduling",
+      "Table metadata, access control, and discovery across engines",
+      "Email alerts",
+      "A notebook editor"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "orchestration",
+   "title": "Data orchestration",
+   "questions": [
+    {
+     "id": "orchestration-1",
+     "question": "What is a DAG in Airflow?",
+     "choices": [
+      "A database table",
+      "A directed acyclic graph of tasks with their dependencies and schedule",
+      "A Python package manager",
+      "A type of log"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "orchestration-2",
+     "question": "Why should a pipeline task be idempotent?",
+     "choices": [
+      "To run faster",
+      "So retrying or backfilling it gives the same result without duplicates",
+      "To avoid writing tests",
+      "So it needs no scheduler"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "orchestration-3",
+     "question": "What is a backfill?",
+     "choices": [
+      "Deleting old runs",
+      "Running a pipeline for past intervals it has not processed",
+      "Adding columns to a table",
+      "Restarting the scheduler"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "orchestration-4",
+     "question": "What does Dagster model first, that Airflow 2 modelled as tasks?",
+     "choices": [
+      "Users",
+      "Data assets and their lineage",
+      "Servers",
+      "Alerts"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "orchestration-5",
+     "question": "Where should heavy data processing run in an Airflow deployment?",
+     "choices": [
+      "Inside the scheduler process",
+      "In the systems the tasks call (a warehouse, Spark, a container), not the scheduler",
+      "In the web server",
+      "In the metadata database"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "data-governance",
+   "title": "Data governance and quality",
+   "questions": [
+    {
+     "id": "data-governance-1",
+     "question": "What is a data contract?",
+     "choices": [
+      "A licence to sell data",
+      "An agreed schema, semantics, and quality guarantees between a data producer and its consumers, checked automatically",
+      "A backup policy",
+      "A database user"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-governance-2",
+     "question": "What does data lineage answer?",
+     "choices": [
+      "Who pays for storage",
+      "Where data comes from and what depends on it downstream",
+      "How fast a query runs",
+      "Which index to create"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-governance-3",
+     "question": "Which is a dimension of data quality?",
+     "choices": [
+      "Colour",
+      "Freshness",
+      "Font size",
+      "Price"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-governance-4",
+     "question": "Under the GDPR, what is data minimisation?",
+     "choices": [
+      "Compressing files",
+      "Collecting and keeping only the personal data needed for the purpose",
+      "Deleting backups",
+      "Using fewer tables"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "data-governance-5",
+     "question": "What does a data catalog give its users?",
+     "choices": [
+      "A faster CPU",
+      "Discovery of datasets with their owners, descriptions, and lineage",
+      "Automatic machine learning",
+      "A message queue"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "iac",
+   "title": "Infrastructure as code",
+   "questions": [
+    {
+     "id": "iac-1",
+     "question": "What does terraform plan do?",
+     "choices": [
+      "Applies changes immediately",
+      "Shows the changes needed to reach the configuration, without making them",
+      "Deletes the state",
+      "Formats the code"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "iac-2",
+     "question": "Why keep Terraform state in a remote backend with locking?",
+     "choices": [
+      "To make it public",
+      "So a team shares one state and two applies never run at once",
+      "To avoid using providers",
+      "Because local files are not allowed"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "iac-3",
+     "question": "What is configuration drift?",
+     "choices": [
+      "A slow network",
+      "The real infrastructure differing from what the code declares",
+      "A new Terraform version",
+      "A module without variables"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "iac-4",
+     "question": "What is OpenTofu?",
+     "choices": [
+      "A database",
+      "An open-source fork of Terraform under the Linux Foundation",
+      "A Kubernetes distribution",
+      "A CI service"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "iac-5",
+     "question": "What does policy as code (OPA, Sentinel, Checkov) add to a pipeline?",
+     "choices": [
+      "Faster applies",
+      "Automatic checks that infrastructure changes follow rules before they are applied",
+      "More cloud regions",
+      "Cheaper storage"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "observability",
+   "title": "Observability and SRE",
+   "questions": [
+    {
+     "id": "observability-1",
+     "question": "What are the three signals of observability usually named?",
+     "choices": [
+      "CPU, RAM, disk",
+      "Metrics, logs, and traces",
+      "Users, sessions, clicks",
+      "Builds, tests, deploys"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "observability-2",
+     "question": "What is an error budget?",
+     "choices": [
+      "Money set aside for outages",
+      "The unreliability an SLO allows, which can be spent on change before reliability work takes priority",
+      "A list of bugs",
+      "The number of alerts per day"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "observability-3",
+     "question": "What does OpenTelemetry standardise?",
+     "choices": [
+      "Cloud billing",
+      "How telemetry is produced, collected, and exported, vendor-neutral",
+      "Database schemas",
+      "Container images"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "observability-4",
+     "question": "In Prometheus, what is a counter?",
+     "choices": [
+      "A value that can go up and down",
+      "A value that only increases, read through rate() over time",
+      "A log line",
+      "A trace span"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "observability-5",
+     "question": "What makes a postmortem blameless?",
+     "choices": [
+      "Nobody writes it",
+      "It looks for causes in systems and processes rather than at fault people",
+      "It is kept secret",
+      "It only lists the outage time"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "genai",
+   "title": "Generative AI and LLM engineering",
+   "questions": [
+    {
+     "id": "genai-1",
+     "question": "What does retrieval-augmented generation (RAG) do?",
+     "choices": [
+      "Trains a model from scratch",
+      "Retrieves relevant documents and gives them to the model as context for its answer",
+      "Compresses a model",
+      "Translates code"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "genai-2",
+     "question": "What are embeddings used for in a RAG system?",
+     "choices": [
+      "Billing",
+      "Representing text as vectors so similar passages can be found by vector search",
+      "Encrypting prompts",
+      "Rendering images"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "genai-3",
+     "question": "Why evaluate an LLM application with a test set?",
+     "choices": [
+      "To make it slower",
+      "To measure answer quality and catch regressions when prompts, models, or data change",
+      "Because models cannot be called otherwise",
+      "To reduce tokens"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "genai-4",
+     "question": "What is a prompt injection?",
+     "choices": [
+      "A faster prompt",
+      "Untrusted input that tries to override the application's instructions",
+      "A model update",
+      "A type of embedding"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "genai-5",
+     "question": "What does fine-tuning change, unlike prompting?",
+     "choices": [
+      "Nothing",
+      "The model's weights, on examples of the task",
+      "Only the temperature",
+      "The tokenizer's alphabet"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "bi",
+   "title": "Business intelligence",
+   "questions": [
+    {
+     "id": "bi-1",
+     "question": "What does a semantic layer provide to BI tools?",
+     "choices": [
+      "Faster disks",
+      "Shared, governed definitions of metrics and dimensions",
+      "Random samples",
+      "A new SQL dialect"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "bi-2",
+     "question": "Which chart best shows a trend over time?",
+     "choices": [
+      "A pie chart",
+      "A line chart",
+      "A word cloud",
+      "A 3-D bar chart"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "bi-3",
+     "question": "In Power BI, what language defines measures?",
+     "choices": [
+      "DAX",
+      "Bash",
+      "Rust",
+      "YAML"
+     ],
+     "answer": 0
+    },
+    {
+     "id": "bi-4",
+     "question": "What is a good dashboard's first question?",
+     "choices": [
+      "Which colours to use",
+      "Which decision it supports and for whom",
+      "How many charts fit",
+      "Which font"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "bi-5",
+     "question": "Why avoid many different definitions of 'active user' across dashboards?",
+     "choices": [
+      "They slow down the database",
+      "Conflicting numbers destroy trust in the data",
+      "Dashboards cannot show text",
+      "It costs licences"
+     ],
+     "answer": 1
+    }
+   ]
+  },
+  {
+   "id": "nosql-search",
+   "title": "NoSQL and search",
+   "questions": [
+    {
+     "id": "nosql-search-1",
+     "question": "When does a document store such as MongoDB fit better than a relational model?",
+     "choices": [
+      "Never",
+      "When data is read and written as whole, nested documents with a flexible schema",
+      "When you need many joins across entities",
+      "Only for logs"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "nosql-search-2",
+     "question": "What structure lets a search engine find documents containing a word quickly?",
+     "choices": [
+      "A B-tree on the primary key",
+      "An inverted index",
+      "A hash of the whole document",
+      "A linked list"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "nosql-search-3",
+     "question": "In Cassandra, what decides which node holds a row?",
+     "choices": [
+      "The row's size",
+      "The partition key, hashed onto the token ring",
+      "The client's IP address",
+      "The time of the write"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "nosql-search-4",
+     "question": "What are graph databases such as Neo4j good at?",
+     "choices": [
+      "Storing images",
+      "Traversing relationships many hops deep",
+      "Sorting large files",
+      "Bulk analytics on columns"
+     ],
+     "answer": 1
+    },
+    {
+     "id": "nosql-search-5",
+     "question": "What does BM25 score?",
+     "choices": [
+      "Disk usage",
+      "How relevant a document is to a query's terms",
+      "Network latency",
+      "Index size"
+     ],
+     "answer": 1
+    }
+   ]
   }
  ]
 }

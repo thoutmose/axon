@@ -61,6 +61,8 @@
 		roadmap: 'M3 20h4l3-8 4 5 3-11h4M3 20V4',
 		project: 'M4 7h16v12H4zM9 7V4h6v3',
 		goal: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',
+		cert: 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM9 12l-2 9 5-3 5 3-2-9',
+		resource: 'M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1zM12 6v14',
 		milestones: 'M5 21V4M5 4h11l-2 4 2 4H5',
 		projects: 'M5 13l4 4L19 7',
 		goals: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4',
@@ -84,7 +86,14 @@
 		<Status kind="loading" message={t('Loading…')} />
 	{:else}
 		<p class="summary">
-			{t('{earned} of {total} tiers collected', { earned: c.earned, total: c.total })}
+			{t(
+				'{cards} cards, each with three tiers (bronze, silver, gold): {earned} of {total} tiers collected',
+				{
+					cards: c.cards.length,
+					earned: c.earned,
+					total: c.total
+				}
+			)}
 			<span class="medals"
 				><span class="m gold">{t('{n} gold', { n: count('gold') })}</span>
 				<span class="m silver">{t('{n} silver', { n: count('silver') })}</span>
@@ -93,41 +102,48 @@
 		</p>
 		<progress max={c.total} value={c.earned} aria-label={t('Tiers collected')}></progress>
 		{#each groups(c.cards) as g (g.id)}
-			<h3>{g.title}</h3>
-			<ul class="cards">
-				{#each sorted(g.cards) as k (k.id)}
-					<li class="cc {k.tier || 'locked'}">
-						<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
-							<path d={emblems[k.family]} />
-						</svg>
-						<strong class="name">{cardName(k)}</strong>
-						<span class="tier">{tierName(k.tier)}</span>
-						{#if k.next && k.next.target > 0}
-							<progress
-								max={k.next.target}
-								value={Math.min(k.value, k.next.target)}
-								aria-label={t('Toward {tier}', { tier: tierName(k.next.tier) })}
-							></progress>
-						{/if}
-						<span class="how">{nextStep(k)}</span>
-						{#if k.tier}
-							<ShareButton
-								spec={{
-									title: t('{tier} on Axon', { tier: tierName(k.tier) }),
-									value: cardName(k),
-									caption: achievement(k),
-									kind: k.tier
-								}}
-								text={t('{tier}: {name}. {what} #Axon', {
-									tier: tierName(k.tier),
-									name: cardName(k),
-									what: achievement(k)
-								})}
-							/>
-						{/if}
-					</li>
-				{/each}
-			</ul>
+			<details open={g.cards.length <= 40}>
+				<summary
+					><h3>
+						{g.title}
+						<span class="muted">{g.cards.filter((k) => k.tier).length}/{g.cards.length}</span>
+					</h3></summary
+				>
+				<ul class="cards">
+					{#each sorted(g.cards) as k (k.id)}
+						<li class="cc {k.tier || 'locked'}">
+							<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+								<path d={emblems[k.family]} />
+							</svg>
+							<strong class="name">{cardName(k)}</strong>
+							<span class="tier">{tierName(k.tier)}</span>
+							{#if k.next && k.next.target > 0}
+								<progress
+									max={k.next.target}
+									value={Math.min(k.value, k.next.target)}
+									aria-label={t('Toward {tier}', { tier: tierName(k.next.tier) })}
+								></progress>
+							{/if}
+							<span class="how">{nextStep(k)}</span>
+							{#if k.tier}
+								<ShareButton
+									spec={{
+										title: t('{tier} on Axon', { tier: tierName(k.tier) }),
+										value: cardName(k),
+										caption: achievement(k),
+										kind: k.tier
+									}}
+									text={t('{tier}: {name}. {what} #Axon', {
+										tier: tierName(k.tier),
+										name: cardName(k),
+										what: achievement(k)
+									})}
+								/>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</details>
 		{/each}
 	{/if}
 </section>
@@ -149,8 +165,16 @@
 		width: 100%;
 	}
 	h3 {
-		margin: var(--space-4) 0 var(--space-2);
+		display: inline;
 		font-size: var(--text-lg);
+	}
+	summary {
+		margin: var(--space-4) 0 var(--space-2);
+		cursor: pointer;
+	}
+	.muted {
+		color: var(--muted);
+		font-size: var(--text-sm);
 	}
 	.cards {
 		list-style: none;

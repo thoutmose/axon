@@ -54,7 +54,8 @@
 		target_on: '',
 		cost: '',
 		currency: 'USD',
-		validity: ''
+		validity: '',
+		labels: ''
 	});
 	async function add(e: SubmitEvent) {
 		e.preventDefault();
@@ -70,7 +71,8 @@
 					target_on: draft.target_on || null,
 					cost_cents: draft.cost ? Math.round(Number(draft.cost.replace(',', '.')) * 100) : null,
 					currency: draft.currency,
-					validity_months: draft.validity ? Number(draft.validity) : null
+					validity_months: draft.validity ? Number(draft.validity) : null,
+					labels: draft.labels.split(',')
 				}
 			});
 			draft = {
@@ -81,7 +83,8 @@
 				url: '',
 				target_on: '',
 				cost: '',
-				validity: ''
+				validity: '',
+				labels: ''
 			};
 			await load();
 		} catch (err) {
@@ -135,6 +138,15 @@
 	const next = $derived(items ? nextExam(items, today) : null);
 	const soon = $derived(items ? expiringSoon(items, today) : []);
 	const passed = $derived((items ?? []).filter((c) => c.status === 'passed').length);
+
+	// Labels (owner request): the field and vendor of each exam, to filter by.
+	let label = $state('');
+	const labels = $derived.by(() => {
+		const n = new Map<string, number>();
+		for (const c of items ?? []) for (const l of c.labels) n.set(l, (n.get(l) ?? 0) + 1);
+		return [...n].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+	});
+	const shown = $derived((items ?? []).filter((c) => !label || c.labels.includes(label)));
 </script>
 
 <svelte:head><title>{t('Certifications')} · Axon</title></svelte:head>
@@ -183,9 +195,25 @@
 		{/each}
 	</section>
 
+	{#if labels.length}
+		<div class="labels" role="group" aria-label={t('Labels')}>
+			<button type="button" class="label" aria-pressed={!label} onclick={() => (label = '')}
+				>{t('All')} <span class="n">{items.length}</span></button
+			>
+			{#each labels as [l, n] (l)}
+				<button
+					type="button"
+					class="label"
+					aria-pressed={label === l}
+					onclick={() => (label = label === l ? '' : l)}>{l} <span class="n">{n}</span></button
+				>
+			{/each}
+		</div>
+	{/if}
+
 	{#if items.length}
 		<ul class="certs">
-			{#each items as c (c.id)}
+			{#each shown as c (c.id)}
 				<li class="card">
 					<div class="head">
 						<h2>
@@ -199,6 +227,15 @@
 						{#if c.cost_cents != null}· {money(c.cost_cents, c.currency)}{/if}
 						{#if c.validity_months}· {t('valid {n} months', { n: c.validity_months })}{/if}
 					</p>
+					{#if c.labels.length}
+						<p class="tags">
+							{#each c.labels as l (l)}<button
+									type="button"
+									class="label"
+									onclick={() => (label = l)}>{l}</button
+								>{/each}
+						</p>
+					{/if}
 					<p class="small">
 						{#if c.status === 'planned' && c.target_on}
 							{t('Aim: by {date}', { date: c.target_on })}
@@ -263,7 +300,7 @@
 		<Status
 			kind="empty"
 			message={t(
-				'No certifications yet. Add one below, or start the roadmap: it plans its 45 certifications.'
+				'No certifications yet. Add one below, or start the roadmap: it plans its 141 certifications.'
 			)}
 		/>
 	{/if}
@@ -290,6 +327,10 @@
 			>
 			<label
 				>{t('Valid for (months)')} <input inputmode="numeric" bind:value={draft.validity} /></label
+			>
+			<label class="wide"
+				>{t('Labels')}
+				<input bind:value={draft.labels} placeholder={t('data engineering, cloud, aws')} /></label
 			>
 			<div class="wide">
 				<Button type="submit" disabled={!draft.name.trim()}>{t('Add')}</Button>
@@ -353,6 +394,33 @@
 	}
 	.chip.passed {
 		background: color-mix(in srgb, var(--ok) 25%, transparent);
+	}
+	.labels,
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-4);
+	}
+	.tags {
+		margin: var(--space-2) 0 0;
+	}
+	.label {
+		font: inherit;
+		font-size: var(--text-sm);
+		padding: 0 var(--space-2);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--fg);
+		cursor: pointer;
+	}
+	.label[aria-pressed='true'] {
+		background: var(--accent-soft);
+		border-color: var(--accent);
+	}
+	.label .n {
+		color: var(--muted);
 	}
 	.grid {
 		display: grid;

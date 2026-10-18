@@ -31,7 +31,7 @@ type Step struct {
 // and the next tier.
 type Card struct {
 	ID     string  `json:"id"`
-	Family string  `json:"family"` // skill, habit, roadmap, project, goal, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams
+	Family string  `json:"family"` // skill, habit, roadmap, project, goal, cert, resource, practice, focus, reviews, streak, decisions, milestones, projects, goals, checkins, exams
 	Title  string  `json:"title"`  // the skill's or habit's name; empty for the others
 	Kind   string  `json:"kind"`   // practice: easy, medium, hard
 	Tier   string  `json:"tier"`
@@ -87,7 +87,9 @@ var (
 	achievedSteps = [3]float64{1, 3, 10}    // goals achieved
 	checkinSteps  = [3]float64{50, 500, 2000}
 	examSteps     = [3]float64{1, 5, 15}
-	skillHours    = 10.0 // of focus for a skill's silver trophy
+	certSteps     = [3]float64{1, 2, 3}  // booked, passed, credential linked
+	resourceSteps = [3]float64{1, 3, 10} // notes taken from a resource
+	skillHours    = 10.0                 // of focus for a skill's silver trophy
 )
 
 func card(id, family, title, kind, unit string, value float64, steps [3]float64) Card {
@@ -191,6 +193,34 @@ func GetCollection(ctx context.Context, q db.Querier, userID uuid.UUID, tz strin
 	}
 	for _, sh := range shares {
 		c.Cards = append(c.Cards, card(sh.Family+":"+sh.ID.String(), sh.Family, sh.Title, "", "percent", math.Floor(sh.Done), shareSteps))
+	}
+
+	// A card per certification (owner request): booked (bronze), passed
+	// (silver), passed with its credential linked (gold); and a card per
+	// resource of a roadmap, raised by the notes taken from it (the person's
+	// notes that link to its note).
+	rows, err = q.Query(ctx, `SELECT 'cert', c.id, CASE WHEN c.code <> '' THEN c.code || ' · ' || c.name ELSE c.name END,
+			CASE WHEN c.status = 'passed' AND c.credential_url IS NOT NULL THEN 3 WHEN c.status = 'passed' THEN 2
+				WHEN c.status IN ('booked', 'failed') THEN 1 ELSE 0 END::float8
+		FROM certifications c WHERE c.user_id = $1
+		UNION ALL
+		SELECT 'resource', n.id, e.title, (SELECT count(DISTINCT l.source_id) FROM links l JOIN notes s ON s.id = l.source_id
+			WHERE l.target_id = n.id AND l.user_id = $1)::float8
+		FROM notes n JOIN entities e ON e.id = n.id WHERE n.user_id = $1 AND n.path LIKE '3-Resources/%/%' AND n.kind = 'resource'
+		ORDER BY 1, 3`, userID)
+	if err != nil {
+		return c, err
+	}
+	owned, err := pgx.CollectRows(rows, pgx.RowToStructByPos[share])
+	if err != nil {
+		return c, err
+	}
+	for _, o := range owned {
+		if o.Family == "cert" {
+			c.Cards = append(c.Cards, card("cert:"+o.ID.String(), "cert", o.Title, "", "steps", o.Done, certSteps))
+		} else {
+			c.Cards = append(c.Cards, card("resource:"+o.ID.String(), "resource", o.Title, "", "notes", o.Done, resourceSteps))
+		}
 	}
 
 	// Milestones reached, projects done, goals achieved, check-ins, exams passed.

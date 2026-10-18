@@ -65,6 +65,7 @@ func ResourceNotes(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph
 		return err
 	}
 	written := 0
+	var batch notes.Batch // their wikilinks resolve once, after all of them
 	for _, r := range d.Resources {
 		path := "3-Resources/" + d.ID + "/" + notes.Slug(r.Title) + ".md"
 		if _, err := notes.GetByPath(ctx, tx, userID, path); err == nil {
@@ -78,7 +79,7 @@ func ResourceNotes(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph
 				phases = append(phases, ph)
 			}
 		}
-		n, err := notes.Create(ctx, tx, userID, actor, path, resourceNote(d, r, describe[r.Skill], phases, now))
+		nid, err := batch.Add(ctx, tx, userID, actor, path, resourceNote(d, r, describe[r.Skill], phases, now))
 		if err != nil {
 			return written, err
 		}
@@ -99,12 +100,12 @@ func ResourceNotes(ctx context.Context, tx pgx.Tx, userID uuid.UUID, actor graph
 			}
 		}
 		for _, to := range targets {
-			if err := link(n.ID, graph.RelatesTo, to); err != nil {
+			if err := link(nid, graph.RelatesTo, to); err != nil {
 				return written, err
 			}
 		}
 	}
-	return written, nil
+	return written, batch.Finish(ctx, tx, userID, actor)
 }
 
 // resourceNote is a resource's note, in the vault's resource note shape.

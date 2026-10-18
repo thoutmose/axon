@@ -44,8 +44,8 @@ func TestTheLibraryIsTheTop5Roadmap(t *testing.T) {
 			}
 		}
 	}
-	if hard != 37 {
-		t.Errorf("%d hard skills, want the 37 domains", hard)
+	if hard != 47 {
+		t.Errorf("%d hard skills, want the 47 domains", hard)
 	}
 	for skill := range resources {
 		if !seen[skill] {
@@ -151,6 +151,44 @@ func TestEachCertificationBelongsToItsPhase(t *testing.T) {
 	for _, s := range Library()[0].Skills {
 		if s.Kind != "soft" && !certified[s.Title] {
 			t.Errorf("%q has no certification", s.Title)
+		}
+	}
+}
+
+// Every certification is labelled with its field (owner request: filter by
+// label, every data engineering exam), and each portfolio project names a
+// phase, domains, and an area the plan has.
+func TestCertificationsAreLabelledAndProjectsBelong(t *testing.T) {
+	d := Library()[0]
+	p := *d.Plan
+	fields := []string{"foundations", "systems", "languages", "data", "ai", "software", "infrastructure", "security"}
+	dataEng := 0
+	for _, c := range p.Certs {
+		if !slices.ContainsFunc(c.Labels, func(l string) bool { return slices.Contains(fields, l) }) {
+			t.Errorf("%s: labels %v name no field", c.Code, c.Labels)
+		}
+		if slices.Contains(c.Labels, "data engineering") {
+			dataEng++
+		}
+	}
+	if dataEng < 30 {
+		t.Errorf("%d data engineering certifications", dataEng)
+	}
+	skills, areas := map[string]bool{}, map[string]bool{}
+	for _, s := range d.Skills {
+		skills[s.Title] = true
+	}
+	for _, a := range p.Areas {
+		areas[a.Title] = true
+	}
+	for _, pp := range p.Projects {
+		if pp.Phase < 1 || pp.Phase > len(p.Phases) || !areas[pp.Area] || len(pp.Domains) == 0 {
+			t.Errorf("project %s: phase %d, area %q", pp.Slug, pp.Phase, pp.Area)
+		}
+		for _, dom := range pp.Domains {
+			if !skills[dom] {
+				t.Errorf("project %s: unknown domain %q", pp.Slug, dom)
+			}
 		}
 	}
 }

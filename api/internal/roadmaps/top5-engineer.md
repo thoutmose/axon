@@ -1,6 +1,6 @@
 ---
 type: roadmap
-title: Top-5% in 37 engineering domains
+title: Top-5% in 47 engineering domains
 created: 2026-10-03 13:21
 updated: 2026-10-17
 status: active
@@ -13,13 +13,14 @@ target_end: 2031-01-05
 ---
 ## Why / end goal
 
-Top 5% in **all** of these 37 domains: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Machine learning, Deep learning, MLOps, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Cybersecurity, DevSecOps.
+Top 5% in **all** of these 47 domains: Computer science, Data structures and algorithms, Maths, Probability, Statistics, C and C++, Operating systems, Linux, Bash, Network, Python, Java, Rust, Databases, Database architecture, Database administration, Data-intensive systems, Kafka and streaming, Spark and batch processing, Data engineering, DataOps, Data analysis, Data science, Analytics engineering, Cloud data warehouses, Lakehouse platforms, Data orchestration, Data governance and quality, Business intelligence, NoSQL and search, Machine learning, Deep learning, MLOps, Generative AI and LLM engineering, Software engineering, System design, API design, Web development, Docker and Podman, Kubernetes, DevOps, GitOps, Cloud, Infrastructure as code, Observability and SRE, Cybersecurity, DevSecOps.
 
 18 phases of 12 weeks (the last 16), ~4,840 h at 22 h/week,
 2026-10-19 (Monday) → 2031-01-05. Each phase has a project that builds on the
 previous one. Each domain has an external proof: a certification wherever a
-credible exam or certificate exists: 45 of them, at least one for every
-domain, each with the project work that proves it beyond the exam. Rust has no
+credible exam or certificate exists: 141 of them, labelled by field, vendor, and
+level, at least one for every domain (every data engineering exam, and the
+three or four most recommended in each domain), each with the project work that proves it beyond the exam. Rust has no
 individual exam yet, so its proof is a course from a Rust Foundation accredited
 trainer; the skills assessment is retaken at the end of every phase.
 
@@ -64,60 +65,193 @@ trainer; the skills assessment is retaken at the end of every phase.
 | 35 | Cloud | 12, 18 | SAA-C03 · ACE · AZ-104 | AWS SAA, Google Cloud ACE, and Azure AZ-104. |
 | 36 | Cybersecurity | 16 | BSCP · OSCP+ | BSCP and OSCP+; all PortSwigger labs; MIT 6.566 labs. |
 | 37 | DevSecOps | 11, 16 | CDP | Practical DevSecOps CDP; signed images, SBOMs, and policies gating every deploy. |
+| 38 | Analytics engineering | 8, 9 | dbt AE · dbt Fundamentals · DP-600 | dbt Analytics Engineering certification; a Kimball star schema in dbt with tests, docs, contracts, and a semantic layer, deployed by CI. |
+| 39 | Cloud data warehouses | 8, 12, 18 | SnowPro Core · SnowPro Adv Admin · SnowPro Adv DE | SnowPro Core then SnowPro Advanced: Data Engineer; the same model run on Snowflake and BigQuery with a cost report. |
+| 40 | Lakehouse platforms | 8, 12, 18 | Databricks DE Associate · DP-700 · Databricks DE Professional | Databricks Certified Data Engineer Associate then Professional; a medallion lakehouse on Delta and Iceberg. |
+| 41 | Data orchestration | 1, 8 | Airflow Fundamentals · Airflow DAG Authoring · Dagster Essentials | Astronomer Airflow Fundamentals and DAG Authoring certifications; pipekit, then the platform's DAGs, idempotent and backfillable. |
+| 42 | Data governance and quality | 8, 9 | CIPP/E · CDMP Associate · CDMP Practitioner | DAMA CDMP Associate; data contracts, quality checks, lineage, and a catalog on the platform; GDPR handled (IAPP CIPP/E). |
+| 43 | Infrastructure as code | 11, 12 | Terraform Associate · RHCE EX294 · Terraform Professional | HashiCorp Terraform Associate; the whole cloud data platform created and destroyed from code, with policy checks in CI. |
+| 44 | Observability and SRE | 11, 18 | OTCA · PCA · SRE Foundation | Prometheus Certified Associate and OpenTelemetry Certified Associate; SLOs with error budgets and alerts on the platform. |
+| 45 | Generative AI and LLM engineering | 15, 18 | AI-102 · AIF-C01 · Databricks GenAI Associate | Databricks Generative AI Engineer Associate; a RAG assistant with evaluations, guardrails, and cost tracking in production. |
+| 46 | Business intelligence | 9 | Databricks Data Analyst · SnowPro Adv Analyst · Tableau Data Analyst | Microsoft PL-300 or Tableau Certified Data Analyst; three published dashboards built on the semantic layer. |
+| 47 | NoSQL and search | 6 | Elastic Certified Engineer · MongoDB Associate DBA · MongoDB Associate Developer | MongoDB Associate Developer and Elastic Certified Engineer; a search service over the tech watch, and a graph model in Neo4j. |
 
 ## Certifications
 
-Taken at the end of their phase; Axon lists them under Grow → Certifications
-with their target date, cost, and renewal. Listed prices add up to about
-$5,343; check the others when you book.
+Taken by the end of their phase; Axon lists them under Grow → Certifications,
+where the labels filter them (data engineering, cloud, aws, snowflake, core…).
+“core” marks each domain's proof; “recommended” the others most recommended in
+the field. Check prices and versions when you book.
 
-| Phase | Code | Certification | Provider | Domain |
+| Phase | Code | Certification | Provider | Domain | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | PCPP1 | [Certified Professional in Python Programming 1](https://pythoninstitute.org/pcpp1) | Python Institute | Python | languages, python, core, professional |
+| 1 | PCAP | [Certified Associate in Python Programming](https://pythoninstitute.org/pcap) | Python Institute | Python | languages, python, recommended, associate |
+| 1 | PCEP | [Certified Entry-Level Python Programmer](https://pythoninstitute.org/pcep) | Python Institute | Python | languages, python, recommended, foundational |
+| 2 | Nand2Tetris I | [Nand to Tetris, part I](https://www.coursera.org/learn/build-a-computer) | Coursera | Computer science | foundations, coursera, core, course |
+| 2 | Stanford Algorithms | [Algorithms Specialization (Stanford)](https://www.coursera.org/specializations/algorithms) | Coursera | Data structures and algorithms | foundations, coursera, core, course |
+| 2 | CLA | [C Programming Language Certified Associate](https://cppinstitute.org/cla) | C++ Institute | C and C++ | systems, c++, recommended, associate |
+| 2 | CS50x | [CS50x: Introduction to Computer Science certificate](https://cs50.harvard.edu/x/certificate/) | Harvard University (edX) | Computer science | foundations, edx, recommended, course |
+| 2 | UCSD DSA | [Data Structures and Algorithms Specialization](https://www.coursera.org/specializations/data-structures-algorithms) | UC San Diego (Coursera) | Data structures and algorithms | foundations, coursera, recommended, course |
+| 3 | LFD103 | [A Beginner's Guide to Linux Kernel Development](https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/) | The Linux Foundation | Operating systems | systems, linux foundation, core, course |
+| 3 | CPA | [C++ Certified Associate Programmer](https://cppinstitute.org/cpa) | C++ Institute | C and C++ | systems, c++, recommended, associate |
+| 3 | N10-009 | [CompTIA Network+](https://www.comptia.org/certifications/network) | CompTIA | Network | systems, comptia, recommended, associate |
+| 3 | LFD420 | [Linux Kernel Internals and Development (LFD420)](https://training.linuxfoundation.org/training/linux-kernel-internals-and-development/) | The Linux Foundation | Operating systems | systems, linux foundation, recommended, course |
+| 3 | HarvardX Stat110x | [Introduction to Probability](https://www.edx.org/learn/probability/harvard-university-introduction-to-probability) | HarvardX on edX | Probability | foundations, edx, recommended, course |
+| 4 | LPIC-1 | [LPIC-1: Linux Administrator (exams 101 and 102)](https://www.lpi.org/our-certifications/lpic-1-overview/) | Linux Professional Institute | Bash | systems, lpi, core, associate |
+| 4 | LFCS | [Linux Foundation Certified System Administrator](https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/) | The Linux Foundation | Linux | systems, linux foundation, core, associate |
+| 4 | CCNA 200-301 | [Cisco Certified Network Associate](https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html) | Cisco | Network | systems, cisco, core, associate |
+| 4 | MITx 6.431x | [Probability: the science of uncertainty and data](https://micromasters.mit.edu/ds/) | MITx on edX | Probability | foundations, edx, core, course |
+| 4 | RHCSA EX200 | [Red Hat Certified System Administrator](https://www.redhat.com/en/services/certification/rhcsa) | Red Hat | Linux | systems, red hat, recommended, associate |
+| 4 | XK0-005 | [CompTIA Linux+](https://www.comptia.org/certifications/linux) | CompTIA | Linux | systems, comptia, recommended, associate |
+| 4 | JNCIA-Junos | [Juniper Networks Certified Associate – Junos](https://www.juniper.net/us/en/training/certification/tracks/junos/jncia-junos.html) | Juniper Networks | Network | systems, juniper, recommended, associate |
+| 5 | EDB PG Associate | [EDB PostgreSQL Associate Certification](https://www.enterprisedb.com/training) | EDB | Database administration | data engineering, data, postgresql, core, associate |
+| 5 | 1Z0-071 | [Oracle Database SQL Certified Associate](https://education.oracle.com/oracle-database-sql/pexam_1Z0-071) | Oracle | Databases | data engineering, data, oracle, core, associate |
+| 5 | RFTT course | [Rust course certificate from a Rust Foundation Trusted Training provider](https://rustfoundation.org/training/) | Rust Foundation accredited trainer | Rust | languages, core, course |
+| 5 | MITx 18.6501x | [Fundamentals of Statistics](https://micromasters.mit.edu/ds/) | MITx on edX | Statistics | foundations, edx, core, course |
+| 5 | PG CE Associate | [PostgreSQL CE Certified Associate](https://postgrespro.com/education/cert) | Postgres Professional | Databases | data engineering, data, recommended, associate |
+| 6 | UIUC CCC | [Cloud Computing Concepts, parts 1 and 2](https://www.coursera.org/learn/cloud-computing) | University of Illinois (Coursera) | Data-intensive systems | data engineering, data, coursera, core, course |
+| 6 | EDB PG Professional | [EDB PostgreSQL Professional Certification](https://www.enterprisedb.com/training) | EDB | Database administration | data engineering, data, postgresql, core, professional |
+| 6 | PCDE | [Google Cloud Professional Cloud Database Engineer](https://cloud.google.com/learn/certification/cloud-database-engineer) | Google Cloud | Database architecture | data engineering, data, gcp, cloud, core, professional |
+| 6 | DP-300 | [Microsoft Certified: Azure Database Administrator Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-database-administrator-associate/) | Microsoft | Database administration | data engineering, data, azure, cloud, recommended, associate |
+| 6 | DP-420 | [Microsoft Certified: Azure Cosmos DB Developer Specialty](https://learn.microsoft.com/en-us/credentials/certifications/azure-cosmos-db-developer-specialty/) | Microsoft | Database architecture | data engineering, data, azure, cloud, recommended, specialty |
+| 6 | Elastic Certified Engineer | [Elastic Certified Engineer](https://www.elastic.co/training/elastic-certified-engineer-exam) | Elastic | NoSQL and search | data engineering, data, elastic, recommended, professional |
+| 6 | MongoDB Associate DBA | [MongoDB Associate Database Administrator](https://learn.mongodb.com/pages/mongodb-associate-database-administrator-exam) | MongoDB | NoSQL and search | data engineering, data, mongodb, recommended, associate |
+| 6 | MongoDB Associate Developer | [MongoDB Associate Developer (Python)](https://learn.mongodb.com/pages/mongodb-associate-developer-exam) | MongoDB | NoSQL and search | data engineering, data, mongodb, recommended, associate |
+| 6 | Neo4j Professional | [Neo4j Certified Professional](https://graphacademy.neo4j.com/certifications/neo4j-certification) | Neo4j | NoSQL and search | data engineering, data, neo4j, recommended, professional |
+| 7 | CCDAK | [Confluent Certified Developer for Apache Kafka](https://www.confluent.io/certification/) | Confluent | Kafka and streaming | data engineering, data, confluent, core, associate |
+| 7 | 1Z0-811 | [Oracle Certified Foundations Associate, Java](https://education.oracle.com/java-foundations/pexam_1Z0-811) | Oracle | Java | languages, oracle, recommended, foundational |
+| 7 | CCAAK | [Confluent Certified Administrator for Apache Kafka](https://www.confluent.io/certification/) | Confluent | Kafka and streaming | data engineering, data, confluent, recommended, associate |
+| 7 | CCAC | [Confluent Cloud Certified Operator](https://training.confluent.io/) | Confluent | Kafka and streaming | data engineering, data, confluent, recommended, associate |
+| 8 | dbt AE | [dbt Analytics Engineering Certification](https://www.getdbt.com/certifications) | dbt Labs | Analytics engineering | data engineering, data, dbt, core, associate |
+| 8 | Airflow Fundamentals | [Astronomer Certification for Apache Airflow Fundamentals](https://www.astronomer.io/certification/) | Astronomer | Data orchestration | data engineering, data, airflow, core, associate |
+| 8 | Spark Developer Associate | [Databricks Certified Associate Developer for Apache Spark](https://www.databricks.com/learn/certification/apache-spark-developer-associate) | Databricks | Spark and batch processing | data engineering, data, databricks, cloud, core, associate |
+| 8 | dbt Fundamentals | [dbt Fundamentals course badge](https://learn.getdbt.com/courses/dbt-fundamentals) | dbt Labs | Analytics engineering | data engineering, data, dbt, recommended, course |
+| 8 | SnowPro Core | [SnowPro Core Certification](https://learn.snowflake.com/en/certifications/snowpro-core-c03/) | Snowflake | Cloud data warehouses | data engineering, data, snowflake, cloud, recommended, associate |
+| 8 | DLAI DE Certificate | [Data Engineering Professional Certificate](https://www.coursera.org/professional-certificates/data-engineering) | DeepLearning.AI and AWS (Coursera) | Data engineering | data engineering, data, coursera, deeplearning.ai, recommended, course |
+| 8 | IBM DE Certificate | [IBM Data Engineering Professional Certificate](https://www.coursera.org/professional-certificates/ibm-data-engineer) | IBM (Coursera) | Data engineering | data engineering, data, coursera, ibm, recommended, course |
+| 8 | CIPP/E | [Certified Information Privacy Professional/Europe](https://iapp.org/certify/cippe/) | IAPP | Data governance and quality | data engineering, data, iapp, privacy, recommended, professional |
+| 8 | Airflow DAG Authoring | [Astronomer Certification: DAG Authoring for Apache Airflow](https://www.astronomer.io/certification/) | Astronomer | Data orchestration | data engineering, data, airflow, recommended, professional |
+| 8 | Dagster Essentials | [Dagster Essentials course certificate](https://courses.dagster.io/) | Dagster University | Data orchestration | data engineering, data, dagster, recommended, course |
+| 8 | DataOps Fundamentals | [DataOps Fundamentals certification](https://datakitchen.io/certifications/dataops-fundamentals/) | DataKitchen | DataOps | data engineering, data, dataops, recommended, course |
+| 8 | Databricks DE Associate | [Databricks Certified Data Engineer Associate](https://www.databricks.com/learn/certification/data-engineer-associate) | Databricks | Lakehouse platforms | data engineering, data, databricks, cloud, recommended, associate |
+| 9 | PL-300 | [Microsoft Power BI Data Analyst](https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/) | Microsoft | Data analysis | data engineering, data, azure, cloud, core, associate |
+| 9 | DP-600 | [Microsoft Certified: Fabric Analytics Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/fabric-analytics-engineer-associate/) | Microsoft | Analytics engineering | data engineering, data, azure, cloud, recommended, associate |
+| 9 | dbt Architect | [dbt Architect Certification](https://www.getdbt.com/certifications) | dbt Labs | Analytics engineering | data engineering, data, dbt, recommended, professional |
+| 9 | Databricks Data Analyst | [Databricks Certified Data Analyst Associate](https://www.databricks.com/learn/certification/data-analyst-associate) | Databricks | Business intelligence | data engineering, data, databricks, cloud, recommended, associate |
+| 9 | SnowPro Adv Analyst | [SnowPro Advanced: Data Analyst](https://learn.snowflake.com/en/certifications/snowpro-advanced-dataanalyst/) | Snowflake | Business intelligence | data engineering, data, snowflake, cloud, recommended, advanced |
+| 9 | Tableau Data Analyst | [Tableau Certified Data Analyst](https://www.tableau.com/learn/certification/data-analyst) | Tableau | Business intelligence | data engineering, data, tableau, recommended, associate |
+| 9 | Google Data Analytics | [Google Data Analytics Professional Certificate](https://www.coursera.org/professional-certificates/google-data-analytics) | Google (Coursera) | Data analysis | data engineering, data, coursera, recommended, course |
+| 9 | CDMP Associate | [Certified Data Management Professional – Associate](https://cdmp.info/) | DAMA International | Data governance and quality | data engineering, data, dama, recommended, associate |
+| 9 | CDMP Practitioner | [Certified Data Management Professional – Practitioner](https://cdmp.info/) | DAMA International | Data governance and quality | data engineering, data, dama, recommended, professional |
+| 9 | PCPP2 | [Certified Professional in Python Programming 2](https://pythoninstitute.org/pcpp2) | Python Institute | Python | languages, python, recommended, professional |
+| 9 | Google Advanced Data Analytics | [Google Advanced Data Analytics Professional Certificate](https://www.coursera.org/professional-certificates/google-advanced-data-analytics) | Google (Coursera) | Statistics | foundations, coursera, recommended, course |
+| 10 | EX188 | [Red Hat Certified Specialist in Containers](https://www.redhat.com/en/services/training/ex188-red-hat-certified-specialist-containers-exam) | Red Hat | Docker and Podman | infrastructure, red hat, core, specialist |
+| 10 | CKA | [Certified Kubernetes Administrator](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/) | The Linux Foundation | Kubernetes | infrastructure, linux foundation, core, associate |
+| 10 | CKAD | [Certified Kubernetes Application Developer](https://training.linuxfoundation.org/certification/certified-kubernetes-application-developer-ckad/) | The Linux Foundation | Kubernetes | infrastructure, linux foundation, core, associate |
+| 10 | DCA | [Docker Certified Associate](https://training.mirantis.com/certification/dca-certification-exam/) | Mirantis | Docker and Podman | infrastructure, docker, recommended, associate |
+| 10 | KCNA | [Kubernetes and Cloud Native Associate](https://training.linuxfoundation.org/certification/kubernetes-cloud-native-associate/) | The Linux Foundation | Kubernetes | infrastructure, linux foundation, recommended, foundational |
+| 10 | LPIC-2 | [LPIC-2: Linux Engineer](https://www.lpi.org/our-certifications/lpic-2-overview/) | Linux Professional Institute | Linux | systems, lpi, recommended, professional |
+| 11 | GH-200 | [GitHub Actions](https://learn.microsoft.com/en-us/credentials/certifications/github-actions/) | GitHub | DevOps | infrastructure, github, core, associate |
+| 11 | CDP | [Certified DevSecOps Professional](https://www.practical-devsecops.com/certified-devsecops-professional/) | Practical DevSecOps | DevSecOps | security, core, professional |
+| 11 | CGOA | [GitOps Certified Associate](https://www.cncf.io/training/certification/cgoa/) | The Linux Foundation | GitOps | infrastructure, linux foundation, core, associate |
+| 11 | Terraform Associate | [HashiCorp Certified: Terraform Associate](https://developer.hashicorp.com/certifications/infrastructure-automation) | HashiCorp | Infrastructure as code | infrastructure, hashicorp, core, associate |
+| 11 | CAPA | [Certified Argo Project Associate](https://training.linuxfoundation.org/certification/certified-argo-project-associate-capa/) | The Linux Foundation | GitOps | infrastructure, linux foundation, recommended, associate |
+| 11 | RHCE EX294 | [Red Hat Certified Engineer (Ansible automation)](https://www.redhat.com/en/services/certification/rhce) | Red Hat | Infrastructure as code | infrastructure, red hat, recommended, professional |
+| 11 | Terraform Professional | [HashiCorp Certified: Terraform Authoring and Operations Professional](https://developer.hashicorp.com/certifications/infrastructure-automation) | HashiCorp | Infrastructure as code | infrastructure, hashicorp, recommended, professional |
+| 11 | OTCA | [OpenTelemetry Certified Associate](https://training.linuxfoundation.org/certification/opentelemetry-certified-associate-otca/) | The Linux Foundation | Observability and SRE | infrastructure, linux foundation, recommended, associate |
+| 11 | PCA | [Prometheus Certified Associate](https://training.linuxfoundation.org/certification/prometheus-certified-associate/) | The Linux Foundation | Observability and SRE | infrastructure, linux foundation, recommended, associate |
+| 11 | SRE Foundation | [Site Reliability Engineering Foundation](https://www.devopsinstitute.com/certifications/sre-foundation/) | DevOps Institute (PeopleCert) | Observability and SRE | infrastructure, devops institute, recommended, foundational |
+| 12 | ACE | [Google Cloud Associate Cloud Engineer](https://cloud.google.com/learn/certification/cloud-engineer) | Google Cloud | Cloud | infrastructure, gcp, cloud, core, associate |
+| 12 | AZ-104 | [Microsoft Azure Administrator](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104) | Microsoft | Cloud | infrastructure, azure, cloud, core, associate |
+| 12 | SAA-C03 | [AWS Certified Solutions Architect – Associate](https://aws.amazon.com/certification/certified-solutions-architect-associate/) | Amazon Web Services | Cloud | infrastructure, aws, cloud, core, associate |
+| 12 | AZ-900 | [Microsoft Azure Fundamentals](https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/) | Microsoft | Cloud | infrastructure, azure, cloud, recommended, foundational |
+| 12 | CLF-C02 | [AWS Certified Cloud Practitioner](https://aws.amazon.com/certification/certified-cloud-practitioner/) | Amazon Web Services | Cloud | infrastructure, aws, cloud, recommended, foundational |
+| 12 | GCP CDL | [Google Cloud Digital Leader](https://cloud.google.com/learn/certification/cloud-digital-leader) | Google Cloud | Cloud | infrastructure, gcp, cloud, recommended, foundational |
+| 12 | SnowPro Adv Admin | [SnowPro Advanced: Administrator](https://learn.snowflake.com/en/certifications/snowpro-advanced-administrator-c02/) | Snowflake | Cloud data warehouses | data engineering, data, snowflake, cloud, recommended, advanced |
+| 12 | SnowPro Adv DE | [SnowPro Advanced: Data Engineer](https://learn.snowflake.com/en/certifications/snowpro-advanced-dataengineer-C02/) | Snowflake | Cloud data warehouses | data engineering, data, snowflake, cloud, recommended, advanced |
+| 12 | SnowPro Snowpark | [SnowPro Specialty: Snowpark](https://learn.snowflake.com/en/certifications/snowpro-snowpark/) | Snowflake | Cloud data warehouses | data engineering, data, snowflake, cloud, recommended, specialty |
+| 12 | DEA-C01 | [AWS Certified Data Engineer – Associate](https://aws.amazon.com/certification/certified-data-engineer-associate/) | Amazon Web Services | Data engineering | data engineering, data, aws, cloud, recommended, associate |
+| 12 | DP-900 | [Microsoft Azure Data Fundamentals](https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/) | Microsoft | Data engineering | data engineering, data, azure, cloud, recommended, foundational |
+| 12 | GCP ADP | [Google Cloud Associate Data Practitioner](https://cloud.google.com/learn/certification/data-practitioner) | Google Cloud | Data engineering | data engineering, data, gcp, cloud, recommended, associate |
+| 12 | AZ-400 | [Microsoft Certified: DevOps Engineer Expert](https://learn.microsoft.com/en-us/credentials/certifications/devops-engineer/) | Microsoft | DevOps | infrastructure, azure, cloud, recommended, expert |
+| 12 | DOP-C02 | [AWS Certified DevOps Engineer – Professional](https://aws.amazon.com/certification/certified-devops-engineer-professional/) | Amazon Web Services | DevOps | infrastructure, aws, cloud, recommended, professional |
+| 12 | GCP PCDOE | [Google Cloud Professional Cloud DevOps Engineer](https://cloud.google.com/learn/certification/cloud-devops-engineer) | Google Cloud | DevOps | infrastructure, gcp, cloud, recommended, professional |
+| 12 | DP-700 | [Microsoft Certified: Fabric Data Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/fabric-data-engineer-associate/) | Microsoft | Lakehouse platforms | data engineering, data, azure, cloud, recommended, associate |
+| 13 | MCD API Design | [MuleSoft Certified Developer – API Design Associate](https://training.mulesoft.com/exam/mcd-raml) | MuleSoft | API design | software, core, associate |
+| 13 | 1Z0-830 | [Oracle Certified Professional: Java SE 21 Developer](https://education.oracle.com/) | Oracle | Java | languages, oracle, core, professional |
+| 13 | PSD | [IEEE CS Professional Software Developer](https://www.computer.org/product/education/professional-software-developer-certification) | IEEE Computer Society | Software engineering | software, core, professional |
+| 13 | FSO | [Full Stack Open certificate](https://fullstackopen.com/en/) | University of Helsinki | Web development | software, core, course |
+| 13 | Postman API Fundamentals | [Postman API Fundamentals Student Expert](https://academy.postman.com/) | Postman | API design | software, postman, recommended, course |
+| 13 | Spring Professional | [Spring Certified Professional](https://spring.academy/) | Broadcom | Java | languages, spring, recommended, professional |
+| 13 | DVA-C02 | [AWS Certified Developer – Associate](https://aws.amazon.com/certification/certified-developer-associate/) | Amazon Web Services | Software engineering | software, aws, cloud, recommended, associate |
+| 13 | ISTQB CTFL | [ISTQB Certified Tester Foundation Level](https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/) | ISTQB | Software engineering | software, istqb, recommended, foundational |
+| 13 | Meta Front-End | [Meta Front-End Developer Professional Certificate](https://www.coursera.org/professional-certificates/meta-front-end-developer) | Meta (Coursera) | Web development | software, coursera, meta, recommended, course |
+| 13 | fCC RWD | [freeCodeCamp Responsive Web Design certification](https://www.freecodecamp.org/learn/2022/responsive-web-design/) | freeCodeCamp | Web development | software, recommended, course |
+| 14 | MITx SDS | [MicroMasters in Statistics and Data Science](https://micromasters.mit.edu/ds/) | MITx on edX | Data science | data, edx, core, course |
+| 14 | PMLE | [Google Cloud Professional Machine Learning Engineer](https://cloud.google.com/learn/certification/machine-learning-engineer) | Google Cloud | MLOps | ai, gcp, cloud, core, professional |
+| 14 | MITx 6.86x | [Machine Learning with Python](https://micromasters.mit.edu/ds/) | MITx on edX | Machine learning | ai, edx, core, course |
+| 14 | Imperial MML | [Mathematics for Machine Learning Specialization](https://www.coursera.org/specializations/mathematics-machine-learning) | Imperial College London (Coursera) | Maths | foundations, coursera, core, course |
+| 14 | DP-100 | [Microsoft Certified: Azure Data Scientist Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-data-scientist/) | Microsoft | Data science | data, azure, cloud, recommended, associate |
+| 14 | IBM Data Science | [IBM Data Science Professional Certificate](https://www.coursera.org/professional-certificates/ibm-data-science) | IBM (Coursera) | Data science | data, coursera, ibm, recommended, course |
+| 14 | SnowPro Adv DS | [SnowPro Advanced: Data Scientist](https://learn.snowflake.com/en/certifications/snowpro-advanced-datascientist) | Snowflake | Data science | data, snowflake, cloud, recommended, advanced |
+| 14 | Databricks ML Professional | [Databricks Certified Machine Learning Professional](https://www.databricks.com/learn/certification/machine-learning-professional) | Databricks | MLOps | ai, databricks, cloud, recommended, professional |
+| 14 | MLA-C01 | [AWS Certified Machine Learning Engineer – Associate](https://aws.amazon.com/certification/certified-machine-learning-engineer-associate/) | Amazon Web Services | MLOps | ai, aws, cloud, recommended, associate |
+| 14 | Databricks ML Associate | [Databricks Certified Machine Learning Associate](https://www.databricks.com/learn/certification/machine-learning-associate) | Databricks | Machine learning | ai, databricks, cloud, recommended, associate |
+| 14 | ML Specialization | [Machine Learning Specialization](https://www.coursera.org/specializations/machine-learning-introduction) | DeepLearning.AI and Stanford (Coursera) | Machine learning | ai, coursera, deeplearning.ai, recommended, course |
+| 14 | DLAI M4ML | [Mathematics for Machine Learning and Data Science Specialization](https://www.coursera.org/specializations/mathematics-for-machine-learning-and-data-science) | DeepLearning.AI (Coursera) | Maths | foundations, coursera, deeplearning.ai, recommended, course |
+| 15 | DL Specialization | [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) | DeepLearning.AI | Deep learning | ai, deeplearning.ai, core, course |
+| 15 | NVIDIA DLI FDL | [Fundamentals of Deep Learning certificate](https://www.nvidia.com/en-us/training/) | NVIDIA Deep Learning Institute | Deep learning | ai, nvidia, recommended, course |
+| 15 | AI-102 | [Microsoft Certified: Azure AI Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-engineer/) | Microsoft | Generative AI and LLM engineering | ai, azure, cloud, recommended, associate |
+| 15 | AIF-C01 | [AWS Certified AI Practitioner](https://aws.amazon.com/certification/certified-ai-practitioner/) | Amazon Web Services | Generative AI and LLM engineering | ai, aws, cloud, recommended, foundational |
+| 15 | Databricks GenAI Associate | [Databricks Certified Generative AI Engineer Associate](https://www.databricks.com/learn/certification/genai-engineer-associate) | Databricks | Generative AI and LLM engineering | ai, databricks, cloud, recommended, associate |
+| 15 | GCP GenAI Leader | [Google Cloud Generative AI Leader](https://cloud.google.com/learn/certification/generative-ai-leader) | Google Cloud | Generative AI and LLM engineering | ai, gcp, cloud, recommended, foundational |
+| 15 | NCA-GENL | [NVIDIA-Certified Associate: Generative AI LLMs](https://www.nvidia.com/en-us/learn/certification/generative-ai-llm-associate/) | NVIDIA | Generative AI and LLM engineering | ai, nvidia, recommended, associate |
+| 16 | BSCP | [Burp Suite Certified Practitioner](https://portswigger.net/web-security/certification) | PortSwigger | Cybersecurity | security, portswigger, core, practitioner |
+| 16 | OSCP+ | [OffSec Certified Professional+](https://www.offsec.com/courses/pen-200/) | OffSec | Cybersecurity | security, offsec, core, professional |
+| 16 | CKS | [Certified Kubernetes Security Specialist](https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/) | The Linux Foundation | Kubernetes | infrastructure, linux foundation, core, specialist |
+| 16 | AWS Security Specialty | [AWS Certified Security – Specialty](https://aws.amazon.com/certification/certified-security-specialty/) | Amazon Web Services | Cybersecurity | security, aws, cloud, recommended, specialty |
+| 16 | AZ-500 | [Microsoft Certified: Azure Security Engineer Associate](https://learn.microsoft.com/en-us/credentials/certifications/azure-security-engineer/) | Microsoft | Cybersecurity | security, azure, cloud, recommended, associate |
+| 16 | GCP PCSE | [Google Cloud Professional Cloud Security Engineer](https://cloud.google.com/learn/certification/cloud-security-engineer) | Google Cloud | Cybersecurity | security, gcp, cloud, recommended, professional |
+| 16 | ISC2 CC | [ISC2 Certified in Cybersecurity](https://www.isc2.org/certifications/cc) | ISC2 | Cybersecurity | security, isc2, recommended, foundational |
+| 16 | SY0-701 | [CompTIA Security+](https://www.comptia.org/certifications/security) | CompTIA | Cybersecurity | security, comptia, recommended, associate |
+| 16 | GCSA | [GIAC Cloud Security Automation](https://www.giac.org/certifications/cloud-security-automation-gcsa/) | GIAC | DevSecOps | security, giac, recommended, professional |
+| 16 | ANS-C01 | [AWS Certified Advanced Networking – Specialty](https://aws.amazon.com/certification/certified-advanced-networking-specialty/) | Amazon Web Services | Network | systems, aws, cloud, recommended, specialty |
+| 17 | CPP | [C++ Certified Professional Programmer](https://cppinstitute.org/cpp) | C++ Institute | C and C++ | systems, c++, core, professional |
+| 17 | Nand2Tetris II | [Nand to Tetris, part II](https://www.coursera.org/learn/nand2tetris2) | Coursera | Computer science | foundations, coursera, recommended, course |
+| 18 | PDE | [Google Cloud Professional Data Engineer](https://cloud.google.com/learn/certification/data-engineer) | Google Cloud | Data engineering | data engineering, data, gcp, cloud, core, professional |
+| 18 | SAP-C02 | [AWS Certified Solutions Architect – Professional](https://aws.amazon.com/certification/certified-solutions-architect-professional/) | Amazon Web Services | System design | software, aws, cloud, core, professional |
+| 18 | GCP PCA | [Google Cloud Professional Cloud Architect](https://cloud.google.com/learn/certification/cloud-architect) | Google Cloud | Cloud | infrastructure, gcp, cloud, recommended, professional |
+| 18 | SnowPro Adv Architect | [SnowPro Advanced: Architect](https://learn.snowflake.com/en/certifications/snowpro-advanced-architect/) | Snowflake | Cloud data warehouses | data engineering, data, snowflake, cloud, recommended, advanced |
+| 18 | Databricks DE Professional | [Databricks Certified Data Engineer Professional](https://www.databricks.com/learn/certification/data-engineer-professional) | Databricks | Lakehouse platforms | data engineering, data, databricks, cloud, recommended, professional |
+| 18 | AZ-305 | [Microsoft Certified: Azure Solutions Architect Expert](https://learn.microsoft.com/en-us/credentials/certifications/azure-solutions-architect/) | Microsoft | System design | software, azure, cloud, recommended, expert |
+| 18 | TOGAF Foundation | [TOGAF Enterprise Architecture Foundation](https://www.opengroup.org/certifications/togaf) | The Open Group | System design | software, togaf, recommended, foundational |
+
+## Portfolio projects
+
+Beside each phase's own project, these show the work behind the exams; each is
+shipped by the end of its phase.
+
+| Phase | Project | Outcome | Domains | Area |
 | --- | --- | --- | --- | --- |
-| 1 | PCPP1 | [Certified Professional in Python Programming 1](https://pythoninstitute.org/pcpp1) | Python Institute | Python |
-| 2 | Stanford Algorithms | [Algorithms Specialization (Stanford)](https://www.coursera.org/specializations/algorithms) | Coursera | Data structures and algorithms |
-| 2 | Nand2Tetris I | [Nand to Tetris, part I](https://www.coursera.org/learn/build-a-computer) | Coursera | Computer science |
-| 3 | LFD103 | [A Beginner's Guide to Linux Kernel Development](https://training.linuxfoundation.org/training/a-beginners-guide-to-linux-kernel-development-lfd103/) | The Linux Foundation | Operating systems |
-| 4 | MITx 6.431x | [Probability: the science of uncertainty and data](https://micromasters.mit.edu/ds/) | MITx on edX | Probability |
-| 4 | LFCS | [Linux Foundation Certified System Administrator](https://training.linuxfoundation.org/certification/linux-foundation-certified-sysadmin-lfcs/) | The Linux Foundation | Linux |
-| 4 | CCNA 200-301 | [Cisco Certified Network Associate](https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html) | Cisco | Network |
-| 4 | LPIC-1 | [LPIC-1: Linux Administrator (exams 101 and 102)](https://www.lpi.org/our-certifications/lpic-1-overview/) | Linux Professional Institute | Bash |
-| 5 | RFTT course | [Rust course certificate from a Rust Foundation Trusted Training provider](https://rustfoundation.org/training/) | Rust Foundation accredited trainer | Rust |
-| 5 | 1Z0-071 | [Oracle Database SQL Certified Associate](https://education.oracle.com/oracle-database-sql/pexam_1Z0-071) | Oracle | Databases |
-| 5 | EDB PG Associate | [EDB PostgreSQL Associate Certification](https://www.enterprisedb.com/training) | EDB | Database administration |
-| 5 | MITx 18.6501x | [Fundamentals of Statistics](https://micromasters.mit.edu/ds/) | MITx on edX | Statistics |
-| 6 | EDB PG Professional | [EDB PostgreSQL Professional Certification](https://www.enterprisedb.com/training) | EDB | Database administration |
-| 6 | UIUC CCC | [Cloud Computing Concepts, parts 1 and 2](https://www.coursera.org/learn/cloud-computing) | University of Illinois (Coursera) | Data-intensive systems |
-| 6 | PCDE | [Google Cloud Professional Cloud Database Engineer](https://cloud.google.com/learn/certification/cloud-database-engineer) | Google Cloud | Database architecture |
-| 7 | CCDAK | [Confluent Certified Developer for Apache Kafka](https://www.confluent.io/certification/) | Confluent | Kafka and streaming |
-| 8 | Spark Developer Associate | [Databricks Certified Associate Developer for Apache Spark](https://www.databricks.com/learn/certification/apache-spark-developer-associate) | Databricks | Spark and batch processing |
-| 8 | dbt AE | [dbt Analytics Engineering Certification](https://www.getdbt.com/certifications) | dbt Labs | DataOps |
-| 8 | Airflow Fundamentals | [Astronomer Certification for Apache Airflow Fundamentals](https://www.astronomer.io/certification/) | Astronomer | DataOps |
-| 9 | PL-300 | [Microsoft Power BI Data Analyst](https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/) | Microsoft | Data analysis |
-| 10 | EX188 | [Red Hat Certified Specialist in Containers](https://www.redhat.com/en/services/training/ex188-red-hat-certified-specialist-containers-exam) | Red Hat | Docker and Podman |
-| 10 | CKAD | [Certified Kubernetes Application Developer](https://training.linuxfoundation.org/certification/certified-kubernetes-application-developer-ckad/) | The Linux Foundation | Kubernetes |
-| 10 | CKA | [Certified Kubernetes Administrator](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/) | The Linux Foundation | Kubernetes |
-| 11 | Terraform Associate | [HashiCorp Certified: Terraform Associate](https://developer.hashicorp.com/certifications/infrastructure-automation) | HashiCorp | DevOps |
-| 11 | GH-200 | [GitHub Actions](https://learn.microsoft.com/en-us/credentials/certifications/github-actions/) | GitHub | DevOps |
-| 11 | CGOA | [GitOps Certified Associate](https://www.cncf.io/training/certification/cgoa/) | The Linux Foundation | GitOps |
-| 11 | CDP | [Certified DevSecOps Professional](https://www.practical-devsecops.com/certified-devsecops-professional/) | Practical DevSecOps | DevSecOps |
-| 12 | SAA-C03 | [AWS Certified Solutions Architect – Associate](https://aws.amazon.com/certification/certified-solutions-architect-associate/) | Amazon Web Services | Cloud |
-| 12 | ACE | [Google Cloud Associate Cloud Engineer](https://cloud.google.com/learn/certification/cloud-engineer) | Google Cloud | Cloud |
-| 12 | AZ-104 | [Microsoft Azure Administrator](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104) | Microsoft | Cloud |
-| 13 | 1Z0-830 | [Oracle Certified Professional: Java SE 21 Developer](https://education.oracle.com/) | Oracle | Java |
-| 13 | FSO | [Full Stack Open certificate](https://fullstackopen.com/en/) | University of Helsinki | Web development |
-| 13 | PSD | [IEEE CS Professional Software Developer](https://www.computer.org/product/education/professional-software-developer-certification) | IEEE Computer Society | Software engineering |
-| 13 | MCD API Design | [MuleSoft Certified Developer – API Design Associate](https://training.mulesoft.com/exam/mcd-raml) | MuleSoft | API design |
-| 14 | Imperial MML | [Mathematics for Machine Learning Specialization](https://www.coursera.org/specializations/mathematics-machine-learning) | Imperial College London (Coursera) | Maths |
-| 14 | MITx 6.86x | [Machine Learning with Python](https://micromasters.mit.edu/ds/) | MITx on edX | Machine learning |
-| 14 | MITx SDS | [MicroMasters in Statistics and Data Science](https://micromasters.mit.edu/ds/) | MITx on edX | Data science |
-| 14 | PMLE | [Google Cloud Professional Machine Learning Engineer](https://cloud.google.com/learn/certification/machine-learning-engineer) | Google Cloud | MLOps |
-| 15 | DL Specialization | [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) | DeepLearning.AI | Deep learning |
-| 16 | BSCP | [Burp Suite Certified Practitioner](https://portswigger.net/web-security/certification) | PortSwigger | Cybersecurity |
-| 16 | CKS | [Certified Kubernetes Security Specialist](https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/) | The Linux Foundation | Kubernetes |
-| 16 | OSCP+ | [OffSec Certified Professional+](https://www.offsec.com/courses/pen-200/) | OffSec | Cybersecurity |
-| 17 | CPP | [C++ Certified Professional Programmer](https://cppinstitute.org/cpp) | C++ Institute | C and C++ |
-| 18 | SAP-C02 | [AWS Certified Solutions Architect – Professional](https://aws.amazon.com/certification/certified-solutions-architect-professional/) | Amazon Web Services | System design |
-| 18 | PDE | [Google Cloud Professional Data Engineer](https://cloud.google.com/learn/certification/data-engineer) | Google Cloud | Data engineering |
+| 8 | Batch ELT with dbt and DuckDB | A source → raw → staging → marts pipeline on DuckDB with dbt: Kimball marts, tests, docs, and a CI that builds every pull request. | Analytics engineering, Data orchestration | Data platforms |
+| 7 | Real-time CDC: PostgreSQL → Debezium → Kafka → Flink → Iceberg | Change data capture from PostgreSQL into Iceberg tables in under a minute, exactly once, with schema evolution and a replay drill. | Kafka and streaming, Lakehouse platforms | Data platforms |
+| 8 | A medallion lakehouse on Delta and Databricks | Bronze, silver, and gold layers on Delta Lake with Auto Loader, expectations, Unity Catalog permissions, and compaction jobs. | Lakehouse platforms, Spark and batch processing | Data platforms |
+| 8 | Data contracts and quality gates | Contracts in the Open Data Contract Standard, Great Expectations checks, OpenLineage lineage, and a CI that blocks a breaking change. | Data governance and quality, DataOps | Data platforms |
+| 9 | A semantic layer and three dashboards | dbt metrics behind Superset or Power BI dashboards for three real questions, each with its decision and its owner. | Business intelligence, Analytics engineering | Data platforms |
+| 9 | My own finance data: bank CSV → dbt → dashboard | Axon's Budget exports and bank statements loaded, categorised, and modelled with dbt, with a monthly spending dashboard by category. | Analytics engineering, Business intelligence, Data analysis | Data platforms |
+| 12 | A data platform on Snowflake | Snowpipe ingestion, streams and tasks, Snowpark transformations, role-based access, and a weekly cost report with resource monitors. | Cloud data warehouses, Infrastructure as code | Data platforms |
+| 12 | The same model on BigQuery | The dbt project of elt-dbt-duckdb run on BigQuery with partitioning and clustering, and a cost and speed comparison with Snowflake. | Cloud data warehouses, Cloud | Data platforms |
+| 12 | The cloud data platform as code | Terraform modules that create and destroy the whole platform (network, storage, warehouse, orchestration), with Checkov policies in CI. | Infrastructure as code, Cloud, DevOps | Infrastructure and DevOps |
+| 11 | SLOs for the pipelines | Prometheus, Grafana, Loki, and OpenTelemetry on the platform: freshness and latency SLOs with error budgets, alerts, and a postmortem template. | Observability and SRE, DevOps | Observability and reliability |
+| 6 | A search engine over the tech watch | OpenSearch indexing of the tech watch with BM25 and vector search, synonyms, and relevance measured on 50 judged queries. | NoSQL and search, Data-intensive systems | Data |
+| 6 | A tech knowledge graph in Neo4j | The tech watch's entities and facts loaded into Neo4j, with Cypher queries for questions such as “which tools integrate with Iceberg?”. | NoSQL and search, Database architecture | Data |
+| 15 | A RAG assistant over my notes | pgvector embeddings of the vault, retrieval with reranking, an evaluation set of 100 questions, prompt-injection tests, and cost per answer. | Generative AI and LLM engineering, MLOps | Generative AI |
+| 18 | An LLM agent with tools, evaluated | An agent that answers data questions through SQL and the catalog, with tool permissions, traces, and a regression suite. | Generative AI and LLM engineering, Data engineering | Generative AI |
+| 14 | An ML pipeline with a feature store | Features computed once for training and serving, an MLflow model registry, a canary deploy, and drift monitoring. | MLOps, Machine learning | AI and machine learning |
+| 16 | A secure software supply chain | SBOMs, cosign signatures, SLSA provenance, and admission policies so only signed images run on the cluster. | DevSecOps, Kubernetes | Security |
+| 6 | A Raft key-value store | The MIT 6.5840 labs, then a linearizable key-value store tested with Jepsen-style fault injection. | Data-intensive systems, System design | Data |
+| 18 | Five merged pull requests in data open source | Contributions to projects such as dbt, Airflow, DuckDB, Iceberg, or OpenLineage, each with its issue, review, and release note. | Data engineering, Code review and open source | Portfolio and open source |
 
 ## Constraints
 
@@ -552,3 +686,8 @@ blocks on the calendar for the phase each day falls in.
   DevSecOps each get their own track), 18 phases from Monday
   2026-10-19, a certification or verifiable proof per domain (45
   certifications), a harder skills assessment
+- 2026-10-18 v3: 47 domains (analytics engineering, cloud data warehouses,
+  lakehouse platforms, data orchestration, data governance and quality,
+  infrastructure as code, observability and SRE, generative AI and LLM
+  engineering, business intelligence, NoSQL and search), 141 certifications
+  with labels, 231 resources, 18 portfolio projects, 19 areas

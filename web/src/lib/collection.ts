@@ -10,6 +10,8 @@ export type Card = {
 		| 'roadmap'
 		| 'project'
 		| 'goal'
+		| 'cert'
+		| 'resource'
 		| 'practice'
 		| 'focus'
 		| 'reviews'
@@ -31,7 +33,7 @@ export type Card = {
 const tierNames: Record<string, string> = { bronze: 'bronze', silver: 'silver', gold: 'gold' };
 
 /** Cards named after one of the person's items (EP-170). */
-const own = ['skill', 'habit', 'roadmap', 'project', 'goal'];
+const own = ['skill', 'habit', 'roadmap', 'project', 'goal', 'cert', 'resource'];
 
 /** A skill's, habit's, roadmap's, project's, or goal's own name; the others by what they count. */
 export function cardName(c: Card): string {
@@ -70,6 +72,14 @@ export function nextStep(c: Card): string {
 			return t('{target} % of its cards done for {tier}', { target: c.next.target, tier });
 		case 'goal':
 			return t('{target} % of its milestones reached for {tier}', { target: c.next.target, tier });
+		case 'cert':
+			return [
+				t('Book the exam for {tier}', { tier }),
+				t('Pass it for {tier}', { tier }),
+				t('Link its credential for {tier}', { tier })
+			][c.next.target - 1];
+		case 'resource':
+			return t('{n} more notes taken from it for {tier}', { n, tier });
 		case 'milestones':
 			return t('{n} more milestones reached for {tier}', { n, tier });
 		case 'projects':
@@ -111,6 +121,12 @@ export function groups(cards: Card[]) {
 		{ id: 'goals', title: t('Goals'), cards: cards.filter((c) => c.family === 'goal') },
 		{ id: 'projects', title: t('Projects'), cards: cards.filter((c) => c.family === 'project') },
 		{ id: 'habits', title: t('Habit cards'), cards: cards.filter((c) => c.family === 'habit') },
+		{ id: 'certs', title: t('Certifications'), cards: cards.filter((c) => c.family === 'cert') },
+		{
+			id: 'resources',
+			title: t('Roadmap resources'),
+			cards: cards.filter((c) => c.family === 'resource')
+		},
 		{
 			id: 'milestones',
 			title: t('Milestones'),
@@ -133,6 +149,14 @@ export function achievement(c: Card): string {
 			return t('{n} % of a project of my roadmap done.', { n });
 		case 'goal':
 			return t('{n} % of the way to a goal of mine.', { n });
+		case 'cert':
+			return [
+				t('A certification exam booked.'),
+				t('A certification passed.'),
+				t('A certification passed, its credential linked.')
+			][Math.max(0, n - 1)];
+		case 'resource':
+			return t('{n} notes taken from a resource of my roadmap.', { n });
 		case 'milestones':
 			return t('{n} milestones reached.', { n });
 		case 'projects':
