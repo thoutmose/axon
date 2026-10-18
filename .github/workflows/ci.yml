@@ -4,13 +4,15 @@ name: ci
 # no Actions minutes. Its Docker bridge networks have no internet: builds and
 # downloads use the host's network, and the e2e stack runs as its own compose
 # project on port 3200, beside the demo on 3000. Pull requests that only
-# change documentation skip CI; images are built, scanned, and described
-# (SBOM) on pushes to main and dev, where deploy.sh requires a green run.
+# change documentation skip CI, and pull requests from forks never run on
+# the self-hosted runner (the repository is public). Images are built,
+# scanned, and described (SBOM) on pushes to main, where deploy.sh requires
+# a green run.
 on:
   pull_request:
     paths-ignore: ["**/*.md", "doc/**", "LICENSE"]
   push:
-    branches: [main, dev]
+    branches: [main]
 
 permissions:
   contents: read
@@ -21,8 +23,8 @@ concurrency:
 
 jobs:
   api:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     services:
@@ -61,8 +63,8 @@ jobs:
         run: go clean -cache -testcache
 
   web:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     defaults:
@@ -84,8 +86,8 @@ jobs:
       - run: npm run build
 
   spec:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 5
     steps:
@@ -98,8 +100,8 @@ jobs:
         run: sh scripts/check-readme.sh
 
   anki:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 10
     steps:
@@ -113,8 +115,8 @@ jobs:
         run: sh scripts/check-anki-sync.sh
 
   e2e:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 30
     env:
@@ -152,8 +154,8 @@ jobs:
           docker builder prune -af
 
   secrets:
-    # dev's own pushes run CI; its pull request to main would repeat the same run.
-    if: github.event_name == 'push' || github.head_ref != 'dev'
+    # Never a fork's pull request: the runner is a server of ours (public repository).
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, srv-dev]
     timeout-minutes: 5
     steps:
