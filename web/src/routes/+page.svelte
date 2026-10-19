@@ -29,48 +29,86 @@
 		}
 	}
 
+	// One section per part of life, each with a page of the demo; `tone` picks its colour field.
 	const features = $derived([
 		{
+			id: 'today',
+			tone: 'goals',
+			title: t('Your day, at a glance.'),
+			text: t(
+				'Tasks due, habits, goals, and a daily check-in on one page, with the next step of your roadmap.'
+			),
+			shot: t('Today: tasks, habits, and goals for the day')
+		},
+		{
+			id: 'roadmap',
+			tone: 'agents',
+			title: t('Your own roadmap.'),
+			text: t(
+				'Set up a personal roadmap for your self-learning journey: domains, certifications, projects, and a radar of your hard and soft skills.'
+			),
+			shot: t('The roadmap: hard and soft skills, domain by domain')
+		},
+		{
+			id: 'learn',
+			tone: 'goals',
+			title: t('Learn so it sticks.'),
+			text: t(
+				'Flashcards with spaced repetition, free recall, memory palaces, and weekly tests, in sync with Anki.'
+			),
+			shot: t('Learn: flashcards, recall, and memory palaces')
+		},
+		{
+			id: 'tasks',
+			tone: 'tasks',
+			title: t('Work, made calm.'),
+			text: t(
+				'Capture anything with one key. Board, GTD, and calendar views, reminders, and focus sessions.'
+			),
+			shot: t('Tasks on a board')
+		},
+		{
+			id: 'health',
+			tone: 'habits',
+			title: t('Body and mind.'),
+			text: t(
+				'Mood and energy, water, coffee and tea, meals from a photo, training, and habits backed by evidence.'
+			),
+			shot: t('Health: mood, water, and caffeine')
+		},
+		{
+			id: 'decisions',
+			tone: 'tasks',
+			title: t('Decide better, spend wisely.'),
+			text: t(
+				'Budgets, accounts, and recurring transactions in clear charts, and decisions you can check against what happened.'
+			),
+			shot: t('Decisions: how well your forecasts came true')
+		},
+		{
+			id: 'watch',
+			tone: 'notes',
+			title: t('The world, digested.'),
+			text: t(
+				'A tech watch from feeds, YouTube, and podcasts, summed up, drawn as a graph, and read aloud. And your collection of books, films, and games.'
+			),
+			shot: t('The tech watch')
+		},
+		{
 			id: 'notes',
+			tone: 'notes',
 			title: t('Notes that connect.'),
 			text: t(
 				'Plain Markdown with [[wikilinks]], backlinks, and PARA folders. Your vault stays yours and syncs both ways.'
 			),
-			tiles: [t('Zettel/permanent/proofs.md'), t('[[induction]] · 3 backlinks'), '2-Areas/maths']
-		},
-		{
-			id: 'tasks',
-			title: t('Work, made calm.'),
-			text: t(
-				'Capture anything with one key. Today, week, and GTD views, repeating tasks, and a daily check-in.'
-			),
-			tiles: [
-				t('☐ Call the plumber · @phone'),
-				t('☐ Renew passport · due Friday'),
-				t('☑ Stretch for ten minutes')
-			]
-		},
-		{
-			id: 'goals',
-			title: t('Goals you can explain.'),
-			text: t(
-				'Milestones, linked tasks, and habits. Every progress figure shows exactly how it was worked out.'
-			),
-			tiles: [t('Learn to swim 1 km'), '■■■■■□□□□□ 50%', t('2 of 4 milestones and tasks done')]
-		},
-		{
-			id: 'habits',
-			title: t('Habits without guilt.'),
-			text: t(
-				'A cue, a stack, and a two-minute version for hard days. Miss one, and Axon helps you start again.'
-			),
-			tiles: [t('After I pour my coffee'), t('Read one page'), t('Never miss twice')]
+			shot: t('Notes as a knowledge graph')
 		},
 		{
 			id: 'agents',
+			tone: 'agents',
 			title: t('AI that asks first.'),
 			text: t(
-				'Agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.'
+				'Jarvis and agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.'
 			),
 			tiles: [t('Proposal · status → next'), t('Approve   Reject'), t('Budget $2.00 · spent $0.12')]
 		}
@@ -87,7 +125,7 @@
 		<h1 id="hero-title">{t('Your life,')}<br />{t('connected.')}</h1>
 		<p class="lead">
 			{t(
-				'Notes, tasks, goals, habits, and reflection in one calm graph that runs on your own server.'
+				'Your plan, learning, health, money, and notes in one calm system that runs on your own server.'
 			)}
 		</p>
 		{#if status && !status.signed_in}
@@ -138,11 +176,25 @@
 				<h2 id="f-{f.id}">{t(f.title)}</h2>
 				<p>{t(f.text)}</p>
 			</div>
-			<div class="stage {f.id}" aria-hidden="true">
-				<div class="visual glass">
-					{#each f.tiles as tileText (tileText)}<div class="tile">{tileText}</div>{/each}
+			{#if f.shot}
+				<div class="stage {f.tone}">
+					<img
+						class="shot"
+						src="/teaser/pages/{f.id}.jpg"
+						alt={f.shot}
+						width="1440"
+						height="900"
+						loading="lazy"
+						decoding="async"
+					/>
 				</div>
-			</div>
+			{:else}
+				<div class="stage {f.tone}" aria-hidden="true">
+					<div class="visual glass">
+						{#each f.tiles ?? [] as tileText (tileText)}<div class="tile">{tileText}</div>{/each}
+					</div>
+				</div>
+			{/if}
 		</section>
 	{/each}
 </div>
@@ -253,8 +305,11 @@
 		gap: var(--space-8);
 		align-items: center;
 	}
-	.feature.flip .copy {
-		order: 2;
+	/* Alternate sides only side by side: in one column, each text stays above its picture. */
+	@media (min-width: 48rem) {
+		.feature.flip .copy {
+			order: 2;
+		}
 	}
 	.feature h2 {
 		font-size: var(--text-3xl);
@@ -321,6 +376,14 @@
 		padding: var(--space-6);
 		display: grid;
 		gap: var(--space-3);
+	}
+	.shot {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius-xl);
+		border: 1px solid var(--border);
+		box-shadow: var(--shadow);
 	}
 	.tile {
 		background: var(--surface-solid);

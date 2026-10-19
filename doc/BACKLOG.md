@@ -222,6 +222,7 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-171 | More projects and milestones in the plan | A milestone per domain under its group's goal, and a portfolio project per group of domains with each domain's proof and the group's exams, created at the start and added to a plan started earlier. | MUST | 5 pts | EP-166 | Done |
 | EP-172 | Jarvis, nicer to use | A larger, clearer panel: suggestions to start, a conversation that reads well, proposals to approve in place, keyboard and mobile friendly. | MUST | 3 pts | EP-153 | Done |
 | EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Done |
+| EP-174 | The home page, the whole of Axon | The signed-out home page shows every part of life Axon covers, each with a page of the demo, not only notes; the trailer is one 4K film. | MUST | 3 pts | EP-173 | Done |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -258,7 +259,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-173 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-174 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2587,6 +2588,15 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 - [x] **EP-173/IS-173.01** · 2 pts · MUST — The trailer opens on "Learn anything. Your way.", calls Axon the self-hosted life OS for self-learners, and its roadmap scene says "Your own roadmap: set up a personal roadmap for your self-learning journey"; a new scene, "Grow hard and soft skills", shows the radar by domain; the collection's scene names trophies for roadmaps, goals, projects, and habits. No counts remain. The film is 1920×1080 instead of 1280×720 (screenshots at twice the pixels and JPEG quality 95, frames at 97, VP9 CRF 30 and H.264 CRF 20), 76 seconds, about 18 MB in each format; the captions in English and French follow.
 
+### EP-174 — The home page, the whole of Axon
+
+**Goal.** "When someone comes to the main page for the first time, without an account, it only explains the note-taking part: it looks like a simple note-taking app" (owner, 2026-10-19). The owner chose a whole-life OS as the message, shown with real screenshots; and one trailer, the 4K film, on the site and on GitHub.
+
+- [x] **EP-174/IS-174.01** · 1 pt · MUST — One trailer: the home page, the README, and the feature docs play `web/static/teaser/axon-trailer-4k.mp4`, the 4K film that is also the release asset; the 1080p copies are gone, and `make-trailer.sh` writes the film there.
+- [x] **EP-174/IS-174.02** · 2 pts · MUST — The home page says "Your plan, learning, health, money, and notes in one calm system that runs on your own server", then one section per part of life, each with a page of the demo from the gallery (served from `/teaser/pages/`, which the offline shell leaves out, loaded lazily): your day, your own roadmap, learning, tasks, body and mind, decisions and money, the tech watch and the collection, notes, and AI that asks first. In English and French; on a phone each text stays above its picture.
+
+**Tests.** The home page e2e test finds the roadmap's picture by its name and gets each of the eight pictures and the film; the French coverage test holds every new string.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2818,6 +2828,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-11 | EP-39 delivered from the parallel branch: accounts, transfers, budgets, tags, recurring transactions, rules, CSV import, and reports. Budget is in the main nav. |
 | 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
+| 2026-10-19 | Owner request: added EP-174 (the home page shows the whole of Axon with screenshots, and one 4K trailer), after EP-173. |
 
 ## Standard issue evidence template
 

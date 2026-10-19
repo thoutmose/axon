@@ -45,8 +45,8 @@ export const fr: Record<string, string> = {
 	'Self-hosted life OS': 'Système de vie auto-hébergé',
 	'Your life,': 'Votre vie,',
 	'connected.': 'connectée.',
-	'Notes, tasks, goals, habits, and reflection in one calm graph that runs on your own server.':
-		'Notes, tâches, objectifs, habitudes et réflexion dans un graphe apaisé, sur votre propre serveur.',
+	'Your plan, learning, health, money, and notes in one calm system that runs on your own server.':
+		'Votre plan, votre apprentissage, votre santé, votre argent et vos notes dans un seul système apaisé, sur votre propre serveur.',
 	'Sign in': 'Se connecter',
 	'Create your account': 'Créer votre compte',
 	'Accounts on this Axon are by invitation. Axon is free software: run your own from GitHub.':
@@ -57,21 +57,45 @@ export const fr: Record<string, string> = {
 		'Un tour de la démo, en musique composée par Axon.',
 	'The demo is a shared account with sample data, reset every night. No passkey needed.':
 		'La démo est un compte partagé avec des données d’exemple, remis à zéro chaque nuit. Aucune clé d’accès nécessaire.',
+	'Your day, at a glance.': 'Votre journée, d’un coup d’œil.',
+	'Tasks due, habits, goals, and a daily check-in on one page, with the next step of your roadmap.':
+		'Tâches à faire, habitudes, objectifs et bilan quotidien sur une seule page, avec la prochaine étape de votre parcours.',
+	'Today: tasks, habits, and goals for the day':
+		'Aujourd’hui : les tâches, habitudes et objectifs du jour',
+	'Your own roadmap.': 'Votre propre parcours.',
+	'Set up a personal roadmap for your self-learning journey: domains, certifications, projects, and a radar of your hard and soft skills.':
+		'Construisez un parcours personnel pour apprendre en autodidacte : domaines, certifications, projets et un radar de vos compétences techniques et humaines.',
+	'The roadmap: hard and soft skills, domain by domain':
+		'Le parcours : compétences techniques et humaines, domaine par domaine',
+	'Learn so it sticks.': 'Apprendre pour retenir.',
+	'Flashcards with spaced repetition, free recall, memory palaces, and weekly tests, in sync with Anki.':
+		'Cartes mémoire en répétition espacée, rappel libre, palais de mémoire et tests hebdomadaires, synchronisés avec Anki.',
+	'Learn: flashcards, recall, and memory palaces':
+		'Apprendre : cartes mémoire, rappel et palais de mémoire',
+	'Work, made calm.': 'Le travail, apaisé.',
+	'Capture anything with one key. Board, GTD, and calendar views, reminders, and focus sessions.':
+		'Capturez tout en une touche. Vues tableau, GTD et calendrier, rappels et sessions de concentration.',
+	'Tasks on a board': 'Les tâches sur un tableau',
+	'Body and mind.': 'Le corps et l’esprit.',
+	'Mood and energy, water, coffee and tea, meals from a photo, training, and habits backed by evidence.':
+		'Humeur et énergie, eau, café et thé, repas d’après une photo, entraînement et habitudes fondées sur des preuves.',
+	'Health: mood, water, and caffeine': 'Santé : humeur, eau et caféine',
+	'Decide better, spend wisely.': 'Mieux décider, bien dépenser.',
+	'Budgets, accounts, and recurring transactions in clear charts, and decisions you can check against what happened.':
+		'Budgets, comptes et opérations récurrentes en graphiques clairs, et des décisions que vous confrontez à ce qui s’est passé.',
+	'Decisions: how well your forecasts came true':
+		'Décisions : à quel point vos prévisions se sont réalisées',
+	'The world, digested.': 'Le monde, résumé.',
+	'A tech watch from feeds, YouTube, and podcasts, summed up, drawn as a graph, and read aloud. And your collection of books, films, and games.':
+		'Une veille technologique tirée de flux, de YouTube et de podcasts, résumée, dessinée en graphe et lue à voix haute. Et votre collection de livres, de films et de jeux.',
+	'The tech watch': 'La veille technologique',
 	'Notes that connect.': 'Des notes qui se relient.',
 	'Plain Markdown with [[wikilinks]], backlinks, and PARA folders. Your vault stays yours and syncs both ways.':
 		'Du Markdown simple avec [[liens wiki]], rétroliens et dossiers PARA. Votre coffre reste à vous et se synchronise dans les deux sens.',
-	'Work, made calm.': 'Le travail, apaisé.',
-	'Capture anything with one key. Today, week, and GTD views, repeating tasks, and a daily check-in.':
-		'Capturez tout en une touche. Vues Aujourd’hui, semaine et GTD, tâches récurrentes et bilan quotidien.',
-	'Goals you can explain.': 'Des objectifs que l’on explique.',
-	'Milestones, linked tasks, and habits. Every progress figure shows exactly how it was worked out.':
-		'Jalons, tâches liées et habitudes. Chaque progression montre exactement comment elle est calculée.',
-	'Habits without guilt.': 'Des habitudes sans culpabilité.',
-	'A cue, a stack, and a two-minute version for hard days. Miss one, and Axon helps you start again.':
-		'Un déclencheur, un enchaînement et une version de deux minutes pour les jours difficiles. Un oubli ? Axon vous aide à reprendre.',
+	'Notes as a knowledge graph': 'Les notes en graphe de connaissances',
 	'AI that asks first.': 'Une IA qui demande d’abord.',
-	'Agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.':
-		'Des agents sur le fournisseur de votre choix, ou un modèle sur votre matériel. Chaque modification attend votre approbation.',
+	'Jarvis and agents on the provider you choose, or a model on your own hardware. Every change waits for your approval.':
+		'Jarvis et des agents sur le fournisseur de votre choix, ou un modèle sur votre matériel. Chaque modification attend votre approbation.',
 	// Sign-in and registration
 	'Use the passkey on this device or your phone.':
 		'Utilisez la clé d’accès de cet appareil ou de votre téléphone.',
@@ -2298,13 +2322,6 @@ export const fr: Record<string, string> = {
 	'{n} waiting.': '{n} en attente.',
 	"Axon's server is not responding. Your data is safe; try again shortly.":
 		'Le serveur d’Axon ne répond pas. Vos données sont en sécurité ; réessayez dans un instant.',
-	'[[induction]] · 3 backlinks': '[[récurrence]] · 3 rétroliens',
-	'☐ Call the plumber · @phone': '☐ Appeler le plombier · @téléphone',
-	'☐ Renew passport · due Friday': '☐ Renouveler le passeport · pour vendredi',
-	'☑ Stretch for ten minutes': '☑ M’étirer dix minutes',
-	'Learn to swim 1 km': 'Nager 1 km',
-	'2 of 4 milestones and tasks done': '2 jalons et tâches faits sur 4',
-	'Never miss twice': 'Ne jamais manquer deux fois',
 	'Proposal · status → next': 'Proposition · statut → prochaine',
 	'Approve   Reject': 'Approuver   Refuser',
 	'Budget $2.00 · spent $0.12': 'Budget 2,00 $ · dépensé 0,12 $',

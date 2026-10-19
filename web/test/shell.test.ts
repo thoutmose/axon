@@ -96,6 +96,21 @@ test('home page is accessible and offers registration', async () => {
 		expect((await page.request.get(src, { headers: { Range: 'bytes=0-99' } })).status(), src).toBe(
 			206
 		);
+	// Every part of life with a page of the demo, not only notes.
+	await expect(
+		page.getByRole('img', { name: 'The roadmap: hard and soft skills, domain by domain' })
+	).toBeVisible();
+	for (const shot of [
+		'today',
+		'roadmap',
+		'learn',
+		'tasks',
+		'health',
+		'decisions',
+		'watch',
+		'notes'
+	])
+		expect((await page.request.get(`/teaser/pages/${shot}.jpg`)).status(), shot).toBe(200);
 	await noSeriousA11yViolations(page);
 	await page.getByRole('link', { name: 'Create your account' }).click();
 });
