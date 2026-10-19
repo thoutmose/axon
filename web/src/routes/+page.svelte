@@ -124,8 +124,7 @@
 		<!-- Played on request: nothing downloads until then, and nothing moves on its own.
 		     Its captions are drawn into the picture; the tracks hold the same text, in two languages. -->
 		<video controls preload="none" playsinline poster="/teaser/axon.jpg" width="1280" height="720">
-			<source src="/teaser/axon.webm" type="video/webm" />
-			<source src="/teaser/axon.mp4" type="video/mp4" />
+			<source src="/teaser/axon-trailer-4k.mp4" type="video/mp4" />
 			<track kind="captions" src="/teaser/axon.en.vtt" srclang="en" label="English" />
 			<track kind="captions" src="/teaser/axon.fr.vtt" srclang="fr" label="Français" />
 		</video>

@@ -90,9 +90,9 @@ test('home page is accessible and offers registration', async () => {
 	await expect(page.getByRole('status').filter({ hasText: 'Server running' })).toBeVisible();
 	// With the demo on, a teaser from Axon's own server, with captions (EP-84).
 	const teaser = page.getByRole('region', { name: 'Axon in a minute' });
-	await expect(teaser.locator('video source')).toHaveCount(2);
+	await expect(teaser.locator('video source')).toHaveCount(1);
 	await expect(teaser.locator('video track')).toHaveCount(2);
-	for (const src of ['/teaser/axon.webm', '/teaser/axon.mp4', '/teaser/axon.en.vtt'])
+	for (const src of ['/teaser/axon-trailer-4k.mp4', '/teaser/axon.en.vtt'])
 		expect((await page.request.get(src, { headers: { Range: 'bytes=0-99' } })).status(), src).toBe(
 			206
 		);

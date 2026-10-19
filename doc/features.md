@@ -122,9 +122,9 @@ Progress systems use XP, levels, streaks, badges, variable rewards, commitment d
 
 ## Screenshots
 
-[![The trailer: Axon in a minute](../web/static/teaser/axon.jpg)](../web/static/teaser/axon.mp4)
+[![The trailer: Axon in a minute](../web/static/teaser/axon.jpg)](../web/static/teaser/axon-trailer-4k.mp4)
 
-**[Watch the trailer](../web/static/teaser/axon.mp4)** (one minute, with music; also on the home page when the demo is on).
+**[Watch the trailer](../web/static/teaser/axon-trailer-4k.mp4)** (one minute, with music; also on the home page when the demo is on).
 
 | Today | Tasks | Notes |
 |---|---|---|

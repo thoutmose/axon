@@ -12,9 +12,9 @@
 <p align="center"><b>Notes, tasks, habits, learning, health, and projects in one graph you own.</b><br>
 Self-hosted, private by default, useful without AI, and every AI change waits for your approval.</p>
 
-[![The trailer: Axon in a minute](web/static/teaser/axon.jpg)](web/static/teaser/axon.mp4)
+[![The trailer: Axon in a minute](web/static/teaser/axon.jpg)](web/static/teaser/axon-trailer-4k.mp4)
 
-<p align="center"><a href="web/static/teaser/axon.mp4">Watch the trailer</a> · <a href="https://github.com/thoutmose/axon/releases/download/v1.0.0/axon-trailer-4k.mp4">in 4K</a> · <a href="https://axon.thoutmose.me">Try the demo</a></p>
+<p align="center"><a href="web/static/teaser/axon-trailer-4k.mp4">Watch the trailer</a> · <a href="https://axon.thoutmose.me">Try the demo</a></p>
 
 ## What it does
 

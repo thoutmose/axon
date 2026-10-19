@@ -12,9 +12,9 @@
 <p align="center"><b>Notes, tâches, habitudes, apprentissage, santé et projets dans un seul graphe qui vous appartient.</b><br>
 Auto-hébergé, privé par défaut, utile sans IA, et chaque changement proposé par une IA attend votre accord.</p>
 
-[![La bande-annonce : Axon en une minute](web/static/teaser/axon.jpg)](web/static/teaser/axon.mp4)
+[![La bande-annonce : Axon en une minute](web/static/teaser/axon.jpg)](web/static/teaser/axon-trailer-4k.mp4)
 
-<p align="center"><a href="web/static/teaser/axon.mp4">Voir la bande-annonce</a> · <a href="https://github.com/thoutmose/axon/releases/download/v1.0.0/axon-trailer-4k.mp4">en 4K</a> · <a href="https://axon.thoutmose.me">Essayer la démo</a></p>
+<p align="center"><a href="web/static/teaser/axon-trailer-4k.mp4">Voir la bande-annonce</a> · <a href="https://axon.thoutmose.me">Essayer la démo</a></p>
 
 ## Ce que fait Axon
 

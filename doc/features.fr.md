@@ -122,9 +122,9 @@ Les mécanismes de progression utilisent XP, niveaux, séries, badges, récompen
 
 ## Captures d’écran
 
-[![La bande-annonce : Axon en une minute](../web/static/teaser/axon.jpg)](../web/static/teaser/axon.mp4)
+[![La bande-annonce : Axon en une minute](../web/static/teaser/axon.jpg)](../web/static/teaser/axon-trailer-4k.mp4)
 
-**[Voir la bande-annonce](../web/static/teaser/axon.mp4)** (une minute, en musique ; aussi sur la page d’accueil quand la démo est ouverte).
+**[Voir la bande-annonce](../web/static/teaser/axon-trailer-4k.mp4)** (une minute, en musique ; aussi sur la page d’accueil quand la démo est ouverte).
 
 | Aujourd’hui | Tâches | Notes |
 |---|---|---|
