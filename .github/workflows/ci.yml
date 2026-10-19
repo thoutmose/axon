@@ -35,7 +35,9 @@ jobs:
           POSTGRES_PASSWORD: ci-only
           POSTGRES_DB: axon_test
         ports: ["5432:5432"]
+        # tmpfs: the runner removes the container but not an anonymous data volume.
         options: >-
+          --tmpfs /var/lib/postgresql/data
           --health-cmd "pg_isready -U axon -d axon_test"
           --health-interval 2s --health-timeout 3s --health-retries 15
     defaults:
