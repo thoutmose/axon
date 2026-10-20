@@ -246,3 +246,86 @@ func TestAccountBalancesMatchTheModel(t *testing.T) {
 		}
 	}
 }
+
+// The Budget page counts each account (EP-175): balances at the end of the
+// month viewed, net worth, and the bills still to come this month.
+func TestTheBudgetPageKnowsEachAccount(t *testing.T) {
+	e := newEnv(t, true)
+	alice, bob := e.client(), e.client()
+	alice.register("Alice")
+	bob.register("Bob")
+	post := func(path, body string) string {
+		var x struct {
+			ID string `json:"id"`
+		}
+		_ = json.Unmarshal(alice.mustDo(201, "POST", path, []byte(body)), &x)
+		return x.ID
+	}
+	now := time.Now().UTC()
+	thisMonth := now.Format("2006-01")
+	lastMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -1, 0).Format("2006-01")
+	tomorrow := now.AddDate(0, 0, 1).Format(time.DateOnly)
+	daysLeft := time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day() - now.Day()
+
+	checking := post("/v1/budget/accounts", `{"name":"Checking","type":"asset","opening_cents":100000}`)
+	card := post("/v1/budget/accounts", `{"name":"Visa","type":"liability","role":"credit_card","opening_cents":-5000}`)
+	old := post("/v1/budget/accounts", `{"name":"Old","type":"asset","opening_cents":700}`)
+	alice.mustDo(200, "PATCH", "/v1/budget/accounts/"+old, []byte(`{"archived":true}`))
+	bob.mustDo(201, "POST", "/v1/budget/accounts", []byte(`{"name":"Bob's","type":"asset","opening_cents":999999}`))
+	post("/v1/budget/transactions", `{"occurred_on":"`+lastMonth+`-01","kind":"expense","amount_cents":10000,"account_id":"`+checking+`"}`)
+	post("/v1/budget/transactions", `{"occurred_on":"`+thisMonth+`-01","kind":"expense","amount_cents":2500,"account_id":"`+card+`"}`)
+	// Internet is due every day from tomorrow, as many times as the month
+	// has days left; a transfer is not a bill.
+	post("/v1/budget/recurring", `{"name":"Internet","kind":"expense","amount_cents":3000,"account_id":"`+checking+`","rule":"FREQ=DAILY","start_on":"`+tomorrow+`"}`)
+	post("/v1/budget/recurring", `{"name":"Pay the card","kind":"transfer","amount_cents":100,"account_id":"`+checking+`","to_account_id":"`+card+`","rule":"FREQ=DAILY","start_on":"`+tomorrow+`"}`)
+
+	type month struct {
+		Accounts      []accountJSON `json:"accounts"`
+		NetWorthCents int64         `json:"net_worth_cents"`
+		Upcoming      []struct {
+			Name string `json:"name"`
+			Kind string `json:"kind"`
+			On   string `json:"on"`
+		} `json:"upcoming"`
+		UpcomingExpenseCents int64 `json:"upcoming_expense_cents"`
+	}
+	get := func(m string) month {
+		var out month
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/budget?month="+m, nil), &out)
+		return out
+	}
+	check := func(got month, want map[string]int64, netWorth int64) {
+		t.Helper()
+		if len(got.Accounts) != len(want) {
+			t.Fatalf("accounts = %+v, want the %d open ones", got.Accounts, len(want))
+		}
+		for _, a := range got.Accounts {
+			if a.BalanceCents != want[a.ID] {
+				t.Fatalf("account %s = %d, want %d", a.ID, a.BalanceCents, want[a.ID])
+			}
+		}
+		if got.NetWorthCents != netWorth {
+			t.Fatalf("net worth = %d, want %d", got.NetWorthCents, netWorth)
+		}
+	}
+	cur := get(thisMonth)
+	check(cur, map[string]int64{checking: 90000, card: -7500}, 90000-7500+700)
+	if len(cur.Upcoming) != daysLeft || cur.UpcomingExpenseCents != int64(daysLeft)*3000 {
+		t.Fatalf("upcoming = %+v (%d cents), want Internet %d times", cur.Upcoming, cur.UpcomingExpenseCents, daysLeft)
+	}
+	for _, u := range cur.Upcoming {
+		if u.Name != "Internet" || u.Kind != "expense" {
+			t.Fatalf("a transfer is not a bill: %+v", u)
+		}
+	}
+	if daysLeft > 0 && cur.Upcoming[0].On != tomorrow {
+		t.Fatalf("first due %s, want %s", cur.Upcoming[0].On, tomorrow)
+	}
+	// At the end of last month, this month's card expense had not happened,
+	// and nothing is "to come" for a month that is over.
+	past := get(lastMonth)
+	check(past, map[string]int64{checking: 90000, card: -5000}, 90000-5000+700)
+	if len(past.Upcoming) != 0 {
+		t.Fatalf("a past month has upcoming %+v", past.Upcoming)
+	}
+}

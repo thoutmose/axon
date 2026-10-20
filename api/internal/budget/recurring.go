@@ -3,6 +3,7 @@ package budget
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"time"
 
@@ -248,6 +249,51 @@ func RunRecurring(ctx context.Context, q db.Querier, userID uuid.UUID, today tim
 		}
 	}
 	return created, nil
+}
+
+// Upcoming is one occurrence of a recurring income or bill still to come.
+type Upcoming struct {
+	ID          uuid.UUID  `json:"id"`
+	Name        string     `json:"name"`
+	Kind        string     `json:"kind"` // income or expense
+	AmountCents int64      `json:"amount_cents"`
+	AccountID   *uuid.UUID `json:"account_id"`
+	On          string     `json:"on"` // YYYY-MM-DD
+}
+
+// UpcomingBefore lists each occurrence of the active recurring income and
+// bills due after today and before `day`, soonest first. Transfers change
+// nothing the person has, so they are left out. Due occurrences are
+// recorded by RunRecurring before this is asked, so next_on is after today.
+func UpcomingBefore(ctx context.Context, q db.Querier, userID uuid.UUID, today, day time.Time) ([]Upcoming, error) {
+	rows, err := q.Query(ctx, `SELECT `+recurringColumns+` FROM budget_recurring
+		WHERE user_id = $1 AND active AND kind <> 'transfer' AND next_on IS NOT NULL AND next_on > $2 AND next_on < $3`,
+		userID, today, day)
+	if err != nil {
+		return nil, err
+	}
+	series, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (Recurring, error) { return scanRecurring(r) })
+	if err != nil {
+		return nil, err
+	}
+	out := []Upcoming{}
+	for _, r := range series {
+		next, _ := time.Parse(time.DateOnly, *r.NextOn)
+		for i := 0; i < maxCatchUp && next.Before(day); i++ {
+			out = append(out, Upcoming{ID: r.ID, Name: r.Name, Kind: r.Kind, AmountCents: r.AmountCents, AccountID: r.AccountID,
+				On: next.Format(time.DateOnly)})
+			n, ok, err := tasks.NextOccurrence(r.Rule, next)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				break
+			}
+			next = n
+		}
+	}
+	slices.SortStableFunc(out, func(a, b Upcoming) int { return strings.Compare(a.On, b.On) })
+	return out, nil
 }
 
 // Today is the user's calendar date in their time zone.

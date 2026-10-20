@@ -74,6 +74,16 @@ type Month struct {
 	UncategorisedIncomeCents  int64  `json:"uncategorised_income_cents"`
 	UncategorisedExpenseCents int64  `json:"uncategorised_expense_cents"`
 	Lines                     []Line `json:"lines"`
+	// Accounts are the open accounts with their balance at the end of the
+	// month: today's figures for the current month. NetWorthCents counts
+	// every account, archived ones included, as Accounts and Reports do.
+	Accounts      []Account `json:"accounts"`
+	NetWorthCents int64     `json:"net_worth_cents"`
+	// Upcoming are the recurring income and bills due after today and before
+	// the month ends, with their totals; empty for another month.
+	Upcoming             []Upcoming `json:"upcoming"`
+	UpcomingIncomeCents  int64      `json:"upcoming_income_cents"`
+	UpcomingExpenseCents int64      `json:"upcoming_expense_cents"`
 }
 
 var monthRe = regexp.MustCompile(`^\d{4}-(0[1-9]|1[0-2])$`)
@@ -110,16 +120,39 @@ func SetCurrency(ctx context.Context, q db.Querier, userID uuid.UUID, currency s
 	return err
 }
 
-// Summary computes a month: totals, and actual against budget per category.
-// Every sum is done by the database in integers.
-func Summary(ctx context.Context, q db.Querier, userID uuid.UUID, month string) (Month, error) {
+// Summary computes a month: totals, actual against budget per category, the
+// accounts at the month's end, and what is still to come when the month is
+// today's. Every sum is done by the database in integers.
+func Summary(ctx context.Context, q db.Querier, userID uuid.UUID, month string, today time.Time) (Month, error) {
 	start, end, err := MonthRange(month)
 	if err != nil {
 		return Month{}, err
 	}
-	m := Month{Month: month, Lines: []Line{}}
+	m := Month{Month: month, Lines: []Line{}, Accounts: []Account{}, Upcoming: []Upcoming{}}
 	if m.Currency, err = Currency(ctx, q, userID); err != nil {
 		return m, err
+	}
+	accounts, err := AccountsBefore(ctx, q, userID, end)
+	if err != nil {
+		return m, err
+	}
+	for _, a := range accounts {
+		m.NetWorthCents += a.BalanceCents
+		if !a.Archived {
+			m.Accounts = append(m.Accounts, a)
+		}
+	}
+	if today.Format("2006-01") == month {
+		if m.Upcoming, err = UpcomingBefore(ctx, q, userID, today, end); err != nil {
+			return m, err
+		}
+		for _, u := range m.Upcoming {
+			if u.Kind == "income" {
+				m.UpcomingIncomeCents += u.AmountCents
+			} else {
+				m.UpcomingExpenseCents += u.AmountCents
+			}
+		}
 	}
 	rows, err := q.Query(ctx, `SELECT `+categoryColumns+`, coalesce((SELECT sum(t.amount_cents) FROM budget_transactions t
 			WHERE t.category_id = c.id AND t.occurred_on >= $2 AND t.occurred_on < $3), 0)::bigint

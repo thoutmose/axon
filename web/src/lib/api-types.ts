@@ -7581,6 +7581,35 @@ export interface components {
 				/** Format: int64 */
 				actual_cents: number;
 			})[];
+			/** @description The open accounts with their balance at the end of the month (today's figures for the current month). */
+			accounts: components['schemas']['BudgetAccount'][];
+			/**
+			 * Format: int64
+			 * @description Every account's balance at the end of the month, archived ones included.
+			 */
+			net_worth_cents: number;
+			/** @description Each occurrence of the recurring income and bills due after today and before the month ends, soonest first; empty for another month. Transfers are left out. */
+			upcoming: components['schemas']['BudgetUpcoming'][];
+			/** Format: int64 */
+			upcoming_income_cents: number;
+			/** Format: int64 */
+			upcoming_expense_cents: number;
+		};
+		BudgetUpcoming: {
+			/**
+			 * Format: uuid
+			 * @description The recurring transaction.
+			 */
+			id: string;
+			name: string;
+			/** @enum {unknown} */
+			kind: 'income' | 'expense';
+			/** Format: int64 */
+			amount_cents: number;
+			/** Format: uuid */
+			account_id: string | null;
+			/** Format: date */
+			on: string;
 		};
 		ParaItem: {
 			/** Format: uuid */

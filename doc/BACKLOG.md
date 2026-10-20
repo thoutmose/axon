@@ -223,6 +223,12 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-172 | Jarvis, nicer to use | A larger, clearer panel: suggestions to start, a conversation that reads well, proposals to approve in place, keyboard and mobile friendly. | MUST | 3 pts | EP-153 | Done |
 | EP-173 | The trailer, about you | The trailer speaks of setting up your own roadmap for a self-learning journey (no counts), with sharper screenshots. | MUST | 2 pts | EP-159 | Done |
 | EP-174 | The home page, the whole of Axon | The signed-out home page shows every part of life Axon covers, each with a page of the demo, not only notes; the trailer is one 4K film. | MUST | 3 pts | EP-173 | Done |
+| EP-175 | Your accounts on the Budget page | Each account's balance, net worth, and what is still to come this month, as counts on the Budget page. Owner request. | MUST | 2 pts | EP-147 | Done (review pending) |
+| EP-178 | Tick it from the digest | Tasks and habits checked and unchecked on the Digest page and from the morning Telegram message; every channel's items open the page ready to tick. Owner request. | MUST | 5 pts | EP-108 | Ready |
+| EP-180 | A calendar you can read on a phone | A phone layout with a day view, each kind its colour and icon, roadmap and project tasks told apart, and ticking from today. Owner request. | MUST | 5 pts | EP-167 | Ready |
+| EP-177 | Habits by area, and the ones missing | Habits carry their area and are grouped by it on Habits, Today, and the digest; templates for production, reflection, learning, and the watch. Owner request. | SHOULD | 2 pts | EP-166 | Ready |
+| EP-176 | The account's ledger, and edits | An account's history with a running balance; transactions, names, and opening balances edited in place. Owner request. | SHOULD | 2 pts | EP-175 | Ready |
+| EP-179 | Buttons on Slack and Discord | The morning digest's buttons on the Slack and Discord bots too. Owner request. | COULD | 3 pts | EP-178 | Ready |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -259,7 +265,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-174 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-174 → EP-175 → EP-178 → EP-180 → EP-177 → EP-176 → EP-179 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2597,6 +2603,62 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** The home page e2e test finds the roadmap's picture by its name and gets each of the eight pictures and the film; the French coverage test holds every new string.
 
+### EP-175 — Your accounts on the Budget page
+
+**Goal.** "For budget, I want to have on KPI the current [balance] of each account I have defined; add more other indispensable functions like that on each element" (owner, 2026-10-20). Balances exist (`GET /v1/budget/accounts`, the Accounts page, the net worth of Reports), but the Budget page, the one the person opens, shows none of them, and the recurring income and bills show only on their own page.
+
+- [x] **EP-175/IS-175.01** · 1 pt · MUST — `GET /v1/budget?month=` gains `accounts` (the open accounts with their balance at the end of the month viewed: today's figures for the current month, the closing figures for a past one), `net_worth_cents` (every account, archived ones included, as Accounts and Reports count it), and, for the current month only, `upcoming`: each occurrence of the active recurring income and bills due after today and before the month ends, with its date, and their two totals; transfers change nothing the person has and are left out.
+- [x] **EP-175/IS-175.02** · 1 pt · MUST — Under the month's counts, **Your accounts**: net worth first, then a tile per open account with its kind, its balance, or what is owed on a card or loan, each opening Accounts; a line leads to Accounts when there is none. The counts gain **Still to come**, what the month's bills and income will do before it ends and how many of each, and **Budgeted** says how much of the month has gone beside the share used.
+
+**Tests.** `TestTheBudgetPageKnowsEachAccount`: balances at the end of a past month leave this month's expenses out, an archived account counted in net worth but not listed, a daily bill due from tomorrow listed once per day left in the month and a transfer left out, nothing to come for a past month, another person's accounts never shown; the finance e2e walk finds the Savings tile and net worth on the Budget page; the French coverage test holds the new strings.
+
+### EP-178 — Tick it from the digest
+
+**Goal.** "On the daily digest, the ability to check/uncheck habits/tasks; I would like also to test to receive this digest each morning somewhere and have the ability to check/uncheck directly on it" (owner, 2026-10-20). The digest reaches email, Web Push, Slack, Discord, Teams, Telegram, ntfy, and a webhook (EP-107), and a chat reply "done 2" acts (EP-108), but no channel carries a button and the Digest page's items are links. In production (2026-10-20) reminders are off, no channel is linked, no device is subscribed, and no mail server is set (`AXON_SMTP_URL`), so the test needs a channel the owner creates: Telegram needs only a bot token from BotFather and no public address (ADR 0033), and its long-polling listener already runs.
+
+- [ ] **EP-178/IS-178.01** · 1 pt · MUST — `digest.Item` gains `done`; the daily digest keeps the tasks done today and the habits checked in today, struck through, so an item can be unchecked after a reload; `replies` gets one `Toggle` (a task, a habit done or by its two-minute version, a milestone; a day; done or not) that the chat commands, the page, and the buttons share; a button carries the item's id, never its number, since the numbers are the latest list's.
+- [ ] **EP-178/IS-178.02** · 2 pts · MUST — The Digest page: a checkbox on each task, habit (its two-minute version as a second choice), and milestone, saved at once, undone by unchecking; `/digest?item=<id>` opens the page with that item in view, and every channel's item links lead there (email, Teams, ntfy, the webhook's readers); the morning Web Push notification opens the Digest page.
+- [ ] **EP-178/IS-178.03** · 2 pts · MUST — Telegram: the morning digest carries an inline keyboard, one button per task and habit (⬜, then ✅), the listener asks for callback queries too, answers each tap, runs the toggle, and redraws the keyboard; "undo" still works; a tap from a chat that is not linked is ignored. Preferences and the Digest page say the three steps (BotFather, the token, the link code).
+
+**Tests.** Digest unit tests (today's done items kept and struck through); `TestAnsweringTheDigest` (the toggle both ways, a two-minute habit, undo after a tap); `TestChatListeners` (a callback query answered and the keyboard redrawn, against the fake Telegram); e2e "the digest: tick a task and a habit, and untick them".
+
+### EP-180 — A calendar you can read on a phone
+
+**Goal.** "Improve the UI/UX of the calendar view because on mobile it's a nightmare and on desktop I can['t] distinguish habit, task, project, task related to roadmap, etc." (owner, 2026-10-20). The month grid keeps its seven columns on a phone (about 46 px each at 360 px: four characters per event, 17 px tall taps, titles only in tooltips phones never show, "Habits 3/16" cut to "Habi…"), there is no day view, and in the grid colour is the only cue, with certifications in the tasks' blue and habits in the goals' amber.
+
+- [ ] **EP-180/IS-180.01** · 1 pt · MUST — `GET /v1/calendar` says of each task its project (`project_id`, `project`) and whether that project is a plan's (`plan`), so a roadmap task and a project task are told from a loose one; a followed event keeps its time.
+- [ ] **EP-180/IS-180.02** · 2 pts · MUST — On a phone (under 40 rem) the month is a compact grid of dots, one per kind with its count, and tapping a day opens it under the grid: the day's events in full with their kind, time, and link; the agenda starts on today; the layout chosen is remembered on the device; the toolbar holds one line and the filters fold into a menu; nothing is cut to four characters.
+- [ ] **EP-180/IS-180.03** · 1 pt · MUST — On every screen each kind has its own colour from the validated palette (`--series-*`) and its line icon: task, due task, project task, roadmap task, study block, habit, goal target, milestone, exam, expiry, followed calendar; the legend names them all and wraps; a day shows at most four lines, then "+N more" opening the day; the grid stays in place while the next month loads.
+- [ ] **EP-180/IS-180.04** · 1 pt · SHOULD — Today's tasks and habits are ticked from the day view and the agenda (EP-178's toggle), and a dated task is re-dated with a date field, not only by dragging.
+
+**Tests.** The dashboard test reads a task's project and plan flag; e2e at 360×740: a day opened, its events named in full, no horizontal overflow, axe on the day view; the desktop legend holds every kind; the existing calendar tests kept.
+
+### EP-177 — Habits by area, and the ones missing
+
+**Goal.** "Ensure there are habits for production, health, related to the roadmap, learning, etc." (owner, 2026-10-20). The plan's 16 habits (EP-166) cover health (6), learning (7), the roadmap (2), and production (1: the Saturday deep-work session); each carries an `in_area` link that nothing reads back, so Habits, Today, and the digest list them flat. The starter's Zone 2 cardio runs every day although it says three.
+
+- [ ] **EP-177/IS-177.01** · 1 pt · SHOULD — A habit answers with its `areas` (from its links) and a new one can take an `area_id`; Habits, Today's habits card, and the daily digest group habits by area, the unfiled last; OpenAPI and the vault template say so.
+- [ ] **EP-177/IS-177.02** · 1 pt · SHOULD — Templates grouped by what they cover, with what the plan lacks: production (ship one thing today; shut the day down with tomorrow's three tasks), reflection (today's journal entry), the learning system (today's cards), the tech watch (ten minutes of watch); **Habits you lack** on the Habits page offers them per area and adds one in a click, nothing twice (paused and archived ones count, for the plan too). The starter's Zone 2 cardio takes Tuesday, Thursday, and Saturday.
+
+**Tests.** The habits test reads a habit's area and refuses a second copy; the plan's start test completes a plan whose habit is paused without a double; e2e: Habits grouped, a lacking habit added once.
+
+### EP-176 — The account's ledger, and edits
+
+**Goal.** The same request, "indispensable functions on each element": a transaction can only be deleted, an account only archived, and the API's `?account=` filter has no page.
+
+- [ ] **EP-176/IS-176.01** · 1 pt · SHOULD — Each account tile and row opens its ledger: the account's transactions, newest first, with a running balance, month by month (`GET /v1/budget/transactions?account=`), transfers in and out included.
+- [ ] **EP-176/IS-176.02** · 1 pt · SHOULD — A transaction is edited in place (date, amount, category, account, payee, note, tags; the `PATCH` exists); an account is renamed and its opening balance corrected, and **Match the statement** writes the opening balance that makes today's balance the bank's.
+
+**Tests.** The finance test edits a transaction and matches a statement; e2e: the ledger's running balance.
+
+### EP-179 — Buttons on Slack and Discord
+
+**Goal.** EP-178's buttons on the two other bots that listen (ADR 0033).
+
+- [ ] **EP-179/IS-179.01** · 3 pts · COULD — Slack bot: a `checkboxes` block, its `block_actions` through Socket Mode, the message updated; Discord bot: button components and `INTERACTION_CREATE` through the gateway, answered within three seconds with the message updated; the webhook modes keep their links to the Digest page.
+
+**Tests.** `TestChatListeners` with a Slack `block_actions` envelope and a Discord interaction against the fakes.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2829,6 +2891,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-11 | Owner request: keep the work of the parallel branch `claude/axon-ui-features-9ryyt4`. Added EP-43 (daily-use fixes) after EP-36. EP-39 (finance), EP-38 (themed spaces), and EP-37 (explorer) are taken from that branch, in that order. |
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 | 2026-10-19 | Owner request: added EP-174 (the home page shows the whole of Axon with screenshots, and one 4K trailer), after EP-173. |
+| 2026-10-20 | Owner request: added EP-175 to EP-180 (each account's balance and what is to come on the Budget page, ticking from the digest and the morning Telegram message, a calendar for phones with every kind told apart, habits by area, the account's ledger and edits, buttons on Slack and Discord), after EP-174, in the order EP-175, EP-178, EP-180, EP-177, EP-176, EP-179. The analysis of production that day: 1.0.0 plus EP-170 to EP-174 deployed, the owner's 4 accounts and 16 plan habits with 4 check-ins, reminders off, no channel, no device, no mail server. |
 
 ## Standard issue evidence template
 

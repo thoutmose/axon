@@ -90,7 +90,7 @@ Pomodoro sessions (25 minutes of focus and 5-minute breaks, four rounds, then a 
 
 ## Money: Budget
 
-Firefly III–style personal finance: accounts and balances, income, expenses, transfers, categories with monthly budgets, tags, recurring transactions, rules, CSV import from your bank, reports, and **savings pots** (*tirelire*) for something to buy later. Amounts are exact; finance data stays out of search and agents. The Budget page opens on the month's counts, then two pies, where the month's money went and where it came from by category, and the bars of income and expenses for each month of the year, January to December; **Reports** does the same for 3, 6, or 12 months.
+Firefly III–style personal finance: accounts and balances, income, expenses, transfers, categories with monthly budgets, tags, recurring transactions, rules, CSV import from your bank, reports, and **savings pots** (*tirelire*) for something to buy later. Amounts are exact; finance data stays out of search and agents. The Budget page opens on the month's counts, with what the bills and income still to come will do before the month ends, then **your accounts**: net worth and each account's balance (or what is owed on a card or loan) at the end of the month you are looking at, then two pies, where the month's money went and where it came from by category, and the bars of income and expenses for each month of the year, January to December; **Reports** does the same for 3, 6, or 12 months.
 
 ## Journal
 

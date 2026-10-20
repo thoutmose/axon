@@ -10773,7 +10773,7 @@ components:
         note: { type: string, maxLength: 2000 }
     BudgetMonth:
       type: object
-      required: [month, currency, income_cents, expense_cents, budgeted_cents, uncategorised_income_cents, uncategorised_expense_cents, lines]
+      required: [month, currency, income_cents, expense_cents, budgeted_cents, uncategorised_income_cents, uncategorised_expense_cents, lines, accounts, net_worth_cents, upcoming, upcoming_income_cents, upcoming_expense_cents]
       properties:
         month: { type: string, example: "2026-10" }
         currency: { type: string, example: EUR }
@@ -10792,6 +10792,27 @@ components:
                 required: [actual_cents]
                 properties:
                   actual_cents: { type: integer, format: int64 }
+        accounts:
+          type: array
+          description: The open accounts with their balance at the end of the month (today's figures for the current month).
+          items: { $ref: "#/components/schemas/BudgetAccount" }
+        net_worth_cents: { type: integer, format: int64, description: "Every account's balance at the end of the month, archived ones included." }
+        upcoming:
+          type: array
+          description: Each occurrence of the recurring income and bills due after today and before the month ends, soonest first; empty for another month. Transfers are left out.
+          items: { $ref: "#/components/schemas/BudgetUpcoming" }
+        upcoming_income_cents: { type: integer, format: int64 }
+        upcoming_expense_cents: { type: integer, format: int64 }
+    BudgetUpcoming:
+      type: object
+      required: [id, name, kind, amount_cents, account_id, on]
+      properties:
+        id: { type: string, format: uuid, description: The recurring transaction. }
+        name: { type: string }
+        kind: { enum: [income, expense] }
+        amount_cents: { type: integer, format: int64 }
+        account_id: { type: [string, "null"], format: uuid }
+        on: { type: string, format: date }
     ParaItem:
       type: object
       required: [id, title, description, url, status, linked, created_at, updated_at]

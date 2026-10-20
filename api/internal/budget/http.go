@@ -154,11 +154,12 @@ func (h *Handlers) catchUp(r *http.Request, userID uuid.UUID) (time.Time, error)
 
 func (h *Handlers) summary(w http.ResponseWriter, r *http.Request) {
 	who, _ := auth.FromContext(r.Context())
-	if _, err := h.catchUp(r, who.UserID); err != nil {
+	today, err := h.catchUp(r, who.UserID)
+	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	m, err := Summary(r.Context(), h.db, who.UserID, h.month(r))
+	m, err := Summary(r.Context(), h.db, who.UserID, h.month(r), today)
 	if err != nil {
 		h.fail(w, err)
 		return

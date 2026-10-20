@@ -63,15 +63,23 @@ func Balances(opening map[uuid.UUID]int64, moves []Movement) map[uuid.UUID]int64
 	return out
 }
 
-// balanceSQL is Balances in SQL, for one account a.
-const balanceSQL = `a.opening_cents + coalesce((SELECT sum(CASE
+// balanceSQLOver is Balances in SQL, for one account a, over the
+// transactions that also match `and` (empty for all of them).
+func balanceSQLOver(and string) string {
+	return `a.opening_cents + coalesce((SELECT sum(CASE
 		WHEN t.kind = 'income' AND t.account_id = a.id THEN t.amount_cents
 		WHEN t.kind = 'expense' AND t.account_id = a.id THEN -t.amount_cents
 		WHEN t.kind = 'transfer' AND t.account_id = a.id THEN -t.amount_cents
 		WHEN t.kind = 'transfer' AND t.to_account_id = a.id THEN t.amount_cents
-		ELSE 0 END) FROM budget_transactions t WHERE t.account_id = a.id OR t.to_account_id = a.id), 0)::bigint`
+		ELSE 0 END) FROM budget_transactions t WHERE (t.account_id = a.id OR t.to_account_id = a.id)` + and + `), 0)::bigint`
+}
 
-const accountColumns = `a.id, a.name, a.type, a.role, a.opening_cents, ` + balanceSQL + `, a.archived, a.created_at, a.updated_at`
+var (
+	balanceSQL     = balanceSQLOver("")
+	accountColumns = `a.id, a.name, a.type, a.role, a.opening_cents, ` + balanceSQL + `, a.archived, a.created_at, a.updated_at`
+	// accountColumnsBefore counts only the transactions dated before $2.
+	accountColumnsBefore = `a.id, a.name, a.type, a.role, a.opening_cents, ` + balanceSQLOver(" AND t.occurred_on < $2") + `, a.archived, a.created_at, a.updated_at`
+)
 
 func scanAccount(r pgx.Row) (Account, error) {
 	var a Account
@@ -92,6 +100,22 @@ func GetAccount(ctx context.Context, q db.Querier, userID, id uuid.UUID) (Accoun
 func Accounts(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Account, error) {
 	rows, err := q.Query(ctx, `SELECT `+accountColumns+` FROM budget_accounts a WHERE a.user_id = $1
 		ORDER BY a.archived, a.type, lower(a.name) LIMIT 200`, userID)
+	if err != nil {
+		return nil, err
+	}
+	out, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (Account, error) { return scanAccount(r) })
+	if out == nil {
+		out = []Account{}
+	}
+	return out, err
+}
+
+// AccountsBefore lists the user's accounts with their balance from the
+// transactions dated before `day`: at the end of a month, pass the first
+// day of the next one.
+func AccountsBefore(ctx context.Context, q db.Querier, userID uuid.UUID, day time.Time) ([]Account, error) {
+	rows, err := q.Query(ctx, `SELECT `+accountColumnsBefore+` FROM budget_accounts a WHERE a.user_id = $1
+		ORDER BY a.archived, a.type, lower(a.name) LIMIT 200`, userID, day)
 	if err != nil {
 		return nil, err
 	}

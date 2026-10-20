@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 	import { api, message, type Schemas } from '$lib/api';
 	import { monthLabel, shiftMonth } from '$lib/calendar';
-	import { parseTags } from '$lib/finance';
+	import { parseTags, roleNames } from '$lib/finance';
 	import { centsText, formatCents, toCents } from '$lib/money';
 	import Button from '$lib/ui/Button.svelte';
 	import Dialog from '$lib/ui/Dialog.svelte';
@@ -34,6 +34,27 @@
 	const expenses = $derived(summary?.lines.filter((l) => l.kind === 'expense') ?? []);
 	const incomes = $derived(summary?.lines.filter((l) => l.kind === 'income') ?? []);
 	const net = $derived(summary ? summary.income_cents - summary.expense_cents : 0);
+	const current = $derived(month === today.slice(0, 7));
+	// What the bills and income still to come will do before the month ends (EP-175).
+	const coming = $derived(
+		summary ? summary.upcoming_income_cents - summary.upcoming_expense_cents : 0
+	);
+	const billsDue = $derived(summary?.upcoming.filter((u) => u.kind === 'expense').length ?? 0);
+	const incomesDue = $derived((summary?.upcoming.length ?? 0) - billsDue);
+	const dueText = $derived(
+		[
+			billsDue === 1 ? t('1 bill') : billsDue ? t('{n} bills', { n: billsDue }) : '',
+			incomesDue === 1 ? t('1 income') : incomesDue ? t('{n} incomes', { n: incomesDue }) : ''
+		]
+			.filter(Boolean)
+			.join(', ')
+	);
+	// How much of the month has gone, to read the share of the budget used against it.
+	const monthGone = $derived.by(() => {
+		if (!current) return month < today.slice(0, 7) ? 100 : 0;
+		const [y, m] = month.split('-').map(Number);
+		return Math.round((Number(today.slice(8)) / new Date(y, m, 0).getDate()) * 100);
+	});
 
 	async function load() {
 		error = '';
@@ -289,9 +310,47 @@
 			{#if summary.budgeted_cents}<span class="muted small"
 					>{t('{value} % used', {
 						value: share(summary.expense_cents, summary.budgeted_cents)
-					})}</span
+					})} · {t('{value} % of the month gone', { value: monthGone })}</span
 				>{/if}
 		</div>
+		{#if current && summary.upcoming.length}
+			<div>
+				<span class="muted small">{t('Still to come')}</span><strong
+					class:bad={coming < 0}
+					class:ok={coming > 0}>{money(coming)}</strong
+				>
+				<span class="muted small">{t('{what} before the month ends', { what: dueText })}</span>
+			</div>
+		{/if}
+	</section>
+
+	<section class="accounts" aria-label={t('Your accounts')}>
+		<h2 class="small muted">
+			{current
+				? t('Your accounts today')
+				: t('Your accounts at the end of {month}', { month: monthLabel(month) })}
+		</h2>
+		{#if summary.accounts.length === 0}
+			<p class="muted small">
+				<a href="/budget/accounts">{t('Add your accounts to see each balance here.')}</a>
+			</p>
+		{:else}
+			<div class="tiles">
+				<a href="/budget/accounts" class="tile">
+					<span class="muted small">{t('Net worth')}</span>
+					<strong class:bad={summary.net_worth_cents < 0}>{money(summary.net_worth_cents)}</strong>
+				</a>
+				{#each summary.accounts as a (a.id)}
+					<a href="/budget/accounts" class="tile">
+						<span class="muted small"
+							>{a.type === 'liability' ? t('Owed · ') : ''}{t(roleNames[a.role])}</span
+						>
+						<span class="name">{a.name}</span>
+						<strong class:bad={a.balance_cents < 0}>{money(a.balance_cents)}</strong>
+					</a>
+				{/each}
+			</div>
+		{/if}
 	</section>
 
 	<BudgetCharts {month} />
@@ -623,6 +682,38 @@
 	}
 	.kpis strong {
 		font-size: var(--text-2xl);
+	}
+	.accounts {
+		margin: var(--space-4) 0;
+	}
+	.accounts h2 {
+		margin: 0 0 var(--space-2);
+		font-weight: 500;
+	}
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+		gap: var(--space-3);
+	}
+	.tile {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3) var(--space-4);
+		display: grid;
+		gap: var(--space-1);
+		color: inherit;
+		text-decoration: none;
+	}
+	.tile:hover,
+	.tile:focus-visible {
+		border-color: var(--accent);
+	}
+	.tile .name {
+		font-weight: 500;
+	}
+	.tile strong {
+		font-size: var(--text-xl);
 	}
 	.ok {
 		color: var(--ok);

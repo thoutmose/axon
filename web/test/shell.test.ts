@@ -842,6 +842,10 @@ test('finance: accounts, a transfer that is not spending, and net worth in repor
 	await page.getByRole('button', { name: 'Record' }).click();
 	await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('');
 	await expect(page.getByText('⇄')).toBeVisible();
+	// The Budget page counts each account and net worth (EP-175).
+	const mine = page.getByRole('region', { name: 'Your accounts' });
+	await expect(mine.getByRole('link', { name: /^Savings/ })).toContainText(/250[.,]00/);
+	await expect(mine.getByRole('link', { name: /^Net worth/ })).toContainText(/1[\s,. ]?000[.,]00/);
 	await page
 		.getByRole('navigation', { name: 'Finance' })
 		.getByRole('link', { name: 'Accounts' })
