@@ -1019,6 +1019,16 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await expect(needs).toContainText('2760');
 	await expect(needs.getByRole('progressbar', { name: 'Energy' })).toBeVisible();
 	await noSeriousA11yViolations(page);
+	// A bounded goal (EP-191): 15 % under maintenance, the bars following it.
+	await needs.getByRole('button', { name: 'Edit my profile' }).click();
+	await needs.getByLabel('Goal', { exact: true }).selectOption('lose');
+	await needs.getByRole('button', { name: 'Work out my needs' }).click();
+	await expect(needs).toContainText('losing weight gently');
+	await expect(needs).toContainText('2350');
+	await expect(needs.getByRole('progressbar', { name: 'Energy' })).toHaveAttribute(
+		'aria-valuemax',
+		'2350'
+	);
 
 	// Water (EP-101): two glasses against the drinks' share of the day's need, then one removed.
 	await page.reload();

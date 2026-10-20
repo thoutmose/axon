@@ -1,6 +1,6 @@
 # 0028 — Daily needs are reference intakes, not diets
 
-- **Status:** Accepted
+- **Status:** Superseded by [0039](0039-daily-needs-follow-a-bounded-goal.md) (a bounded goal, 2026-10-20)
 - **Date:** 2026-10-13
 - **Epic:** EP-88
 

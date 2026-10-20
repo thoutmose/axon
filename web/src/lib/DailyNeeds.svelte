@@ -23,7 +23,21 @@
 		height_cm: '',
 		weight_kg: '',
 		activity: 'light',
+		goal: 'maintain',
 		pregnant_or_breastfeeding: false
+	});
+
+	// A bounded goal (EP-191): the needs move by a share and never under
+	// the basal rate or 1,200 kcal; the bars and the chef follow them.
+	const goals = $derived([
+		['maintain', t('Keep my weight')],
+		['lose', t('Lose weight gently: 15 % under, never below my basal rate or 1,200 kcal')],
+		['gain', t('Gain weight slowly: 10 % over')]
+	]);
+	const goalNames: Record<string, string> = $derived({
+		maintain: t('keeping your weight'),
+		lose: t('losing weight gently'),
+		gain: t('gaining weight slowly')
 	});
 
 	const activities = $derived([
@@ -42,6 +56,7 @@
 			height_cm: String(p.height_cm),
 			weight_kg: String(p.weight_kg),
 			activity: p.activity,
+			goal: p.goal ?? 'maintain',
 			pregnant_or_breastfeeding: p.pregnant_or_breastfeeding
 		};
 	}
@@ -72,6 +87,7 @@
 					height_cm: Number(form.height_cm.replace(',', '.')),
 					weight_kg: Number(form.weight_kg.replace(',', '.')),
 					activity: form.activity,
+					goal: form.goal,
 					pregnant_or_breastfeeding: form.pregnant_or_breastfeeding
 				}
 			});
@@ -140,6 +156,12 @@
 					{#each activities as [value, label] (value)}<option {value}>{label}</option>{/each}
 				</select></label
 			>
+			<label class="wide"
+				>{t('Goal')}
+				<select bind:value={form.goal}>
+					{#each goals as [value, label] (value)}<option {value}>{label}</option>{/each}
+				</select></label
+			>
 			<label class="check wide"
 				><input type="checkbox" bind:checked={form.pregnant_or_breastfeeding} />
 				{t('I am pregnant or breastfeeding')}</label
@@ -167,6 +189,7 @@
 		</p>
 		<Button variant="secondary" onclick={() => (editing = true)}>{t('Edit my profile')}</Button>
 	{:else if needs}
+		<p class="small muted">{t('For your goal: {goal}.', { goal: goalNames[needs.goal] })}</p>
 		<p class="kpis">
 			<span><strong>{needs.kcal}</strong> kcal</span>
 			<span><strong>{needs.protein_g}</strong> g {t('protein')}</span>
@@ -208,7 +231,7 @@
 			</ul>
 			<p class="small muted">
 				{t(
-					'These are needs for keeping your weight, not a diet: Axon sets no weight-loss target. A dietitian can adapt them to you.'
+					'With a goal, Axon moves these by 15 % at most and never under your basal rate or 1,200 kcal: a gentle pace, not a diet. A dietitian can adapt them to you.'
 				)}
 			</p>
 			<ul class="small sources">

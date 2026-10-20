@@ -55,8 +55,8 @@ func mealPlanNote(in mealPlanInput, day time.Time) (path, content string) {
 func init() {
 	registry["daily_needs"] = Tool{
 		Name: "daily_needs",
-		Description: "The person's daily reference intakes for keeping their weight (energy, protein, fat, carbohydrates, fibre, water), " +
-			"worked out by Axon from their profile, or why there are none (no profile yet, under 18, or pregnancy: then use no numbers).",
+		Description: "The person's daily reference intakes (energy, protein, fat, carbohydrates, fibre, water) for their goal (maintain, lose gently, or gain), " +
+			"worked out and bounded by Axon from their profile, never under their basal rate or 1,200 kcal; or why there are none (no profile yet, under 18, or pregnancy: then use no numbers).",
 		Properties: map[string]any{},
 		Read: func(ctx context.Context, q db.Querier, userID uuid.UUID, _ json.RawMessage) (any, error) {
 			if err := healthAllowed(ctx, q, userID); err != nil {

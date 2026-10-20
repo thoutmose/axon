@@ -6677,6 +6677,11 @@ export interface components {
 			weight_kg: number;
 			/** @enum {string} */
 			activity: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+			/**
+			 * @description What the needs aim at (EP-191): keeping the weight, losing it gently, or gaining slowly, within bounds.
+			 * @enum {string}
+			 */
+			goal: 'maintain' | 'lose' | 'gain';
 			pregnant_or_breastfeeding: boolean;
 			/** Format: date-time */
 			updated_at: string;
@@ -6689,6 +6694,13 @@ export interface components {
 			age: number;
 			/** @description Basal metabolic rate (Mifflin–St Jeor). */
 			bmr_kcal: number;
+			/**
+			 * @description What the figures aim at (EP-191).
+			 * @enum {string}
+			 */
+			goal: 'maintain' | 'lose' | 'gain';
+			/** @description What would keep the weight; kcal equals it for the maintain goal, is 15 % under it to lose (never under the basal rate or 1,200), 10 % over it to gain. */
+			maintenance_kcal: number;
 			kcal: number;
 			protein_g: number;
 			fat_g: number;
@@ -15882,6 +15894,11 @@ export interface operations {
 					birth_year: number;
 					/** @enum {string} */
 					sex: 'female' | 'male' | 'unspecified';
+					/**
+					 * @description Maintain when left out.
+					 * @enum {string}
+					 */
+					goal?: 'maintain' | 'lose' | 'gain';
 					height_cm: number;
 					weight_kg: number;
 					/** @enum {string} */
