@@ -718,3 +718,46 @@ func TestADomainIsProvenByItsEvaluationSheet(t *testing.T) {
 		t.Fatalf("the export lacks the evaluation sheets: %s", data["skill_validations"])
 	}
 }
+
+// The e2e walk, server side: Operating systems of the Top-5% plan proven
+// from its sheet after a miss, with its milestone and goal in the plan.
+func TestOperatingSystemsIsProvenInsideThePlan(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	var rm struct {
+		Skills []struct {
+			ID    string `json:"id"`
+			Title string `json:"title"`
+		} `json:"skills"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/import", []byte(`{"source":"top5-engineer"}`)), &rm)
+	var os string
+	for _, s := range rm.Skills {
+		if s.Title == "Operating systems" {
+			os = s.ID
+		}
+	}
+	if os == "" {
+		t.Fatal("no Operating systems skill")
+	}
+	alice.mustDo(200, "PATCH", "/v1/skills/"+os, []byte(`{"status":"learning"}`))
+	var sh struct {
+		Items     []map[string]any `json:"items"`
+		Milestone *string          `json:"milestone"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/skills/"+os+"/validation", nil), &sh)
+	if len(sh.Items) != 2 || sh.Milestone == nil {
+		t.Fatalf("sheet = %+v", sh)
+	}
+	sh.Items[0]["ok"] = true
+	body, _ := json.Marshal(map[string]any{"items": sh.Items, "explanation": ""})
+	if code, out := alice.do("POST", "/v1/skills/"+os+"/validations", body); code != 201 || !bytes.Contains(out, []byte(`"incomplete"`)) {
+		t.Fatalf("miss = %d %s", code, out)
+	}
+	sh.Items[1]["ok"] = true
+	body, _ = json.Marshal(map[string]any{"items": sh.Items, "explanation": "The kernel schedules processes and owns memory; xv6 shows each piece in a few hundred lines."})
+	if code, out := alice.do("POST", "/v1/skills/"+os+"/validations", body); code != 201 || !bytes.Contains(out, []byte(`"ok"`)) {
+		t.Fatalf("pass = %d %s", code, out)
+	}
+}
