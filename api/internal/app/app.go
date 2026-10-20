@@ -115,6 +115,7 @@ func Handler(version string, cfg auth.Config, pool *pgxpool.Pool, log *slog.Logg
 	certsAPI := certs.NewHandlers(pool, log)
 	priv.Register("certifications", certs.Export)
 	priv.Register("practice", practice.Export)
+	priv.Register("skill_validations", roadmaps.ExportValidations)
 	priv.Register("decisions", decisions.Export)
 	remindersAPI, err := Reminders(cfg, pool, log)
 	if err != nil {

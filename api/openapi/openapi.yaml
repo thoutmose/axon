@@ -7334,7 +7334,7 @@ paths:
                 properties:
                   plan:
                     type: [object, "null"]
-                    required: [roadmap_id, title, start, phases, reached, phase, week, weeks, days_left, block, next_certification]
+                    required: [roadmap_id, title, start, phases, reached, phase, week, weeks, days_left, block, next_certification, behind_days]
                     properties:
                       roadmap_id: { type: string, format: uuid }
                       title: { type: string }
@@ -7348,6 +7348,7 @@ paths:
                       week: { type: integer, description: "The phase's week, from 1; 0 before it starts." }
                       weeks: { type: integer }
                       days_left: { type: integer, description: Days to the phase's milestone. }
+                      behind_days: { type: integer, description: "Days since the end of the earliest phase over without its milestone reached; 0 when on time." }
                       block: { type: [string, "null"], description: "Today's study block." }
                       next_certification:
                         oneOf:
@@ -7540,6 +7541,43 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
+  /v1/skills/{id}/validation:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    get:
+      tags: [roadmaps]
+      operationId: getSkillValidationSheet
+      summary: "The skill's evaluation sheet: its proof criteria as items to check, and the attempts so far (EP-181)"
+      responses:
+        "200":
+          description: The sheet.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SkillValidationSheet" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/skills/{id}/validations:
+    parameters: [{ $ref: "#/components/parameters/ID" }]
+    post:
+      tags: [roadmaps]
+      operationId: validateSkill
+      summary: "Prove the skill: an attempt at its evaluation sheet, marked 0 to 125; a pass marks the skill done, reaches its milestone, and counts in its goals (EP-181)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SkillValidationAttempt" }
+      responses:
+        "201":
+          description: The attempt, with its mark and flag.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SkillValidation" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
 
   /v1/auth/providers:
     get:
@@ -8630,7 +8668,7 @@ components:
     TodaySection: { enum: [kpis, roadmap, tasks, milestones, goals, notes, learning, habits, calendar, household, journal, water, caffeine, overview] }
     RoadmapPlan:
       type: object
-      required: [started, start, end, goal_id, outdated, newer, phases]
+      required: [started, start, end, goal_id, outdated, newer, phases, behind_days]
       properties:
         started: { type: boolean }
         start: { type: string }
@@ -8639,6 +8677,7 @@ components:
         outdated: { type: boolean, description: Started from an earlier version of the plan. }
         newer: { type: [string, "null"], format: uuid, description: A roadmap started since from the same plan. }
         phases: { type: array, items: { $ref: "#/components/schemas/RoadmapPlanPhase" } }
+        behind_days: { type: integer, description: "Days since the end of the earliest phase over without its milestone reached; 0 when on time (EP-181)." }
     RoadmapPlanPhase:
       type: object
       required: [n, title, start, end, state, tracks, domains, milestone, project, exit, fortytwo, certifications]
@@ -10833,6 +10872,49 @@ components:
         description: { type: string, maxLength: 20000 }
         url: { type: string, maxLength: 1000, description: "http(s) link, or empty to clear." }
         status: { enum: [active, archived] }
+    SkillValidationItem:
+      type: object
+      required: [text, kind, ok, evidence]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 300 }
+        kind: { enum: [mandatory, bonus] }
+        ok: { type: boolean, description: Whether it holds. }
+        evidence: { type: string, maxLength: 500, description: "Where the proof is: a link, a commit, a note." }
+    SkillValidationAttempt:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { $ref: "#/components/schemas/SkillValidationItem" }
+        explanation: { type: string, maxLength: 5000, description: "In your own words, as if to a beginner; needed to pass." }
+    SkillValidation:
+      type: object
+      required: [id, skill_id, attempt, items, explanation, mark, flag, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        skill_id: { type: string, format: uuid }
+        attempt: { type: integer }
+        items: { type: array, items: { $ref: "#/components/schemas/SkillValidationItem" } }
+        explanation: { type: string }
+        mark: { type: integer, description: "0 when a mandatory item is missing, 100 when every one holds, up to 125 with the bonus items." }
+        flag: { enum: [ok, outstanding, incomplete] }
+        created_at: { type: string, format: date-time }
+    SkillValidationSheet:
+      type: object
+      required: [skill_id, title, status, items, attempts, milestone]
+      properties:
+        skill_id: { type: string, format: uuid }
+        title: { type: string }
+        status: { enum: [todo, learning, done, skipped] }
+        items:
+          type: array
+          description: The last attempt's items (a failed one unchecked again), or the skill's proof criteria.
+          items: { $ref: "#/components/schemas/SkillValidationItem" }
+        attempts: { type: array, items: { $ref: "#/components/schemas/SkillValidation" } }
+        milestone: { type: [string, "null"], format: uuid, description: "The “<skill> proven” milestone the plan made, if any." }
     Skill:
       type: object
       required: [id, title, description, url, section, status, kind, position, resources, updated_at]

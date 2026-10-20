@@ -30,6 +30,7 @@ var Rules = []Rule{
 	{"note_written", l10n.Mark("Write a note"), 3},
 	{"permanent_note", l10n.Mark("Write a permanent (Zettelkasten) note (bonus)"), 2},
 	{"skill_learned", l10n.Mark("Mark a roadmap skill learned"), 20},
+	{"domain_outstanding", l10n.Mark("Prove a roadmap domain with every bonus item too (outstanding)"), 5},
 	{"milestone_done", l10n.Mark("Reach a goal's milestone"), 15},
 	{"goal_achieved", l10n.Mark("Achieve a goal"), 50},
 	{"project_done", l10n.Mark("Finish a project"), 30},
@@ -64,6 +65,9 @@ SELECT e.created_at, 'permanent_note', 2, e.id, e.title FROM notes n JOIN entiti
 UNION ALL
 SELECT s.updated_at, 'skill_learned', 20, e.id, e.title FROM skills s JOIN entities e ON e.id = s.id
  WHERE e.user_id = $1 AND s.status = 'done' AND s.updated_at >= $2 AND s.updated_at < $3
+UNION ALL
+SELECT v.created_at, 'domain_outstanding', 5, e.id, e.title FROM skill_validations v JOIN entities e ON e.id = v.skill_id
+ WHERE e.user_id = $1 AND v.mark >= 125 AND v.created_at >= $2 AND v.created_at < $3
 UNION ALL
 SELECT m.done_at, 'milestone_done', 15, e.id, e.title FROM milestones m JOIN entities e ON e.id = m.id
  WHERE e.user_id = $1 AND m.done_at IS NOT NULL AND m.done_at >= $2 AND m.done_at < $3

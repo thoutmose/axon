@@ -647,6 +647,25 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(graph.getByRole('link', { name: 'Operating systems, learning' })).toBeVisible();
 	await noSeriousA11yViolations(page);
 
+	// Proven, not ticked (EP-181): the evaluation sheet from its proof criteria.
+	await detail.getByRole('button', { name: 'Prove it' }).click();
+	const sheet = page.getByRole('dialog', { name: 'Prove Operating systems' });
+	await expect(sheet.getByRole('textbox', { name: 'Item 1' })).toHaveValue(/LFD103/);
+	await sheet.getByRole('checkbox', { name: 'Item 1 holds' }).check();
+	await sheet.getByRole('button', { name: 'Validate' }).click();
+	await expect(sheet.getByRole('status')).toContainText('Not yet · 0/100');
+	await sheet.getByRole('checkbox', { name: 'Item 2 holds' }).check();
+	await sheet
+		.getByRole('textbox', { name: /Explain it in your own words/ })
+		.fill(
+			'The kernel schedules processes and owns memory; xv6 shows each piece in a few hundred lines.'
+		);
+	await sheet.getByRole('button', { name: 'Validate' }).click();
+	await expect(sheet.getByRole('status')).toContainText('Proven · 100/100');
+	await noSeriousA11yViolations(page);
+	await sheet.getByRole('button', { name: 'Close' }).click();
+	await expect(graph.getByRole('link', { name: 'Operating systems, done' })).toBeVisible();
+
 	// Study hours against the plan, and a focus session on today's block (EP-105).
 	const hours = page.getByRole('region', { name: 'Study hours' });
 	await expect(hours).toContainText('0 h of 22 h this week');

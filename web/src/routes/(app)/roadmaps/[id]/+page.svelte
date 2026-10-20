@@ -13,6 +13,7 @@
 	import Status from '$lib/ui/Status.svelte';
 	import TextField from '$lib/ui/TextField.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
+	import ValidationSheet from '$lib/ValidationSheet.svelte';
 
 	type Roadmap = Schemas['Roadmap'];
 	const id = $derived(page.params.id ?? '');
@@ -62,6 +63,9 @@
 		done: t('Done'),
 		skipped: t('Skipped')
 	});
+
+	// The evaluation sheet of the selected skill (EP-181).
+	let proving = $state(false);
 
 	async function load() {
 		error = '';
@@ -379,6 +383,9 @@
 							>
 						{/each}
 					</div>
+					<p>
+						<Button variant="secondary" onclick={() => (proving = true)}>{t('Prove it')}</Button>
+					</p>
 					<Connections id={selected.id} type="skill" />
 					<Button variant="danger" onclick={() => selected && removeSkill(selected)}
 						>{t('Delete skill')}</Button
@@ -389,6 +396,17 @@
 	{/if}
 
 	<Connections id={roadmap.id} type="roadmap" />
+{/if}
+
+{#if selected}
+	<ValidationSheet
+		skillId={selected.id}
+		title={selected.title}
+		bind:open={proving}
+		onvalidated={(v) => {
+			if (v.flag !== 'incomplete') load();
+		}}
+	/>
 {/if}
 
 <Dialog bind:open={editing} title={t('Edit roadmap')}>

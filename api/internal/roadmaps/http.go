@@ -47,6 +47,8 @@ func (h *Handlers) Routes(r chi.Router) {
 	r.Post("/v1/roadmaps/{id}/skills", h.addSkill)
 	r.Patch("/v1/skills/{id}", h.updateSkill)
 	r.Delete("/v1/skills/{id}", h.deleteSkill)
+	r.Get("/v1/skills/{id}/validation", h.sheet)
+	r.Post("/v1/skills/{id}/validations", h.validate)
 	r.Get("/v1/assessment/questions", h.questions)
 	r.Get("/v1/assessments", h.listAssessments)
 	r.Post("/v1/assessments", h.createAssessment)
@@ -411,4 +413,41 @@ func (h *Handlers) plan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, out)
+}
+
+// sheet is a skill's evaluation sheet (EP-181).
+func (h *Handlers) sheet(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	sid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	out, err := GetSheet(r.Context(), h.db, who.UserID, sid)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, out)
+}
+
+// validate keeps an attempt at a skill's evaluation sheet (EP-181).
+func (h *Handlers) validate(w http.ResponseWriter, r *http.Request) {
+	who, _ := auth.FromContext(r.Context())
+	sid, err := id(r)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var body struct {
+		Items       []ValidationItem `json:"items"`
+		Explanation string           `json:"explanation"`
+	}
+	if err := httpx.Decode(r, &body); err != nil {
+		httpx.Problem(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	h.tx(w, r, http.StatusCreated, func(tx pgx.Tx) (any, error) {
+		return Validate(r.Context(), tx, who.UserID, sid, graph.UserActor, body.Items, body.Explanation)
+	})
 }

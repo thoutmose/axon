@@ -230,6 +230,13 @@
 			{#if plan.goal_id}· <a href="/goals/{plan.goal_id}">{t('Open the goal')}</a>{/if}
 			{#if !preview}· <a href="/notes?para=resources">{t('Its resources as notes')}</a>{/if}
 		</p>
+		{#if plan.behind_days > 0}
+			<p class="behind">
+				{t('{n} days behind: a phase is over and its milestone is not reached.', {
+					n: plan.behind_days
+				})}
+			</p>
+		{/if}
 		<ol class="strip" aria-label={t('Phases')}>
 			{#each plan.phases as p (p.n)}
 				<li
@@ -416,6 +423,10 @@
 		font-size: var(--text-sm);
 		text-decoration: none;
 		color: var(--fg);
+	}
+	.behind {
+		color: var(--bad);
+		font-size: var(--text-sm);
 	}
 	.strip .past a {
 		opacity: 0.7;

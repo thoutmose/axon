@@ -1,6 +1,7 @@
 package app
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -587,4 +588,133 @@ func mine(t *testing.T, c *client) string {
 	var rm roadmapJSON
 	_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"By hand"}`)), &rm)
 	return rm.ID
+}
+
+// A domain is proven, not ticked (EP-181): its evaluation sheet comes from
+// its proof criteria, a missing mandatory item means another try, and a pass
+// marks the skill done, reaches its milestone, counts in its goal, and earns
+// the outstanding bonus when every bonus item holds too.
+func TestADomainIsProvenByItsEvaluationSheet(t *testing.T) {
+	e := newEnv(t, true)
+	alice, bob := e.client(), e.client()
+	alice.register("Alice")
+	bob.register("Bob")
+	var rm, kana, goal, ms struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps", []byte(`{"title":"Japanese"}`)), &rm)
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/roadmaps/"+rm.ID+"/skills",
+		[]byte(`{"title":"Kana","section":"Basics","description":"The two syllabaries. Proof: read a children's book aloud, write the 92 kana from memory (≥ 90%)."}`)), &kana)
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals",
+		[]byte(`{"title":"Basics proven","measure":{"unit":"domains proven","start":0,"target":2,"current":0}}`)), &goal)
+	_ = json.Unmarshal(alice.mustDo(201, "POST", "/v1/goals/"+goal.ID+"/milestones", []byte(`{"title":"Kana proven"}`)), &ms)
+	alice.mustDo(201, "POST", "/v1/links", []byte(`{"source_id":"`+kana.ID+`","relation":"supports","target_id":"`+goal.ID+`"}`))
+	alice.mustDo(201, "POST", "/v1/links", []byte(`{"source_id":"`+kana.ID+`","relation":"relates_to","target_id":"`+ms.ID+`"}`))
+	if code, out := alice.putYAML("version: 1\ngamification:\n  enabled: true\n"); code != 200 {
+		t.Fatalf("enable gamification: %d %s", code, out)
+	}
+
+	type item struct {
+		Text     string `json:"text"`
+		Kind     string `json:"kind"`
+		OK       bool   `json:"ok"`
+		Evidence string `json:"evidence"`
+	}
+	type sheet struct {
+		Status    string            `json:"status"`
+		Items     []item            `json:"items"`
+		Attempts  []json.RawMessage `json:"attempts"`
+		Milestone *string           `json:"milestone"`
+	}
+	readSheet := func() sheet {
+		var sh sheet
+		_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/skills/"+kana.ID+"/validation", nil), &sh)
+		return sh
+	}
+	sh := readSheet()
+	if len(sh.Items) != 2 || sh.Items[0].Text != "read a children's book aloud" || sh.Items[1].Text != "write the 92 kana from memory (≥ 90%)" ||
+		sh.Items[0].Kind != "mandatory" || sh.Milestone == nil || *sh.Milestone != ms.ID || sh.Status != "todo" {
+		t.Fatalf("sheet = %+v", sh)
+	}
+	bob.mustDo(404, "GET", "/v1/skills/"+kana.ID+"/validation", nil)
+
+	attempt := func(want int, body string) map[string]any {
+		t.Helper()
+		code, out := alice.do("POST", "/v1/skills/"+kana.ID+"/validations", []byte(body))
+		if code != want {
+			t.Fatalf("attempt = %d %s, want %d", code, out, want)
+		}
+		var v map[string]any
+		_ = json.Unmarshal(out, &v)
+		return v
+	}
+	read := `{"text":"read a children's book aloud","kind":"mandatory","ok":true,"evidence":"a recording in the vault"}`
+	write := func(ok bool) string {
+		return fmt.Sprintf(`{"text":"write the 92 kana from memory (≥ 90%%)","kind":"mandatory","ok":%t,"evidence":""}`, ok)
+	}
+	teach := func(ok bool) string {
+		return fmt.Sprintf(`{"text":"teach a friend","kind":"bonus","ok":%t,"evidence":""}`, ok)
+	}
+	explained := `"explanation":"Kana are the two syllabaries: each sign is one mora, so a word is read sign by sign."`
+
+	// One mandatory item missing: 0, incomplete, and nothing changes.
+	if v := attempt(201, `{"items":[`+read+`,`+write(false)+`],"explanation":""}`); v["flag"] != "incomplete" || v["mark"] != float64(0) || v["attempt"] != float64(1) {
+		t.Fatalf("first attempt = %v", v)
+	}
+	if sh = readSheet(); sh.Status != "todo" || len(sh.Attempts) != 1 || sh.Items[0].OK {
+		t.Fatalf("after a miss: %+v", sh)
+	}
+	// Every mandatory item but no explanation: refused.
+	attempt(422, `{"items":[`+read+`,`+write(true)+`],"explanation":""}`)
+	attempt(422, `{"items":[`+teach(true)+`],`+explained+`}`) // no mandatory item
+	// A pass: the skill is done, the milestone reached, and the goal counts it.
+	if v := attempt(201, `{"items":[`+read+`,`+write(true)+`,`+teach(false)+`],`+explained+`}`); v["flag"] != "ok" || v["mark"] != float64(100) || v["attempt"] != float64(2) {
+		t.Fatalf("pass = %v", v)
+	}
+	if sh = readSheet(); sh.Status != "done" || len(sh.Attempts) != 2 || !sh.Items[0].OK {
+		t.Fatalf("after a pass: %+v", sh)
+	}
+	var milestone struct {
+		DoneAt *string `json:"done_at"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/milestones/"+ms.ID, nil), &milestone)
+	if milestone.DoneAt == nil {
+		t.Fatal("the milestone was not reached")
+	}
+	var g struct {
+		Measure struct {
+			Current float64 `json:"current"`
+		} `json:"measure"`
+		Progress struct {
+			Percent *int `json:"percent"`
+		} `json:"progress"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/goals/"+goal.ID, nil), &g)
+	if g.Measure.Current != 1 || g.Progress.Percent == nil || *g.Progress.Percent != 50 {
+		t.Fatalf("goal = %+v", g)
+	}
+	// With the bonus too: outstanding, 125, and its points in the ledger.
+	if v := attempt(201, `{"items":[`+read+`,`+write(true)+`,`+teach(true)+`],`+explained+`}`); v["flag"] != "outstanding" || v["mark"] != float64(125) || v["attempt"] != float64(3) {
+		t.Fatalf("outstanding = %v", v)
+	}
+	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/progress/ledger?days=7", nil), []byte(`"domain_outstanding"`)) {
+		t.Fatal("the outstanding bonus is not in the ledger")
+	}
+	// Nobody proves another person's skill, and the sheets are in the export.
+	bob.mustDo(404, "POST", "/v1/skills/"+kana.ID+"/validations", []byte(`{"items":[`+read+`],`+explained+`}`))
+	archive := alice.mustDo(200, "GET", "/v1/me/export", nil)
+	zr, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var data map[string]json.RawMessage
+	for _, f := range zr.File {
+		if f.Name == "axon-export.json" {
+			r, _ := f.Open()
+			_ = json.NewDecoder(r).Decode(&data)
+		}
+	}
+	if !bytes.Contains(data["skill_validations"], []byte(`"outstanding"`)) {
+		t.Fatalf("the export lacks the evaluation sheets: %s", data["skill_validations"])
+	}
 }

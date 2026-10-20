@@ -4446,6 +4446,44 @@ export interface paths {
 		patch: operations['updateSkill'];
 		trace?: never;
 	};
+	'/v1/skills/{id}/validation': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		/** The skill's evaluation sheet: its proof criteria as items to check, and the attempts so far (EP-181) */
+		get: operations['getSkillValidationSheet'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/v1/skills/{id}/validations': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Prove the skill: an attempt at its evaluation sheet, marked 0 to 125; a pass marks the skill done, reaches its milestone, and counts in its goals (EP-181) */
+		post: operations['validateSkill'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/v1/auth/providers': {
 		parameters: {
 			query?: never;
@@ -5117,6 +5155,8 @@ export interface components {
 			 */
 			newer: string | null;
 			phases: components['schemas']['RoadmapPlanPhase'][];
+			/** @description Days since the end of the earliest phase over without its milestone reached; 0 when on time (EP-181). */
+			behind_days: number;
 		};
 		RoadmapPlanPhase: {
 			n: number;
@@ -7633,6 +7673,50 @@ export interface components {
 			url?: string;
 			/** @enum {unknown} */
 			status?: 'active' | 'archived';
+		};
+		SkillValidationItem: {
+			text: string;
+			/** @enum {unknown} */
+			kind: 'mandatory' | 'bonus';
+			/** @description Whether it holds. */
+			ok: boolean;
+			/** @description Where the proof is: a link, a commit, a note. */
+			evidence: string;
+		};
+		SkillValidationAttempt: {
+			items: components['schemas']['SkillValidationItem'][];
+			/** @description In your own words, as if to a beginner; needed to pass. */
+			explanation?: string;
+		};
+		SkillValidation: {
+			/** Format: uuid */
+			id: string;
+			/** Format: uuid */
+			skill_id: string;
+			attempt: number;
+			items: components['schemas']['SkillValidationItem'][];
+			explanation: string;
+			/** @description 0 when a mandatory item is missing, 100 when every one holds, up to 125 with the bonus items. */
+			mark: number;
+			/** @enum {unknown} */
+			flag: 'ok' | 'outstanding' | 'incomplete';
+			/** Format: date-time */
+			created_at: string;
+		};
+		SkillValidationSheet: {
+			/** Format: uuid */
+			skill_id: string;
+			title: string;
+			/** @enum {unknown} */
+			status: 'todo' | 'learning' | 'done' | 'skipped';
+			/** @description The last attempt's items (a failed one unchecked again), or the skill's proof criteria. */
+			items: components['schemas']['SkillValidationItem'][];
+			attempts: components['schemas']['SkillValidation'][];
+			/**
+			 * Format: uuid
+			 * @description The “<skill> proven” milestone the plan made, if any.
+			 */
+			milestone: string | null;
 		};
 		Skill: {
 			/** Format: uuid */
@@ -17897,6 +17981,8 @@ export interface operations {
 							weeks: number;
 							/** @description Days to the phase's milestone. */
 							days_left: number;
+							/** @description Days since the end of the earliest phase over without its milestone reached; 0 when on time. */
+							behind_days: number;
 							/** @description Today's study block. */
 							block: string | null;
 							next_certification: components['schemas']['RoadmapPlanCert'] | null;
@@ -18175,6 +18261,62 @@ export interface operations {
 				};
 				content: {
 					'application/json': components['schemas']['Skill'];
+				};
+			};
+			400: components['responses']['Problem'];
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+			422: components['responses']['Problem'];
+		};
+	};
+	getSkillValidationSheet: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The sheet. */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SkillValidationSheet'];
+				};
+			};
+			401: components['responses']['Problem'];
+			403: components['responses']['Problem'];
+			404: components['responses']['Problem'];
+		};
+	};
+	validateSkill: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components['parameters']['ID'];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SkillValidationAttempt'];
+			};
+		};
+		responses: {
+			/** @description The attempt, with its mark and flag. */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['SkillValidation'];
 				};
 			};
 			400: components['responses']['Problem'];

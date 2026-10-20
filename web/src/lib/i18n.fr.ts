@@ -1146,6 +1146,33 @@ export const fr: Record<string, string> = {
 	'Your accounts at the end of {month}': 'Vos comptes, fin {month}',
 	'Add your accounts to see each balance here.': 'Ajoutez vos comptes pour voir chaque solde ici.',
 	'Net worth': 'Patrimoine net',
+	'Prove it': 'Le prouver',
+	'Prove {title}': 'Prouver {title}',
+	'Loading the evaluation sheet…': 'Chargement de la fiche d’évaluation…',
+	'As at École 42: check each item of the proof with where its evidence is, then explain it in your own words. Every mandatory item makes 100, the bonus items add up to 25, and one missing means another try.':
+		'Comme à l’École 42 : cochez chaque élément de la preuve avec l’endroit où elle se trouve, puis expliquez-le avec vos mots. Tous les éléments obligatoires font 100, les bonus ajoutent jusqu’à 25, et un manque veut dire un nouvel essai.',
+	'Item {n} holds': 'L’élément {n} est tenu',
+	'Item {n}': 'Élément {n}',
+	'What must hold': 'Ce qui doit être tenu',
+	'Where the evidence is: a link, a commit, a note':
+		'Où est la preuve : un lien, un commit, une note',
+	'Evidence for item {n}': 'Preuve de l’élément {n}',
+	'Kind of item {n}': 'Nature de l’élément {n}',
+	Mandatory: 'Obligatoire',
+	Bonus: 'Bonus',
+	'Remove item {n}': 'Retirer l’élément {n}',
+	'Add a bonus item': 'Ajouter un bonus',
+	'Explain it in your own words, as if to a beginner: what it is, why it works':
+		'Expliquez-le avec vos mots, comme à un débutant : ce que c’est, pourquoi ça marche',
+	Validate: 'Valider',
+	Proven: 'Prouvé',
+	Outstanding: 'Remarquable',
+	'{n} mandatory items missing': '{n} éléments obligatoires manquants',
+	'Not yet: {n} mandatory items are missing. Try again when they hold.':
+		'Pas encore : {n} éléments obligatoires manquent. Réessayez quand ils seront tenus.',
+	'{title} proven: {mark}/100.': '{title} prouvé : {mark}/100.',
+	'{n} days behind: a phase is over and its milestone is not reached.':
+		'{n} jours de retard : une phase est finie et son jalon n’est pas atteint.',
 	'Spending by category': 'Dépenses par catégorie',
 	'No categories yet.': 'Aucune catégorie pour l’instant.',
 	'Start with common categories': 'Commencer avec des catégories courantes',

@@ -70,6 +70,13 @@
 				)}
 			{/if}
 		</p>
+		{#if plan.behind_days > 0}
+			<p class="small behind">
+				{t('{n} days behind: a phase is over and its milestone is not reached.', {
+					n: plan.behind_days
+				})}
+			</p>
+		{/if}
 		<div
 			class="bar"
 			role="progressbar"
@@ -187,6 +194,9 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-2);
+	}
+	.behind {
+		color: var(--bad);
 	}
 	.small {
 		font-size: var(--text-sm);

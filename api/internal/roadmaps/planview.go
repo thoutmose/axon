@@ -72,6 +72,20 @@ type PlanView struct {
 	Outdated bool            `json:"outdated"`
 	Newer    *uuid.UUID      `json:"newer"`
 	Phases   []PlanPhaseView `json:"phases"`
+	// BehindDays is how late the plan runs: days since the end of the
+	// earliest phase that is over with its milestone not reached (EP-181).
+	BehindDays int `json:"behind_days"`
+}
+
+// behind counts the days since the end of the earliest phase that is over
+// without its milestone reached; 0 when the plan is on time.
+func behind(phases []PlanPhaseView, today time.Time) int {
+	for _, ph := range phases {
+		if ph.State == "past" && ph.Milestone != nil && !ph.Milestone.Done {
+			return int(today.Sub(day(ph.End)).Hours() / 24)
+		}
+	}
+	return 0
 }
 
 // phases lays out a plan's phases with its dates moved by shift days.
@@ -215,6 +229,7 @@ func GetPlan(ctx context.Context, q db.Querier, userID, id uuid.UUID, now time.T
 		}
 		out.Phases = append(out.Phases, v)
 	}
+	out.BehindDays = behind(out.Phases, today)
 	return out, nil
 }
 
@@ -233,6 +248,8 @@ type PlanToday struct {
 	DaysLeft  int            `json:"days_left"` // to the phase's milestone
 	Block     *string        `json:"block"`     // today's study block
 	NextCert  *PlanCertView  `json:"next_certification"`
+	// BehindDays is how late the plan runs (EP-181).
+	BehindDays int `json:"behind_days"`
 }
 
 // TodayPlan returns today's part of the latest started plan, or nil.
@@ -257,7 +274,7 @@ func TodayPlan(ctx context.Context, q db.Querier, userID uuid.UUID, now time.Tim
 	if err != nil {
 		return nil, err
 	}
-	out := &PlanToday{RoadmapID: id, Title: title, Start: p.Start, Phases: len(p.Phases)}
+	out := &PlanToday{RoadmapID: id, Title: title, Start: p.Start, Phases: len(p.Phases), BehindDays: p.BehindDays}
 	for i := range p.Phases {
 		ph := &p.Phases[i]
 		if ph.Milestone != nil && ph.Milestone.Done {

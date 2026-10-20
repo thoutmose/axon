@@ -229,6 +229,16 @@ Story points use relative Fibonacci sizing: 1, 2, 3, 5, 8, 13, 21. A 21-point it
 | EP-177 | Habits by area, and the ones missing | Habits carry their area and are grouped by it on Habits, Today, and the digest; templates for production, reflection, learning, and the watch. Owner request. | SHOULD | 2 pts | EP-166 | Ready |
 | EP-176 | The account's ledger, and edits | An account's history with a running balance; transactions, names, and opening balances edited in place. Owner request. | SHOULD | 2 pts | EP-175 | Ready |
 | EP-179 | Buttons on Slack and Discord | The morning digest's buttons on the Slack and Discord bots too. Owner request. | COULD | 3 pts | EP-178 | Ready |
+| EP-181 | Proven, not ticked | A domain is proven by its evaluation sheet, as at École 42: items, evidence, the explanation, a mark of 0 to 125, retries; a pass marks the skill done and reaches its milestone; the plan says when it is behind. Owner request (benchmark). | MUST | 5 pts | EP-171 | Done (review pending) |
+| EP-183 | Memory to criterion | Confidence before the answer and the learner's calibration, test misses due again, a timed exam per phase. Owner request (benchmark). | MUST | 4 pts | EP-77 | Ready |
+| EP-184 | Notes that embed | Transclusion, heading links that jump, aliases, backlinks with context, an outline, find and replace. Owner request (benchmark). | MUST | 3 pts | EP-25 | Ready |
+| EP-186 | Plan the day, shut it down | Priority and estimates, the morning plan with three most important tasks against the day's free time, the shutdown with rollover and a line of reflection, focus sessions with an intention. Owner request (benchmark). | MUST | 5 pts | EP-59 | Ready |
+| EP-182 | The defense with the Teacher | With AI on, the Teacher agent asks the "why" questions of a 42 evaluator on the sheet and proposes the verdict for approval. Owner request (benchmark). | SHOULD | 3 pts | EP-181 | Ready |
+| EP-185 | From fleeting to evergreen | Promotion that moves and templates the note, extract a selection, the why of a link, maturity, hubs from communities, random note, the daily note as the hub. Owner request (benchmark). | SHOULD | 5 pts | EP-47 | Ready |
+| EP-187 | Cycles and labels | Labels, a blocked badge, cards managed from the UI, two-week cycles with a goal, rollover, velocity, and a burndown, quick add with priority and project. Owner request (benchmark). | SHOULD | 5 pts | EP-128 | Ready |
+| EP-188 | Project pages and decisions in sight | A page tree per project with meeting, decision, retro, and kickoff templates; decisions as graph items, due ones on Today and in the digest; a guided monthly review. Owner request (benchmark). | SHOULD | 5 pts | EP-114 | Ready |
+| EP-189 | Highlights in | Kindle, Readwise, and KOReader highlights on literature notes; a read-later queue; highlights resurfaced as questions. Owner request (benchmark). | COULD | 3 pts | EP-67 | Ready |
+| EP-190 | FSRS, yours | Parameters optimised on the person's own reviews, a daily cap, cloze with siblings, image occlusion, tags, `.apkg` import. Owner request (benchmark). | COULD | 5 pts | EP-52 | Ready |
 | EP-19 | AI agent platform, skills & safety | Approval-gated agents with tool boundaries, budgets, evals, and audit; ships Task Manager and Goals agents. | MUST | 89 pts | EP-04, EP-05, EP-06, EP-07, EP-09, EP-13 | Done |
 | EP-20 | Analytics & insights | Explainable personal metrics and weekly reviews from the event log. | COULD | 55 pts | EP-03, EP-05, EP-09 | Done |
 | EP-21 | Documentation, release 1.0 & hardening | Supportable release: docs, upgrade path, performance, recovery, security review. | MUST | 55 pts | All MUST Epics | Done (external review and observed install pending) |
@@ -265,7 +275,7 @@ Dependencies above are satisfied by this order. Change it only through a human d
 | R2.5 — Daily driver | EP-28 → EP-29 → EP-30 → EP-41 → EP-31 → EP-32 → EP-33 → EP-34 → EP-35 → EP-16 → EP-42 → EP-15 → EP-36 → EP-43 → EP-39 → EP-38 → EP-37 → EP-40 | Demo, dashboard, settings, focus, retrieval and Anki, gamification across every area, live vault, knowledge graph, finance, portability |
 | R3 — Whole-life beta | EP-17 → EP-18 → EP-45 → EP-46 → EP-44 → EP-20 | Media, health, owner fixes, note NLP, coaching, analytics with consent and graceful degradation |
 | 1.0 — Durable release | EP-21 | Recovery drill, security review, docs, upgrade path, support policy |
-| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-174 → EP-175 → EP-178 → EP-180 → EP-177 → EP-176 → EP-179 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
+| 1.1 — Owner requests | EP-47 → EP-48 → EP-49 → EP-50 → EP-51 → EP-52 → EP-53 → EP-54 → … → EP-62 → EP-63 → … → EP-68 → EP-69 → EP-70 → … → EP-105 → EP-106 → EP-107 → EP-108 → EP-109 → EP-110 → EP-111 → EP-112 → EP-113 → EP-114 → EP-115 → EP-116 → EP-117 → EP-118 → EP-119 → EP-120 → EP-121 → EP-122 → EP-123 → EP-124 → EP-125 → EP-126 → EP-127 → EP-128 → EP-129 → EP-130 → EP-131 → EP-134 → EP-135 → EP-136 → EP-137 → EP-138 → EP-139 → EP-132 → EP-133 → EP-140 → EP-141 → EP-142 → EP-143 → EP-144 → EP-145 → EP-146 → … → EP-162 → EP-163 → … → EP-174 → EP-175 → EP-181 → EP-178 → EP-183 → EP-180 → EP-184 → EP-186 → EP-177 → EP-182 → EP-185 → EP-176 → EP-187 → EP-188 → EP-179 → EP-189 → EP-190 | Zettelkasten graph, everything in the vault, audit, diagrams, pictures in notes, the learning and memory engine, agents on every page, the twelve proposed features |
 
 R1 deliberately ships without agents: every feature must be useful with AI disabled. Agent features for R1 domains (Task Manager, Goals) are delivered by EP-19.
 
@@ -2659,6 +2669,103 @@ The science: caffeine leaves the body by half every half-life, about 5 hours on 
 
 **Tests.** `TestChatListeners` with a Slack `block_actions` envelope and a Discord interaction against the fakes.
 
+### EP-181 — Proven, not ticked
+
+**Goal.** "Search like on SecondBrain, Zettelkasten, note-taking, Jira, Confluence, Pomodoro, productivity apps, 42 School … try also to improve learning, the memorising process" (owner, 2026-10-20). The findings are in [the benchmark](benchmark-2026-10.md). At École 42 a project is validated in a defense: the student explains why, the evaluators check an evaluation sheet (mandatory parts, bonus, one flag), the mark is 0 to 100 and up to 125 with the bonus, a fail is a retry, and the level grows with the XP of what was validated. In Axon a skill was "done" by a dropdown, the "<domain> proven" milestones were ticked by hand, the goal's measure typed in, and a phase that ended with its milestone unreached turned "past" without a word. Self-explanation (g = 0.55) and learning by teaching (g = 0.56) are among the best-evidenced practices.
+
+- [x] **EP-181/IS-181.01** · 2 pts · MUST — `skill_validations` (migration 00074): an attempt keeps its items (text, mandatory or bonus, whether it holds, where the evidence is), the explanation, the mark, and the flag. `GET /v1/skills/{id}/validation` gives the sheet: the last attempt's items, unchecked again after a miss, or the skill's own proof criteria read from the "Proof:" sentence of its description (one item per comma or semicolon outside parentheses; 47 of the plan's 53 skills have one), with the attempts and the "<skill> proven" milestone. `POST /v1/skills/{id}/validations` grades it: a mandatory item missing is 0 and "incomplete", to try again; every mandatory item holding is 100, the bonus items add their share of 25, and all of them 125, "outstanding"; passing needs the explanation in the person's own words. A pass marks the skill done, reaches its milestone, and counts it in the goals it supports that are measured in domains proven. Outstanding earns 5 points beside the skill's 20 (as 125 % of a project's XP at 42). The sheets are in the export.
+- [x] **EP-181/IS-181.02** · 2 pts · MUST — **Prove it** on a skill's panel opens its evaluation sheet: each item with a checkbox and where its evidence is, mandatory or bonus, items added or removed, the explanation "as if to a beginner", **Validate**, the verdict, and the attempts so far. The skill turns done on the graph and in the list.
+- [x] **EP-181/IS-181.03** · 1 pt · MUST — The plan and Today say "N days behind" once a phase is over with its milestone not reached (`behind_days` on `GET /v1/roadmaps/{id}/plan` and `/v1/roadmaps/today`), where before the phase only turned "past".
+
+**Tests.** `TestCriteriaComeFromTheProofSentence`, `TestTheMarkFollowsTheSheet`; `TestADomainIsProvenByItsEvaluationSheet` (the sheet from the criteria with its milestone, another person's skill unseen, a miss recorded with nothing changed, no explanation refused, no mandatory item refused, a pass marking the skill done, reaching the milestone, and counting in the goal, the outstanding bonus in the ledger, the sheets in the export); migrations up and down with every foreign key indexed; the French catalogue; e2e: Operating systems proven from its two criteria after one miss, with axe on the sheet.
+
+### EP-183 — Memory to criterion
+
+**Goal.** The same request. Judgements of learning made after a retrieval attempt track later recall best (Rhodes & Tauber 2011), relearning to a criterion in spaced sessions keeps 80 % at a week against 20 % (Rawson & Dunlosky), and Math Academy's timed quizzes turn misses into review. Axon's calibration measured the scheduler, not the learner, and the weekly test dropped its misses.
+
+- [ ] **EP-183/IS-183.01** · 1 pt · MUST — Before the answer, the reviewer says how sure they are (sure, probably, guessing); the review keeps it; **Your memory, measured** adds the learner's own calibration: how often "sure" was right, with the Brier score the decision journal already computes.
+- [ ] **EP-183/IS-183.02** · 1 pt · MUST — The weekly test keeps each question's result; a missed card is due again tomorrow, and the test takes only cards reviewed at least once.
+- [ ] **EP-183/IS-183.03** · 2 pts · COULD — A timed, closed-book **exam** per phase of the plan from the cards of its domains' resource notes (EP-154 links them to the skills): 20 questions in 20 minutes, answers typed and marked, the misses due tomorrow, the score kept with the phase and on Today's roadmap card.
+
+**Tests.** The calibration test with confidence, the test's misses due the next day, an exam scored and its misses re-queued.
+
+### EP-184 — Notes that embed
+
+**Goal.** The same request. Transclusion, heading links, aliases, and backlinks with context are table stakes in Obsidian, Logseq, and Roam; in Axon `![[note]]` renders as "!" and a link, `[[note#heading]]` opens the top, `aliases:` is ignored, and backlinks show no sentence.
+
+- [ ] **EP-184/IS-184.01** · 1 pt · MUST — `![[note]]` and `![[note#heading]]` render the note or its section in place (one level deep, cycles cut), and `[[note#heading]]` opens at the heading.
+- [ ] **EP-184/IS-184.02** · 1 pt · MUST — `aliases:` in the front matter resolve links, `[[` suggestions, and unlinked mentions; backlinks show the sentence around the link.
+- [ ] **EP-184/IS-184.03** · 1 pt · SHOULD — An outline of the note's headings beside the editor, find and replace in the editor, and checkboxes that can be ticked in the reading view.
+
+**Tests.** Renderer unit tests for embeds, headings, and cycles; the notes e2e with an alias, an embed, and a backlink's context.
+
+### EP-186 — Plan the day, shut it down
+
+**Goal.** The same request. The morning planning ritual with estimates against the day's capacity and one to three most important tasks, and the shutdown ritual with rollover and a line of reflection, are the practices every personal planner converges on (Sunsama, Akiflow, Marvin, Newport, Ivy Lee); focus apps start a session with an intention. Axon's tasks had no priority or estimate, the Today page no plan, and the evening nudge listed habits.
+
+- [ ] **EP-186/IS-186.01** · 2 pts · MUST — Tasks take a priority (P1 to P4) and an estimate in minutes; **Plan today** on Today picks from overdue, today, next, and the week's objectives, marks three as most important, shows the day's minutes against the free time between calendar events, and defers the rest; the three lead the Today card and the morning digest.
+- [ ] **EP-186/IS-186.02** · 2 pts · MUST — **Shut the day down**: what was done and the minutes focused, what rolls over (one click, or back to next), a line of reflection in the journal, tomorrow's three, and "shutdown complete" as the daily check-in; the evening nudge offers it.
+- [ ] **EP-186/IS-186.03** · 1 pt · SHOULD — A focus session starts with an intention and ends with a line of reflection and the count of interruptions; the Focus page shows estimate against actual per task and minutes by project this week.
+
+**Tests.** The tasks test with priority and estimates; the plan and the shutdown in e2e; focus sessions with an intention.
+
+### EP-182 — The defense with the Teacher
+
+**Goal.** The same request: at 42 the evaluator asks why. With AI on, the Teacher agent can play that part on EP-181's sheet; without AI the sheet works as it is.
+
+- [ ] **EP-182/IS-182.01** · 3 pts · SHOULD — **Defend it** on the sheet: the Teacher reads the explanation and the evidence, asks three "why" questions as a 42 evaluator would, grades the answers against the items, and proposes the sheet's verdict, which the person approves or changes; the agent never validates on its own (its safety eval says so).
+
+**Tests.** The Teacher's defense against a fake provider: questions asked, a verdict proposed and pending, nothing validated without approval.
+
+### EP-185 — From fleeting to evergreen
+
+**Goal.** The same request. The Zettelkasten's step from fleeting to literature to permanent, one idea per note with the why of each link, structure and hub notes, and the daily note as the hub are the method's consensus (Ahrens, zettelkasten.de, Matuschak); in Axon promotion only rewrote `type:` and left the file in the inbox, links carried no why, and the daily note had no yesterday.
+
+- [ ] **EP-185/IS-185.01** · 2 pts · SHOULD — Promoting a fleeting note moves it to `Zettel/literature` or `Zettel/permanent` with the template's sections and a Zettel id; **Extract to a new note** turns a selection into a permanent note linked back, "because …" after the link kept as the link's context and shown in the graph.
+- [ ] **EP-185/IS-185.02** · 1 pt · SHOULD — Maturity read from `status:` (seedling, growing, evergreen) and shown; the processing list adds notes unlinked or untouched for 60 days; a **Random note** command and "On this day".
+- [ ] **EP-185/IS-185.03** · 1 pt · SHOULD — A map-of-content template, and **Make a hub** from a community of the Zettelkasten graph or a tag: a structure note listing its notes with a line each.
+- [ ] **EP-185/IS-185.04** · 1 pt · SHOULD — The daily note as the hub: yesterday and tomorrow links, an interstitial entry (the time and what was just finished) from the command palette, and the notes made today listed under it.
+
+**Tests.** Promotion moves and templates the note; an extract links back with its why; the hub lists its community; the daily note's links and entry in e2e.
+
+### EP-187 — Cycles and labels
+
+**Goal.** The same request: Jira and Linear's basics a single person uses. Labels, a blocked badge, cycles with a goal and rollover, velocity, and a burndown; the API already places tasks on boards and changes cards, the UI did not; quick add knew no priority or project.
+
+- [ ] **EP-187/IS-187.01** · 2 pts · SHOULD — Labels on tasks and cards, filterable on boards and lists; a blocked badge on cards with an open "blocked by" link, cleared when the blocker is done; the UI places an existing task on a board, changes a card's kind or parent, and removes a card.
+- [ ] **EP-187/IS-187.02** · 2 pts · SHOULD — Two-week **cycles** per project with a written goal, unfinished cards rolled over at the end, a velocity of estimate points per cycle, and a burndown of the current cycle.
+- [ ] **EP-187/IS-187.03** · 1 pt · SHOULD — Quick add parses priority (`p1`), a project (`#name`), and recurrence ("every monday"), and the Tasks page's quick field parses the grammar like the capture dialog.
+
+**Tests.** The projects test with a cycle rolled over and its velocity; the quick add tests with the new tokens.
+
+### EP-188 — Project pages and decisions in sight
+
+**Goal.** The same request: Confluence's page tree and templates, and the decision journal's loop closed. Project docs were a flat list, decisions were not graph items and due ones showed nowhere but their page, and there was no monthly review.
+
+- [ ] **EP-188/IS-188.01** · 2 pts · SHOULD — A project's docs as a page tree with per-project templates: meeting notes, a decision record (DACI or ADR), a retrospective, and a kickoff that gathers the notes close in meaning or linked to the project's area.
+- [ ] **EP-188/IS-188.02** · 1 pt · SHOULD — Decisions become graph items linked to projects and goals; decisions due show on Today, in the digest, and as a weekly review step.
+- [ ] **EP-188/IS-188.03** · 2 pts · SHOULD — A guided monthly review (goals, projects, areas, someday, decisions, habits, the month's numbers) ending in the monthly check-in, suggested by the first weekend's digest.
+
+**Tests.** The page tree and a kickoff in e2e; a due decision on Today and in the digest; the monthly review's check-in.
+
+### EP-189 — Highlights in
+
+**Goal.** The same request: Readwise's pipeline from highlights to resurfacing, without rereading (highlighting and rereading are low-utility; questions are not).
+
+- [ ] **EP-189/IS-189.01** · 2 pts · COULD — Kindle "My Clippings.txt", Readwise CSV, and KOReader highlights imported as highlights of a literature note per book (made if missing), nothing twice.
+- [ ] **EP-189/IS-189.02** · 1 pt · COULD — A read-later queue for shared links (inbox, later, archive), and highlights resurfaced in the daily plan as questions to answer, never as rereading.
+
+**Tests.** Each import once; a highlight as a question in the plan.
+
+### EP-190 — FSRS, yours
+
+**Goal.** The same request: Anki's FSRS beats SM-2 for 98 % of people once its parameters are fitted to their own reviews; Axon used the default weights forever, and its cards had no cloze siblings, occlusion, tags, or import.
+
+- [ ] **EP-190/IS-190.01** · 3 pts · COULD — The FSRS-5 parameters optimised on the person's own reviews once they have 1,000, rerun monthly, with the measured log-loss before and after; a daily review cap with the simulator's workload.
+- [ ] **EP-190/IS-190.02** · 2 pts · COULD — True cloze notes with sibling cards, image occlusion, tags on cards, and `.apkg` import.
+
+**Tests.** The optimiser against py-fsrs on the reference reviews; cloze siblings never shown on the same day; an `.apkg` imported once.
+
 ### EP-20 — Analytics & insights
 
 **Goal.** Explainable personal metrics and weekly reviews computed locally from the event log.
@@ -2892,6 +2999,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-11 | Owner request: EP-27 gained a curated library of the best resources for the owner's domains. Added EP-28 (demo), EP-29 (bilingual docs, API reference), EP-30 (dashboard), EP-31 (settings, i18n, YAML), EP-32 (shortcuts, Vim), EP-33 (avatars), EP-34 (Atomic Habits), EP-35 (Pomodoro), EP-36 (live vault sync), EP-37 (knowledge explorer, NLP), EP-38 (themed spaces), EP-39 (personal finance), EP-40 (instance export/import) as release R2.5, before EP-16 and EP-15, which now include flashcard editing, Anki sync to `srv-services`, and gamification across every area. The backend stays in Go (ADR 0002); a Rust rewrite was considered and not scheduled. |
 | 2026-10-19 | Owner request: added EP-174 (the home page shows the whole of Axon with screenshots, and one 4K trailer), after EP-173. |
 | 2026-10-20 | Owner request: added EP-175 to EP-180 (each account's balance and what is to come on the Budget page, ticking from the digest and the morning Telegram message, a calendar for phones with every kind told apart, habits by area, the account's ledger and edits, buttons on Slack and Discord), after EP-174, in the order EP-175, EP-178, EP-180, EP-177, EP-176, EP-179. The analysis of production that day: 1.0.0 plus EP-170 to EP-174 deployed, the owner's 4 accounts and 16 plan habits with 4 check-ins, reminders off, no channel, no device, no mail server. |
+| 2026-10-20 | Owner request: a benchmark against the best of each category (Second Brain, Zettelkasten, note-taking apps, Jira, Confluence, Pomodoro and planner apps, École 42, learning science and learning apps), in [doc/benchmark-2026-10.md](benchmark-2026-10.md). Added EP-181 to EP-190 (proven, not ticked; memory to criterion; notes that embed; plan the day; the defense with the Teacher; from fleeting to evergreen; cycles and labels; project pages and decisions; highlights in; FSRS, yours). The order becomes EP-181, EP-178, EP-183, EP-180, EP-184, EP-186, EP-177, EP-182, EP-185, EP-176, EP-187, EP-188, EP-179, EP-189, EP-190; EP-181 first because the owner put learning and 42 at the centre and EP-178 waits for the channel decision. |
 
 ## Standard issue evidence template
 
