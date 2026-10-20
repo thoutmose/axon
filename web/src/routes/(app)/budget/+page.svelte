@@ -342,10 +342,10 @@
 				</a>
 				{#each summary.accounts as a (a.id)}
 					<a href="/budget/accounts" class="tile">
+						<span class="name">{a.name}</span>
 						<span class="muted small"
 							>{a.type === 'liability' ? t('Owed · ') : ''}{t(roleNames[a.role])}</span
 						>
-						<span class="name">{a.name}</span>
 						<strong class:bad={a.balance_cents < 0}>{money(a.balance_cents)}</strong>
 					</a>
 				{/each}

@@ -405,7 +405,7 @@
 		bind:open={proving}
 		onvalidated={(v) => {
 			// Mark it done in place: reloading the roadmap would remount the sheet.
-			const s = roadmap?.skills.find((x) => x.id === v.skill_id);
+			const s = roadmap?.skills?.find((x) => x.id === v.skill_id);
 			if (s && v.flag !== 'incomplete') s.status = 'done';
 		}}
 	/>
