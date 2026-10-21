@@ -4,7 +4,7 @@
 # Same PostgreSQL major version and Debian release, so the data directory
 # and collations are unchanged. gosu, which the entrypoint uses once to drop
 # from root to postgres, is rebuilt with the patched Go toolchain the API uses.
-FROM golang:1.26-alpine@sha256:3082400e369fa24d5fc60bca20edab3f6d604e0c5a690ec66b295eff4dd87ade AS gosu
+FROM golang:1.26-alpine@sha256:9ce231b28998b32e116927c61aa5c406183061d4f3f2d61b292c88e7f6bdf7ca AS gosu
 ARG GOSU_VERSION=1.19
 RUN CGO_ENABLED=0 GOBIN=/out go install -trimpath -ldflags '-s -w' github.com/tianon/gosu@${GOSU_VERSION}
 

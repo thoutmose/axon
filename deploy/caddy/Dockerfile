@@ -2,7 +2,7 @@
 # Caddy built with the patched Go toolchain the API uses: the upstream image
 # can lag behind Go security releases (denial-of-service fixes in net/http,
 # HTTP/2, and TLS). Same Caddy version and standard modules as upstream.
-FROM golang:1.26-alpine@sha256:3082400e369fa24d5fc60bca20edab3f6d604e0c5a690ec66b295eff4dd87ade AS build
+FROM golang:1.26-alpine@sha256:9ce231b28998b32e116927c61aa5c406183061d4f3f2d61b292c88e7f6bdf7ca AS build
 ARG CADDY_VERSION=v2.11.7
 ARG XNET_VERSION=v0.60.0
 WORKDIR /src
