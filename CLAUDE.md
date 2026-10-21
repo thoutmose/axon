@@ -23,13 +23,13 @@ Docker bridge networks on the maintainer's dev host have no internet access: its
 
 ## Rules
 
-- Work inside the active Epic only. Stop at the Epic boundary and wait for human review.
+- Work inside the active Epic only. At the Epic boundary the ai-agents-org release pipeline takes over (owner decision, 2026-10-21): it opens the PR, waits for green CI, fast-forwards `main`, backs up production, and deploys staging then production with automatic rollback.
 - Read the target files, tests, and docs before editing. State assumptions; ask when one could affect user data or security.
 - Make the smallest coherent diff. Simple, explicit code; no speculative abstractions.
 - Run focused checks first, then the relevant suite. Report failures as they are.
 - Inspect your diff for scope creep, secrets, generated noise, and unsafe defaults.
 - Never merge your own work, mutate production data, rotate credentials, or expand scope silently.
-- AI-generated plans and mutations are drafts until a human approves them.
+- AI-generated plans and mutations are drafts until the independent code-review and QA gates pass.
 - If a requirement conflicts with privacy, safety, or consent, stop and ask.
 
 Conventions (branches, commits, PRs, ADRs) are in [CONTRIBUTING.md](CONTRIBUTING.md).

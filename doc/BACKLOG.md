@@ -10,7 +10,7 @@ Axon is a self-hosted, open-source life OS that connects notes, action, learning
 
 - Work on **one Epic at a time**, in the order given by [Delivery order](#delivery-order). Do not start implementation in another Epic while the active Epic is incomplete or explicitly paused by a human maintainer.
 - At Epic start, confirm scope, dependencies, Definition of Ready, threat impact, migration plan, and measurable acceptance criteria. Outlined Epics must be split into issues first.
-- When an Epic is complete: run tests and security checks; request code review; update documentation and ADRs; open a PR/MR with Conventional Commits; obtain human approval; then select the next Epic.
+- When an Epic is complete: run tests and security checks; request code review; update documentation and ADRs; open a PR/MR with Conventional Commits; the release pipeline merges it after green CI and the independent review and QA gates; then select the next Epic.
 - Agents may propose, draft, test, and explain changes. They must not silently mutate production data, merge their own work, rotate credentials, or expand scope.
 - Read before write. Prefer simple explicit code, small diffs, boring technology, data-informed decisions, and “don’t be clever.”
 - Every task records evidence: test output, screenshots where useful, migration notes, performance observations, and known caveats.
@@ -36,7 +36,7 @@ Axon is a self-hosted, open-source life OS that connects notes, action, learning
 - Migration is reversible or has a documented recovery plan.
 - The [cross-cutting acceptance matrix](#cross-cutting-acceptance-matrix) is attached to the Epic’s exit evidence.
 - A reviewer who did not author the change approves it.
-- Conventional Commit PR/MR is merged only after human approval.
+- Conventional Commit PR/MR is merged only after green CI and the independent review and QA gates (owner decision, 2026-10-21).
 
 ### Labels
 
@@ -3011,6 +3011,7 @@ Additional books informing product behavior: *Understanding How We Learn* (Weins
 | 2026-10-20 | Owner request: added EP-175 to EP-180 (each account's balance and what is to come on the Budget page, ticking from the digest and the morning Telegram message, a calendar for phones with every kind told apart, habits by area, the account's ledger and edits, buttons on Slack and Discord), after EP-174, in the order EP-175, EP-178, EP-180, EP-177, EP-176, EP-179. The analysis of production that day: 1.0.0 plus EP-170 to EP-174 deployed, the owner's 4 accounts and 16 plan habits with 4 check-ins, reminders off, no channel, no device, no mail server. |
 | 2026-10-20 | Owner request: a benchmark against the best of each category (Second Brain, Zettelkasten, note-taking apps, Jira, Confluence, Pomodoro and planner apps, École 42, learning science and learning apps), in [doc/benchmark-2026-10.md](benchmark-2026-10.md). Added EP-181 to EP-190 (proven, not ticked; memory to criterion; notes that embed; plan the day; the defense with the Teacher; from fleeting to evergreen; cycles and labels; project pages and decisions; highlights in; FSRS, yours). The order becomes EP-181, EP-178, EP-183, EP-180, EP-184, EP-186, EP-177, EP-182, EP-185, EP-176, EP-187, EP-188, EP-179, EP-189, EP-190; EP-181 first because the owner put learning and 42 at the centre and EP-178 waits for the channel decision. |
 | 2026-10-20 | Owner request: added EP-191 (daily needs that follow a bounded dietary goal) after EP-181; the owner chose the bounded goal over free targets or a change of split only, so ADR 0039 supersedes ADR 0028. |
+| 2026-10-21 | Owner decision: full autonomy. An agent team (ai-agents-org: backend, frontend, code reviewer, QA) delivers the Epics in the delivery order; each Epic is merged after green CI and the independent review and QA gates, then deployed to staging and production with a backup and automatic rollback, with no human gate. Agents themselves still never push, merge, or deploy: the release pipeline does. |
 
 ## Standard issue evidence template
 
