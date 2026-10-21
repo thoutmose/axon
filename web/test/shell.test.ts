@@ -1001,7 +1001,7 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await noSeriousA11yViolations(page);
 	await page.getByRole('button', { name: 'Turn on health logging' }).click();
 	await page.getByLabel('What you ate').fill('Lentil soup');
-	await page.getByLabel('kcal').fill('320,5');
+	await page.getByLabel('kcal', { exact: true }).fill('320,5');
 	await page.getByRole('button', { name: 'Log it' }).click();
 	await expect(page.getByRole('region', { name: 'This day' })).toContainText('320.5');
 	await expect(page.getByText('Lentil soup · 320.5 kcal')).toBeVisible();
@@ -1021,7 +1021,7 @@ test('health logging waits for consent, then logs food and a workout', async () 
 	await noSeriousA11yViolations(page);
 	// A bounded goal (EP-191): 15 % under maintenance, the bars following it.
 	await needs.getByRole('button', { name: 'Edit my profile' }).click();
-	await needs.getByLabel('Goal', { exact: true }).selectOption('lose');
+	await needs.getByLabel('Goal').selectOption('lose');
 	await needs.getByRole('button', { name: 'Work out my needs' }).click();
 	await expect(needs).toContainText('losing weight gently');
 	await expect(needs).toContainText('2350');
