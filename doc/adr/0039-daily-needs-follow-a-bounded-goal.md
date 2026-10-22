@@ -12,7 +12,7 @@ ADR 0028 made the daily needs reference intakes for keeping one's weight and rul
 
 The health profile carries a **goal**: `maintain` (the default and what every existing profile keeps), `lose`, or `gain`. The needs are worked out as before for maintenance, then moved **within bounds, in code, never by a model**:
 
-- **lose**: energy 15 % under maintenance, **never under the basal rate and never under 1,200 kcal** (the floor the agents' safety guard already keeps); when the share would cross the floor, the energy stops at the floor and the explanation says so. Protein rises to keep muscle: 0.4 g/kg more, at least 1.6 and at most 2.0 g/kg (ISSN position stand).
+- **lose**: energy 15 % under maintenance, **never under the basal rate and never under 1,200 kcal** (the floor the agents' safety guard already keeps); when the share would cross the floor, the energy stops at the floor and the explanation says so, with the pace in words. The basal-rate bound holds by construction (the least activity factor is 1.2, so 85 % of maintenance is at least 1.02 × the basal rate); only 1,200 kcal can bind. When maintenance itself is 1,200 kcal or less, no loss is planned: the energy is maintenance, never more, and the explanation points to a dietitian. Protein rises to keep muscle: 0.4 g/kg more, at least 1.6 and at most 2.0 g/kg (ISSN position stand).
 - **gain**: energy 10 % over maintenance; protein as for lose.
 - Fat stays 30 % of the energy, carbohydrates the rest (never negative).
 

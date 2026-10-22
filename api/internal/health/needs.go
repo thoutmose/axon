@@ -35,8 +35,8 @@ type Profile struct {
 }
 
 // Goals are what the needs aim at (ADR 0039): keeping one's weight, losing
-// it gently (15 % under maintenance, never under the basal rate or
-// minKcal), or gaining slowly (10 % over). Both move protein up to keep muscle.
+// it gently (15 % under maintenance, never under minKcal nor over
+// maintenance), or gaining slowly (10 % over). Both move protein up to keep muscle.
 var Goals = []string{"maintain", "lose", "gain"}
 
 const (
@@ -161,12 +161,19 @@ func Calc(p Profile, year int, lang string) Needs {
 	perWeek := func(kcal int) string { return num(math.Abs(float64(kcal))*7/kcalPerKg, 1) }
 	switch n.Goal {
 	case "lose":
-		floor := int(math.Max(math.Round(bmr), minKcal))
+		// The least activity factor is 1.2, so 15 % under maintenance is at
+		// least 1.02 × the basal rate: only minKcal can bind.
 		n.Kcal = round10(float64(n.MaintenanceKcal) * loseShare)
-		if n.Kcal < floor {
-			n.Kcal = floor
-			energy = l10n.Tr(lang, "Energy: %d kcal: the 15 %% under the %d kcal that keep your weight stops here, at your basal rate or 1,200 kcal, the floor Axon never goes under.", n.Kcal, n.MaintenanceKcal)
-		} else {
+		switch {
+		case n.MaintenanceKcal <= int(minKcal):
+			// Even keeping the weight is at or under minKcal: no loss is
+			// planned, and the figure never goes over maintenance.
+			n.Kcal = n.MaintenanceKcal
+			energy = l10n.Tr(lang, "Energy: %d kcal, what keeps your weight: it is already 1,200 kcal or less, and Axon never plans a loss under 1,200 kcal. Talk to a dietitian before eating less.", n.Kcal)
+		case n.Kcal < int(minKcal):
+			n.Kcal = int(minKcal)
+			energy = l10n.Tr(lang, "Energy: %d kcal: the 15 %% under the %d kcal that keep your weight stops at 1,200 kcal, the least Axon plans a loss down to: about %s kg a week.", n.Kcal, n.MaintenanceKcal, perWeek(n.MaintenanceKcal-n.Kcal))
+		default:
 			energy = l10n.Tr(lang, "Energy: %d kcal, 15 %% under the %d kcal that keep your weight: a gentle loss of about %s kg a week, never under your basal rate or 1,200 kcal.", n.Kcal, n.MaintenanceKcal, perWeek(n.MaintenanceKcal-n.Kcal))
 		}
 		perKg = math.Min(2.0, math.Max(1.6, perKg+0.4))

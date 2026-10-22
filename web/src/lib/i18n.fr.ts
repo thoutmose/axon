@@ -2674,11 +2674,11 @@ export const fr: Record<string, string> = {
 	'This day against your needs': 'Ce jour face à vos besoins',
 	'{eaten} of {need} {unit}': '{eaten} sur {need} {unit}',
 	'above the reference': 'au-dessus de la référence',
-	'With a goal, Axon moves these by 15 % at most and never under your basal rate or 1,200 kcal: a gentle pace, not a diet. A dietitian can adapt them to you.':
-		'Avec un objectif, Axon les déplace de 15 % au plus, jamais sous votre métabolisme de base ni sous 1 200 kcal : un rythme doux, pas un régime. Un diététicien peut les adapter à vous.',
+	'With a goal, Axon moves these by 15 % at most, and never plans a loss under 1,200 kcal or when keeping your weight already takes 1,200 kcal or less: a gentle pace, not a diet. A dietitian can adapt them to you.':
+		'Avec un objectif, Axon les déplace de 15 % au plus, et ne prévoit jamais de perte sous 1 200 kcal ni quand garder votre poids demande déjà 1 200 kcal ou moins : un rythme doux, pas un régime. Un diététicien peut les adapter à vous.',
 	'Keep my weight': 'Garder mon poids',
-	'Lose weight gently: 15 % under, never below my basal rate or 1,200 kcal':
-		'Perdre du poids doucement : 15 % en dessous, jamais sous mon métabolisme de base ni sous 1 200 kcal',
+	'Lose weight gently: 15 % under, never below 1,200 kcal':
+		'Perdre du poids doucement : 15 % en dessous, jamais sous 1 200 kcal',
 	'Gain weight slowly: 10 % over': 'Prendre du poids lentement : 10 % au-dessus',
 	'keeping your weight': 'garder votre poids',
 	'losing weight gently': 'perdre du poids doucement',

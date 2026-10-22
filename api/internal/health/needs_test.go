@@ -79,7 +79,7 @@ func TestProfileValidation(t *testing.T) {
 }
 
 // A goal moves the needs by a bounded share (EP-191, ADR 0039): 15 % under
-// maintenance to lose, never under the basal rate or 1,200 kcal; 10 % over to
+// maintenance to lose, never under 1,200 kcal nor over maintenance; 10 % over to
 // gain; protein up to keep muscle either way.
 func TestNeedsFollowABoundedGoal(t *testing.T) {
 	man := Profile{BirthYear: 1996, Sex: "male", HeightCm: 180, WeightKg: 80, Activity: "moderate"}
@@ -109,10 +109,30 @@ func TestNeedsFollowABoundedGoal(t *testing.T) {
 	// A small sedentary woman: 450 + 937.5 − 200 − 161 = 1026.5 → maintenance 1230; the
 	// 15 % would give 1046, so the floor of 1,200 kcal holds and says so.
 	small := Calc(Profile{BirthYear: 1986, Sex: "female", HeightCm: 150, WeightKg: 45, Activity: "sedentary", Goal: "lose"}, 2026, "en")
-	if small.MaintenanceKcal != 1230 || small.Kcal != 1200 || !strings.Contains(small.Explanation[1], "stops here") {
+	if small.MaintenanceKcal != 1230 || small.Kcal != 1200 || !strings.Contains(small.Explanation[1], "stops at 1,200 kcal") || !strings.Contains(small.Explanation[1], "kg a week") {
 		t.Fatalf("floored = %+v", small)
 	}
-	// A heavier basal rate is the floor when it is above 1,200.
+	// 400 + 937.5 − 300 − 161 = 876.5 → maintenance 1050, already under the
+	// floor: no loss is planned, and lose never gives more than maintain.
+	tiny := Calc(Profile{BirthYear: 1966, Sex: "female", HeightCm: 150, WeightKg: 40, Activity: "sedentary", Goal: "lose"}, 2026, "en")
+	if tiny.MaintenanceKcal != 1050 || tiny.Kcal != 1050 || !strings.Contains(tiny.Explanation[1], "never plans a loss under 1,200 kcal") {
+		t.Fatalf("tiny = %+v", tiny)
+	}
+	// Whatever the profile, lose stays between the basal rate and maintenance.
+	for _, act := range Activities {
+		for _, p := range []Profile{
+			{BirthYear: 1906, Sex: "female", HeightCm: 100, WeightKg: 25},
+			{BirthYear: 1966, Sex: "female", HeightCm: 150, WeightKg: 40},
+			{BirthYear: 2008, Sex: "unspecified", HeightCm: 170, WeightKg: 60},
+			{BirthYear: 2008, Sex: "male", HeightCm: 250, WeightKg: 350},
+		} {
+			p.Activity, p.Goal = act, "lose"
+			if n := Calc(p, 2026, "en"); n.Kcal > n.MaintenanceKcal || n.Kcal < n.BMR {
+				t.Fatalf("lose %+v = %+v", p, n)
+			}
+		}
+	}
+	// The basal rate is never the binding floor: 15 % under maintenance stays above it.
 	big := Calc(Profile{BirthYear: 1996, Sex: "male", HeightCm: 190, WeightKg: 120, Activity: "sedentary", Goal: "lose"}, 2026, "en")
 	// 1200 + 1187.5 − 150 + 5 = 2242.5 → maintenance 2690; 85 % = 2286.5 → 2290 ≥ 2243: not floored.
 	if big.Kcal != 2290 || big.BMR != 2243 {

@@ -67,7 +67,8 @@ SELECT s.updated_at, 'skill_learned', 20, e.id, e.title FROM skills s JOIN entit
  WHERE e.user_id = $1 AND s.status = 'done' AND s.updated_at >= $2 AND s.updated_at < $3
 UNION ALL
 SELECT v.created_at, 'domain_outstanding', 5, e.id, e.title FROM skill_validations v JOIN entities e ON e.id = v.skill_id
- WHERE e.user_id = $1 AND v.mark >= 125 AND v.created_at >= $2 AND v.created_at < $3
+ WHERE e.user_id = $1 AND v.mark >= 125 AND NOT EXISTS (SELECT 1 FROM skill_validations o WHERE o.skill_id = v.skill_id AND o.mark >= 125 AND o.attempt < v.attempt)
+   AND v.created_at >= $2 AND v.created_at < $3
 UNION ALL
 SELECT m.done_at, 'milestone_done', 15, e.id, e.title FROM milestones m JOIN entities e ON e.id = m.id
  WHERE e.user_id = $1 AND m.done_at IS NOT NULL AND m.done_at >= $2 AND m.done_at < $3

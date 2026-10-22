@@ -450,12 +450,47 @@ func TestStartingTheTop5RoadmapStartsThePlan(t *testing.T) {
 			NextCert *struct {
 				Code string `json:"code"`
 			} `json:"next_certification"`
+			BehindDays int `json:"behind_days"`
 		} `json:"plan"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/today", nil), &today)
 	if today.Plan == nil || today.Plan.RoadmapID != rm.ID || today.Plan.Phases != 18 || today.Plan.Phase == nil ||
-		today.Plan.Weeks != 12 || today.Plan.DaysLeft <= 0 || today.Plan.NextCert == nil {
+		today.Plan.Weeks != 12 || today.Plan.DaysLeft <= 0 || today.Plan.NextCert == nil || today.Plan.BehindDays != 0 {
 		t.Fatalf("today = %+v", today.Plan)
+	}
+	// Started 200 days earlier, phase 1 is over with its milestone not
+	// reached: the plan and Today both say how late it runs (EP-181).
+	type late struct {
+		BehindDays int `json:"behind_days"`
+		Phases     []struct {
+			End   string `json:"end"`
+			State string `json:"state"`
+		} `json:"phases"`
+	}
+	var before, after late
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/plan", nil), &before)
+	if before.BehindDays != 0 || len(before.Phases) == 0 {
+		t.Fatalf("a plan on time = %+v", before)
+	}
+	if _, err := pool.Exec(context.Background(), `UPDATE roadmaps SET plan_start = plan_start - 200 WHERE id = $1`, rm.ID); err != nil {
+		t.Fatal(err)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/"+rm.ID+"/plan", nil), &after)
+	end0, err := time.Parse(time.DateOnly, before.Phases[0].End)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	want := int(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).Sub(end0.AddDate(0, 0, -200)).Hours() / 24)
+	if after.Phases[0].State != "past" || after.BehindDays < want-1 || after.BehindDays > want+1 {
+		t.Fatalf("late plan = %d days behind, want about %d (phase 1 %s)", after.BehindDays, want, after.Phases[0].State)
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/roadmaps/today", nil), &today)
+	if today.Plan == nil || today.Plan.BehindDays != after.BehindDays {
+		t.Fatalf("today on a late plan = %+v, want %d days behind", today.Plan, after.BehindDays)
+	}
+	if _, err := pool.Exec(context.Background(), `UPDATE roadmaps SET plan_start = plan_start + 200 WHERE id = $1`, rm.ID); err != nil {
+		t.Fatal(err)
 	}
 	if out := alice.mustDo(200, "GET", "/v1/roadmaps/"+mine(t, alice)+"/plan", nil); !bytes.Contains(out, []byte(`"started":false`)) {
 		t.Errorf("a roadmap without a plan = %s", out)
@@ -699,6 +734,13 @@ func TestADomainIsProvenByItsEvaluationSheet(t *testing.T) {
 	}
 	if !bytes.Contains(alice.mustDo(200, "GET", "/v1/progress/ledger?days=7", nil), []byte(`"domain_outstanding"`)) {
 		t.Fatal("the outstanding bonus is not in the ledger")
+	}
+	// Proving it again outstanding earns the 5 points once only.
+	if v := attempt(201, `{"items":[`+read+`,`+write(true)+`,`+teach(true)+`],`+explained+`}`); v["mark"] != float64(125) {
+		t.Fatalf("second outstanding = %v", v)
+	}
+	if n := bytes.Count(alice.mustDo(200, "GET", "/v1/progress/ledger?days=7", nil), []byte(`"domain_outstanding"`)); n != 1 {
+		t.Fatalf("outstanding bonus counted %d times, want 1", n)
 	}
 	// Nobody proves another person's skill, and the sheets are in the export.
 	bob.mustDo(404, "POST", "/v1/skills/"+kana.ID+"/validations", []byte(`{"items":[`+read+`],`+explained+`}`))

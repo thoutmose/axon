@@ -27,11 +27,11 @@
 		pregnant_or_breastfeeding: false
 	});
 
-	// A bounded goal (EP-191): the needs move by a share and never under
-	// the basal rate or 1,200 kcal; the bars and the chef follow them.
+	// A bounded goal (EP-191): the needs move by a share, and a loss never
+	// goes under 1,200 kcal nor over maintenance; the bars and the chef follow them.
 	const goals = $derived([
 		['maintain', t('Keep my weight')],
-		['lose', t('Lose weight gently: 15 % under, never below my basal rate or 1,200 kcal')],
+		['lose', t('Lose weight gently: 15 % under, never below 1,200 kcal')],
 		['gain', t('Gain weight slowly: 10 % over')]
 	]);
 	const goalNames: Record<string, string> = $derived({
@@ -231,7 +231,7 @@
 			</ul>
 			<p class="small muted">
 				{t(
-					'With a goal, Axon moves these by 15 % at most and never under your basal rate or 1,200 kcal: a gentle pace, not a diet. A dietitian can adapt them to you.'
+					'With a goal, Axon moves these by 15 % at most, and never plans a loss under 1,200 kcal or when keeping your weight already takes 1,200 kcal or less: a gentle pace, not a diet. A dietitian can adapt them to you.'
 				)}
 			</p>
 			<ul class="small sources">

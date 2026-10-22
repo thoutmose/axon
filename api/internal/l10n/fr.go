@@ -44,10 +44,14 @@ var catalog = map[string]string{
 	"Water: %s L a day from drinks and food (adequate intake).":                                  "Eau : %s L par jour, boissons et aliments compris (apport satisfaisant).",
 	"Give a birth year that makes you 1 to 120 years old.":                                       "Donnez une année de naissance qui vous donne de 1 à 120 ans.",
 	"Goal is maintain, lose, or gain.":                                                           "L’objectif vaut maintain, lose ou gain.",
-	"Energy: %d kcal, 15 %% under the %d kcal that keep your weight: a gentle loss of about %s kg a week, never under your basal rate or 1,200 kcal.":   "Énergie : %d kcal, 15 %% sous les %d kcal qui maintiennent votre poids : une perte douce d’environ %s kg par semaine, jamais sous votre métabolisme de base ni sous 1 200 kcal.",
-	"Energy: %d kcal: the 15 %% under the %d kcal that keep your weight stops here, at your basal rate or 1,200 kcal, the floor Axon never goes under.": "Énergie : %d kcal : les 15 %% sous les %d kcal qui maintiennent votre poids s’arrêtent ici, à votre métabolisme de base ou à 1 200 kcal, le plancher sous lequel Axon ne descend jamais.",
-	"Energy: %d kcal, 10 %% over the %d kcal that keep your weight, to gain slowly (about %s kg a week).":                                               "Énergie : %d kcal, 10 %% au-dessus des %d kcal qui maintiennent votre poids, pour prendre lentement (environ %s kg par semaine).",
-	"Protein: %d g, %s g per kg of body weight: more while your weight changes, to keep and build muscle.":                                              "Protéines : %d g, %s g par kg de poids : davantage pendant que votre poids change, pour garder et construire du muscle.",
+	"Energy: %d kcal, 15 %% under the %d kcal that keep your weight: a gentle loss of about %s kg a week, never under your basal rate or 1,200 kcal.": "Énergie : %d kcal, 15 %% sous les %d kcal qui maintiennent votre poids : une perte douce d’environ %s kg par semaine, jamais sous votre métabolisme de base ni sous 1 200 kcal.",
+
+	"Energy: %d kcal: the 15 %% under the %d kcal that keep your weight stops at 1,200 kcal, the least Axon plans a loss down to: about %s kg a week.": "Énergie : %d kcal : les 15 %% sous les %d kcal qui maintiennent votre poids s’arrêtent à 1 200 kcal, le minimum jusqu’où Axon prévoit une perte : environ %s kg par semaine.",
+
+	"Energy: %d kcal, what keeps your weight: it is already 1,200 kcal or less, and Axon never plans a loss under 1,200 kcal. Talk to a dietitian before eating less.": "Énergie : %d kcal, ce qui maintient votre poids : c’est déjà 1 200 kcal ou moins, et Axon ne prévoit jamais de perte sous 1 200 kcal. Parlez à un diététicien avant de manger moins.",
+
+	"Energy: %d kcal, 10 %% over the %d kcal that keep your weight, to gain slowly (about %s kg a week).":  "Énergie : %d kcal, 10 %% au-dessus des %d kcal qui maintiennent votre poids, pour prendre lentement (environ %s kg par semaine).",
+	"Protein: %d g, %s g per kg of body weight: more while your weight changes, to keep and build muscle.": "Protéines : %d g, %s g par kg de poids : davantage pendant que votre poids change, pour garder et construire du muscle.",
 	"Sex is female, male, or unspecified.":                            "Le sexe vaut female, male ou unspecified.",
 	"Height is 100 to 250 cm.":                                        "La taille va de 100 à 250 cm.",
 	"Weight is 25 to 350 kg.":                                         "Le poids va de 25 à 350 kg.",
