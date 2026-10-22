@@ -28,42 +28,7 @@ type Account struct {
 
 var roles = []string{"checking", "savings", "cash", "credit_card", "loan", "investment", "other"}
 
-// Movement is what Balances needs from a transaction.
-type Movement struct {
-	Kind        string
-	AmountCents int64
-	From, To    *uuid.UUID // From: AccountID (income uses it as the destination); To: ToAccountID
-}
-
-// Balances applies movements to opening balances: income adds to its
-// account, an expense subtracts, a transfer moves money between two
-// accounts. Transfers never change the total, so the total is always
-// openings + income − expenses on accounts (property-tested).
-func Balances(opening map[uuid.UUID]int64, moves []Movement) map[uuid.UUID]int64 {
-	out := make(map[uuid.UUID]int64, len(opening))
-	for id, c := range opening {
-		out[id] = c
-	}
-	for _, m := range moves {
-		if m.From == nil {
-			continue
-		}
-		switch m.Kind {
-		case "income":
-			out[*m.From] += m.AmountCents
-		case "expense":
-			out[*m.From] -= m.AmountCents
-		case "transfer":
-			if m.To != nil {
-				out[*m.From] -= m.AmountCents
-				out[*m.To] += m.AmountCents
-			}
-		}
-	}
-	return out
-}
-
-// balanceSQLOver is Balances in SQL, for one account a, over the
+// balanceSQLOver is the balance in SQL, for one account a, over the
 // transactions that also match `and` (empty for all of them).
 func balanceSQLOver(and string) string {
 	return `a.opening_cents + coalesce((SELECT sum(CASE

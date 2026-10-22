@@ -7,6 +7,26 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
+// Every write tool in the registry is declared by a skill, so the app's
+// approval test (which walks the skills' tools) covers it.
+func TestEveryWriteToolBelongsToASkill(t *testing.T) {
+	skills, err := LoadSkills()
+	if err != nil {
+		t.Fatal(err)
+	}
+	declared := map[string]bool{}
+	for _, s := range skills {
+		for _, name := range s.Tools {
+			declared[name] = true
+		}
+	}
+	for name, tool := range registry {
+		if tool.Write && !declared[name] {
+			t.Errorf("write tool %s is declared by no skill", name)
+		}
+	}
+}
+
 func TestEmbeddedSkillsLoad(t *testing.T) {
 	skills, err := LoadSkills()
 	if err != nil {

@@ -69,8 +69,13 @@ func TestTranslatesMessagesFormattedBeforehand(t *testing.T) {
 		delete(catalog, "Unknown field %q.")
 		delete(catalog, "line %d: %s")
 	}()
-	patterns.reset()
-	defer patterns.reset()
+	resetPatterns := func() {
+		patterns.mu.Lock()
+		patterns.list = nil
+		patterns.mu.Unlock()
+	}
+	resetPatterns() // rebuild from the catalog above
+	defer resetPatterns()
 	// A ValidationError{fmt.Sprintf(…)} reaches Tr already formatted.
 	for en, want := range map[string]string{
 		"Line 12 is not valid CSV.":          "La ligne 12 n’est pas un CSV valide.",

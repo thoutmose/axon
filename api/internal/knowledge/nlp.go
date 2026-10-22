@@ -103,15 +103,6 @@ func StemIn(w, lang string) string {
 	return english.Stem(w, false)
 }
 
-// Stem reduces an English word ("notes" → "note", "learning" → "learn").
-func Stem(w string) string { return StemIn(w, "en") }
-
-// Tokens are the content words of a text, lower-cased and stemmed.
-func Tokens(text string) []string {
-	stems, _ := TokensWithWords(text)
-	return stems
-}
-
 // TokensWithWords also returns each token's word as written (lower-cased),
 // so stems can be shown as real words.
 func TokensWithWords(text string) (stems, surface []string) {

@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
-
-	"github.com/thoutmose/axon/api/internal/agents"
 )
 
 // fakeProvider replays scripted model responses and records each request,
@@ -277,8 +275,31 @@ func TestEveryWriteToolNeedsApproval(t *testing.T) {
 		tested = append(tested, name)
 	}
 	slices.Sort(tested)
-	if !slices.Equal(tested, agents.WriteTools()) {
-		t.Fatalf("write tools %v are not all covered by %v", agents.WriteTools(), tested)
+	// Every write tool an agent offers must be covered above: list them
+	// from the agents endpoint, so a new one cannot slip in untested.
+	var listed struct {
+		Agents []struct {
+			Tools []struct {
+				Name  string `json:"name"`
+				Write bool   `json:"write"`
+			} `json:"tools"`
+		} `json:"agents"`
+	}
+	if err := json.Unmarshal(alice.mustDo(200, "GET", "/v1/agents", nil), &listed); err != nil {
+		t.Fatal(err)
+	}
+	var writeTools []string
+	for _, a := range listed.Agents {
+		for _, tool := range a.Tools {
+			if tool.Write {
+				writeTools = append(writeTools, tool.Name)
+			}
+		}
+	}
+	slices.Sort(writeTools)
+	writeTools = slices.Compact(writeTools)
+	if !slices.Equal(tested, writeTools) {
+		t.Fatalf("write tools %v are not all covered by %v", writeTools, tested)
 	}
 	for _, name := range tested {
 		in := inputs[name]

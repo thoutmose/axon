@@ -98,20 +98,17 @@ func playerInfo(ctx context.Context, id string) (player, error) {
 	return p, json.NewDecoder(io.LimitReader(res.Body, maxBody)).Decode(&p)
 }
 
-// pickTrack prefers the author's captions in the spoken language (the
-// language of the automatic ones), then any of the author's, then the
-// automatic ones.
-func pickTrack(tracks []track) (track, string) { return pickTrackFrom(tracks, -1) }
-
 // primary is a language tag without its region: "en-US" is "en".
 func primary(lang string) string {
 	l, _, _ := strings.Cut(strings.ToLower(lang), "-")
 	return l
 }
 
-// pickTrackFrom is pickTrack when YouTube names the spoken language's
-// track (source, or -1): with dubbed audio, every dubbed language has its
-// automatic captions, and only that one is what was said.
+// pickTrackFrom prefers the author's captions in the spoken language (the
+// language of the automatic ones), then any of the author's, then the
+// automatic ones. source is the index of the track YouTube marks as the
+// spoken language, or -1 when it marks none; dubbed videos have automatic
+// captions in every dubbed language, and only that track is what was said.
 func pickTrackFrom(tracks []track, source int) (track, string) {
 	spoken := ""
 	if source >= 0 && source < len(tracks) {

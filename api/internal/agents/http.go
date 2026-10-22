@@ -496,18 +496,6 @@ func Export(ctx context.Context, q db.Querier, userID uuid.UUID) (any, error) {
 	return map[string]any{"runs": runs, "proposals": props, "memories": mems}, nil
 }
 
-// WriteTools names every tool that changes data, for tests that must cover them all.
-func WriteTools() []string {
-	var out []string
-	for name, t := range registry {
-		if t.Write {
-			out = append(out, name)
-		}
-	}
-	slices.Sort(out)
-	return out
-}
-
 func (r *Runner) getProvider(w http.ResponseWriter, req *http.Request) {
 	who, _ := auth.FromContext(req.Context())
 	s, _, err := r.providerSettings(req.Context(), r.db, who.UserID)

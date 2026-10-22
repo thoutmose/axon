@@ -6,8 +6,15 @@ import (
 	"testing"
 )
 
+func stem(w string) string { return StemIn(w, "en") }
+
+func tokens(text string) []string {
+	stems, _ := TokensWithWords(text)
+	return stems
+}
+
 func TestTokensStemAndDropStopwords(t *testing.T) {
-	got := Tokens("The notes on Learning: l'idée des révisions, and studying!")
+	got := tokens("The notes on Learning: l'idée des révisions, and studying!")
 	want := []string{"note", "learn", "idé", "révision", "studi"} // English text: the English Snowball stemmer
 	if !slices.Equal(got, want) {
 		t.Fatalf("Tokens = %v, want %v", got, want)
@@ -15,17 +22,17 @@ func TestTokensStemAndDropStopwords(t *testing.T) {
 }
 
 func TestCleanStripsMarkdown(t *testing.T) {
-	got := Tokens(Clean("---\ntags: [x]\n---\n# Title\n\n```go\nfunc main()\n```\nSee https://example.org and `code` **bold**"))
+	got := tokens(Clean("---\ntags: [x]\n---\n# Title\n\n```go\nfunc main()\n```\nSee https://example.org and `code` **bold**"))
 	if !slices.Equal(got, []string{"titl", "bold"}) {
 		t.Fatalf("Clean = %v", got)
 	}
 }
 
 func TestSynonymsComeFromTheThesaurus(t *testing.T) {
-	if !Synonyms(Stem("memory"), Stem("recall")) || !Synonyms(Stem("goal"), Stem("objectif")) {
+	if !Synonyms(stem("memory"), stem("recall")) || !Synonyms(stem("goal"), stem("objectif")) {
 		t.Error("expected synonyms")
 	}
-	if Synonyms(Stem("memory"), Stem("memory")) || Synonyms(Stem("memory"), Stem("budget")) {
+	if Synonyms(stem("memory"), stem("memory")) || Synonyms(stem("memory"), stem("budget")) {
 		t.Error("unexpected synonyms")
 	}
 }
@@ -43,13 +50,13 @@ func TestEntities(t *testing.T) {
 }
 
 func TestTFIDFAndCosine(t *testing.T) {
-	docs := [][]string{Tokens("spaced repetition memory review"), Tokens("memory review schedule repetition"), Tokens("budget savings money")}
+	docs := [][]string{tokens("spaced repetition memory review"), tokens("memory review schedule repetition"), tokens("budget savings money")}
 	c := NewCorpus(docs)
 	a, b, z := c.TFIDF(docs[0]), c.TFIDF(docs[1]), c.TFIDF(docs[2])
 	if Cosine(a, b) <= 0.3 || Cosine(a, z) != 0 {
 		t.Fatalf("cosine a·b = %.2f, a·z = %.2f", Cosine(a, b), Cosine(a, z))
 	}
-	if k := Keywords(a, 1); k[0] != Stem("spaced") {
+	if k := Keywords(a, 1); k[0] != stem("spaced") {
 		t.Fatalf("top keyword = %v (rarest term should win)", k)
 	}
 }
@@ -57,7 +64,7 @@ func TestTFIDFAndCosine(t *testing.T) {
 func TestWordsShowTheWrittenForm(t *testing.T) {
 	w := Words{}
 	w.Add(TokensWithWords("spaced repetition, spaced practice"))
-	if got := w.Of(Stem("spaced")); got != "spaced" {
+	if got := w.Of(stem("spaced")); got != "spaced" {
 		t.Fatalf("Of = %q", got)
 	}
 }
@@ -67,7 +74,7 @@ func TestLanguageAndFrenchStemming(t *testing.T) {
 	if Language(fr) != "fr" || Language("The students learn better when they review their notes.") != "en" {
 		t.Fatal("language detection")
 	}
-	got := Tokens(fr)
+	got := tokens(fr)
 	if !slices.Contains(got, "étudi") || !slices.Contains(got, "cart") {
 		t.Fatalf("French tokens = %v", got)
 	}
@@ -75,10 +82,10 @@ func TestLanguageAndFrenchStemming(t *testing.T) {
 
 func TestWordNetSynonyms(t *testing.T) {
 	// From Open English WordNet: each word's most common sense.
-	if !Synonyms(Stem("remark"), Stem("note")) {
+	if !Synonyms(stem("remark"), stem("note")) {
 		t.Error("remark and note should be synonyms")
 	}
-	if Synonyms(Stem("note"), Stem("bill")) {
+	if Synonyms(stem("note"), stem("bill")) {
 		t.Error("a rare sense linked note to bill")
 	}
 }

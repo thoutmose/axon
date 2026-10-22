@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/thoutmose/axon/api/internal/budget"
 	"math/rand/v2"
 	"testing"
 	"time"
@@ -196,8 +195,36 @@ func TestFinanceAccountsRecurringRulesAndImport(t *testing.T) {
 	alice.mustDo(204, "DELETE", "/v1/budget/accounts/"+empty, nil)
 }
 
-// The balances the API shows (computed in SQL) agree with budget.Balances,
-// the property-tested model, over random income, expenses, and transfers.
+// movement is what balances needs from a transaction; From is the account
+// (income uses it as the destination) and To the transfer's destination.
+type movement struct {
+	Kind        string
+	AmountCents int64
+	From, To    *uuid.UUID
+}
+
+// balances applies movements to opening balances: income adds to its
+// account, an expense subtracts, a transfer moves money between two accounts.
+func balances(opening map[uuid.UUID]int64, moves []movement) map[uuid.UUID]int64 {
+	out := make(map[uuid.UUID]int64, len(opening))
+	for id, c := range opening {
+		out[id] = c
+	}
+	for _, m := range moves {
+		switch m.Kind {
+		case "income":
+			out[*m.From] += m.AmountCents
+		case "expense":
+			out[*m.From] -= m.AmountCents
+		case "transfer":
+			out[*m.From] -= m.AmountCents
+			out[*m.To] += m.AmountCents
+		}
+	}
+	return out
+}
+
+// The balances the API shows (computed in SQL) agree with the model above, over random income, expenses, and transfers.
 func TestAccountBalancesMatchTheModel(t *testing.T) {
 	e := newEnv(t, true)
 	alice := e.client()
@@ -214,10 +241,10 @@ func TestAccountBalancesMatchTheModel(t *testing.T) {
 			[]byte(fmt.Sprintf(`{"name":"Account %d","type":"asset","opening_cents":%d}`, i, cents))), &a)
 		ids[i], opening[a.ID] = a.ID, cents
 	}
-	var moves []budget.Movement
+	var moves []movement
 	for range 60 {
 		from, to := &ids[r.IntN(3)], &ids[r.IntN(3)]
-		m := budget.Movement{Kind: []string{"income", "expense", "transfer"}[r.IntN(3)], AmountCents: 1 + r.Int64N(100_000), From: from}
+		m := movement{Kind: []string{"income", "expense", "transfer"}[r.IntN(3)], AmountCents: 1 + r.Int64N(100_000), From: from}
 		body := fmt.Sprintf(`{"occurred_on":"2026-10-01","kind":"%s","amount_cents":%d,"account_id":"%s"`, m.Kind, m.AmountCents, *from)
 		if m.Kind == "transfer" {
 			if *from == *to {
@@ -236,14 +263,32 @@ func TestAccountBalancesMatchTheModel(t *testing.T) {
 		} `json:"items"`
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/budget/accounts", nil), &list)
-	want := budget.Balances(opening, moves)
+	want := balances(opening, moves)
 	if len(list.Items) != len(ids) {
 		t.Fatalf("got %d accounts", len(list.Items))
 	}
+	var total, wantTotal int64
 	for _, a := range list.Items {
 		if a.BalanceCents != want[a.ID] {
 			t.Errorf("account %s: API says %d, the model %d", a.ID, a.BalanceCents, want[a.ID])
 		}
+		total += a.BalanceCents
+	}
+	// Double entry: a transfer never changes the total, so the balances add
+	// up to the openings plus income minus expenses.
+	for _, c := range opening {
+		wantTotal += c
+	}
+	for _, m := range moves {
+		switch m.Kind {
+		case "income":
+			wantTotal += m.AmountCents
+		case "expense":
+			wantTotal -= m.AmountCents
+		}
+	}
+	if total != wantTotal {
+		t.Errorf("balances add up to %d, want openings + income - expenses = %d", total, wantTotal)
 	}
 }
 

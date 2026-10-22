@@ -91,12 +91,6 @@ type format struct {
 
 var verb = regexp.MustCompile(`%[dsqvw]`)
 
-func (p *formats) reset() {
-	p.mu.Lock()
-	p.list = nil
-	p.mu.Unlock()
-}
-
 func (p *formats) all() []format {
 	p.mu.Lock()
 	defer p.mu.Unlock()
