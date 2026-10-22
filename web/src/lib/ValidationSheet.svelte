@@ -29,12 +29,14 @@
 	let sheet = $state<Sheet | null>(null);
 	let items = $state<Item[]>([]);
 	let explanation = $state('');
-	let error = $state('');
+	let loadError = $state('');
+	let submitError = $state('');
 	let busy = $state(false);
 	let result = $state<Attempt | null>(null);
 
 	async function load() {
-		error = '';
+		loadError = '';
+		submitError = '';
 		result = null;
 		sheet = null;
 		try {
@@ -42,7 +44,7 @@
 			items = sheet.items.map((i) => ({ ...i }));
 			explanation = sheet.attempts[0]?.explanation ?? '';
 		} catch (err) {
-			error = message(err);
+			loadError = message(err);
 		}
 	}
 	$effect(() => {
@@ -66,7 +68,7 @@
 	async function validate(e: SubmitEvent) {
 		e.preventDefault();
 		busy = true;
-		error = '';
+		submitError = '';
 		try {
 			result = await api<Attempt>(`/v1/skills/${skillId}/validations`, {
 				method: 'POST',
@@ -75,16 +77,16 @@
 			if (sheet) sheet = { ...sheet, attempts: [result, ...sheet.attempts] };
 			if (result.flag === 'incomplete') {
 				toast(
-					t('Not yet: {n} mandatory items are missing. Try again when they hold.', {
+					t('Not yet. Mandatory items missing: {n}. Try again when they hold.', {
 						n: missing(result)
 					})
 				);
 			} else {
-				toast(t('{title} proven: {mark}/100.', { title, mark: result.mark }));
+				toast(t('{title} proven: {mark}/125.', { title, mark: result.mark }));
 			}
 			onvalidated?.(result);
 		} catch (err) {
-			error = message(err);
+			submitError = message(err);
 		} finally {
 			busy = false;
 		}
@@ -92,8 +94,8 @@
 </script>
 
 <Dialog bind:open title={t('Prove {title}', { title })}>
-	{#if error}
-		<Status kind="error" message={error} retry={load} />
+	{#if loadError}
+		<Status kind="error" message={loadError} retry={load} />
 	{:else if !sheet}
 		<Status kind="loading" message={t('Loading the evaluation sheet…')} />
 	{:else}
@@ -154,6 +156,9 @@
 			>
 			<textarea id="explanation-{skillId}" bind:value={explanation} rows="5" maxlength="5000"
 			></textarea>
+			{#if submitError}
+				<p class="error" role="alert">{submitError}</p>
+			{/if}
 			<div class="row">
 				<Button type="submit" disabled={busy}>{t('Validate')}</Button>
 				<Button variant="secondary" type="button" onclick={() => (open = false)}
@@ -163,8 +168,8 @@
 		</form>
 		{#if result}
 			<p class="result {result.flag}" role="status">
-				{flagLabel[result.flag]} · {result.mark}/100{result.flag === 'incomplete'
-					? ' · ' + t('{n} mandatory items missing', { n: missing(result) })
+				{flagLabel[result.flag]} · {result.mark}/125{result.flag === 'incomplete'
+					? ' · ' + t('Mandatory items missing: {n}', { n: missing(result) })
 					: ''}
 			</p>
 		{/if}
@@ -173,7 +178,7 @@
 			<ul class="attempts">
 				{#each sheet.attempts as a (a.id)}
 					<li>
-						<span class={a.flag}>{flagLabel[a.flag]}</span> · {a.mark}/100 · {formatDate(
+						<span class={a.flag}>{flagLabel[a.flag]}</span> · {a.mark}/125 · {formatDate(
 							a.created_at.slice(0, 10)
 						)}
 					</li>
@@ -223,6 +228,9 @@
 	textarea {
 		width: 100%;
 		margin-top: var(--space-1);
+	}
+	.error {
+		color: var(--bad);
 	}
 	.result {
 		font-weight: 600;

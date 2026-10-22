@@ -2,6 +2,12 @@
 
 All notable changes to Axon. Versions follow [Semantic Versioning](https://semver.org/); the support and deprecation policy is in [doc/support.md](doc/support.md).
 
+## Unreleased
+
+- **Proven, not ticked** (EP-181): a skill is proven by its evaluation sheet, as at École 42: each item of its proof with where the evidence is, the explanation in your own words, a mark of 0 to 125, and retries; a pass marks the skill done and reaches its milestone. The plan and Today say how many days behind a phase is. A refused submission keeps what you typed, and the 5 points of an outstanding mark count once per skill.
+- **Needs that follow your goal** (EP-191): the health profile's goal (keep, lose gently, gain) moves the daily needs by 15 % at most, never under your basal rate or 1,200 kcal and never above maintenance when losing; the day's bars and the Chef follow. ADR 0039 supersedes ADR 0028.
+- Reviews of both: [doc/reviews/2026-10-22-ep181-ep191.md](doc/reviews/2026-10-22-ep181-ep191.md).
+
 ## 1.0.0 (2026-10-18)
 
 The first release meant for someone other than its author to install, operate, upgrade, and recover: everything since 0.1.0, which is the release candidate of 11 October 2026 (below), and the owner requests that came after it, EP-47 to EP-169. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)). The trailer in 4K is attached to the release.

@@ -72,7 +72,7 @@
 		</p>
 		{#if plan.behind_days > 0}
 			<p class="small behind">
-				{t('{n} days behind: a phase is over and its milestone is not reached.', {
+				{t('Days behind: {n}. A phase is over and its milestone is not reached.', {
 					n: plan.behind_days
 				})}
 			</p>

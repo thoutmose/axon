@@ -653,15 +653,19 @@ test('the roadmap is a whole plan: skills with resources, a goal, milestones, pr
 	await expect(sheet.getByRole('textbox', { name: 'Item 1', exact: true })).toHaveValue(/LFD103/);
 	await sheet.getByRole('checkbox', { name: 'Item 1 holds', exact: true }).check();
 	await sheet.getByRole('button', { name: 'Validate' }).click();
-	await expect(sheet.getByRole('status')).toContainText('Not yet · 0/100');
+	await expect(sheet.getByRole('status')).toContainText('Not yet · 0/125');
 	await sheet.getByRole('checkbox', { name: 'Item 2 holds', exact: true }).check();
+	// A refused submission (no explanation yet) keeps the form and what was ticked.
+	await sheet.getByRole('button', { name: 'Validate' }).click();
+	await expect(sheet.getByRole('alert')).toBeVisible();
+	await expect(sheet.getByRole('checkbox', { name: 'Item 2 holds', exact: true })).toBeChecked();
 	await sheet
 		.getByRole('textbox', { name: /Explain it in your own words/ })
 		.fill(
 			'The kernel schedules processes and owns memory; xv6 shows each piece in a few hundred lines.'
 		);
 	await sheet.getByRole('button', { name: 'Validate' }).click();
-	await expect(sheet.getByRole('status')).toContainText('Proven · 100/100');
+	await expect(sheet.getByRole('status')).toContainText('Proven · 100/125');
 	await noSeriousA11yViolations(page);
 	await page.keyboard.press('Escape');
 	await expect(sheet).toBeHidden();

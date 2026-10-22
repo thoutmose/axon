@@ -26,6 +26,12 @@ describe('t', () => {
 			for (const ph of en.match(/\{\w+\}/g) ?? []) expect(f).toContain(ph);
 		}
 	});
+
+	it('names the loss floor as the API does, in English and French (EP-191)', () => {
+		const lose = 'Lose weight gently: 15 % under, never under your basal rate or 1,200 kcal';
+		expect(t(lose)).toContain('never under your basal rate or 1,200 kcal');
+		expect(fr[lose]).toContain('jamais sous votre métabolisme de base ni sous 1 200 kcal');
+	});
 });
 
 import { kindIcon } from './icons';
