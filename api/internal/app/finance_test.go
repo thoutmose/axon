@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"math/rand/v2"
+	"slices"
 	"testing"
 	"time"
 )
@@ -289,6 +290,70 @@ func TestAccountBalancesMatchTheModel(t *testing.T) {
 	}
 	if total != wantTotal {
 		t.Errorf("balances add up to %d, want openings + income - expenses = %d", total, wantTotal)
+	}
+}
+
+// Double entry, on the production SQL (balanceSQLOver, through the API):
+// whatever the transactions, over many random runs with 1 to 5 accounts,
+// transfers never change the total, and the total is openings + income −
+// expenses.
+func TestBalancesReconcile(t *testing.T) {
+	e := newEnv(t, true)
+	c := e.client()
+	c.register("Alice")
+	r := rand.New(rand.NewPCG(1, 2)) //nolint:gosec // deterministic test data, not security
+	for run := range 20 {
+		ids := make([]uuid.UUID, 1+r.IntN(5))
+		var want int64
+		for i := range ids {
+			cents := r.Int64N(2_000_000) - 1_000_000
+			var a struct {
+				ID uuid.UUID `json:"id"`
+			}
+			_ = json.Unmarshal(c.mustDo(201, "POST", "/v1/budget/accounts",
+				[]byte(fmt.Sprintf(`{"name":"Run %d account %d","type":"asset","opening_cents":%d}`, run, i, cents))), &a)
+			ids[i] = a.ID
+			want += cents
+		}
+		for n := r.IntN(30); n > 0; n-- {
+			from, to := ids[r.IntN(len(ids))], ids[r.IntN(len(ids))]
+			amount := 1 + r.Int64N(1_000_000)
+			kind := []string{"income", "expense", "transfer"}[r.IntN(3)]
+			body := fmt.Sprintf(`{"occurred_on":"2026-10-01","kind":"%s","amount_cents":%d,"account_id":"%s"`, kind, amount, from)
+			switch kind {
+			case "income":
+				want += amount
+			case "expense":
+				want -= amount
+			default:
+				if from == to {
+					continue
+				}
+				body += fmt.Sprintf(`,"to_account_id":"%s"`, to)
+			}
+			c.mustDo(201, "POST", "/v1/budget/transactions", []byte(body+"}"))
+		}
+		var list struct {
+			Items []struct {
+				ID           uuid.UUID `json:"id"`
+				BalanceCents int64     `json:"balance_cents"`
+			} `json:"items"`
+		}
+		_ = json.Unmarshal(c.mustDo(200, "GET", "/v1/budget/accounts", nil), &list)
+		var got int64
+		seen := 0
+		for _, a := range list.Items {
+			if slices.Contains(ids, a.ID) {
+				got += a.BalanceCents
+				seen++
+			}
+		}
+		if seen != len(ids) {
+			t.Fatalf("run %d: got %d of the run's %d accounts", run, seen, len(ids))
+		}
+		if got != want {
+			t.Fatalf("run %d: total %d, want %d", run, got, want)
+		}
 	}
 }
 
