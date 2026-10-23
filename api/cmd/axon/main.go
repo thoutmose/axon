@@ -158,14 +158,16 @@ func serve() error {
 		}
 		go pruneMedia(ctx, pool, log)
 		go mirror.New(pool, log).Run(ctx)
+		// These skip the demo account themselves, so an instance that offers
+		// the demo still keeps everyone else's watch, videos, and podcasts fresh.
+		go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
+		go summaries.RunVideoSummaries(ctx)
+		go summaries.RunWatchKnowledge(ctx)
 		if !demoEnabled() { // the shared demo sends and fetches nothing
 			go reminders.Run(ctx)
 			go cals.Run(ctx)
 			go index.Run(ctx)
 			go listeners.Run(ctx)
-			go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
-			go summaries.RunVideoSummaries(ctx)
-			go summaries.RunWatchKnowledge(ctx)
 		}
 	}()
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
