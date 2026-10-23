@@ -1,0 +1,89 @@
+
+// rankAndGroup works out each node's centrality (PageRank) and community
+// (Louvain) over the whole graph, communities named by their most central
+// members, biggest first; nodes with no link have none.
+func rankAndGroup(g *Graph) {
+	index := map[string]int{}
+	for i, n := range g.Nodes {
+		index[n.ID] = i
+	}
+	adj := make([]map[int]float64, len(g.Nodes))
+	for i := range adj {
+		adj[i] = map[int]float64{}
+	}
+	weight := map[string]float64{"is_a": 0.5, "developed_by": 1, "fork_of": 1, "mentioned_with": 0.5}
+	kept := g.Edges[:0]
+	for _, e := range g.Edges {
+		a, okA := index[e.From]
+		b, okB := index[e.To]
+		if !okA || !okB {
+			continue
+		}
+		if e.Evidence == nil {
+			e.Evidence = []GEvidence{}
+		}
+		kept = append(kept, e)
+		w, ok := weight[e.Predicate]
+		switch {
+		case e.Predicate == "related_to":
+			w = e.NPMI * float64(e.Together)
+		case !ok:
+			w = 2
+		}
+		if e.Together > 1 && e.Predicate != "related_to" {
+			w *= float64(e.Together)
+		}
+		adj[a][b] += w
+		adj[b][a] += w
+	}
+	g.Edges = kept
+	g.Communities = []GCommunity{}
+	if len(g.Nodes) == 0 {
+		return
+	}
+	comm, mod := knowledge.Louvain(adj)
+	ranks := knowledge.PageRank(adj)
+	top := 0.0
+	for _, r := range ranks {
+		top = max(top, r)
+	}
+	sizes := map[int]int{}
+	for i, c := range comm {
+		if len(adj[i]) > 0 {
+			sizes[c]++
+		}
+	}
+	order := make([]int, 0, len(sizes))
+	for c := range sizes {
+		order = append(order, c)
+	}
+	slices.SortFunc(order, func(a, b int) int { return cmp.Or(cmp.Compare(sizes[b], sizes[a]), cmp.Compare(a, b)) })
+	renum := map[int]int{}
+	for i, c := range order {
+		renum[c] = i + 1
+	}
+	for i := range g.Nodes {
+		g.Nodes[i].Community = 0
+		if len(adj[i]) > 0 {
+			g.Nodes[i].Community = renum[comm[i]]
+		}
+		if top > 0 {
+			g.Nodes[i].Rank = round2(ranks[i] / top)
+		}
+	}
+	for _, c := range order {
+		var members []GNode
+		for _, n := range g.Nodes {
+			if n.Community == renum[c] && n.Kind != "class" {
+				members = append(members, n)
+			}
+		}
+		slices.SortFunc(members, func(a, b GNode) int { return cmp.Compare(b.Rank, a.Rank) })
+		var names []string
+		for _, m := range members[:min(3, len(members))] {
+			names = append(names, m.Label)
+		}
+		g.Communities = append(g.Communities, GCommunity{ID: renum[c], Label: strings.Join(names, " · "), Size: sizes[c]})
+	}
+	g.Stats.Modularity = round2(mod)
+}

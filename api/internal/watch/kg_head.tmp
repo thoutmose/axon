@@ -1,0 +1,428 @@
+package watch
+
+import (
+	"cmp"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"math"
+	"regexp"
+	"slices"
+	"strings"
+	"time"
+	"unicode"
+
+	"github.com/google/uuid"
+
+	"github.com/thoutmose/axon/api/internal/knowledge"
+)
+
+// The knowledge layer of the news graph (owner request): a knowledge graph
+// in the proper sense, not only concepts seen together. Entities come from
+// an ontology of the tech world (organizations, technologies, languages,
+// databases, cloud services, standards, and concepts, each an instance of a
+// class, with who makes it and what it was forked from) and from the CVEs
+// the news name; aliases resolve to one entity. Facts are subject–predicate–
+// object triples: the ontology's own (is a, developed by, fork of) and those
+// read from the news, sentence by sentence, between two entities next to
+// each other (acquires, releases, integrates with, uses, alternative to,
+// migrates to, partners with, invests in, deprecates, affects, part of).
+// Every fact read from the news keeps its evidence: the news and the
+// sentence. Two entities in the same sentences with no stated relation are
+// mentioned together.
+
+//go:embed ontology.json
+var ontologyJSON []byte
+
+// OEntity is an entity of the ontology.
+type OEntity struct {
+	ID      string   `json:"id"`
+	Label   string   `json:"label"`
+	Type    string   `json:"type"`
+	Class   string   `json:"class"`
+	By      string   `json:"by"`
+	ForkOf  string   `json:"fork_of"`
+	Aliases []string `json:"aliases"`
+	Case    []string `json:"case"` // aliases matched with their case only ("Go", "Spark")
+}
+
+type ontology struct {
+	byID    map[string]*OEntity
+	foldKey map[string]string // an alias's words, lower-cased → entity
+	casKey  map[string]string // an alias's words as written → entity
+	longest int               // words in the longest alias
+}
+
+var onto = loadOntology()
+
+var cveRE = regexp.MustCompile(`\bCVE-\d{4}-\d{4,7}\b`)
+
+func loadOntology() *ontology {
+	var raw struct {
+		Entities []OEntity `json:"entities"`
+	}
+	if err := json.Unmarshal(ontologyJSON, &raw); err != nil {
+		panic("watch: ontology: " + err.Error())
+	}
+	o := &ontology{byID: map[string]*OEntity{}, foldKey: map[string]string{}, casKey: map[string]string{}}
+	key := func(a string) string {
+		var ws []string
+		for _, t := range nameWords(a) {
+			ws = append(ws, a[t[0]:t[1]])
+		}
+		o.longest = max(o.longest, len(ws))
+		return strings.Join(ws, " ")
+	}
+	for i := range raw.Entities {
+		en := &raw.Entities[i]
+		o.byID[en.ID] = en
+		for _, a := range append([]string{en.Label}, en.Aliases...) {
+			if !slices.Contains(en.Case, a) {
+				o.foldKey[strings.ToLower(key(a))] = en.ID
+			}
+		}
+		for _, a := range en.Case {
+			o.casKey[key(a)] = en.ID
+		}
+	}
+	return o
+}
+
+// nameWords splits text into words, where a word keeps the dots inside it
+// ("Node.js") and a trailing + or # ("C++", "C#"); slashes and hyphens part
+// words, so "Kafka/Flink" and "Kafka-based" name Kafka, and the aliases
+// split the same way ("Pub/Sub" is "Pub Sub").
+func nameWords(s string) [][2]int {
+	var out [][2]int
+	start := -1
+	inWord := func(r rune) bool { return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' }
+	for i, r := range s {
+		switch {
+		case inWord(r):
+			if start < 0 {
+				start = i
+			}
+		case start >= 0 && r == '.' && i+1 < len(s) && inWord(rune(s[i+1])) && inWord(rune(s[i-1])):
+			// a dot between letters stays in the word
+		case start >= 0 && (r == '+' || r == '#'):
+			// "C++", "C#": kept, and the word ends after them
+		default:
+			if start >= 0 {
+				out = append(out, [2]int{start, i})
+				start = -1
+			}
+		}
+	}
+	if start >= 0 {
+		out = append(out, [2]int{start, len(s)})
+	}
+	return out
+}
+
+// mention is an entity named in a sentence, where.
+type mention struct {
+	id         string
+	start, end int
+}
+
+// mentions finds the entities a sentence names, in order: at each word,
+// the longest run of words that is an alias (as written for the aliases
+// that need their case, else in any case).
+func (o *ontology) mentions(s string) []mention {
+	var out []mention
+	ws := nameWords(s)
+	for i := 0; i < len(ws); {
+		found := 0
+		for n := min(o.longest, len(ws)-i); n > 0 && found == 0; n-- {
+			parts := make([]string, n)
+			for k := range n {
+				parts[k] = s[ws[i+k][0]:ws[i+k][1]]
+			}
+			k := strings.Join(parts, " ")
+			id, ok := o.casKey[k]
+			if !ok {
+				id, ok = o.foldKey[strings.ToLower(k)]
+			}
+			if ok {
+				out = append(out, mention{id, ws[i][0], ws[i+n-1][1]})
+				found = n
+			}
+		}
+		i += max(found, 1)
+	}
+	for _, m := range cveRE.FindAllStringIndex(s, -1) {
+		out = append(out, mention{"cve:" + s[m[0]:m[1]], m[0], m[1]})
+	}
+	slices.SortFunc(out, func(a, b mention) int { return cmp.Or(cmp.Compare(a.start, b.start), cmp.Compare(b.end, a.end)) })
+	// Overlaps keep the longer, earlier name; repeats of an entity collapse.
+	kept := out[:0]
+	for _, m := range out {
+		if len(kept) > 0 && m.start < kept[len(kept)-1].end {
+			continue
+		}
+		kept = append(kept, m)
+	}
+	return kept
+}
+
+// A predicate read between two entities: the words between them.
+type pattern struct {
+	predicate string
+	re        *regexp.Regexp
+	from      string // the subject's type it needs, if any
+	reverse   bool   // the object comes first ("X was acquired by Y")
+}
+
+var patterns = []pattern{
+	{"acquires", regexp.MustCompile(`(?i)\b(?:was|is being|has been) (?:acquired|bought) by\b`), "", true},
+	{"acquires", regexp.MustCompile(`(?i)\b(?:acquires?|acquired|acquiring|to acquire|buys|bought|takeover of)\b`), "organization", false},
+	{"fork_of", regexp.MustCompile(`(?i)\b(?:a )?fork(?:ed)? (?:of|from)\b`), "", false},
+	{"deprecates", regexp.MustCompile(`(?i)\b(?:deprecat\w*|drops? support for|dropping support for|sunsets?|sunsetting|retires?|retiring|end[- ]of[- ]life for)\b`), "", false},
+	{"migrates_to", regexp.MustCompile(`(?i)\b(?:migrat\w* (?:\w+ )?to|mov(?:es|ed|ing) (?:\w+ )?to|switch(?:es|ed|ing)? to|replac\w* (?:\w+ )?with)\b`), "", false},
+	{"integrates_with", regexp.MustCompile(`(?i)\b(?:integrat\w* with|integration (?:with|for)|connects? (?:to|with)|adds? (?:native )?support for|now supports?|support for|plugs? into|works with)\b`), "", false},
+	{"partners_with", regexp.MustCompile(`(?i)\b(?:partners? with|partnership with|teams? up with|collaborat\w* with|alliance with)\b`), "", false},
+	{"invests_in", regexp.MustCompile(`(?i)\b(?:invests? in|investment in|backs|backed|funding (?:for|of))\b`), "organization", false},
+	{"part_of", regexp.MustCompile(`(?i)\b(?:joins?|joined|donat\w* to|graduat\w* (?:at|in|from)|incubat\w* (?:at|in)|contributed to)\b`), "", false},
+	{"releases", regexp.MustCompile(`(?i)\b(?:releases?|released|launch(?:es|ed)?|unveil(?:s|ed)?|announce[sd]?|introduce[sd]?|ships?|shipped|debuts?|rolls? out|rolled out|open[- ]sourc\w*|previews?)\b`), "organization", false},
+	{"alternative_to", regexp.MustCompile(`(?i)(?:\bvs\.?|\bversus\b|\balternative to\b|\breplacement for\b|\bcompetes? with\b|\brivals?\b|\binstead of\b)`), "", false},
+	{"uses", regexp.MustCompile(`(?i)\b(?:built (?:on|with)|powered by|runs? on|running on|uses|using|based on|on top of|leverag\w*|adopts?|adopted|written in|rewritten in|rewrite in)\b`), "", false},
+}
+
+// Predicates, in the words people read: the ontology's own, those the
+// person's model may state (KGPredicates), and co-occurrences.
+var predicates = func() map[string]string {
+	m := map[string]string{"is_a": "is a", "developed_by": "developed by", "mentioned_with": "mentioned with", "related_to": "goes with"}
+	for k, v := range KGPredicates {
+		if m[k] == "" {
+			m[k] = v
+		}
+	}
+	return m
+}()
+
+// GEvidence is where a fact was read.
+type GEvidence struct {
+	ID       uuid.UUID `json:"id"`
+	Title    string    `json:"title"`
+	Sentence string    `json:"sentence"`
+}
+
+type triple struct{ s, p, o string }
+
+type fact struct {
+	n        int // articles that state it, each counted once
+	last     uuid.UUID
+	evidence []GEvidence
+}
+
+// kgRead reads the entities and facts of the news: those the person's model
+// read in an item when it has, else the ontology's names and the words
+// between them. Entities the model found and the ontology lacks come back
+// in extra, by id.
+func kgRead(docs []*gdoc) (count map[string]int, items map[string][]*gdoc, facts map[triple]*fact, extra map[string]*OEntity) {
+	count, items, facts, extra = map[string]int{}, map[string][]*gdoc{}, map[triple]*fact{}, map[string]*OEntity{}
+	add := func(t triple, d *gdoc, sentence string) {
+		f := facts[t]
+		if f == nil {
+			f = &fact{}
+			facts[t] = f
+		}
+		if f.last != d.id { // docs come one after the other
+			f.n, f.last = f.n+1, d.id
+		}
+		if len(f.evidence) < 3 && !slices.ContainsFunc(f.evidence, func(e GEvidence) bool { return e.ID == d.id }) {
+			f.evidence = append(f.evidence, GEvidence{d.id, d.title, cut(sentence, 280)})
+		}
+	}
+	for _, d := range docs {
+		seen := map[string]bool{}
+		if d.kg != nil {
+			ids := map[string]string{} // the item's names → entity id
+			for _, e := range d.kg.Entities {
+				id := resolve(e, extra)
+				for _, n := range append([]string{e.Name}, e.Aliases...) {
+					ids[n] = id
+				}
+				if !seen[id] {
+					seen[id] = true
+					count[id]++
+					items[id] = append(items[id], d)
+				}
+			}
+			for _, f := range d.kg.Facts {
+				if s, o := ids[f.Subject], ids[f.Object]; s != "" && o != "" && s != o {
+					if symmetric[f.Predicate] && s > o {
+						s, o = o, s
+					}
+					add(triple{s, f.Predicate, o}, d, f.Sentence)
+				}
+			}
+			continue
+		}
+		text := d.title + ". " + d.summary + ". " + d.body
+		for _, s := range sentenceSplit.Split(strings.ReplaceAll(text, "\n", " "), -1) {
+			// Links name hosts, not subjects; a feed's footer names its publisher.
+			s = strings.TrimSpace(linkRE.ReplaceAllString(s, " "))
+			if len(s) < 8 || len(s) > 600 || strings.Contains(s, "appeared first on") {
+				continue
+			}
+			ms := onto.mentions(s)
+			for _, m := range ms {
+				if !seen[m.id] {
+					seen[m.id] = true
+					count[m.id]++
+					items[m.id] = append(items[m.id], d)
+				}
+			}
+			stated := map[[2]string]bool{}
+			for i := 0; i+1 < len(ms); i++ {
+				a, b := ms[i], ms[i+1]
+				if a.id == b.id {
+					continue
+				}
+				gap := s[a.end:b.start]
+				if p, rev, ok := relate(a.id, b.id, gap, s[:a.start]); ok {
+					t := triple{a.id, p, b.id}
+					if rev {
+						t = triple{b.id, p, a.id}
+					}
+					add(t, d, s)
+					stated[[2]string{a.id, b.id}], stated[[2]string{b.id, a.id}] = true, true
+				}
+			}
+			for i := range ms {
+				for j := i + 1; j < len(ms); j++ {
+					a, b := ms[i].id, ms[j].id
+					if a == b || stated[[2]string{a, b}] {
+						continue
+					}
+					if a > b {
+						a, b = b, a
+					}
+					add(triple{a, "mentioned_with", b}, d, s)
+				}
+			}
+		}
+	}
+	return count, items, facts, extra
+}
+
+// relate says what links a to b, read in the words between them.
+func relate(a, b, gap, before string) (string, bool, bool) {
+	if len(gap) > 90 {
+		return "", false, false
+	}
+	ta, tb := entityType(a), entityType(b)
+	// Concepts are too broad for a stated fact: they are only mentioned with.
+	if ta == "concept" || tb == "concept" {
+		return "", false, false
+	}
+	if ta == "vulnerability" && tb != "vulnerability" {
+		return "affects", false, true
+	}
+	if tb == "vulnerability" && ta != "vulnerability" {
+		return "affects", true, true
+	}
+	// "from X to Y" in a sentence about moving: X gives way to Y.
+	if strings.TrimSpace(strings.ToLower(gap)) == "to" && endsFrom.MatchString(before) {
+		return "migrates_to", false, true
+	}
+	for _, p := range patterns {
+		if !p.re.MatchString(gap) {
+			continue
+		}
+		subject := ta
+		if p.reverse {
+			subject = tb
+		}
+		if p.from != "" && subject != p.from {
+			continue
+		}
+		if p.predicate == "part_of" && tb != "organization" || p.predicate == "releases" && tb == "organization" ||
+			p.predicate == "alternative_to" && len(gap) > 30 {
+			continue
+		}
+		return p.predicate, p.reverse, true
+	}
+	return "", false, false
+}
+
+// resolve links an entity the model named to the ontology's, by any of its
+// names, or makes it an entity of its own, typed and classed as the model
+// said, the first time it is seen.
+func resolve(e KGEntity, extra map[string]*OEntity) string {
+	for _, n := range append([]string{e.Name}, e.Aliases...) {
+		if strings.HasPrefix(strings.ToUpper(n), "CVE-") && cveRE.MatchString(strings.ToUpper(n)) {
+			return "cve:" + strings.ToUpper(n)
+		}
+		k := strings.Join(strings.Fields(n), " ")
+		if id, ok := onto.casKey[k]; ok {
+			return id
+		}
+		if id, ok := onto.foldKey[strings.ToLower(k)]; ok {
+			return id
+		}
+	}
+	id := "x:" + strings.ToLower(strings.Join(strings.Fields(e.Name), " "))
+	if extra[id] == nil {
+		class := e.Class
+		if class == "" {
+			class = strings.ToUpper(e.Type[:1]) + strings.ReplaceAll(e.Type[1:], "_", " ")
+		}
+		extra[id] = &OEntity{ID: id, Label: e.Name, Type: e.Type, Class: class}
+	}
+	return id
+}
+
+var (
+	endsFrom = regexp.MustCompile(`(?i)\bfrom\s*$`)
+	linkRE   = regexp.MustCompile(`\]\([^)]*\)|https?://\S+`)
+)
+
+func entityType(id string) string {
+	if strings.HasPrefix(id, "cve:") {
+		return "vulnerability"
+	}
+	if e := onto.byID[id]; e != nil {
+		return e.Type
+	}
+	return ""
+}
+
+func entityLabel(id string) string {
+	if strings.HasPrefix(id, "cve:") {
+		return strings.TrimPrefix(id, "cve:")
+	}
+	return onto.byID[id].Label
+}
+
+func entityClass(id string) string {
+	if strings.HasPrefix(id, "cve:") {
+		return "Vulnerability"
+	}
+	return onto.byID[id].Class
+}
+
+// Bounds of the knowledge layer, so the graph stays readable.
+const (
+	maxEntities  = 150
+	maxConcepts  = 60
+	maxMentioned = 300 // co-mentions kept, strongest first
+)
+
+// kgContext is what the concept graph already worked out that entities
+// need too: the corpus for summaries, the notes for bridges, the period for
+// trends, and the link threshold.
+type kgContext struct {
+	corpus  knowledge.Corpus
+	notes   map[string][]GItem
+	weekAgo time.Time
+	weeks   float64
+	history bool
+	minNPMI float64
+	fringe  bool
+}
+
+// addKnowledge adds the entities, their classes, and the facts of the news
+// to the concept graph, links concepts to the entities they go with, and
+// works out rank and communities over it all.

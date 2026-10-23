@@ -1,0 +1,174 @@
+
+// subsumed tells whether a concept appears only inside a longer one in the
+// same news ("kernel" when every item says "linux kernel").
+func subsumed(k string, keys []string, df map[string]int, docs []*gdoc) bool {
+	for _, long := range keys {
+		if long == k || df[long] != df[k] || !strings.Contains(" "+long+" ", " "+k+" ") {
+			continue
+		}
+		same := true
+		for _, d := range docs {
+			if slices.Contains(d.concepts, k) != slices.Contains(d.concepts, long) {
+				same = false
+				break
+			}
+		}
+		if same {
+			return true
+		}
+	}
+	return false
+}
+
+func round2(x float64) float64 { return math.Round(x*100) / 100 }
+
+func termsOf(docs []*gdoc) [][]string {
+	out := make([][]string, len(docs))
+	for i, d := range docs {
+		out[i] = d.terms
+	}
+	return out
+}
+
+// best is the most frequent way a concept was written.
+func best(surface map[string]map[string]int, k string, alias map[string]string) string {
+	counts := map[string]int{}
+	for key, forms := range surface {
+		c := key
+		for alias[c] != "" && alias[c] != c {
+			c = alias[c]
+		}
+		if c != k {
+			continue
+		}
+		for s, n := range forms {
+			counts[s] += n
+		}
+	}
+	label, top := k, 0
+	for s, n := range counts {
+		if n > top || n == top && s < label {
+			label, top = s, n
+		}
+	}
+	return label
+}
+
+func neighbours(row map[int]float64, n int) []int {
+	out := make([]int, 0, len(row))
+	for j := range row {
+		out = append(out, j)
+	}
+	slices.SortFunc(out, func(a, b int) int { return cmp.Or(cmp.Compare(row[b], row[a]), cmp.Compare(a, b)) })
+	return out[:min(n, len(out))]
+}
+
+var sentenceSplit = regexp.MustCompile(`(?:[.!?])\s+`)
+
+// summarise is an extractive summary of a concept: of the sentences in its
+// news that mention it, the two closest to what those news share (the
+// centroid of their TF-IDF vectors), not repeating each other.
+func summarise(key string, docs []*gdoc, corpus knowledge.Corpus) string {
+	if len(docs) == 0 {
+		return ""
+	}
+	centroid := knowledge.Vector{}
+	for _, d := range docs {
+		for t, w := range corpus.TFIDF(d.terms) {
+			centroid[t] += w / float64(len(docs))
+		}
+	}
+	centroid = normalise(centroid)
+	want := strings.Fields(key)
+	type cand struct {
+		text  string
+		score float64
+		stems []string
+	}
+	var cands []cand
+	for _, d := range docs {
+		for _, sn := range d.split() {
+			hit := 0
+			for _, w := range want {
+				if slices.Contains(sn.stems, w) {
+					hit++
+				}
+			}
+			if hit < len(want) {
+				continue
+			}
+			cands = append(cands, cand{sn.text, knowledge.Cosine(corpus.TFIDF(sn.stems), centroid), sn.stems})
+		}
+	}
+	slices.SortStableFunc(cands, func(a, b cand) int { return cmp.Compare(b.score, a.score) })
+	var picked []cand
+	for _, c := range cands {
+		if len(picked) == 2 {
+			break
+		}
+		dup := false
+		for _, p := range picked {
+			dup = dup || Jaccard(p.stems, c.stems) > 0.5
+		}
+		if !dup {
+			picked = append(picked, c)
+		}
+	}
+	if len(picked) == 0 {
+		return firstSentences(docs[0].summary, 240)
+	}
+	var parts []string
+	for _, p := range picked {
+		parts = append(parts, p.text+".")
+	}
+	return cut(strings.Join(parts, " "), 400)
+}
+
+func normalise(v knowledge.Vector) knowledge.Vector {
+	var norm float64
+	for _, w := range v {
+		norm += w * w
+	}
+	norm = math.Sqrt(norm)
+	out := knowledge.Vector{}
+	for t, w := range v {
+		if norm > 0 {
+			out[t] = w / norm
+		}
+	}
+	return out
+}
+
+// noteConcepts maps the key phrases of the person's literature and permanent
+// notes (by stems) to those notes, to find the concepts the news share with
+// their Zettelkasten.
+func noteConcepts(ctx context.Context, q db.Querier, userID uuid.UUID) (map[string][]GItem, error) {
+	rows, err := q.Query(ctx, `SELECT n.id, e.title, left(n.content, 20000) FROM notes n JOIN entities e ON e.id = n.id
+		WHERE n.user_id = $1 AND n.kind IN ('literature', 'permanent') ORDER BY e.updated_at DESC LIMIT 500`, userID)
+	if err != nil {
+		return nil, err
+	}
+	type note struct {
+		id             uuid.UUID
+		title, content string
+	}
+	list, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (note, error) {
+		var n note
+		err := r.Scan(&n.id, &n.title, &n.content)
+		return n, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := map[string][]GItem{}
+	for _, n := range list {
+		text := knowledge.Clean(n.content)
+		lang := knowledge.Language(text)
+		for _, p := range knowledge.KeyPhrases(text, 12) {
+			if k := phraseKey(p.Text, lang); k != "" && !slices.ContainsFunc(out[k], func(g GItem) bool { return g.ID == n.id }) {
+				out[k] = append(out[k], GItem{n.id, n.title})
+			}
+		}
+	}
+	return out, nil
+}

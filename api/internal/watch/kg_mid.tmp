@@ -1,0 +1,329 @@
+func addKnowledge(g *Graph, docs []*gdoc, kc kgContext) {
+	b := &kgBuild{g: g, docs: docs, kc: kc}
+	b.count, b.items, b.facts, b.extra = kgRead(docs)
+	b.pickEntities()
+	b.keepConcepts()
+	b.addEntityNodes()
+	b.addOntologyFacts()
+	b.addReadFacts()
+	b.linkConcepts()
+	b.markFringe()
+
+	rankAndGroup(g)
+	g.Stats.Entities, g.Stats.Facts, g.Stats.Classes = len(b.shown), len(b.read), len(b.classes)
+}
+
+// kgBuild is what the steps of addKnowledge share.
+type kgBuild struct {
+	g     *Graph
+	docs  []*gdoc
+	kc    kgContext
+	count map[string]int
+	items map[string][]*gdoc
+	facts map[triple]*fact
+	extra map[string]*OEntity
+
+	ids      []string        // entities by news count, then id
+	shown    map[string]bool // entities kept in the graph
+	concepts []GNode         // concepts kept in the graph
+	classes  map[string]bool
+	known    map[triple]bool // facts the ontology already states
+	read     []GEdge         // facts read in the news
+}
+
+// Entities the model found and the ontology lacks have their own label,
+// type, and class.
+func (b *kgBuild) typeOf(id string) string {
+	if e := b.extra[id]; e != nil {
+		return e.Type
+	}
+	return entityType(id)
+}
+
+func (b *kgBuild) labelOf(id string) string {
+	if e := b.extra[id]; e != nil {
+		return e.Label
+	}
+	return entityLabel(id)
+}
+
+func (b *kgBuild) classOf(id string) string {
+	if e := b.extra[id]; e != nil {
+		return e.Class
+	}
+	return entityClass(id)
+}
+
+// byCount sorts entity ids by news count, then id.
+func (b *kgBuild) byCount(x, y string) int {
+	return cmp.Or(cmp.Compare(b.count[y], b.count[x]), strings.Compare(x, y))
+}
+
+// pickEntities chooses the entities shown.
+func (b *kgBuild) pickEntities() {
+	b.ids = make([]string, 0, len(b.count))
+	for id := range b.count {
+		b.ids = append(b.ids, id)
+	}
+	slices.SortFunc(b.ids, b.byCount)
+	// Like a concept, an entity needs two news: one alone is noise.
+	b.ids = slices.DeleteFunc(b.ids, func(id string) bool { return b.count[id] < 2 })
+	b.shown = map[string]bool{}
+	for _, id := range b.ids[:min(len(b.ids), maxEntities)] {
+		b.shown[id] = true
+	}
+	// A maker of two shown entities joins them, even unnamed in the news.
+	makers := map[string]int{}
+	for id := range b.shown {
+		if e := onto.byID[id]; e != nil && e.By != "" {
+			makers[e.By]++
+		}
+	}
+	for by, n := range makers {
+		if n >= 2 && !b.shown[by] {
+			b.shown[by] = true
+			b.ids = append(b.ids, by) // after the named ones, as count is 0
+		}
+	}
+}
+
+// keepConcepts lets concepts that are entities give way to them, and caps the rest.
+func (b *kgBuild) keepConcepts() {
+	g := b.g
+	names := map[string]bool{}
+	for id := range b.shown {
+		if e := onto.byID[id]; e != nil {
+			for _, a := range append([]string{e.Label}, e.Aliases...) {
+				names[strings.ToLower(a)] = true
+			}
+		}
+	}
+	b.concepts = g.Nodes[:0:0]
+	for _, n := range g.Nodes {
+		if !names[strings.ToLower(n.Label)] {
+			n.Type = "concept"
+			b.concepts = append(b.concepts, n)
+		}
+	}
+	slices.SortStableFunc(b.concepts, func(a, b GNode) int { return cmp.Compare(b.Count, a.Count) })
+	if len(b.shown) > 0 && len(b.concepts) > maxConcepts {
+		b.concepts = b.concepts[:maxConcepts]
+	}
+	keep := map[string]bool{}
+	for _, n := range b.concepts {
+		keep[n.ID] = true
+	}
+	g.Nodes = b.concepts
+	g.Edges = slices.DeleteFunc(g.Edges, func(e GEdge) bool { return !keep[e.From] || !keep[e.To] })
+	for i := range g.Edges {
+		g.Edges[i].Predicate = "related_to"
+	}
+}
+
+// addEntityNodes adds a node per shown entity, and a node per class with an
+// "is a" edge from each of its entities.
+func (b *kgBuild) addEntityNodes() {
+	g := b.g
+	slices.SortStableFunc(b.ids, b.byCount)
+	b.classes = map[string]bool{}
+	var classOrder []string
+	for _, id := range b.ids {
+		if !b.shown[id] {
+			continue
+		}
+		node := b.entityNode(id)
+		g.Nodes = append(g.Nodes, node)
+		if !b.classes[node.Class] {
+			b.classes[node.Class] = true
+			classOrder = append(classOrder, node.Class)
+		}
+		g.Edges = append(g.Edges, GEdge{From: node.ID, To: "k:" + node.Class, Predicate: "is_a", Directed: true, Reason: node.Label + " is a " + node.Class})
+	}
+	for _, c := range classOrder {
+		g.Nodes = append(g.Nodes, GNode{ID: "k:" + c, Kind: "class", Type: "class", Label: c,
+			Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}})
+	}
+}
+
+// entityNode is the node of one entity: its news, summary, trend, and the
+// notes that name it.
+func (b *kgBuild) entityNode(id string) GNode {
+	items := b.items[id]
+	node := GNode{ID: "e:" + id, Kind: "entity", Type: b.typeOf(id), Class: b.classOf(id), Label: b.labelOf(id), Count: b.count[id],
+		Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}}
+	srcs := map[string]bool{}
+	for _, d := range items {
+		srcs[d.source] = true
+		if node.FirstSeen.IsZero() || d.published.Before(node.FirstSeen) {
+			node.FirstSeen = d.published
+		}
+	}
+	node.Sources = len(srcs)
+	for _, d := range items[:min(3, len(items))] {
+		node.Items = append(node.Items, GItem{d.id, d.title})
+	}
+	if len(items) > 0 {
+		node.Summary = summarise(phraseKey(node.Label, "en"), items[:min(20, len(items))], b.kc.corpus)
+		recent := 0
+		for _, d := range items {
+			if d.published.After(b.kc.weekAgo) {
+				recent++
+			}
+		}
+		if b.kc.history {
+			expected := float64(len(items)-recent) / b.kc.weeks
+			node.Trend = round2((float64(recent) - expected) / math.Sqrt(expected+1))
+		}
+	}
+	// A bridge: the person's notes that name it, by any of its names.
+	if e := onto.byID[id]; e != nil {
+		for _, name := range append([]string{e.Label}, e.Aliases...) {
+			for _, n := range b.kc.notes[phraseKey(name, "en")] {
+				if len(node.InNotes) < 3 && !slices.ContainsFunc(node.InNotes, func(x GItem) bool { return x.ID == n.ID }) {
+					node.InNotes = append(node.InNotes, n)
+				}
+			}
+		}
+	}
+	return node
+}
+
+// addOntologyFacts adds the ontology's facts between shown entities; the
+// news repeating one adds no second edge.
+func (b *kgBuild) addOntologyFacts() {
+	g := b.g
+	b.known = map[triple]bool{}
+	for _, id := range b.ids {
+		e := onto.byID[id]
+		if e == nil || !b.shown[id] {
+			continue
+		}
+		if e.By != "" && b.shown[e.By] {
+			b.known[triple{id, "developed_by", e.By}] = true
+			g.Edges = append(g.Edges, GEdge{From: "e:" + id, To: "e:" + e.By, Predicate: "developed_by", Directed: true,
+				Reason: e.Label + " is developed by " + onto.byID[e.By].Label})
+		}
+		if e.ForkOf != "" && b.shown[e.ForkOf] {
+			b.known[triple{id, "fork_of", e.ForkOf}] = true
+			g.Edges = append(g.Edges, GEdge{From: "e:" + id, To: "e:" + e.ForkOf, Predicate: "fork_of", Directed: true,
+				Reason: e.Label + " is a fork of " + onto.byID[e.ForkOf].Label})
+		}
+	}
+}
+
+// addReadFacts adds the facts read in the news, with their evidence;
+// co-mentions only when strong.
+func (b *kgBuild) addReadFacts() {
+	var together []GEdge
+	typed := map[[2]string]bool{}
+	for t := range b.facts {
+		if t.p != "mentioned_with" {
+			typed[[2]string{t.s, t.o}], typed[[2]string{t.o, t.s}] = true, true
+		}
+	}
+	for t, f := range b.facts {
+		if !b.shown[t.s] || !b.shown[t.o] || b.known[t] {
+			continue
+		}
+		e := GEdge{From: "e:" + t.s, To: "e:" + t.o, Predicate: t.p, Directed: !symmetric[t.p],
+			Together: f.n, Evidence: f.evidence,
+			Reason: fmt.Sprintf("%s %s %s (%d news)", b.labelOf(t.s), predicates[t.p], b.labelOf(t.o), f.n)}
+		if t.p == "mentioned_with" {
+			if f.n >= 2 && !typed[[2]string{t.s, t.o}] {
+				together = append(together, e)
+			}
+			continue
+		}
+		b.read = append(b.read, e)
+	}
+	byStrength := func(a, b GEdge) int {
+		return cmp.Or(cmp.Compare(b.Together, a.Together), strings.Compare(a.From+a.To, b.From+b.To))
+	}
+	slices.SortFunc(b.read, byStrength)
+	slices.SortFunc(together, byStrength)
+	b.g.Edges = append(b.g.Edges, b.read...)
+	b.g.Edges = append(b.g.Edges, together[:min(len(together), maxMentioned)]...)
+}
+
+// linkConcepts goes with concepts to the entities their news share, by NPMI
+// as concepts go with each other.
+func (b *kgBuild) linkConcepts() {
+	inDoc := map[*gdoc]map[string]bool{}
+	for _, d := range b.docs {
+		inDoc[d] = map[string]bool{}
+		for _, c := range d.concepts {
+			inDoc[d]["c:"+c] = true
+		}
+	}
+	for id, ds := range b.items {
+		for _, d := range ds {
+			inDoc[d]["e:"+id] = true
+		}
+	}
+	df := map[string]int{}
+	for _, d := range b.docs {
+		for _, c := range d.concepts {
+			df["c:"+c]++
+		}
+	}
+	for _, c := range b.concepts {
+		best := b.conceptEdges(c, inDoc, df)
+		// Its three strongest, so concepts hang on to entities without a hairball.
+		slices.SortFunc(best, func(a, b GEdge) int {
+			return cmp.Or(cmp.Compare(b.NPMI*float64(b.Together), a.NPMI*float64(a.Together)), strings.Compare(a.To, b.To))
+		})
+		b.g.Edges = append(b.g.Edges, best[:min(3, len(best))]...)
+	}
+}
+
+// conceptEdges are the edges from a concept to the entities that go with it
+// strongly enough.
+func (b *kgBuild) conceptEdges(c GNode, inDoc map[*gdoc]map[string]bool, df map[string]int) []GEdge {
+	N := float64(max(1, len(b.docs)))
+	var best []GEdge
+	for _, id := range b.ids {
+		if !b.shown[id] || b.count[id] == 0 {
+			continue
+		}
+		both := 0
+		for _, d := range b.items[id] {
+			if inDoc[d][c.ID] {
+				both++
+			}
+		}
+		if both < 2 {
+			continue
+		}
+		pa, pb, pab := float64(df[c.ID])/N, float64(b.count[id])/N, float64(both)/N
+		npmi := 1.0
+		if pab < 1 {
+			npmi = math.Log(pab/(pa*pb)) / -math.Log(pab)
+		}
+		if npmi < b.kc.minNPMI {
+			continue
+		}
+		best = append(best, GEdge{From: c.ID, To: "e:" + id, Predicate: "related_to", Together: both, NPMI: round2(npmi),
+			Reason: fmt.Sprintf("Together in %d news (NPMI %.2f)", both, npmi)})
+	}
+	return best
+}
+
+// markFringe marks a concept left with no link as fringe, shown only when
+// asked, and counts the nodes that bridge to the person's notes.
+func (b *kgBuild) markFringe() {
+	g := b.g
+	linked := map[string]bool{}
+	for _, e := range g.Edges {
+		linked[e.From], linked[e.To] = true, true
+	}
+	g.Nodes = slices.DeleteFunc(g.Nodes, func(n GNode) bool { return n.Kind == "concept" && !linked[n.ID] && !b.kc.fringe })
+	g.Stats.Bridges = 0
+	for i := range g.Nodes {
+		if g.Nodes[i].Kind == "concept" && !linked[g.Nodes[i].ID] {
+			g.Nodes[i].Fringe = true
+		}
+		if len(g.Nodes[i].InNotes) > 0 {
+			g.Stats.Bridges++
+		}
+	}
+}

@@ -161,6 +161,59 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	if f.MinNPMI == 0 {
 		f.MinNPMI = 0.15
 	}
+	docs, keywords, err := loadGraphDocs(ctx, q, userID, f)
+	if err != nil {
+		return g, err
+	}
+	topicNames := map[string]string{}
+	if topics, err := ListTopics(ctx, q, userID); err == nil {
+		for _, t := range topics {
+			topicNames[t.ID] = t.Name
+		}
+	}
+	cs := conceptSet{surface: map[string]map[string]int{}, alias: map[string]string{}}
+	g.Stats.Outliers = cs.collect(docs, keywords, f.Fringe)
+	cs.tag(docs, f.Fringe)
+	used := docs[:0:0]
+	for _, d := range docs {
+		if !d.outlier || f.Fringe {
+			used = append(used, d)
+		}
+	}
+	g.Stats.Items = len(used)
+	df, keys := conceptKeys(used)
+	adj := linkConceptKeys(&g, used, keys, df, f.MinNPMI)
+	// Per concept: its news, sources, topics, trend, summary.
+	notes, err := noteConcepts(ctx, q, userID)
+	if err != nil {
+		return g, err
+	}
+	weekAgo := f.To.Add(-7 * 24 * time.Hour)
+	weeks := math.Max(1, f.To.Sub(f.From).Hours()/24/7-1)
+	nm := conceptNodes{cs: cs, used: used, keys: keys, df: df, adj: adj, notes: notes, topicNames: topicNames,
+		weekAgo: weekAgo, weeks: weeks, corpus: knowledge.NewCorpus(termsOf(used)),
+		// A trend needs weeks to compare with: with no news older than a week,
+		// nothing is rising, it is all new.
+		history: slices.ContainsFunc(used, func(d *gdoc) bool { return !d.published.After(weekAgo) })}
+	for i, k := range keys {
+		node := nm.node(i, k)
+		if node.Fringe && !f.Fringe {
+			continue
+		}
+		g.Nodes = append(g.Nodes, node)
+	}
+	addKnowledge(&g, used, kgContext{corpus: nm.corpus, notes: notes, weekAgo: weekAgo, weeks: weeks, history: nm.history, minNPMI: f.MinNPMI, fringe: f.Fringe})
+	for _, nd := range g.Nodes {
+		if nd.Kind == "concept" {
+			g.Stats.Concepts++
+		}
+	}
+	g.Stats.Edges, g.Stats.Communities = len(g.Edges), len(g.Communities)
+	return g, nil
+}
+
+// loadGraphDocs reads the news matching f, with their key phrases.
+func loadGraphDocs(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilter) ([]*gdoc, [][]string, error) {
 	args := []any{userID, f.From, f.To}
 	where := "i.user_id = $1 AND i.published_at >= $2 AND i.published_at < $3"
 	if f.TopicID != "" {
@@ -174,7 +227,7 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	rows, err := q.Query(ctx, `SELECT i.id, i.title, i.summary, left(i.content, 20000), i.lang, i.source_title, i.topic_ids::text[], i.published_at,
 		i.outlier <> '', i.keywords, i.terms, i.kg FROM watch_items i WHERE `+where+fmt.Sprintf(` ORDER BY i.published_at DESC LIMIT %d`, MaxGraphItems), args...)
 	if err != nil {
-		return g, err
+		return nil, nil, err
 	}
 	var keywords [][]string
 	docs, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (*gdoc, error) {
@@ -191,28 +244,31 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		}
 		return d, err
 	})
-	if err != nil {
-		return g, err
+	return docs, keywords, err
+}
+
+// conceptSet is the concepts: key phrases by stems, with the surface forms
+// seen for each, and single words merged with their synonyms.
+type conceptSet struct {
+	surface map[string]map[string]int
+	alias   map[string]string // key → canonical key
+}
+
+func (cs conceptSet) canon(k string) string {
+	for cs.alias[k] != "" && cs.alias[k] != k {
+		k = cs.alias[k]
 	}
-	topicNames := map[string]string{}
-	if topics, err := ListTopics(ctx, q, userID); err == nil {
-		for _, t := range topics {
-			topicNames[t.ID] = t.Name
-		}
-	}
-	// Concepts: key phrases by stems; single words merged with their synonyms.
-	surface := map[string]map[string]int{}
-	alias := map[string]string{} // key → canonical key
-	canon := func(k string) string {
-		for alias[k] != "" && alias[k] != k {
-			k = alias[k]
-		}
-		return k
-	}
+	return k
+}
+
+// collect reads the key phrases of the news (outliers only when fringe is
+// asked for) and returns how many news are outliers.
+func (cs conceptSet) collect(docs []*gdoc, keywords [][]string, fringe bool) int {
+	outliers := 0
 	for i, d := range docs {
 		if d.outlier {
-			g.Stats.Outliers++
-			if !f.Fringe {
+			outliers++
+			if !fringe {
 				continue
 			}
 		}
@@ -221,28 +277,38 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 			if k == "" {
 				continue
 			}
-			if surface[k] == nil {
-				surface[k] = map[string]int{}
-				if !strings.Contains(k, " ") {
-					for _, syn := range knowledge.SynonymsOf(k) {
-						if surface[syn] != nil && !strings.Contains(syn, " ") {
-							alias[k] = canon(syn)
-							break
-						}
-					}
-				}
+			if cs.surface[k] == nil {
+				cs.surface[k] = map[string]int{}
+				cs.merge(k)
 			}
-			surface[k][strings.ToLower(p)]++
+			cs.surface[k][strings.ToLower(p)]++
 		}
 	}
+	return outliers
+}
+
+// merge makes a single word the alias of a synonym already seen.
+func (cs conceptSet) merge(k string) {
+	if strings.Contains(k, " ") {
+		return
+	}
+	for _, syn := range knowledge.SynonymsOf(k) {
+		if cs.surface[syn] != nil && !strings.Contains(syn, " ") {
+			cs.alias[k] = cs.canon(syn)
+			return
+		}
+	}
+}
+
+// tag gives each news item the concepts its words carry, not only those the
+// phrase made in its own top key phrases.
+func (cs conceptSet) tag(docs []*gdoc, fringe bool) {
 	longest := 0
-	for k := range surface {
+	for k := range cs.surface {
 		longest = max(longest, strings.Count(k, " ")+1)
 	}
-	// A news item carries a concept when its words do, not only when the
-	// phrase made its own top key phrases.
 	for _, d := range docs {
-		if d.outlier && !f.Fringe {
+		if d.outlier && !fringe {
 			continue
 		}
 		stems, _ := knowledge.TokensIn(d.title+". "+d.summary+". "+d.body, d.lang)
@@ -250,10 +316,10 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		for i := range stems {
 			for n := 1; n <= longest && i+n <= len(stems); n++ {
 				k := strings.Join(stems[i:i+n], " ")
-				if _, ok := surface[k]; !ok {
+				if _, ok := cs.surface[k]; !ok {
 					continue
 				}
-				if c := canon(k); !seen[c] {
+				if c := cs.canon(k); !seen[c] {
 					seen[c] = true
 					d.concepts = append(d.concepts, c)
 				}
@@ -261,13 +327,12 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		}
 		slices.Sort(d.concepts)
 	}
-	used := docs[:0:0]
-	for _, d := range docs {
-		if !d.outlier || f.Fringe {
-			used = append(used, d)
-		}
-	}
-	g.Stats.Items = len(used)
+}
+
+// conceptKeys returns the news count of each concept and the keys kept:
+// those in two news or more, the most common first, without those that
+// only a longer concept holds.
+func conceptKeys(used []*gdoc) (map[string]int, []string) {
 	df := map[string]int{}
 	for _, d := range used {
 		for _, c := range d.concepts {
@@ -286,12 +351,16 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	if len(keys) > 120 {
 		keys = keys[:120]
 	}
+	return df, keys
+}
+
+// linkConceptKeys adds to g the edges between concepts that come together
+// (by NPMI), strongest first, and returns the weights by concept.
+func linkConceptKeys(g *Graph, used []*gdoc, keys []string, df map[string]int, minNPMI float64) []map[int]float64 {
 	index := map[string]int{}
 	for i, k := range keys {
 		index[k] = i
 	}
-	n := len(keys)
-	// Co-occurrence and NPMI.
 	together := map[[2]int]int{}
 	for _, d := range used {
 		var in []int
@@ -307,7 +376,7 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 			}
 		}
 	}
-	adj := make([]map[int]float64, n)
+	adj := make([]map[int]float64, len(keys))
 	for i := range adj {
 		adj[i] = map[int]float64{}
 	}
@@ -321,7 +390,7 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 		if pab < 1 {
 			npmi = math.Log(pab/(pa*pb)) / -math.Log(pab)
 		}
-		if npmi < f.MinNPMI {
+		if npmi < minNPMI {
 			continue
 		}
 		adj[pair[0]][pair[1]], adj[pair[1]][pair[0]] = npmi*float64(both), npmi*float64(both)
@@ -334,75 +403,72 @@ func BuildGraph(ctx context.Context, q db.Querier, userID uuid.UUID, f GraphFilt
 	if len(g.Edges) > 400 {
 		g.Edges = g.Edges[:400]
 	}
-	// Per concept: its news, sources, topics, trend, summary.
-	notes, err := noteConcepts(ctx, q, userID)
-	if err != nil {
-		return g, err
-	}
-	weekAgo := f.To.Add(-7 * 24 * time.Hour)
-	weeks := math.Max(1, f.To.Sub(f.From).Hours()/24/7-1)
-	// A trend needs weeks to compare with: with no news older than a week,
-	// nothing is rising, it is all new.
-	history := slices.ContainsFunc(used, func(d *gdoc) bool { return !d.published.After(weekAgo) })
-	corpus := knowledge.NewCorpus(termsOf(used))
-	for i, k := range keys {
-		node := GNode{ID: "c:" + k, Kind: "concept", Type: "concept", Label: best(surface, k, alias), Count: df[k], Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}}
-		node.Fringe = len(adj[i]) == 0
-		srcs, tps := map[string]bool{}, map[string]bool{}
-		var mine []*gdoc
-		recent, before := 0, 0
-		for _, d := range used {
-			if !slices.Contains(d.concepts, k) {
-				continue
-			}
-			mine = append(mine, d)
-			srcs[d.source] = true
-			for _, t := range d.topics {
-				if name, ok := topicNames[t]; ok {
-					tps[name] = true
-				}
-			}
-			if d.published.After(weekAgo) {
-				recent++
-			} else {
-				before++
-			}
-			if node.FirstSeen.IsZero() || d.published.Before(node.FirstSeen) {
-				node.FirstSeen = d.published
-			}
-		}
-		node.Sources = len(srcs)
-		for t := range tps {
-			node.Topics = append(node.Topics, t)
-		}
-		slices.Sort(node.Topics)
-		if history {
-			expected := float64(before) / weeks
-			node.Trend = round2((float64(recent) - expected) / math.Sqrt(expected+1))
-		}
-		for _, d := range mine[:min(3, len(mine))] {
-			node.Items = append(node.Items, GItem{d.id, d.title})
-		}
-		node.Summary = summarise(k, mine[:min(20, len(mine))], corpus) // the newest news suffice
-		for _, nb := range neighbours(adj[i], 4) {
-			node.Related = append(node.Related, best(surface, keys[nb], alias))
-		}
-		if ns, ok := notes[k]; ok {
-			node.InNotes = ns[:min(3, len(ns))]
-		}
-		if node.Fringe && !f.Fringe {
+	return adj
+}
+
+// conceptNodes is what the node of each concept is made of.
+type conceptNodes struct {
+	cs         conceptSet
+	used       []*gdoc
+	keys       []string
+	df         map[string]int
+	adj        []map[int]float64
+	notes      map[string][]GItem
+	topicNames map[string]string
+	weekAgo    time.Time
+	weeks      float64
+	history    bool
+	corpus     knowledge.Corpus
+}
+
+// node is the node of the i-th concept, k: its news, sources, topics,
+// trend, summary, neighbours, and the notes that name it.
+func (c conceptNodes) node(i int, k string) GNode {
+	node := GNode{ID: "c:" + k, Kind: "concept", Type: "concept", Label: best(c.cs.surface, k, c.cs.alias), Count: c.df[k], Items: []GItem{}, Related: []string{}, InNotes: []GItem{}, Topics: []string{}}
+	node.Fringe = len(c.adj[i]) == 0
+	srcs, tps := map[string]bool{}, map[string]bool{}
+	var mine []*gdoc
+	recent, before := 0, 0
+	for _, d := range c.used {
+		if !slices.Contains(d.concepts, k) {
 			continue
 		}
-		g.Nodes = append(g.Nodes, node)
-	}
-	addKnowledge(&g, used, kgContext{corpus: corpus, notes: notes, weekAgo: weekAgo, weeks: weeks, history: history, minNPMI: f.MinNPMI, fringe: f.Fringe})
-	for _, nd := range g.Nodes {
-		if nd.Kind == "concept" {
-			g.Stats.Concepts++
+		mine = append(mine, d)
+		srcs[d.source] = true
+		for _, t := range d.topics {
+			if name, ok := c.topicNames[t]; ok {
+				tps[name] = true
+			}
+		}
+		if d.published.After(c.weekAgo) {
+			recent++
+		} else {
+			before++
+		}
+		if node.FirstSeen.IsZero() || d.published.Before(node.FirstSeen) {
+			node.FirstSeen = d.published
 		}
 	}
-	g.Stats.Edges, g.Stats.Communities = len(g.Edges), len(g.Communities)
-	return g, nil
+	node.Sources = len(srcs)
+	for t := range tps {
+		node.Topics = append(node.Topics, t)
+	}
+	slices.Sort(node.Topics)
+	if c.history {
+		expected := float64(before) / c.weeks
+		node.Trend = round2((float64(recent) - expected) / math.Sqrt(expected+1))
+	}
+	for _, d := range mine[:min(3, len(mine))] {
+		node.Items = append(node.Items, GItem{d.id, d.title})
+	}
+	node.Summary = summarise(k, mine[:min(20, len(mine))], c.corpus) // the newest news suffice
+	for _, nb := range neighbours(c.adj[i], 4) {
+		node.Related = append(node.Related, best(c.cs.surface, c.keys[nb], c.cs.alias))
+	}
+	if ns, ok := c.notes[k]; ok {
+		node.InNotes = ns[:min(3, len(ns))]
+	}
+	return node
 }
 
 // subsumed tells whether a concept appears only inside a longer one in the

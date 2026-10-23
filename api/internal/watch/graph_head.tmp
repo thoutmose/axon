@@ -1,0 +1,157 @@
+package watch
+
+import (
+	"cmp"
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+	"regexp"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+
+	"github.com/thoutmose/axon/api/internal/db"
+	"github.com/thoutmose/axon/api/internal/knowledge"
+)
+
+// The knowledge graph of the news (EP-111). It is built from the tech watch
+// only, so it never mixes with the Zettelkasten graph of the person's own
+// notes; where a concept also lives in their literature and permanent
+// notes, the node says so (a bridge), with the notes.
+//
+// Concepts are the key phrases (TextRank) of the period's news, keyed by
+// their Snowball stems and merged with their thesaurus synonyms; those in at
+// least two items are kept. Two concepts are linked by how much more often
+// they appear together than by chance (NPMI). Communities come from
+// Louvain, centrality from PageRank. Each concept carries a summary drawn
+// from its own news: the sentences closest to what those items share
+// (TF-IDF), and a trend: how its count in the last week compares with the
+// weeks before. Concepts with no strong link, and news set aside as
+// outliers, form the fringe layer, off by default.
+
+// GraphFilter selects the news of a graph.
+type GraphFilter struct {
+	From, To time.Time
+	TopicID  string
+	SourceID *uuid.UUID
+	MinNPMI  float64 // 0.15 by default
+	Fringe   bool    // keep concepts with no strong link
+}
+
+// GNode is a concept, an entity of the ontology, or one of its classes.
+type GNode struct {
+	ID        string    `json:"id"`
+	Kind      string    `json:"kind"`  // concept, entity, class
+	Type      string    `json:"type"`  // concept, class, or the entity's: organization, technology, language, database, cloud_service, standard, vulnerability
+	Class     string    `json:"class"` // an entity's class in the ontology
+	Label     string    `json:"label"`
+	Count     int       `json:"count"` // news it appears in
+	Sources   int       `json:"sources"`
+	Community int       `json:"community"`
+	Rank      float64   `json:"rank"`  // PageRank, 0 to 1 relative to the top
+	Trend     float64   `json:"trend"` // last week against the weeks before: > 1.5 rising, < -1.5 fading
+	Fringe    bool      `json:"fringe"`
+	Summary   string    `json:"summary"`
+	Items     []GItem   `json:"items"`
+	Related   []string  `json:"related"`
+	InNotes   []GItem   `json:"in_notes"` // the person's literature and permanent notes that share it
+	Topics    []string  `json:"topics"`
+	FirstSeen time.Time `json:"first_seen"`
+}
+
+// GItem names a news item or a note.
+type GItem struct {
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
+}
+
+// GEdge is a fact: subject (From), predicate, object (To). Concepts that go
+// together are related_to by NPMI; the knowledge layer's predicates are in
+// kg.go, with the news they were read in.
+type GEdge struct {
+	From      string      `json:"from"`
+	To        string      `json:"to"`
+	Predicate string      `json:"predicate"`
+	Directed  bool        `json:"directed"`
+	Together  int         `json:"together"`
+	NPMI      float64     `json:"npmi"`
+	Reason    string      `json:"reason"`
+	Evidence  []GEvidence `json:"evidence"`
+}
+
+// GCommunity is a group of concepts, named by its most central ones.
+type GCommunity struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Size  int    `json:"size"`
+}
+
+// Graph is the knowledge graph of a period's news.
+type Graph struct {
+	Nodes       []GNode      `json:"nodes"`
+	Edges       []GEdge      `json:"edges"`
+	Communities []GCommunity `json:"communities"`
+	Stats       struct {
+		Items       int     `json:"items"`
+		Outliers    int     `json:"outliers"`
+		Concepts    int     `json:"concepts"`
+		Edges       int     `json:"edges"`
+		Communities int     `json:"communities"`
+		Modularity  float64 `json:"modularity"`
+		Bridges     int     `json:"bridges"`
+		Entities    int     `json:"entities"`
+		Facts       int     `json:"facts"` // facts read in the news
+		Classes     int     `json:"classes"`
+	} `json:"stats"`
+}
+
+// MaxGraphItems bounds the news one graph reads.
+const MaxGraphItems = 2000
+
+type gdoc struct {
+	id                   uuid.UUID
+	title, summary, body string
+	lang                 string
+	source               string
+	topics               []string
+	published            time.Time
+	outlier              bool
+	concepts             []string // concept keys
+	terms                []string
+	kg                   *ItemKG     // read by the person's model, if it has been
+	sentences            []gsentence // read once, on first summary
+}
+
+type gsentence struct {
+	text  string
+	stems []string
+}
+
+// split returns the item's sentences fit for a summary: 6 to 45 words, no links.
+func (d *gdoc) split() []gsentence {
+	if d.sentences != nil {
+		return d.sentences
+	}
+	d.sentences = []gsentence{}
+	text := d.summary + ". " + d.body
+	for _, s := range sentenceSplit.Split(strings.ReplaceAll(text, "\n", " "), -1) {
+		s = strings.TrimSpace(strings.Trim(s, ". "))
+		words := len(strings.Fields(s))
+		if words < 6 || words > 45 || strings.Contains(s, "http") {
+			continue
+		}
+		stems, _ := knowledge.TokensIn(s, d.lang)
+		d.sentences = append(d.sentences, gsentence{s, stems})
+	}
+	return d.sentences
+}
+
+func phraseKey(p, lang string) string {
+	stems, _ := knowledge.TokensIn(p, lang)
+	return strings.Join(stems, " ")
+}
+

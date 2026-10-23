@@ -266,6 +266,18 @@ func oneOf(path, v string, allowed ...string) error {
 
 // Validate checks every field.
 func (d Doc) Validate() error {
+	for _, check := range []func() error{
+		d.validateChoices, d.validateFocus, d.validateLearning, d.validateReminders,
+		d.validateLists, d.validateCaffeine, d.validatePodcast, d.validateTexts,
+	} {
+		if err := check(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d Doc) validateChoices() error {
 	checks := []error{
 		oneOf("language", d.Language, "en", "fr"),
 		oneOf("appearance.theme", d.Appearance.Theme, "system", "light", "dark", "sun"),
@@ -282,6 +294,10 @@ func (d Doc) Validate() error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (d Doc) validateFocus() error {
 	f := d.Focus
 	switch {
 	case f.WorkMinutes < 1 || f.WorkMinutes > 180:
@@ -307,12 +323,20 @@ func (d Doc) Validate() error {
 			return FieldError{"focus.music", "links are http(s) addresses with an activity up to 100 characters"}
 		}
 	}
+	return nil
+}
+
+func (d Doc) validateLearning() error {
 	switch {
 	case d.Learning.NewPerDay < 0 || d.Learning.NewPerDay > 500:
 		return FieldError{"learning.new_per_day", "is between 0 and 500"}
 	case d.Learning.Retention < 0.7 || d.Learning.Retention > 0.97:
 		return FieldError{"learning.retention", "is between 0.70 and 0.97"}
 	}
+	return nil
+}
+
+func (d Doc) validateReminders() error {
 	for _, t := range []struct{ path, v string }{{"reminders.morning", d.Reminders.Morning}, {"reminders.evening", d.Reminders.Evening},
 		{"reminders.weekly_at", d.Reminders.WeeklyAt}, {"reminders.monthly_at", d.Reminders.MonthlyAt}, {"reminders.news_at", d.Reminders.NewsAt},
 		{"caffeine.bedtime", d.Caffeine.Bedtime}} {
@@ -326,6 +350,10 @@ func (d Doc) Validate() error {
 	if d.Reminders.MonthlyDay < 1 || d.Reminders.MonthlyDay > 28 {
 		return FieldError{"reminders.monthly_day", "is a day between 1 and 28, so every month has it"}
 	}
+	return nil
+}
+
+func (d Doc) validateLists() error {
 	seen := map[string]bool{}
 	for _, sec := range d.Today.Sections {
 		if !slices.Contains(TodaySections, sec) || seen[sec] {
@@ -355,12 +383,20 @@ func (d Doc) Validate() error {
 			seen[sec] = true
 		}
 	}
+	return nil
+}
+
+func (d Doc) validateCaffeine() error {
 	if d.Caffeine.Bedtime == "" {
 		return FieldError{"caffeine.bedtime", "is a time like 23:00"}
 	}
 	if err := oneOf("caffeine.metabolism", d.Caffeine.Metabolism, "fast", "average", "slow"); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (d Doc) validatePodcast() error {
 	p := d.Podcast
 	if err := oneOf("podcast.format", p.Format, "briefing", "digest", "deep"); err != nil {
 		return err
@@ -382,6 +418,10 @@ func (d Doc) Validate() error {
 	case len([]rune(p.Voice2)) > 200:
 		return FieldError{"podcast.voice2", "is up to 200 characters"}
 	}
+	return nil
+}
+
+func (d Doc) validateTexts() error {
 	if e := d.Reminders.Email; e != "" && (!emailRe.MatchString(e) || len(e) > 254) {
 		return FieldError{"reminders.email", "is an email address, or empty"}
 	}
