@@ -295,7 +295,7 @@ func DeleteCategory(ctx context.Context, q db.Querier, userID, id uuid.UUID) err
 // Categories lists all of the user's categories.
 func Categories(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Category, error) {
 	rows, err := q.Query(ctx, `SELECT `+categoryColumns+` FROM budget_categories c WHERE c.user_id = $1
-		ORDER BY c.kind DESC, c.archived, lower(c.name) LIMIT 500`, userID)
+		ORDER BY c.kind DESC, c.archived, lower(c.name)`, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -64,7 +64,7 @@ func GetAccount(ctx context.Context, q db.Querier, userID, id uuid.UUID) (Accoun
 // Accounts lists the user's accounts with balances.
 func Accounts(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Account, error) {
 	rows, err := q.Query(ctx, `SELECT `+accountColumns+` FROM budget_accounts a WHERE a.user_id = $1
-		ORDER BY a.archived, a.type, lower(a.name) LIMIT 200`, userID)
+		ORDER BY a.archived, a.type, lower(a.name)`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func Accounts(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Account, e
 // day of the next one.
 func AccountsBefore(ctx context.Context, q db.Querier, userID uuid.UUID, day time.Time) ([]Account, error) {
 	rows, err := q.Query(ctx, `SELECT `+accountColumnsBefore+` FROM budget_accounts a WHERE a.user_id = $1
-		ORDER BY a.archived, a.type, lower(a.name) LIMIT 200`, userID, day)
+		ORDER BY a.archived, a.type, lower(a.name)`, userID, day)
 	if err != nil {
 		return nil, err
 	}

@@ -226,6 +226,23 @@ func balances(opening map[uuid.UUID]int64, moves []movement) map[uuid.UUID]int64
 	return out
 }
 
+// The accounts list never drops accounts: 201 created, 201 listed.
+func TestAccountsListHasNoSilentLimit(t *testing.T) {
+	e := newEnv(t, true)
+	alice := e.client()
+	alice.register("Alice")
+	for i := range 201 {
+		alice.mustDo(201, "POST", "/v1/budget/accounts", []byte(fmt.Sprintf(`{"name":"Account %03d","type":"asset"}`, i)))
+	}
+	var list struct {
+		Items []json.RawMessage `json:"items"`
+	}
+	_ = json.Unmarshal(alice.mustDo(200, "GET", "/v1/budget/accounts", nil), &list)
+	if len(list.Items) != 201 {
+		t.Fatalf("got %d accounts, want 201", len(list.Items))
+	}
+}
+
 // The balances the API shows (computed in SQL) agree with the model above, over random income, expenses, and transfers.
 func TestAccountBalancesMatchTheModel(t *testing.T) {
 	e := newEnv(t, true)

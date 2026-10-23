@@ -55,7 +55,7 @@ func scanRule(r pgx.Row) (Rule, error) {
 
 // Rules lists the user's rules in the order they are tried.
 func Rules(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Rule, error) {
-	rows, err := q.Query(ctx, `SELECT `+ruleColumns+` FROM budget_rules WHERE user_id = $1 ORDER BY position, created_at LIMIT 200`, userID)
+	rows, err := q.Query(ctx, `SELECT `+ruleColumns+` FROM budget_rules WHERE user_id = $1 ORDER BY position, created_at`, userID)
 	if err != nil {
 		return nil, err
 	}

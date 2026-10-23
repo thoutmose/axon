@@ -48,7 +48,7 @@ func scanRecurring(r pgx.Row) (Recurring, error) {
 // ListRecurring lists the user's recurring transactions, next due first.
 func ListRecurring(ctx context.Context, q db.Querier, userID uuid.UUID) ([]Recurring, error) {
 	rows, err := q.Query(ctx, `SELECT `+recurringColumns+` FROM budget_recurring WHERE user_id = $1
-		ORDER BY active DESC, next_on NULLS LAST, lower(name) LIMIT 200`, userID)
+		ORDER BY active DESC, next_on NULLS LAST, lower(name)`, userID)
 	if err != nil {
 		return nil, err
 	}

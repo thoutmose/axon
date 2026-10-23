@@ -7,6 +7,7 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **Proven, not ticked** (EP-181): a skill is proven by its evaluation sheet, as at École 42: each item of its proof with where the evidence is, the explanation in your own words, a mark of 0 to 125, and retries; a pass marks the skill done and reaches its milestone. The plan and Today say how many days behind a phase is. A refused submission keeps what you typed, and the 5 points of an outstanding mark count once per skill.
 - **Needs that follow your goal** (EP-191): the health profile's goal (keep, lose gently, gain) moves the daily needs by 15 % at most, never under your basal rate or 1,200 kcal and never above maintenance when losing; the day's bars and the Chef follow. ADR 0039 supersedes ADR 0028.
 - Reviews of both: [doc/reviews/2026-10-22-ep181-ep191.md](doc/reviews/2026-10-22-ep181-ep191.md).
+- **No account left out** (R-06): the Budget page's accounts, categories, pots, recurring items, and rules are listed in full; past 200 accounts, some used to vanish from the list and the totals without a sign.
 
 ## 1.0.0 (2026-10-18)
 

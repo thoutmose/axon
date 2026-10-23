@@ -72,7 +72,7 @@ func Pots(ctx context.Context, q db.Querier, userID uuid.UUID, today time.Time) 
 	rows, err := q.Query(ctx, `SELECT p.id, p.name, p.target_cents, to_char(p.target_date, 'YYYY-MM-DD'), p.note, p.archived, p.created_at,
 		coalesce((SELECT json_agg(json_build_object('id', m.id, 'occurred_on', to_char(m.occurred_on, 'YYYY-MM-DD'), 'amount_cents', m.amount_cents, 'note', m.note)
 			ORDER BY m.occurred_on DESC, m.created_at DESC) FROM budget_pot_moves m WHERE m.pot_id = p.id), '[]')
-		FROM budget_pots p WHERE p.user_id = $1 ORDER BY p.archived, p.created_at DESC LIMIT 200`, userID)
+		FROM budget_pots p WHERE p.user_id = $1 ORDER BY p.archived, p.created_at DESC`, userID)
 	if err != nil {
 		return nil, err
 	}
