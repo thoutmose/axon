@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
@@ -294,7 +295,7 @@ func TestAccountBalancesMatchTheModel(t *testing.T) {
 }
 
 // Double entry, on the production SQL (balanceSQLOver, through the API):
-// whatever the transactions, over many random runs with 1 to 5 accounts,
+// whatever the transactions, over 500 random runs with 1 to 5 accounts,
 // transfers never change the total, and the total is openings + income −
 // expenses.
 func TestBalancesReconcile(t *testing.T) {
@@ -302,7 +303,7 @@ func TestBalancesReconcile(t *testing.T) {
 	c := e.client()
 	c.register("Alice")
 	r := rand.New(rand.NewPCG(1, 2)) //nolint:gosec // deterministic test data, not security
-	for run := range 20 {
+	for run := range 500 {
 		ids := make([]uuid.UUID, 1+r.IntN(5))
 		var want int64
 		for i := range ids {
@@ -315,7 +316,7 @@ func TestBalancesReconcile(t *testing.T) {
 			ids[i] = a.ID
 			want += cents
 		}
-		for n := r.IntN(30); n > 0; n-- {
+		for n := r.IntN(60); n > 0; n-- {
 			from, to := ids[r.IntN(len(ids))], ids[r.IntN(len(ids))]
 			amount := 1 + r.Int64N(1_000_000)
 			kind := []string{"income", "expense", "transfer"}[r.IntN(3)]
@@ -353,6 +354,11 @@ func TestBalancesReconcile(t *testing.T) {
 		}
 		if got != want {
 			t.Fatalf("run %d: total %d, want %d", run, got, want)
+		}
+		// The list holds 200 accounts at most: each run starts from none.
+		if _, err := pool.Exec(context.Background(),
+			`DELETE FROM budget_transactions; DELETE FROM budget_accounts`); err != nil {
+			t.Fatal(err)
 		}
 	}
 }

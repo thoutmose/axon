@@ -38,6 +38,10 @@ The release also improves logical replication failover, JSON_TABLE support, and 
 Operators can upgrade with pg_upgrade in minutes, and extensions keep working thanks to a stable ABI for most hooks.
 Cloud providers announced support within the week, and the community published migration guides for common setups.`
 
+// watchDay is yesterday, so the fake feeds' stories stay inside the window
+// in which Ingest merges the same story (10 days), whenever the tests run.
+var watchDay = time.Now().UTC().AddDate(0, 0, -1).Truncate(24 * time.Hour)
+
 func newFakeWeb(t *testing.T) *fakeWeb {
 	t.Setenv("AXON_CALENDAR_PRIVATE", "1") // the fake sites are on 127.0.0.1
 	f := &fakeWeb{}
@@ -56,17 +60,19 @@ func newFakeWeb(t *testing.T) *fakeWeb {
 			}
 			w.Header().Set("ETag", `"v1"`)
 			w.printf(`<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Data Weekly</title><link>%[1]s</link>
-<item><title>Postgres 18 makes vacuum faster</title><link>%[1]s/pg18?utm_source=rss</link><guid>pg18</guid><pubDate>Tue, 13 Oct 2026 08:00:00 GMT</pubDate>
+<item><title>Postgres 18 makes vacuum faster</title><link>%[1]s/pg18?utm_source=rss</link><guid>pg18</guid><pubDate>%[4]s</pubDate>
 <content:encoded><![CDATA[<p>%[2]s</p>]]></content:encoded><category>Release</category></item>
 <item><title>A short note</title><link>%[1]s/short</link><guid>short</guid><description>Short.</description></item>
 <item><title>Indexing strategies for SQL databases explained</title><link>%[1]s/index</link><guid>idx</guid><description>%[3]s</description></item>
-</channel></rss>`, base, longStory, strings.Repeat("B-tree and hash indexes in SQL databases trade write cost for read speed in Postgres. ", 6))
+</channel></rss>`, base, longStory, strings.Repeat("B-tree and hash indexes in SQL databases trade write cost for read speed in Postgres. ", 6),
+				watchDay.Add(8*time.Hour).Format(http.TimeFormat))
 		case "/other.xml":
 			w.printf(`<feed xmlns="http://www.w3.org/2005/Atom"><title>Other</title>
-<entry><id>o1</id><title>Same link, other feed</title><link href="http://www.%[3]s/pg18/"/><updated>2026-10-13T09:00:00Z</updated><summary>Same page.</summary></entry>
-<entry><id>o2</id><title>Postgres 18: a faster vacuum</title><link href="%[1]s/mirror/pg18"/><updated>2026-10-13T10:00:00Z</updated><content type="html">&lt;p&gt;%[2]s Read more on our site.&lt;/p&gt;</content></entry>
-<entry><id>o3</id><title>Rust in the kernel, a year on</title><link href="%[1]s/rust"/><updated>2026-10-12T10:00:00Z</updated><content type="html">&lt;p&gt;%[4]s&lt;/p&gt;</content></entry>
-</feed>`, base, longStory, r.Host, strings.Repeat("The kernel now carries more drivers written in Rust, with fewer memory safety bugs reported. ", 5))
+<entry><id>o1</id><title>Same link, other feed</title><link href="http://www.%[3]s/pg18/"/><updated>%[5]s</updated><summary>Same page.</summary></entry>
+<entry><id>o2</id><title>Postgres 18: a faster vacuum</title><link href="%[1]s/mirror/pg18"/><updated>%[6]s</updated><content type="html">&lt;p&gt;%[2]s Read more on our site.&lt;/p&gt;</content></entry>
+<entry><id>o3</id><title>Rust in the kernel, a year on</title><link href="%[1]s/rust"/><updated>%[7]s</updated><content type="html">&lt;p&gt;%[4]s&lt;/p&gt;</content></entry>
+</feed>`, base, longStory, r.Host, strings.Repeat("The kernel now carries more drivers written in Rust, with fewer memory safety bugs reported. ", 5),
+				watchDay.Add(9*time.Hour).Format(time.RFC3339), watchDay.Add(10*time.Hour).Format(time.RFC3339), watchDay.Add(-14*time.Hour).Format(time.RFC3339))
 		case "/teaser.xml":
 			w.printf(`<rss version="2.0"><channel><title>Teasers</title><item><title>Full text please</title><link>%[1]s/article/1</link><guid>t1</guid><description>A teaser.</description></item></channel></rss>`, base)
 		case "/article/1":
@@ -205,7 +211,7 @@ func TestTechWatch(t *testing.T) {
 	if got := alice.watchItems("?q=kernel&source=" + other.ID); len(got) != 1 {
 		t.Fatalf("by words and source: %+v", got)
 	}
-	if got := alice.watchItems("?topic=" + topic.ID + "&from=2026-10-13&to=2026-10-14"); len(got) != 1 {
+	if got := alice.watchItems("?topic=" + topic.ID + "&from=" + watchDay.Format(time.DateOnly) + "&to=" + watchDay.AddDate(0, 0, 1).Format(time.DateOnly)); len(got) != 1 {
 		t.Fatalf("by topic and period: %+v", got)
 	}
 	alice.mustDo(422, "GET", "/v1/watch/items?status=gone", nil)
