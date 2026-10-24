@@ -13,6 +13,7 @@
 	import { toast } from '$lib/ui/toast.svelte';
 	import RecoveryCodes from '$lib/RecoveryCodes.svelte';
 	import SignInProviders from '$lib/SignInProviders.svelte';
+	import { lowOnRecoveryCodes, recovery, requirePasskeys } from '$lib/recovery.svelte';
 	import { page } from '$app/state';
 	import type { PageProps } from './$types';
 
@@ -57,6 +58,7 @@
 				api<{ items: Schemas['Session'][] }>('/v1/me/sessions'),
 				api<{ items: Identity[] }>('/v1/me/identities')
 			]);
+			recovery.remaining = me.recovery_codes_remaining;
 		} catch (err) {
 			error = message(err);
 		}
@@ -78,6 +80,7 @@
 	const addPasskey = (e: SubmitEvent) => {
 		e.preventDefault();
 		return run(async () => {
+			requirePasskeys();
 			const options = await api<{ publicKey: never }>('/v1/me/passkeys/begin', {
 				method: 'POST',
 				body: { name: passkeyName }
@@ -211,6 +214,9 @@
 				recovery_codes_remaining: me.recovery_codes_remaining
 			})}
 		</p>
+		{#if lowOnRecoveryCodes(me.recovery_codes_remaining)}
+			<p role="status">{t('Running low: issue new codes before you run out.')}</p>
+		{/if}
 		{#if codes.length}<RecoveryCodes {codes} />{/if}
 		<Button variant="secondary" onclick={newCodes} {busy}>{t('Issue new codes')}</Button>
 	</Section>

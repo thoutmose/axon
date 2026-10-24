@@ -2538,6 +2538,99 @@ test('sign out, then sign back in with the passkey', async () => {
 	await expect(page.getByLabel('Your name')).toHaveValue('E2E Owner');
 });
 
+test('recovery codes left are counted, and a banner asks for new ones at 3 or fewer', async () => {
+	await page.goto('/account/security');
+	await page.getByRole('button', { name: 'Issue new codes' }).click();
+	await expect(page.getByText('10 of 10 unused.')).toBeVisible();
+	await expect(page.getByText('Running low')).toHaveCount(0);
+	const showing = (remaining: number) =>
+		page.route('**/api/v1/me', async (route) => {
+			const res = await route.fetch();
+			await route.fulfill({
+				response: res,
+				json: { ...(await res.json()), recovery_codes_remaining: remaining }
+			});
+		});
+	const low = page.getByRole('status').filter({ hasText: 'Recovery codes left' });
+	await showing(4);
+	await page.goto('/today');
+	await expect(page.getByRole('heading', { name: 'Calendar today' })).toBeVisible();
+	await expect(low).toHaveCount(0);
+	await page.unroute('**/api/v1/me');
+	await showing(3);
+	await page.goto('/today');
+	await expect(low).toContainText('Recovery codes left: 3');
+	await noSeriousA11yViolations(page);
+	await low.getByRole('link', { name: 'Issue new codes' }).click();
+	await expect(page).toHaveURL(/\/account\/security#recovery$/);
+	await expect(page.getByText('3 of 10 unused.')).toBeVisible();
+	await expect(page.getByText('Running low: issue new codes')).toBeVisible();
+	await page.unroute('**/api/v1/me');
+});
+
+test('a recovery code signs in on a new device, which then adds its own passkey', async ({
+	browser
+}) => {
+	await page.goto('/account/security');
+	await page.getByRole('button', { name: 'Issue new codes' }).click();
+	const codes = await page
+		.getByRole('list', { name: 'Recovery codes' })
+		.getByRole('listitem')
+		.allTextContents();
+	expect(codes).toHaveLength(10);
+
+	// An iPhone that has none of the owner's passkeys: its own virtual authenticator.
+	const phone = await (await browser.newContext()).newPage();
+	const cdp = await phone.context().newCDPSession(phone);
+	await cdp.send('WebAuthn.enable');
+	await cdp.send('WebAuthn.addVirtualAuthenticator', {
+		options: {
+			protocol: 'ctap2',
+			transport: 'internal',
+			hasResidentKey: true,
+			hasUserVerification: true,
+			isUserVerified: true,
+			automaticPresenceSimulation: true
+		}
+	});
+	await phone.goto('/signin?next=%2Faccount%2Fsecurity');
+	await phone.getByLabel('Recovery code', { exact: true }).fill(codes[0].trim());
+	await phone.getByRole('button', { name: 'Sign in with recovery code' }).click();
+	// One action, which can be refused.
+	await expect(phone.getByRole('heading', { name: 'You are signed in' })).toBeFocused();
+	await expect(phone.getByRole('button', { name: 'Not now' })).toBeVisible();
+	await phone.getByRole('button', { name: 'Add a passkey on this device' }).click();
+	await expect(phone).toHaveURL(/\/account\/security$/);
+	await expect(phone.getByText('9 of 10 unused.')).toBeVisible();
+	await expect(phone.getByRole('button', { name: /^Remove passkey Passkey from / })).toBeVisible();
+
+	// Signed out, the new passkey is enough.
+	await Promise.all([
+		phone.waitForResponse((r) => r.url().endsWith('/v1/auth/logout')),
+		phone.getByRole('button', { name: 'Sign out', exact: true }).click()
+	]);
+	await phone.goto('/signin?next=%2Faccount');
+	await phone.getByRole('button', { name: 'Sign in with a passkey' }).click();
+	await expect(phone).toHaveURL(/\/account$/);
+	await phone.context().close();
+});
+
+test('a passkey that fails on sign-in offers to try again or use a recovery code', async ({
+	browser
+}) => {
+	const bare = await (await browser.newContext()).newPage(); // no authenticator at all
+	await bare.addInitScript(() => {
+		navigator.credentials.get = () => Promise.reject(new DOMException('no', 'NotAllowedError'));
+	});
+	await bare.goto('/signin');
+	await bare.getByRole('button', { name: 'Sign in with a passkey' }).click();
+	await expect(bare.getByRole('alert')).toContainText('cancelled or timed out');
+	await expect(bare.getByRole('button', { name: 'Try again' })).toBeVisible();
+	await bare.getByRole('button', { name: 'Use a recovery code' }).click();
+	await expect(bare.getByLabel('Recovery code', { exact: true })).toBeFocused();
+	await bare.context().close();
+});
+
 test('try the shared demo without a passkey, with sample data in every area', async () => {
 	await page.goto('/account');
 	await Promise.all([

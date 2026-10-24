@@ -4084,6 +4084,23 @@ export const fr: Record<string, string> = {
 	'Request failed (HTTP {status}).': 'La requête a échoué (HTTP {status}).',
 	'The passkey request was cancelled or timed out.':
 		'La demande de clé d’accès a été annulée ou a expiré.',
+	'This device already has a passkey for Axon. Use it to sign in, or remove it from the device first.':
+		'Cet appareil a déjà une clé d’accès pour Axon. Utilisez-la pour vous connecter, ou supprimez-la d’abord de l’appareil.',
+	'This browser or device cannot use passkeys. Use a recovery code instead.':
+		'Ce navigateur ou cet appareil ne gère pas les clés d’accès. Utilisez plutôt un code de récupération.',
+	'Recovery codes left: {n}. Issue new ones before you run out.':
+		'Codes de récupération restants : {n}. Générez-en de nouveaux avant d’en manquer.',
+	'Running low: issue new codes before you run out.':
+		'Il en reste peu : générez de nouveaux codes avant d’en manquer.',
+	'You are signed in': 'Vous êtes connecté',
+	'You used a recovery code. Add a passkey on this device so you do not need one next time.':
+		'Vous avez utilisé un code de récupération. Ajoutez une clé d’accès sur cet appareil pour ne plus en avoir besoin.',
+	'Add a passkey on this device': 'Ajouter une clé d’accès sur cet appareil',
+	'Not now': 'Pas maintenant',
+	'Passkey from {date}': 'Clé d’accès du {date}',
+	'Try again, or sign in with a recovery code.':
+		'Réessayez, ou connectez-vous avec un code de récupération.',
+	'Use a recovery code': 'Utiliser un code de récupération',
 	Hosts: 'Animateurs',
 	'One host': 'Un animateur',
 	'A conversation: two hosts take turns': 'Une conversation : deux animateurs se relaient',

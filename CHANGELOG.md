@@ -10,6 +10,8 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **No account left out** (R-06): the Budget page's accounts, categories, pots, recurring items, and rules are listed in full; past 200 accounts, some used to vanish from the list and the totals without a sign.
 - **Reminders and more with the demo on** (R-07): with `AXON_DEMO=1`, reminders, digests, followed calendars, the semantic index, and the chat bots now run for everyone but the shared demo account, which each skips in its own query.
 
+- **A way back in that does not depend on codes** (A-02): after signing in with a recovery code, Axon offers once to add a passkey on that device (or "Not now"). Account › Security says how many recovery codes are left; at 3 or fewer, a banner on every page asks for new ones. A passkey that is cancelled, already on the device, or unsupported gets a clear message with "Try again" or "Use a recovery code". English and French; covered end to end with a virtual passkey.
+
 ## 1.0.0 (2026-10-18)
 
 The first release meant for someone other than its author to install, operate, upgrade, and recover: everything since 0.1.0, which is the release candidate of 11 October 2026 (below), and the owner requests that came after it, EP-47 to EP-169. Upgrading from 0.1.0 keeps all data ([doc/upgrading.md](doc/upgrading.md)). The trailer in 4K is attached to the release.
