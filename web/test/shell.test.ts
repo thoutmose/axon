@@ -2554,7 +2554,7 @@ test('recovery codes left are counted, and a banner asks for new ones at 3 or fe
 	const low = page.getByRole('status').filter({ hasText: 'Recovery codes left' });
 	await showing(4);
 	await page.goto('/today');
-	await expect(page.getByRole('heading', { name: 'Calendar today' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: "Today's tasks" })).toBeVisible();
 	await expect(low).toHaveCount(0);
 	await page.unroute('**/api/v1/me');
 	await showing(3);
