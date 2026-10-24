@@ -86,7 +86,15 @@ func SaveTopic(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id, name string
 		kws = []string{}
 	}
 	t := Topic{ID: id, Name: name, Keywords: kws}
-	var err error
+	existing, err := ListTopics(ctx, tx, userID)
+	if err != nil {
+		return Topic{}, err
+	}
+	for _, o := range existing {
+		if o.ID != id && TopicKey(o.Name) == TopicKey(name) {
+			return Topic{}, ValidationError{"You already have a topic with that name."}
+		}
+	}
 	if id == "" {
 		t.ID = uuid.Must(uuid.NewV7()).String()
 		_, err = tx.Exec(ctx, `INSERT INTO watch_topics (id, user_id, name, keywords) VALUES ($1, $2, $3, $4)`, t.ID, userID, name, kws)
@@ -113,6 +121,12 @@ func SaveTopic(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id, name string
 		return Topic{}, err
 	}
 	return t, Relabel(ctx, tx, userID, 30*24*time.Hour)
+}
+
+// TopicKey is what two topic names share when they name the same topic:
+// "data_engineering", "Data-Engineering", and "data  engineering" are one.
+func TopicKey(name string) string {
+	return strings.Join(strings.Fields(strings.NewReplacer("_", " ", "-", " ").Replace(strings.ToLower(name))), " ")
 }
 
 // DeleteTopic removes a topic; news keep their other labels.

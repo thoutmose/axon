@@ -320,7 +320,7 @@ func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, plan []Planned, or
 	}
 	byName := map[string]string{}
 	for _, t := range topics {
-		byName[strings.ToLower(t.Name)] = t.ID
+		byName[TopicKey(t.Name)] = t.ID
 	}
 	for i, p := range plan {
 		line := i + 2 // after the header
@@ -350,13 +350,13 @@ func Import(ctx context.Context, tx pgx.Tx, userID uuid.UUID, plan []Planned, or
 			if name == "" || utf8.RuneCountInString(name) > 80 {
 				continue
 			}
-			id, ok := byName[strings.ToLower(name)]
+			id, ok := byName[TopicKey(name)]
 			if !ok {
 				id = uuid.Must(uuid.NewV7()).String()
 				if _, err := tx.Exec(ctx, `INSERT INTO watch_topics (id, user_id, name) VALUES ($1, $2, $3)`, id, userID, name); err != nil {
 					return res, err
 				}
-				byName[strings.ToLower(name)] = id
+				byName[TopicKey(name)] = id
 				res.Topics++
 			}
 			ids = append(ids, id)
