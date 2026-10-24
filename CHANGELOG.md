@@ -8,7 +8,11 @@ All notable changes to Axon. Versions follow [Semantic Versioning](https://semve
 - **Needs that follow your goal** (EP-191): the health profile's goal (keep, lose gently, gain) moves the daily needs by 15 % at most, never under your basal rate or 1,200 kcal and never above maintenance when losing; the day's bars and the Chef follow. ADR 0039 supersedes ADR 0028.
 - Reviews of both: [doc/reviews/2026-10-22-ep181-ep191.md](doc/reviews/2026-10-22-ep181-ep191.md).
 - **No account left out** (R-06): the Budget page's accounts, categories, pots, recurring items, and rules are listed in full; past 200 accounts, some used to vanish from the list and the totals without a sign.
+- **A stopped watch is noticed** (A-03): the metric `axon_watch_oldest_overdue_seconds` gives the age of the most overdue source (past an hour), with the `AxonWatchStale` rule and runbook; a test fails if the server leaves a worker out when the demo is on. `GET /v1/watch/sources` already returned each source's last fetch, error, and next fetch; the contract is unchanged.
 - **Reminders and more with the demo on** (R-07): with `AXON_DEMO=1`, reminders, digests, followed calendars, the semantic index, and the chat bots now run for everyone but the shared demo account, which each skips in its own query.
+
+- **The tech watch shows how fresh it is** (A-04): on Watch › Sources each source says when it was last fetched ("Fetched 3 h ago", "Fetched on 12 Oct 2026" after a week, or "Never fetched"), its last error, its next fetch, and has "Fetch now"; an enabled source not fetched for over 24 hours is marked. The Watch page shows the latest fetch at the top, with a warning when no source was fetched in 24 hours. English and French.
+- **A way back in that does not depend on codes** (A-02): after signing in with a recovery code, Axon offers once to add a passkey on that device (or "Not now"). Account › Security says how many recovery codes are left; at 3 or fewer, a banner on every page asks for new ones. A passkey that is cancelled, already on the device, or unsupported gets a clear message with "Try again" or "Use a recovery code". English and French; covered end to end with a virtual passkey.
 
 ## 1.0.0 (2026-10-18)
 

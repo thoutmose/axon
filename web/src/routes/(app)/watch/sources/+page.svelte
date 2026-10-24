@@ -7,8 +7,9 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { toast } from '$lib/ui/toast.svelte';
 	import {
-		ago,
 		describeSchedule,
+		fetchedWhen,
+		sourceLate,
 		type WatchSource,
 		type WatchStats,
 		type WatchTopic
@@ -26,6 +27,7 @@
 	let topics = $state<WatchTopic[]>([]);
 	let stats = $state<WatchStats | null>(null);
 	let error = $state('');
+	let loaded = $state(false);
 
 	async function load() {
 		try {
@@ -36,6 +38,8 @@
 			]);
 		} catch (err) {
 			error = message(err);
+		} finally {
+			loaded = true;
 		}
 	}
 	load();
@@ -137,7 +141,15 @@
 							{#if s.last_error}<div class="small bad">{s.last_error}</div>{/if}
 						</td>
 						<td class="small">
-							{s.last_fetched_at ? ago(s.last_fetched_at) : '—'}
+							<span class:late={sourceLate(s)}>
+								{#if s.last_fetched_at}
+									{@const f = fetchedWhen(s.last_fetched_at, new Date(), appLocale())}
+									{t(f.key, f.vars)}
+								{:else}
+									{t('Never fetched')}
+								{/if}
+							</span>
+							{#if sourceLate(s)}<div class="late">{t('Not fetched for over 24 hours')}</div>{/if}
 							<div class="muted">
 								{t('next')}
 								{new Date(s.next_fetch_at).toLocaleString(appLocale())}
@@ -187,7 +199,11 @@
 						</td>
 					</tr>
 				{:else}
-					<tr><td colspan="6" class="muted">{t('No source yet: follow one above.')}</td></tr>
+					<tr>
+						<td colspan="6" class="muted">
+							{loaded ? t('No source yet: follow one above.') : t('Loading…')}
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>
@@ -239,6 +255,10 @@
 	}
 	.bad {
 		color: var(--bad);
+	}
+	.late {
+		color: var(--warn);
+		font-weight: 600;
 	}
 	.sr-only {
 		position: absolute;

@@ -72,6 +72,14 @@ export function message(err: unknown): string {
 	if (err instanceof Error && err.name === 'NotAllowedError') {
 		return t('The passkey request was cancelled or timed out.');
 	}
+	if (err instanceof Error && err.name === 'InvalidStateError') {
+		return t(
+			'This device already has a passkey for Axon. Use it to sign in, or remove it from the device first.'
+		);
+	}
+	if (err instanceof Error && err.name === 'NotSupportedError') {
+		return t('This browser or device cannot use passkeys. Use a recovery code instead.');
+	}
 	return t('Something went wrong. Try again.');
 }
 

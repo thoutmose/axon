@@ -13,6 +13,8 @@
 	import Jarvis from '$lib/Jarvis.svelte';
 	import { jarvis } from '$lib/jarvis.svelte';
 	import { chord, typing } from '$lib/shortcuts';
+	import RecoveryBanner from '$lib/RecoveryBanner.svelte';
+	import { recovery } from '$lib/recovery.svelte';
 
 	let { children, data } = $props();
 
@@ -35,6 +37,12 @@
 				jarvis.enabled = s.jarvis?.enabled ?? false;
 			})
 			.catch(() => {});
+		// Few recovery codes left: the banner asks for new ones.
+		if (!data.status.demo_session) {
+			api<{ recovery_codes_remaining: number }>('/v1/me')
+				.then((me) => (recovery.remaining = me.recovery_codes_remaining))
+				.catch(() => {});
+		}
 	});
 	let help = $state(false);
 	let shortcuts = $state(true);
@@ -91,6 +99,7 @@
 		)}
 	</p>
 {/if}
+<RecoveryBanner />
 {@render children()}
 <CaptureDialog bind:open={capturing.open} oncaptured={() => capturing.count++} />
 {#if jarvis.enabled}<Jarvis />{/if}
