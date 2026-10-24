@@ -59,7 +59,8 @@ func (x *Indexer) Run(ctx context.Context) {
 // keeps are left out, as from search.
 func (x *Indexer) Step(ctx context.Context) error {
 	rows, err := x.db.Query(ctx, `SELECT s.user_id FROM embedding_settings s JOIN consents c ON c.user_id = s.user_id
-		WHERE c.purpose = $1 AND c.granted`, Purpose)
+		JOIN users u ON u.id = s.user_id
+		WHERE c.purpose = $1 AND c.granted AND NOT u.demo`, Purpose)
 	if err != nil {
 		return err
 	}

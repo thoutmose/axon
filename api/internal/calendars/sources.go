@@ -182,7 +182,8 @@ func trim(s string, n int) string {
 func (s *Store) Run(ctx context.Context) {
 	for {
 		done := telemetry.Time("calendars")
-		rows, err := s.db.Query(ctx, `SELECT id FROM calendar_sources WHERE fetched_at IS NULL OR fetched_at < $1 ORDER BY fetched_at NULLS FIRST LIMIT 50`,
+		rows, err := s.db.Query(ctx, `SELECT c.id FROM calendar_sources c JOIN users u ON u.id = c.user_id
+			WHERE NOT u.demo AND (c.fetched_at IS NULL OR c.fetched_at < $1) ORDER BY c.fetched_at NULLS FIRST LIMIT 50`,
 			s.now().Add(-refresh))
 		if err == nil {
 			ids, cerr := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])

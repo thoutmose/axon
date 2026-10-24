@@ -501,7 +501,8 @@ func HashCode(code string) []byte {
 
 // Bots lists every enabled bot channel, for the listeners (EP-108).
 func (s *Store) Bots(ctx context.Context) ([]Target, error) {
-	rows, err := s.db.Query(ctx, `SELECT id, user_id, kind, name, config, peer FROM notify_channels WHERE enabled AND kind IN ('telegram', 'slack', 'discord')`)
+	rows, err := s.db.Query(ctx, `SELECT c.id, c.user_id, c.kind, c.name, c.config, c.peer FROM notify_channels c JOIN users u ON u.id = c.user_id
+		WHERE c.enabled AND NOT u.demo AND c.kind IN ('telegram', 'slack', 'discord')`)
 	if err != nil {
 		return nil, err
 	}

@@ -104,7 +104,7 @@ func subject(contact string) string {
 // Step sends what is due at now.
 func (w *Worker) Step(ctx context.Context, now time.Time) error {
 	rows, err := w.db.Query(ctx, `SELECT s.user_id, u.timezone FROM user_settings s JOIN users u ON u.id = s.user_id
-		WHERE coalesce((s.doc->'reminders'->>'enabled')::boolean, false)`)
+		WHERE NOT u.demo AND coalesce((s.doc->'reminders'->>'enabled')::boolean, false)`)
 	if err != nil {
 		return err
 	}
@@ -135,8 +135,8 @@ func (w *Worker) Step(ctx context.Context, now time.Time) error {
 // the daily reminders are on: the person asked for this one. One that is
 // more than 12 hours late (the server was down) is marked, not sent.
 func (w *Worker) tasks(ctx context.Context, now time.Time) error {
-	rows, err := w.db.Query(ctx, `UPDATE tasks t SET reminded_at = $1 FROM entities e
-		WHERE e.id = t.id AND t.remind_at <= $1 AND t.reminded_at IS NULL
+	rows, err := w.db.Query(ctx, `UPDATE tasks t SET reminded_at = $1 FROM entities e JOIN users u ON u.id = e.user_id
+		WHERE e.id = t.id AND NOT u.demo AND t.remind_at <= $1 AND t.reminded_at IS NULL
 		RETURNING t.id, e.user_id, e.title, t.remind_at > $2 AND t.status NOT IN ('done', 'cancelled')`, now, now.Add(-12*time.Hour))
 	if err != nil {
 		return err
