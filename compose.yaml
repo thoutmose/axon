@@ -71,7 +71,7 @@ services:
   # 2.0) that speaks on the CPU. Optional: `docker compose --profile tts up -d`
   # and AXON_TTS_URL=http://tts:8880. Internal only, about 4 GB on disk.
   tts:
-    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.4
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.9.0
     profiles: [tts]
     security_opt: [no-new-privileges:true] # no setuid escalation inside the container
     cap_drop: [ALL] # listens on 8880, so needs no Linux capability
