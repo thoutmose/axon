@@ -63,6 +63,28 @@ A background worker (`watch`, `reminders`, `vault-mirror`, `semantic-index`, `vi
 2. The **Axon** dashboard's *Background workers* panels show when it started and how long runs take.
 3. A source, a mail server, or the AI provider being down is retried on the next run; a database error points to [AxonDatabaseUnreachable](#axondatabaseunreachable).
 
+## AxonWatchStale
+
+An enabled tech watch source has waited more than one hour past its `next_fetch_at` (metric `axon_watch_oldest_overdue_seconds`, above 3600 for 15 minutes). The worker looks every minute, so the watch has stopped, or one source is stuck. In 2026-10 the production watch stopped for days because `AXON_DEMO=1` kept its workers from starting (fixed in PR #92); nothing said so.
+
+Rule for the fleet repository, group `axon` (ADR 0004):
+
+```yaml
+- alert: AxonWatchStale
+  expr: axon_watch_oldest_overdue_seconds > 3600
+  for: 15m
+  labels: { severity: warning }
+  annotations:
+    summary: "{{ $labels.instance }}: a tech watch source is {{ $value | humanizeDuration }} overdue"
+    runbook: https://github.com/thoutmose/axon/blob/main/doc/runbooks.md#axonwatchstale
+```
+
+1. `docker compose logs --since 1h api | grep -E 'tech watch|workers'`: is the `watch` worker running and logging "tech watch step failed"? A restart loop or a database wait ("waiting for `axon migrate up`") also stops it.
+2. Check the environment: `docker compose exec api env | grep AXON_DEMO`. The demo must not stop any worker; `TestDemoServerStartsEveryWorker` guards this.
+3. See which sources are late and why: in Axon, the Tech watch sources list shows each source's last fetch, last error, and next fetch (`GET /v1/watch/sources`: `last_fetched_at`, `last_error`, `next_fetch_at`).
+4. If only one source is late, its feed is slow or failing: the error is in `last_error`; fetch it now from its page, or disable it.
+5. If all are late, restart the API (`docker compose restart api`); the worker catches up within a few minutes (100 sources per minute).
+
 ## AxonContainerMemoryHigh
 
 One of Axon's containers has used more than 1.5 GB for 15 minutes.

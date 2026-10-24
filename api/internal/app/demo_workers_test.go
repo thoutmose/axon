@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/thoutmose/axon/api/internal/auth"
 	"github.com/thoutmose/axon/api/internal/calendars"
 	"github.com/thoutmose/axon/api/internal/notify"
@@ -218,6 +220,45 @@ func TestTechWatchSkipsDemo(t *testing.T) {
 	}
 	if reads["/visitor.xml"].Load() != v0 {
 		t.Fatal("the demo account's source was fetched")
+	}
+}
+
+// The age of the most overdue source is 0 until one waits over an hour, and
+// ignores the demo account, whose sources are never fetched.
+func TestWatchOverdueMetric(t *testing.T) {
+	_, visitor, _ := demoFeeds(t, newEnv(t, true))
+	visitor.makeDemo()
+	ctx := context.Background()
+	set := func(name, when string) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, `UPDATE watch_sources SET next_fetch_at = `+when+` WHERE user_id = (SELECT id FROM users WHERE display_name = $1)`, name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	age := func() float64 {
+		t.Helper()
+		reg := prometheus.NewRegistry()
+		watch.RegisterSourceAge(reg, pool)
+		families, err := reg.Gather()
+		if err != nil || len(families) != 1 {
+			t.Fatal(families, err)
+		}
+		return families[0].GetMetric()[0].GetGauge().GetValue()
+	}
+	if _, err := pool.Exec(ctx, `UPDATE watch_sources SET next_fetch_at = now() + interval '1 day'`); err != nil {
+		t.Fatal(err)
+	}
+	set("Visitor", `now() - interval '5 hours'`)
+	if got := age(); got != 0 {
+		t.Fatalf("a demo source counted: %v", got)
+	}
+	set("Alice", `now() - interval '30 minutes'`)
+	if got := age(); got != 0 {
+		t.Fatalf("a source late by 30 minutes counted: %v", got)
+	}
+	set("Alice", `now() - interval '3 hours'`)
+	if got := age(); got < 3*3600 || got > 3*3600+60 {
+		t.Fatalf("age = %v, want about 3 hours", got)
 	}
 }
 

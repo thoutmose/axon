@@ -129,23 +129,7 @@ func serve() error {
 	if err != nil {
 		return err
 	}
-	reminders, err := app.Reminders(cfg, pool, log)
-	if err != nil {
-		return err
-	}
-	cals, err := app.Calendars(cfg, pool, log)
-	if err != nil {
-		return err
-	}
-	index, err := app.Semantic(cfg, pool, log)
-	if err != nil {
-		return err
-	}
-	listeners, err := app.Replies(cfg, pool, log)
-	if err != nil {
-		return err
-	}
-	summaries, err := app.VideoSummaries(cfg, pool, log, ai)
+	workers, err := backgroundWorkers(cfg, pool, log, ai)
 	if err != nil {
 		return err
 	}
@@ -153,20 +137,11 @@ func serve() error {
 		if !waitForSchema(ctx, pool, log) {
 			return
 		}
-		if demoEnabled() {
-			go keepDemo(ctx, pool, log)
+		for _, w := range workers {
+			go w.run(ctx)
 		}
-		go pruneMedia(ctx, pool, log)
-		go mirror.New(pool, log).Run(ctx)
-		// Every worker skips the shared demo account in its own query (NOT u.demo).
-		go reminders.Run(ctx)
-		go cals.Run(ctx)
-		go index.Run(ctx)
-		go listeners.Run(ctx)
-		go (&watch.Worker{DB: pool, Log: log}).Run(ctx)
-		go summaries.RunVideoSummaries(ctx)
-		go summaries.RunWatchKnowledge(ctx)
 	}()
+	watch.RegisterSourceAge(reg, pool)
 	api := newHTTPServer(envOr("AXON_ADDR", ":8080"), handler)
 	metricsSrv := newHTTPServer(envOr("AXON_METRICS_ADDR", ":9464"), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
@@ -188,6 +163,53 @@ func serve() error {
 	defer cancel()
 	_ = metricsSrv.Shutdown(shutdownCtx)
 	return api.Shutdown(shutdownCtx)
+}
+
+// worker is one background loop, started once the database is migrated.
+type worker struct {
+	name string
+	run  func(context.Context)
+}
+
+// backgroundWorkers lists every loop the server runs. Each one skips the
+// shared demo account in its own query (NOT u.demo), so none is left out
+// when the demo is on: that once stopped the tech watch in production.
+func backgroundWorkers(cfg auth.Config, pool *pgxpool.Pool, log *slog.Logger, ai agents.Provider) ([]worker, error) {
+	reminders, err := app.Reminders(cfg, pool, log)
+	if err != nil {
+		return nil, err
+	}
+	cals, err := app.Calendars(cfg, pool, log)
+	if err != nil {
+		return nil, err
+	}
+	index, err := app.Semantic(cfg, pool, log)
+	if err != nil {
+		return nil, err
+	}
+	listeners, err := app.Replies(cfg, pool, log)
+	if err != nil {
+		return nil, err
+	}
+	summaries, err := app.VideoSummaries(cfg, pool, log, ai)
+	if err != nil {
+		return nil, err
+	}
+	var list []worker
+	if cfg.Demo {
+		list = append(list, worker{"demo", func(ctx context.Context) { keepDemo(ctx, pool, log) }})
+	}
+	return append(list,
+		worker{"maintenance", func(ctx context.Context) { pruneMedia(ctx, pool, log) }},
+		worker{"vault-mirror", mirror.New(pool, log).Run},
+		worker{"reminders", reminders.Run},
+		worker{"calendars", cals.Run},
+		worker{"semantic-index", index.Run},
+		worker{"replies", listeners.Run},
+		worker{"watch", (&watch.Worker{DB: pool, Log: log}).Run},
+		worker{"video-summaries", summaries.RunVideoSummaries},
+		worker{"watch-knowledge", summaries.RunWatchKnowledge},
+	), nil
 }
 
 // waitForSchema waits until `axon migrate up` has brought the database to
