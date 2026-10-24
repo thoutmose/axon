@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -75,6 +76,10 @@ func TestWatchVideoTranscript(t *testing.T) {
 		Labels           []string `json:"labels"`
 		TranscriptSource string   `json:"transcript_source"`
 		TranscriptLang   string   `json:"transcript_lang"`
+	}
+	// The worker reads the words of the videos not tried yet.
+	if err := watch.TranscribePending(context.Background(), pool, nil, 5); err != nil || players != 1 {
+		t.Fatalf("worker: err %v, asked YouTube %d times", err, players)
 	}
 	_ = json.Unmarshal(alice.mustDo(200, "POST", "/v1/watch/items/"+id+"/transcript", nil), &it)
 	if it.TranscriptSource != "auto_captions" || it.TranscriptLang != "en" {

@@ -121,13 +121,14 @@ func TranscribePending(ctx context.Context, pool *pgxpool.Pool, w *Whisper, n in
 	if err != nil {
 		return err
 	}
-	type video struct{ id, user uuid.UUID }
+	// Exported fields: RowToStructByPos skips unexported ones.
+	type video struct{ ID, User uuid.UUID }
 	list, err := pgx.CollectRows(rows, pgx.RowToStructByPos[video])
 	if err != nil {
 		return err
 	}
 	for _, v := range list {
-		if _, err := Transcribe(ctx, pool, v.user, v.id, w); err != nil && !errors.Is(err, ErrNoTranscript) && ctx.Err() == nil {
+		if _, err := Transcribe(ctx, pool, v.User, v.ID, w); err != nil && !errors.Is(err, ErrNoTranscript) && ctx.Err() == nil {
 			// Recorded as tried; YouTube or the Whisper server may be down: the next video still gets its turn.
 			continue
 		}
