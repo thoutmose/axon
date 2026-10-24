@@ -2604,7 +2604,9 @@ test('a recovery code signs in on a new device, which then adds its own passkey'
 	await expect(phone.getByText('9 of 10 unused.')).toBeVisible();
 	await expect(phone.getByRole('button', { name: /^Remove passkey Passkey from / })).toBeVisible();
 
-	// Signed out, the new passkey is enough.
+	// Signed out, the new passkey is enough. The account page has a single "Sign out"
+	// (the security page lists one per device).
+	await phone.goto('/account');
 	await Promise.all([
 		phone.waitForResponse((r) => r.url().endsWith('/v1/auth/logout')),
 		phone.getByRole('button', { name: 'Sign out', exact: true }).click()
