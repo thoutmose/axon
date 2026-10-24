@@ -43,6 +43,71 @@ export function ago(iso: string, now = new Date(), locale?: string): string {
 	return t.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
 
+/**
+ * When a source was last fetched, as an English key and its values for t():
+ * minutes, hours, days, then the date itself from a week on, so the sentence
+ * never reads "12 Oct ago".
+ */
+export function fetchedWhen(
+	iso: string,
+	now = new Date(),
+	locale?: string
+): { key: string; vars?: Record<string, string | number> } {
+	const at = new Date(iso);
+	if (Number.isNaN(at.getTime())) return { key: 'Never fetched' };
+	const min = Math.round((now.getTime() - at.getTime()) / 60000);
+	if (min < 1) return { key: 'Fetched just now' };
+	if (min < 60) return { key: 'Fetched {n} min ago', vars: { n: min } };
+	const h = Math.round(min / 60);
+	if (h < 24) return { key: 'Fetched {n} h ago', vars: { n: h } };
+	const d = Math.round(h / 24);
+	if (d < 7) return { key: 'Fetched {n} d ago', vars: { n: d } };
+	const date = at.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+	return { key: 'Fetched on {date}', vars: { date } };
+}
+
+const DAY_MS = 24 * 3600 * 1000;
+
+/**
+ * True when an enabled source was not fetched in the last 24 hours. A source
+ * never fetched counts from when it was followed, so a new one is not late.
+ */
+export function sourceLate(
+	s: Pick<WatchSource, 'last_fetched_at' | 'enabled' | 'created_at'>,
+	now = new Date()
+): boolean {
+	if (!s.enabled) return false;
+	const since = Date.parse(s.last_fetched_at ?? s.created_at);
+	return now.getTime() - since > DAY_MS;
+}
+
+/** The most recent fetch across the sources, or null when none ever ran. */
+export function latestFetch(sources: Pick<WatchSource, 'last_fetched_at'>[]): string | null {
+	let best: string | null = null;
+	for (const s of sources) {
+		if (s.last_fetched_at && (!best || Date.parse(s.last_fetched_at) > Date.parse(best))) {
+			best = s.last_fetched_at;
+		}
+	}
+	return best;
+}
+
+/**
+ * True when no enabled source was fetched in the last 24 hours and at least
+ * one of them is late: sources all followed within the day do not warn.
+ */
+export function watchStale(
+	sources: Pick<WatchSource, 'last_fetched_at' | 'enabled' | 'created_at'>[],
+	now = new Date()
+): boolean {
+	// Only enabled sources count: a source turned off but fetched recently
+	// must not hide that the others are late.
+	const on = sources.filter((s) => s.enabled);
+	const last = latestFetch(on);
+	if (last && now.getTime() - Date.parse(last) <= DAY_MS) return false;
+	return on.some((s) => sourceLate(s, now));
+}
+
 /** A schedule in words, for the common cron forms. */
 export function describeSchedule(cron: string): string {
 	const m = cron.trim().match(/^(\d{1,2}) (\d{1,2}) \* \* (\*|[0-7](?:-[0-7])?)$/);

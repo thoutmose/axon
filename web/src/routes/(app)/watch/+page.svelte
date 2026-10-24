@@ -19,8 +19,11 @@
 	import {
 		ago,
 		filterQuery,
+		latestFetch,
+		watchStale,
 		type WatchFilter,
 		type WatchItem,
+		type WatchSource,
 		type WatchStats,
 		type WatchTopic
 	} from '$lib/watch';
@@ -34,6 +37,8 @@
 	let items = $state<WatchItem[]>([]);
 	let topics = $state<WatchTopic[]>([]);
 	let stats = $state<WatchStats | null>(null);
+	let sources = $state<WatchSource[] | null>(null);
+	let sourcesError = $state(false);
 	let error = $state('');
 	let loading = $state(true);
 	let more = $state(false);
@@ -68,6 +73,15 @@
 			// The list still works without the side panel.
 		}
 	}
+	// Freshness loads on its own: a failure here must not hide the topics.
+	async function loadSources() {
+		sourcesError = false;
+		try {
+			({ items: sources } = await api<{ items: WatchSource[] }>('/v1/watch/sources'));
+		} catch {
+			sourcesError = true;
+		}
+	}
 	// The kind follows the address, so the menu opens the videos or the
 	// podcasts (EP-127).
 	const kindParam = (k: string | null): WatchFilter['kind'] =>
@@ -89,6 +103,7 @@
 		load();
 	});
 	loadSide();
+	loadSources();
 
 	async function show(id: string) {
 		try {
@@ -248,6 +263,25 @@
 					· <a href="/watch/sources" class="bad">{t('{n} failing', { n: stats.sources.failing })}</a
 					>{/if}
 			</p>
+		{/if}
+		{#if sourcesError}
+			<p class="muted small">
+				{t('The latest fetch could not be loaded.')}
+				<Button variant="ghost" onclick={loadSources}>{t('Try again')}</Button>
+			</p>
+		{:else if sources}
+			{@const last = latestFetch(sources)}
+			<p class="muted small">
+				{last
+					? t('Latest fetch: {when}', { when: new Date(last).toLocaleString(appLocale()) })
+					: t('No source fetched yet.')}
+			</p>
+			{#if watchStale(sources)}
+				<p class="warning" role="status">
+					{t('No source was fetched in the last 24 hours.')}
+					<a href="/watch/sources">{t('Sources and health')}</a>
+				</p>
+			{/if}
 		{/if}
 	</div>
 	<nav class="row" aria-label={t('Tech watch')}>
@@ -745,6 +779,11 @@
 	}
 	.bad {
 		color: var(--bad);
+	}
+	.warning {
+		margin: var(--space-1) 0 0;
+		font-size: var(--text-sm);
+		color: var(--warn);
 	}
 	.actions {
 		margin-bottom: var(--space-2);
